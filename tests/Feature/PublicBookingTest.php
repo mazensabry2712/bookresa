@@ -105,6 +105,9 @@ test('public customer can book without an account', function (): void {
         ->where('tenant_id', $tenant->id)
         ->firstOrFail();
 
+    app(CurrentTenant::class)->set($tenant);
+    $booking->load('customer');
+
     $response->assertRedirectToRoute('public.booking.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
