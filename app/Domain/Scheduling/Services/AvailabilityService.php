@@ -38,6 +38,10 @@ final class AvailabilityService
     ): array {
         $tenantId = $this->currentTenant->idOrFail();
 
+        if (! $service->is_active) {
+            return [];
+        }
+
         if ((int) $service->tenant_id !== $tenantId) {
             throw new LogicException('Service must belong to the current tenant.');
         }
