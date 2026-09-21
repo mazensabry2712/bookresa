@@ -72,14 +72,15 @@
 - [ ] real Kashier sandbox end-to-end verification
 
 ## Billing
-- [ ] plans
-- [ ] plan modules
-- [ ] subscriptions
-- [ ] pricing snapshots
-- [ ] usage periods/charges
+- [x] plans
+- [x] plan modules
+- [x] subscriptions
+- [x] pricing snapshots
+- [x] usage periods/charges
 - [ ] upgrade/downgrade
 - [ ] renewal/expiry
 - [ ] admin pricing
+- [ ] subscription checkout/payment
 
 ## Notifications
 - [ ] confirmations

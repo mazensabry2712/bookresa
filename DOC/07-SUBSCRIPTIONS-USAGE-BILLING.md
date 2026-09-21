@@ -19,8 +19,11 @@ Future: transaction fees and premium modules.
 - plan
 - start/end
 - status
+- payment status
 - payment metadata
 - pricing snapshot
+
+A trial subscription does not imply a successful payment. Its payment status remains pending until a real subscription-payment flow is completed.
 
 Statuses: Trial, Active, Expired, Suspended, Cancelled.
 
