@@ -29,8 +29,10 @@ class PublicBookingController
                 'tenant' => $tenant->load('profile'),
                 'services' => Service::query()
                     ->where('is_active', true)
+                    ->with('staff:id,display_name,status')
                     ->orderBy('id')
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
+                'today' => CarbonImmutable::now($tenant->profile?->timezone ?? config('app.timezone', 'UTC'))->toDateString(),
             ]);
         });
     }
@@ -43,7 +45,7 @@ class PublicBookingController
     ): JsonResponse {
         $this->ensurePublicTenant($tenant);
 
-        return $currentTenant->run($tenant, function () use ($request, $availability): JsonResponse {
+        return $currentTenant->run($tenant, function () use ($request, $availability, $tenant): JsonResponse {
             $service = Service::query()->findOrFail($request->integer('service_id'));
             $staff = $request->filled('staff_id')
                 ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
@@ -119,7 +121,7 @@ class PublicBookingController
     ): View {
         $this->ensurePublicTenant($tenant);
 
-        return $currentTenant->run($tenant, function () use ($booking): View {
+        return $currentTenant->run($tenant, function () use ($booking, $tenant): View {
             $model = \App\Domain\Booking\Models\Booking::query()
                 ->where('booking_reference', $booking)
                 ->with(['customer', 'service', 'staff'])
