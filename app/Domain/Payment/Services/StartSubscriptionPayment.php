@@ -54,7 +54,11 @@ final class StartSubscriptionPayment
             ->latest('id')
             ->first();
 
-        if ($latestPayment?->status === \App\Domain\Payment\Enums\PaymentStatus::Paid) {
+        if ($latestPayment?->status !== null && in_array($latestPayment->status, [
+            \App\Domain\Payment\Enums\PaymentStatus::Pending,
+            \App\Domain\Payment\Enums\PaymentStatus::Processing,
+            \App\Domain\Payment\Enums\PaymentStatus::Paid,
+        ], true)) {
             return $latestPayment;
         }
 
