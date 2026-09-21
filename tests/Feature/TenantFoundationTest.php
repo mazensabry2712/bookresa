@@ -6,12 +6,14 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-test('a user can belong to a tenant', function (): void {
+test('a user can belong to an active tenant', function (): void {
     $user = User::factory()->create();
+
     $tenant = Tenant::query()->create([
         'slug' => 'demo-business',
         'status' => TenantStatus::Active,
@@ -29,15 +31,55 @@ test('a user can belong to a tenant', function (): void {
         ->and($tenant->users->contains($user))->toBeTrue();
 });
 
-test('tenant owned models are isolated by current tenant context', function (): void {
+test('current tenant context is isolated and can be temporarily switched', function (): void {
     $tenantA = Tenant::query()->create(['slug' => 'tenant-a']);
     $tenantB = Tenant::query()->create(['slug' => 'tenant-b']);
 
-    expect(app(CurrentTenant::class)->id())->toBeNull();
+    $context = app(CurrentTenant::class);
 
-    app(CurrentTenant::class)->set($tenantA);
+    expect($context->id())->toBeNull();
 
-    $first = new class extends \Illuminate\Database\Eloquent\Model {
+    $context->set($tenantA);
+
+    expect($context->get()->is($tenantA))->toBeTrue()
+        ->and($context->id())->toBe($tenantA->id);
+
+    $result = $context->run($tenantB, fn (): int => $context->idOrFail());
+
+    expect($result)->toBe($tenantB->id)
+        ->and($context->id())->toBe($tenantA->id);
+
+    $context->clear();
+
+    expect($context->id())->toBeNull();
+});
+
+test('tenant-owned models are automatically scoped to the current tenant', function (): void {
+    $tenantA = Tenant::query()->create(['slug' => 'tenant-a']);
+    $tenantB = Tenant::query()->create(['slug' => 'tenant-b']);
+
+    $userA = User::factory()->create();
+    $userB = User::factory()->create();
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenantA->id,
+        'user_id' => $userA->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenantB->id,
+        'user_id' => $userB->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    $context = app(CurrentTenant::class);
+    $context->set($tenantA);
+
+    $tenantAwareMembership = new class extends Model
+    {
         use \App\Domain\Tenant\Concerns\BelongsToTenant;
 
         protected $table = 'tenant_memberships';
@@ -45,5 +87,22 @@ test('tenant owned models are isolated by current tenant context', function (): 
         protected $guarded = [];
     };
 
-    expect($first->query()->count())->toBe(0);
+    expect($tenantAwareMembership->newQuery()->count())->toBe(1)
+        ->and($tenantAwareMembership->newQuery()->first()->user_id)->toBe($userA->id);
+});
+
+test('tenant-owned models refuse writes without a current tenant', function (): void {
+    $tenantAwareMembership = new class extends Model
+    {
+        use \App\Domain\Tenant\Concerns\BelongsToTenant;
+
+        protected $table = 'tenant_memberships';
+
+        protected $guarded = [];
+    };
+
+    expect(fn () => $tenantAwareMembership->newQuery()->create([
+        'user_id' => User::factory()->create()->id,
+        'status' => MembershipStatus::Active->value,
+    ]))->toThrow(LogicException::class);
 });
