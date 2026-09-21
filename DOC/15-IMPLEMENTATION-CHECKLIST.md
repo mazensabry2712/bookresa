@@ -77,8 +77,8 @@
 - [x] subscriptions
 - [x] pricing snapshots
 - [x] usage periods/charges
-- [ ] upgrade/downgrade
-- [ ] renewal/expiry
+- [x] upgrade/downgrade policy
+- [x] renewal/expiry core
 - [ ] admin pricing
 - [ ] subscription checkout/payment
 
