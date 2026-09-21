@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Payment;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\SyncBookingPaymentStatus;
+use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -22,6 +23,7 @@ final class KashierReturnController
         KashierGateway $gateway,
         PaymentService $payments,
         SyncBookingPaymentStatus $bookingPaymentSync,
+        SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
     ): RedirectResponse|JsonResponse {
         $query = $request->all();
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
@@ -67,6 +69,7 @@ final class KashierReturnController
                     $result = $gateway->verifyPayment($payment->provider_reference);
                     $updated = $payments->applyResult($payment->fresh(), $result);
                     $bookingPaymentSync->handle($updated, $result->status);
+                    $subscriptionPaymentSync->handle($updated, $result->status);
 
                     $notice = match ($updated->status->value) {
                         'paid' => 'Payment completed successfully.',
