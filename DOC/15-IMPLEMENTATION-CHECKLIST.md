@@ -22,7 +22,7 @@
 
 ## RBAC
 - [ ] Spatie Permission
-- [ ] Platform Admin
+- [x] Platform Admin
 - [ ] Owner/Manager/Receptionist/Staff
 - [ ] Permissions
 - [ ] Module-aware access
@@ -78,8 +78,10 @@
 - [x] pricing snapshots
 - [x] usage periods/charges
 - [x] upgrade/downgrade policy
+- [x] owner usage dashboard
+- [x] platform plan CRUD and activation controls
 - [x] renewal/expiry core
-- [ ] admin pricing
+- [x] admin pricing
 - [x] subscription checkout/payment flow
 
 ## Notifications
