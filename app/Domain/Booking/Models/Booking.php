@@ -5,6 +5,7 @@ namespace App\Domain\Booking\Models;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Enums\PaymentStatus;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
