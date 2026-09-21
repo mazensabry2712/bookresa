@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/kashier',
+        ]);
+
         $middleware->prependToPriorityList(
             before: SubstituteBindings::class,
             prepend: ResolveTenant::class,
