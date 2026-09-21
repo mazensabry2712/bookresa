@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('settings')->nullable();
             $table->timestamps();
 
+            $table->unique(['id', 'tenant_id']);
             $table->unique(['tenant_id', 'user_id']);
             $table->index(['tenant_id', 'status']);
         });
