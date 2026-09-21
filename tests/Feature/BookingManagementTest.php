@@ -167,8 +167,12 @@ test('authorized user can confirm and history is recorded', function (): void {
         ])
         ->assertRedirect(route('booking.management.show', $booking));
 
-    expect($booking->fresh()->status)->toBe(BookingStatus::Confirmed)
-        ->and($booking->statusHistory()->count())->toBe(2);
+    app(CurrentTenant::class)->set($tenant);
+
+    $fresh = $booking->fresh();
+
+    expect($fresh?->status)->toBe(BookingStatus::Confirmed)
+        ->and($fresh?->statusHistory()->count())->toBe(2);
 });
 
 test('user without booking permission is forbidden', function (): void {
