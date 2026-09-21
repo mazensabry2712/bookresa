@@ -67,6 +67,9 @@
 - [x] signed webhook
 - [x] idempotency
 - [x] gateway tests
+- [x] public booking checkout
+- [x] signed merchant return + server-side verification
+- [ ] real Kashier sandbox end-to-end verification
 
 ## Billing
 - [ ] plans

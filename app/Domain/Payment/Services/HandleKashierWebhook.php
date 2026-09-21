@@ -2,13 +2,13 @@
 
 namespace App\Domain\Payment\Services;
 
-use App\Domain\Booking\Enums\PaymentStatus as BookingPaymentStatus;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Models\PaymentWebhookEvent;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
+use App\Domain\Payment\Services\SyncBookingPaymentStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -20,6 +20,7 @@ final class HandleKashierWebhook
         private readonly CurrentTenant $currentTenant,
         private readonly KashierWebhookVerifier $verifier,
         private readonly PaymentService $payments,
+        private readonly SyncBookingPaymentStatus $bookingPaymentSync,
     ) {
     }
 
@@ -96,7 +97,7 @@ final class HandleKashierWebhook
 
                     $updated = $this->payments->applyResult($payment->fresh(), $mapped);
 
-                    $this->syncBookingPaymentStatus($updated, $mapped->status);
+                    $this->bookingPaymentSync->handle($updated, $mapped->status);
 
                     return true;
                 });
@@ -142,29 +143,6 @@ final class HandleKashierWebhook
                 ? $this->parseDate($data['creationDate'] ?? null) ?? CarbonImmutable::now('UTC')
                 : null,
         );
-    }
-
-    private function syncBookingPaymentStatus(Payment $payment, PaymentStatus $status): void
-    {
-        if ($payment->payable_type !== (new \App\Domain\Booking\Models\Booking)->getMorphClass()) {
-            return;
-        }
-
-        $booking = $payment->payable;
-
-        if ($booking === null) {
-            return;
-        }
-
-        $target = match ($status) {
-            PaymentStatus::Paid => BookingPaymentStatus::Paid,
-            PaymentStatus::Refunded => BookingPaymentStatus::Refunded,
-            default => null,
-        };
-
-        if ($target !== null) {
-            $booking->forceFill(['payment_status' => $target])->save();
-        }
     }
 
     private function amountToMinor(mixed $amount): int

@@ -45,6 +45,11 @@ test('Kashier gateway creates a hosted payment session', function (): void {
         amountMinor: 25000,
         currency: 'EGP',
         description: 'Booking payment',
+        metadata: [
+            'merchant_redirect' => 'https://example.test/payment/return',
+            'customer_email' => 'customer@example.com',
+            'customer_reference' => 'customer-123',
+        ],
     ));
 
     Http::assertSent(function ($request): bool {
@@ -54,7 +59,10 @@ test('Kashier gateway creates a hosted payment session', function (): void {
             && $request['amount'] === '250.00'
             && $request['currency'] === 'EGP'
             && $request['order'] === 'PAY-ABC1234567'
-            && $request['merchantId'] === 'MID-123';
+            && $request['merchantId'] === 'MID-123'
+            && $request['merchantRedirect'] === 'https://example.test/payment/return'
+            && $request['customer']['email'] === 'customer@example.com'
+            && $request['customer']['reference'] === 'customer-123';
     });
 
     expect($result->status)->toBe(PaymentStatus::Processing)
