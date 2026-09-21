@@ -49,6 +49,16 @@ final class StartSubscriptionPayment
         }
 
         $provider = (string) config('bookresa.payments.default_provider', 'kashier');
+        $latestPayment = $subscription->payments()
+            ->where('provider', $provider)
+            ->latest('id')
+            ->first();
+
+        if ($latestPayment?->status === \App\Domain\Payment\Enums\PaymentStatus::Paid) {
+            return $latestPayment;
+        }
+
+        $attempt = ($subscription->payments()->where('provider', $provider)->count()) + 1;
 
         return $this->payments->start(
             gateway: $this->gateway,
@@ -67,7 +77,7 @@ final class StartSubscriptionPayment
                 'customer_email' => $profile->email,
                 'merchant_redirect' => route('payments.kashier.return'),
             ],
-            idempotencyKey: 'subscription-'.$subscription->id.'-'.$provider,
+            idempotencyKey: 'subscription-'.$subscription->id.'-'.$provider.'-attempt-'.$attempt,
         );
     }
 }
