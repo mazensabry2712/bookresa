@@ -16,7 +16,7 @@ final class KashierGateway implements PaymentGateway
     public function createPayment(PaymentRequest $request): PaymentGatewayResult
     {
         $config = config('bookresa.payments.kashier');
-        $this->assertConfigured($config);
+        $this->assertConfigured($config, ['merchant_id', 'api_key', 'secret_key']);
 
         $merchantRedirect = $request->metadata['merchant_redirect'] ?? $config['merchant_redirect'];
         $customerEmail = $request->metadata['customer_email'] ?? null;
@@ -94,7 +94,7 @@ final class KashierGateway implements PaymentGateway
     public function verifyPayment(string $providerReference): PaymentGatewayResult
     {
         $config = config('bookresa.payments.kashier');
-        $this->assertConfigured($config);
+        $this->assertConfigured($config, ['secret_key']);
 
         $response = $this->client()
             ->withHeaders(['Authorization' => $config['secret_key']])
@@ -145,7 +145,7 @@ final class KashierGateway implements PaymentGateway
         }
 
         $config = config('bookresa.payments.kashier');
-        $this->assertConfigured($config);
+        $this->assertConfigured($config, ['secret_key']);
 
         $lookup = $this->client()
             ->withHeaders(['Authorization' => $config['secret_key']])
@@ -209,9 +209,13 @@ final class KashierGateway implements PaymentGateway
     /**
      * @param array<string, mixed> $config
      */
-    private function assertConfigured(array $config): void
+    /**
+     * @param array<string, mixed> $config
+     * @param list<string> $required
+     */
+    private function assertConfigured(array $config, array $required): void
     {
-        foreach (['merchant_id', 'api_key', 'secret_key'] as $key) {
+        foreach ($required as $key) {
             if (blank($config[$key] ?? null)) {
                 throw new RuntimeException('Kashier is not configured: '.$key.'.');
             }
