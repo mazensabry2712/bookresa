@@ -47,3 +47,12 @@ Never store raw PAN/CVV. Keep gateway secrets outside source control.
 
 ## Adding a provider
 Implement PaymentGateway, add provider client/configuration/verification/tests, register it, and leave BookingService/SubscriptionService provider-neutral.
+
+
+## Current Kashier integration notes
+
+- Hosted payment sessions use Kashier's `/v3/payment/sessions` endpoint with the merchant secret key and Payment API key, returning a `sessionUrl` for hosted checkout.
+- Payment verification reads the session payment state server-side; browser redirects are not treated as payment confirmation.
+- The webhook endpoint verifies `x-kashier-signature` using the Payment API key and the sorted `signatureKeys` payload rules.
+- Webhook processing is idempotent on tenant + provider + transaction ID + transaction status and validates amount/currency before applying the result.
+- Kashier credentials are environment variables only and are never stored in source control.
