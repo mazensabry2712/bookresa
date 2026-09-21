@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Payment;
 
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\SyncBookingPaymentStatus;
@@ -81,16 +82,22 @@ final class KashierReturnController
                 }
             }
 
-            $booking = $payment->payable;
+            $payable = $payment->payable;
 
-            if ($booking === null || blank($booking->booking_reference)) {
+            if ($payable instanceof Subscription) {
+                return redirect()
+                    ->route('billing.subscription')
+                    ->with('payment_notice', $notice);
+            }
+
+            if ($payable === null || blank($payable->booking_reference)) {
                 return redirect()->route('home')->with('status', $notice);
             }
 
             return redirect()
                 ->route('public.booking.confirmation', [
                     'tenant' => $tenant->slug,
-                    'booking' => $booking->booking_reference,
+                    'booking' => $payable->booking_reference,
                 ])
                 ->with('payment_notice', $notice);
         });
