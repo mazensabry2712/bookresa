@@ -5,6 +5,7 @@ namespace App\Domain\Booking\Models;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Enums\PaymentStatus;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Booking extends Model
 {
@@ -60,5 +62,10 @@ class Booking extends Model
     public function statusHistory(): HasMany
     {
         return $this->hasMany(BookingStatusHistory::class);
+    }
+
+    public function payments(): MorphMany
+    {
+        return $this->morphMany(Payment::class, 'payable');
     }
 }
