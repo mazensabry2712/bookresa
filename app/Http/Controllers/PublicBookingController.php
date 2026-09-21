@@ -87,11 +87,12 @@ class PublicBookingController
         StorePublicBookingRequest $request,
         CurrentTenant $currentTenant,
         CreateBooking $createBooking,
+        StartBookingPayment $startBookingPayment,
     ): RedirectResponse {
         $this->ensurePublicTenant($tenant);
 
         try {
-            return $currentTenant->run($tenant, function () use ($request, $createBooking, $tenant): RedirectResponse {
+            return $currentTenant->run($tenant, function () use ($request, $createBooking, $startBookingPayment, $tenant): RedirectResponse {
                 $service = Service::query()->findOrFail($request->integer('service_id'));
                 $staff = $request->filled('staff_id')
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
