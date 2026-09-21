@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('staff_days_off', function (Blueprint $table): void {
+        Schema::create('staff_day_offs', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->unsignedBigInteger('staff_id');
@@ -28,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('staff_days_off');
+        Schema::dropIfExists('staff_day_offs');
     }
 };
