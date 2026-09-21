@@ -3,15 +3,17 @@
 namespace App\Domain\Scheduling\Models;
 
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StaffDayOff extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'staff_id',
         'starts_on',
         'ends_on',
