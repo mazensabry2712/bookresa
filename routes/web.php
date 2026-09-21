@@ -19,3 +19,20 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
         ->name('onboarding.workspace');
 });
+
+
+use App\Http\Controllers\PublicBookingController;
+
+Route::prefix('book/{tenant:slug}')->group(function (): void {
+    Route::get('/', [PublicBookingController::class, 'show'])
+        ->name('public.booking.show');
+
+    Route::get('/availability', [PublicBookingController::class, 'availability'])
+        ->name('public.booking.availability');
+
+    Route::post('/bookings', [PublicBookingController::class, 'store'])
+        ->name('public.booking.store');
+
+    Route::get('/confirmation/{booking}', [PublicBookingController::class, 'confirmation'])
+        ->name('public.booking.confirmation');
+});
