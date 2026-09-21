@@ -210,3 +210,8 @@ test('renewal is blocked while subscription is still active', function (): void 
         CarbonImmutable::parse('2026-10-15 00:00:00', 'UTC'),
     ))->toThrow(RuntimeException::class);
 });
+
+
+test('subscription expiry artisan command is available', function (): void {
+    $this->artisan('subscriptions:expire')->assertExitCode(0);
+});
