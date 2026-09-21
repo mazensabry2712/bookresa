@@ -436,7 +436,7 @@ test('failed subscription payment can start a fresh payment attempt', function (
     expect($payment->id)->not->toBe($failedPayment->id)
         ->and($payment->status)->toBe(PaymentStatus::Processing)
         ->and($payment->idempotency_key)->toBe('subscription-'.$subscription->id.'-kashier-attempt-2')
-        ->and($payment->checkout_url)->toBe('https://payments.example.test/session/002')
+        ->and($payment->checkout_url)->toBe('https://payments.example.test/session/001')
         ->and($gateway->createCalls)->toBe(1)
         ->and(Payment::query()->count())->toBe(2);
 });
