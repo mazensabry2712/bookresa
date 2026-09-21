@@ -20,6 +20,8 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
+            $table->unique(['id', 'tenant_id']);
+
             $table->index(['tenant_id', 'is_active']);
             $table->index(['tenant_id', 'name']);
         });
