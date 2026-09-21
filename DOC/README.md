@@ -19,21 +19,22 @@ BookResa is a multi-tenant SaaS platform for small and medium-sized service busi
 One platform → many Businesses → one isolated Workspace/Tenant per Business → configurable modules → public booking page → subscription + unique-customer usage billing.
 
 ## Documentation
-1. 01-PRODUCT-REQUIREMENTS.md
-2. 02-ARCHITECTURE.md
-3. 03-DATABASE-ERD.md
-4. 04-TENANCY-RBAC.md
-5. 05-BOOKING-AVAILABILITY.md
-6. 06-PAYMENTS.md
-7. 07-SUBSCRIPTIONS-USAGE-BILLING.md
-8. 08-LOCALIZATION-THEMING-SEO.md
-9. 09-PERFORMANCE.md
-10. 10-SECURITY.md
-11. 11-MVP-ROADMAP.md
-12. 12-TECHNICAL-DECISIONS.md
-13. 13-TESTING-QA.md
-14. 14-DEPLOYMENT.md
-15. 15-IMPLEMENTATION-CHECKLIST.md
+1. 00-PROJECT-SPECIFICATION.md — canonical complete specification.
+2. 01-PRODUCT-REQUIREMENTS.md
+3. 02-ARCHITECTURE.md
+4. 03-DATABASE-ERD.md
+5. 04-TENANCY-RBAC.md
+6. 05-BOOKING-AVAILABILITY.md
+7. 06-PAYMENTS.md
+8. 07-SUBSCRIPTIONS-USAGE-BILLING.md
+9. 08-LOCALIZATION-THEMING-SEO.md
+10. 09-PERFORMANCE.md
+11. 10-SECURITY.md
+12. 11-MVP-ROADMAP.md
+13. 12-TECHNICAL-DECISIONS.md
+14. 13-TESTING-QA.md
+15. 14-DEPLOYMENT.md
+16. 15-IMPLEMENTATION-CHECKLIST.md
 
 ## Package policy
 Runtime dependencies are intentionally minimal. Planned focused packages:
