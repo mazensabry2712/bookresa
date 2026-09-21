@@ -9,6 +9,11 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('subscriptions:expire')
+            ->hourly()
+            ->withoutOverlapping();
+    })
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',

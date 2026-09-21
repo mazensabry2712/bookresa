@@ -54,6 +54,16 @@ class Subscription extends Model
         ];
     }
 
+    public function isUsable(): bool
+    {
+        if (! $this->status->isUsable()) {
+            return false;
+        }
+
+        return $this->status === \App\Domain\Billing\Enums\SubscriptionStatus::Trial
+            || $this->payment_status === PaymentStatus::Paid;
+    }
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
