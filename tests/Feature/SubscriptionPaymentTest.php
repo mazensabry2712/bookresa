@@ -248,3 +248,162 @@ test('subscription checkout route cannot access another tenant subscription', fu
 
     expect($subscriptionA->exists)->toBeTrue();
 });
+
+
+test('paid subscription payment unlocks subscription entitlement', function (): void {
+    $tenant = paymentTenant('subscription-sync-paid');
+    $subscription = app(CreateSubscription::class)->handle(
+        paymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $payment = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-SYNC-001',
+        'provider' => 'kashier',
+        'provider_reference' => 'session-sync-001',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+    ]);
+
+    app(\App\Domain\Payment\Services\PaymentService::class)->applyResult(
+        $payment,
+        new PaymentGatewayResult(
+            status: PaymentStatus::Paid,
+            providerReference: 'session-sync-001',
+        ),
+    );
+
+    app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)
+        ->handle($payment->fresh(), PaymentStatus::Paid);
+
+    $subscription->refresh();
+
+    expect($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->isUsable())->toBeTrue();
+});
+
+test('signed Kashier return completes subscription payment and returns to billing', function (): void {
+    $tenant = paymentTenant('subscription-return');
+    $subscription = app(CreateSubscription::class)->handle(
+        paymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $payment = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-RETURN-001',
+        'provider' => 'kashier',
+        'provider_reference' => 'session-sub-return-001',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+    ]);
+
+    config([
+        'bookresa.payments.kashier.api_key' => 'api-key',
+        'bookresa.payments.kashier.secret_key' => 'secret-key',
+        'bookresa.payments.kashier.base_url' => 'https://test-api.kashier.io',
+    ]);
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions/session-sub-return-001/payment' => Http::response([
+            'data' => [
+                'sessionId' => 'session-sub-return-001',
+                'status' => 'PAID',
+                'method' => 'card',
+                'updatedAt' => '2026-09-21T01:00:00Z',
+                'merchantOrderId' => $payment->reference,
+            ],
+        ]),
+    ]);
+
+    $query = [
+        'paymentStatus' => 'SUCCESS',
+        'cardDataToken' => 'token',
+        'maskedCard' => '512345******2346',
+        'merchantOrderId' => $payment->reference,
+        'orderId' => 'order-sub-return-001',
+        'cardBrand' => 'Mastercard',
+        'orderReference' => $payment->reference,
+        'transactionId' => 'TX-SUB-RETURN-001',
+        'amount' => '199',
+        'currency' => 'EGP',
+        'mode' => 'test',
+    ];
+
+    $query['signature'] = app(\App\Infrastructure\Payments\Kashier\KashierRedirectVerifier::class)
+        ->sign($query, 'api-key');
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('payments.kashier.return').'?'.http_build_query($query))
+        ->assertRedirect(route('billing.subscription'));
+
+    $subscription = Subscription::withoutGlobalScopes()->findOrFail($subscription->id);
+    $payment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
+
+    expect($payment->status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->isUsable())->toBeTrue();
+});
+
+test('signed Kashier webhook completes a subscription payment idempotently', function (): void {
+    $tenant = paymentTenant('subscription-webhook');
+    $subscription = app(CreateSubscription::class)->handle(
+        paymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $payment = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-WEBHOOK-001',
+        'provider' => 'kashier',
+        'provider_reference' => 'session-sub-webhook-001',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+    ]);
+
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $data = [
+        'signatureKeys' => ['amount', 'currency', 'orderReference', 'status', 'transactionId'],
+        'amount' => '199',
+        'currency' => 'EGP',
+        'orderReference' => $payment->reference,
+        'status' => 'SUCCESS',
+        'transactionId' => 'TX-SUB-WEBHOOK-001',
+        'creationDate' => '2026-09-21T01:00:00Z',
+        'method' => 'card',
+    ];
+
+    $signature = app(\App\Infrastructure\Payments\Kashier\KashierWebhookVerifier::class)
+        ->sign($data, 'api-key');
+
+    app(CurrentTenant::class)->clear();
+
+    $payload = [
+        'event' => 'pay',
+        'data' => $data,
+    ];
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertNoContent();
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertStatus(409);
+
+    $subscription = Subscription::withoutGlobalScopes()->findOrFail($subscription->id);
+    $payment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
+
+    expect($payment->status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->isUsable())->toBeTrue();
+});
