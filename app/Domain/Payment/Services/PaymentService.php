@@ -66,6 +66,15 @@ final class PaymentService
                 ->first();
 
             if ($existing !== null) {
+                if (
+                    $existing->payable_type !== $payable->getMorphClass()
+                    || (int) $existing->payable_id !== (int) $payable->getKey()
+                    || (int) $existing->amount_minor !== $amountMinor
+                    || $existing->currency !== $currency
+                ) {
+                    throw new RuntimeException('Idempotency key is already used for a different payment.');
+                }
+
                 return $existing;
             }
         }
