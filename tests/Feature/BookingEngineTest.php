@@ -221,6 +221,31 @@ test('same resource cannot be double booked', function (): void {
     ))->toThrow(RuntimeException::class);
 });
 
+test('availability rejects an unassigned staff member', function (): void {
+    $tenant = bookingTenant('invalid-staff');
+    $service = bookingService();
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    $user = bookingUser($tenant, 'invalid-staff@example.com');
+    $staff = StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'display_name' => 'Unassigned',
+        'status' => StaffStatus::Active,
+    ]);
+
+    expect(fn () => app(AvailabilityService::class)->slots(
+        $service,
+        CarbonImmutable::parse('2026-09-28', 'Africa/Cairo'),
+        $staff,
+    ))->toThrow(LogicException::class);
+
+    app(\App\Domain\Service\Actions\AssignServiceToStaff::class)->handle($service, $staff);
+});
+
 test('assigned staff are allocated independently at the same time', function (): void {
     $tenant = bookingTenant('staff-allocation');
     $service = bookingService();
