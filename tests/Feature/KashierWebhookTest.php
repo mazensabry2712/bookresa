@@ -43,7 +43,7 @@ function webhookBooking(Tenant $tenant): Booking
 {
     app(CurrentTenant::class)->set($tenant);
 
-    $service = \App\Domain\Service\Actions\CreateService::make()->handle([
+    $service = app(\App\Domain\Service\Actions\CreateService::class)->handle([
         'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
         'price_minor' => 25000,
         'duration_minutes' => 30,
@@ -132,6 +132,8 @@ test('signed Kashier success webhook marks payment and booking as paid', functio
         'x-kashier-signature' => $signature,
     ])->assertNoContent();
 
+    app(CurrentTenant::class)->set($tenant);
+
     expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
         ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Paid)
         ->and(PaymentWebhookEvent::query()->count())->toBe(1);
@@ -151,6 +153,8 @@ test('duplicate Kashier webhook is acknowledged without double processing', func
     $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertNoContent();
     $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertStatus(409);
 
+    app(CurrentTenant::class)->set($tenant);
+
     expect(PaymentWebhookEvent::query()->count())->toBe(1)
         ->and($payment->fresh()->status)->toBe(PaymentStatus::Paid);
 });
@@ -165,6 +169,10 @@ test('invalid Kashier webhook signature is rejected', function (): void {
     $this->postJson(route('webhooks.kashier'), webhookPayload($payment->reference), [
         'x-kashier-signature' => 'invalid-signature',
     ])->assertUnauthorized();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    app(CurrentTenant::class)->set($tenant);
 
     expect($payment->fresh()->status)->toBe(PaymentStatus::Processing)
         ->and(PaymentWebhookEvent::query()->count())->toBe(0);
