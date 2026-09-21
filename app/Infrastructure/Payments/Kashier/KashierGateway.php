@@ -104,9 +104,14 @@ final class KashierGateway implements PaymentGateway
             throw new RuntimeException('Kashier payment verification failed: '.$response->body());
         }
 
-        $data = $response->json('data', []);
+        $body = $response->json();
+        $data = $response->json('data');
 
         if (! is_array($data)) {
+            $data = is_array($body) ? $body : [];
+        }
+
+        if ($data === []) {
             throw new RuntimeException('Kashier returned an invalid payment verification response.');
         }
 
