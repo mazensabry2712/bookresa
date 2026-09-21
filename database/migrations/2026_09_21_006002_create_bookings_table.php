@@ -37,8 +37,7 @@ return new class extends Migration
 
             $table->foreign(['staff_id', 'tenant_id'])
                 ->references(['id', 'tenant_id'])
-                ->on('staff_profiles')
-                ->nullOnDelete();
+                ->on('staff_profiles');
 
             $table->index(['tenant_id', 'starts_at', 'status']);
             $table->index(['tenant_id', 'staff_id', 'starts_at', 'status']);
