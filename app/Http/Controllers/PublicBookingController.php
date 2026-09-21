@@ -57,7 +57,13 @@ class PublicBookingController
                 $tenant->profile?->timezone ?? config('app.timezone', 'UTC'),
             );
 
-            $slots = $availability->slots($service, $date, $staff);
+            try {
+                $slots = $availability->slots($service, $date, $staff);
+            } catch (LogicException $exception) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
 
             return response()->json([
                 'data' => collect($slots)->map(fn (array $slot): array => [
