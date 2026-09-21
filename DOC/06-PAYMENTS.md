@@ -32,12 +32,18 @@ Domain code never imports provider-specific classes.
 They share infrastructure but remain separate business concepts.
 
 ## Payment record
-Provider-neutral references, payable context, amount_minor, currency, status, method, metadata and paid_at.
+Provider-neutral references, payable context, amount_minor, currency, status, method, checkout_url, metadata and paid_at.
 
 ## Kashier flow
 Create payment/session → secure provider checkout → webhook → verify signature → idempotency → persist result → update Booking/Subscription → queue notifications.
 
-A browser redirect alone never marks a payment successful.
+A browser redirect alone never marks a payment successful. BookResa validates the Kashier redirect signature, then performs server-side session verification; the webhook remains the authoritative asynchronous reconciliation path.
+
+## Public booking checkout
+
+When a tenant enables `booking_settings.payment_required`, the public booking flow creates the booking first, creates a provider-neutral Payment, sends the customer to Kashier's hosted `sessionUrl`, and returns to BookResa through the signed merchant redirect. The payment record stores the checkout URL so a pending/failed payment can be retried without creating another payment for the same booking.
+
+The default onboarding setting is `payment_required=false`, preserving the existing unpaid booking flow until the business explicitly enables online payment.
 
 ## Webhook requirements
 Verify authenticity, tolerate retries, be idempotent, return quickly, and avoid expensive synchronous work.
@@ -56,3 +62,5 @@ Implement PaymentGateway, add provider client/configuration/verification/tests, 
 - The webhook endpoint verifies `x-kashier-signature` using the Payment API key and the sorted `signatureKeys` payload rules.
 - Webhook processing is idempotent on tenant + provider + transaction ID + transaction status and validates amount/currency before applying the result.
 - Kashier credentials are environment variables only and are never stored in source control.
+- Redirect signatures use Kashier's fixed parameter order and Payment API Key; missing signed redirect fields are represented as literal `null`.
+- Webhook signatures use the separate webhook algorithm documented by Kashier: sorted `signatureKeys`, URL-encoded values, and the Payment API Key.
