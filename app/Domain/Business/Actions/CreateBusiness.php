@@ -56,26 +56,24 @@ final class CreateBusiness
                 ],
             ]);
 
-            $profile = null;
-
-            $this->currentTenant->run($tenant, function () use ($tenant, $data, $name, $owner, &$profile): void {
-                $profile = BusinessProfile::query()->create([
-                'tenant_id' => $tenant->getKey(),
-                'name' => [
-                    'en' => $data['name_en'] ?? $name,
-                    'ar' => $data['name_ar'] ?? $name,
-                ],
-                'description' => [
-                    'en' => $data['description_en'] ?? null,
-                    'ar' => $data['description_ar'] ?? null,
-                ],
-                'phone' => $data['phone'] ?? null,
-                'email' => $data['email'] ?? $owner->email,
-                'timezone' => $data['timezone'] ?? 'UTC',
-                'locale' => $data['locale'] ?? config('bookresa.default_locale', 'en'),
-                'booking_settings' => [
-                    'customer_account_required' => false,
-                ],
+            $this->currentTenant->run($tenant, function () use ($tenant, $data, $name, $owner): void {
+                BusinessProfile::query()->create([
+                    'tenant_id' => $tenant->getKey(),
+                    'name' => [
+                        'en' => $data['name_en'] ?? $name,
+                        'ar' => $data['name_ar'] ?? $name,
+                    ],
+                    'description' => [
+                        'en' => $data['description_en'] ?? null,
+                        'ar' => $data['description_ar'] ?? null,
+                    ],
+                    'phone' => $data['phone'] ?? null,
+                    'email' => $data['email'] ?? $owner->email,
+                    'timezone' => $data['timezone'] ?? 'UTC',
+                    'locale' => $data['locale'] ?? config('bookresa.default_locale', 'en'),
+                    'booking_settings' => [
+                        'customer_account_required' => false,
+                    ],
                 ]);
             });
 
