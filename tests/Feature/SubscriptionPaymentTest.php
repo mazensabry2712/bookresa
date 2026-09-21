@@ -407,3 +407,35 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
         ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
         ->and($subscription->isUsable())->toBeTrue();
 });
+
+
+test('failed subscription payment can start a fresh payment attempt', function (): void {
+    paymentTenant('subscription-retry');
+    $subscription = app(CreateSubscription::class)->handle(
+        paymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $failedPayment = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-RETRY-OLD',
+        'provider' => 'kashier',
+        'provider_reference' => 'session-old',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Failed,
+        'idempotency_key' => 'subscription-'.$subscription->id.'-kashier-attempt-1',
+    ]);
+
+    $gateway = new FakeSubscriptionGateway();
+    $this->app->instance(PaymentGateway::class, $gateway);
+
+    $payment = app(StartSubscriptionPayment::class)->handle($subscription->fresh());
+
+    expect($payment->id)->not->toBe($failedPayment->id)
+        ->and($payment->status)->toBe(PaymentStatus::Processing)
+        ->and($payment->idempotency_key)->toBe('subscription-'.$subscription->id.'-kashier-attempt-2')
+        ->and($gateway->createCalls)->toBe(1)
+        ->and(Payment::query()->count())->toBe(2);
+});
