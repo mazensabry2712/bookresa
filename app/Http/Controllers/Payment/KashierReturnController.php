@@ -62,7 +62,7 @@ final class KashierReturnController
             return response()->json(['message' => 'Payment tenant was not found.'], 404);
         }
 
-        return $currentTenant->run($tenant, function () use ($payment, $gateway, $payments, $bookingPaymentSync, $query, $tenant): RedirectResponse {
+        return $currentTenant->run($tenant, function () use ($payment, $gateway, $payments, $bookingPaymentSync, $subscriptionPaymentSync, $query, $tenant): RedirectResponse {
             $notice = 'Payment is being verified.';
 
             if ($payment->provider_reference !== null) {
