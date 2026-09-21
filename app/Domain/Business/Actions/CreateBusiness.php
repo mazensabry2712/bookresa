@@ -81,7 +81,7 @@ final class CreateBusiness
                     'is_primary' => ! $owner->tenantMemberships()->where('is_primary', true)->exists(),
                 ]);
 
-                $this->roleProvisioner->provisionOwner($tenant);
+                $this->roleProvisioner->provisionOwner($tenant, $owner);
 
                 $defaultModuleKeys = collect($businessType->default_modules ?? [])
                     ->filter()
