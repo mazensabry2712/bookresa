@@ -61,7 +61,8 @@ test('authenticated owner can create a business workspace', function (): void {
         ->where('name', 'owner')
         ->firstOrFail();
 
-    expect($ownerRole->permissions->pluck('name')->contains('bookings.create'))->toBeTrue();
+    expect($ownerRole->permissions->pluck('name')->contains('bookings.create'))->toBeTrue()
+        ->and($user->roles()->whereKey($ownerRole->getKey())->exists())->toBeTrue();
 });
 
 test('business onboarding rejects inactive business types', function (): void {
