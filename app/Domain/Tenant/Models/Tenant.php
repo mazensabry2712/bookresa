@@ -7,6 +7,7 @@ use App\Domain\Tenant\Enums\MembershipStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
@@ -67,6 +68,11 @@ class Tenant extends Model
             Module::class,
             'tenant_modules',
         )->withPivot(['enabled', 'settings'])->withTimestamps();
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class);
     }
 
     public function memberships(): HasMany
