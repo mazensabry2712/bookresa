@@ -105,8 +105,8 @@ final class FakeSubscriptionGateway implements PaymentGateway
 
         return new PaymentGatewayResult(
             status: PaymentStatus::Processing,
-            providerReference: 'KASHIER-SESSION-123',
-            checkoutUrl: 'https://payments.example.test/session/123',
+            providerReference: 'KASHIER-'.str_replace('PAY-', '', $request->merchantReference),
+            checkoutUrl: 'https://payments.example.test/session/'.str_replace('PAY-', '', $request->merchantReference),
             metadata: ['test_context' => 'subscription'],
         );
     }
@@ -146,7 +146,7 @@ test('subscription checkout creates a tenant-owned payment and returns checkout 
         ->and($payment->amount_minor)->toBe(19900)
         ->and($payment->currency)->toBe('EGP')
         ->and($payment->status)->toBe(PaymentStatus::Processing)
-        ->and($payment->checkout_url)->toBe('https://payments.example.test/session/123')
+        ->and($payment->checkout_url)->toStartWith('https://payments.example.test/session/BOOKRESA')
         ->and($gateway->createCalls)->toBe(1)
         ->and(Payment::query()->count())->toBe(1);
 });
