@@ -2,11 +2,13 @@
 
 namespace App\Domain\Service\Models;
 
+use App\Domain\Scheduling\Models\ServiceStaff;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Service extends Model
 {
@@ -42,6 +44,11 @@ class Service extends Model
             'service_staff',
             'service_id',
             'staff_id',
-        )->withTimestamps();
+        )->withPivot('tenant_id')->withTimestamps();
+    }
+
+    public function staffAssignments(): HasMany
+    {
+        return $this->hasMany(ServiceStaff::class);
     }
 }
