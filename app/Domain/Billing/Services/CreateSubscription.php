@@ -63,9 +63,7 @@ final class CreateSubscription
                 'start_at' => $startAt,
                 'end_at' => $endAt,
                 'status' => $status,
-                'payment_status' => $status === SubscriptionStatus::Trial
-                    ? PaymentStatus::Paid
-                    : PaymentStatus::Pending,
+                'payment_status' => PaymentStatus::Pending,
                 'price_minor' => (int) $plan->price_minor,
                 'currency' => $plan->currency,
                 'billing_period' => $plan->billing_period,
