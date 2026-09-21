@@ -62,11 +62,11 @@
 - [x] PaymentGateway contract
 - [x] PaymentService
 - [x] payments
-- [ ] Kashier adapter
-- [ ] secure checkout/session
-- [ ] signed webhook
-- [ ] idempotency
-- [ ] gateway tests
+- [x] Kashier adapter
+- [x] secure checkout/session
+- [x] signed webhook
+- [x] idempotency
+- [x] gateway tests
 
 ## Billing
 - [ ] plans
