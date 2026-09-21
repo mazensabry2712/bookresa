@@ -8,9 +8,9 @@ use App\Domain\Payment\Services\SyncBookingPaymentStatus;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use RuntimeException;
 
 final class KashierReturnController
@@ -22,7 +22,7 @@ final class KashierReturnController
         KashierGateway $gateway,
         PaymentService $payments,
         SyncBookingPaymentStatus $bookingPaymentSync,
-    ): RedirectResponse|Response {
+    ): RedirectResponse|JsonResponse {
         $query = $request->all();
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
 
