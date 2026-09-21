@@ -82,10 +82,12 @@ function calendarBooking(Tenant $tenant, string $reference, string $localStart):
         'buffer_minutes' => 0,
     ]);
 
+    $phone = '010'.str_pad((string) (abs(crc32($reference)) % 100000000), 8, '0', STR_PAD_LEFT);
+
     $customer = Customer::query()->create([
         'name' => 'Calendar Customer',
-        'phone' => $reference,
-        'normalized_phone' => preg_replace('/\D+/', '', $reference),
+        'phone' => $phone,
+        'normalized_phone' => preg_replace('/\D+/', '', $phone),
     ]);
 
     $start = CarbonImmutable::parse($localStart, 'Africa/Cairo');
