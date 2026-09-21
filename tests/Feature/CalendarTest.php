@@ -5,6 +5,7 @@ use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Service\Actions\CreateService;
+use App\Domain\Service\Models\Service;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
