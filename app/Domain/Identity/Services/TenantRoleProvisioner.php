@@ -4,11 +4,12 @@ namespace App\Domain\Identity\Services;
 
 use App\Domain\Tenant\Models\Tenant;
 use Spatie\Permission\Models\Permission;
+use App\Models\User;
 use Spatie\Permission\Models\Role;
 
 final class TenantRoleProvisioner
 {
-    public function provisionOwner(Tenant $tenant): Role
+    public function provisionOwner(Tenant $tenant, User $owner): Role
     {
         $previousTeamId = getPermissionsTeamId();
         setPermissionsTeamId($tenant->getKey());
@@ -25,6 +26,7 @@ final class TenantRoleProvisioner
             ]);
 
             $role->syncPermissions($permissions);
+            $owner->assignRole($role);
 
             return $role;
         } finally {
