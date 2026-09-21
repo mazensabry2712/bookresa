@@ -6,6 +6,7 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Module\Models\Module;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -19,6 +20,7 @@ final class CreateBusiness
 {
     public function __construct(
         private readonly TenantRoleProvisioner $roleProvisioner,
+        private readonly CurrentTenant $currentTenant,
     ) {
     }
 
@@ -54,7 +56,10 @@ final class CreateBusiness
                 ],
             ]);
 
-            $profile = BusinessProfile::withoutGlobalScopes()->create([
+            $profile = null;
+
+            $this->currentTenant->run($tenant, function () use ($tenant, $data, $name, $owner, &$profile): void {
+                $profile = BusinessProfile::query()->create([
                 'tenant_id' => $tenant->getKey(),
                 'name' => [
                     'en' => $data['name_en'] ?? $name,
@@ -71,9 +76,8 @@ final class CreateBusiness
                 'booking_settings' => [
                     'customer_account_required' => false,
                 ],
-            ]);
-
-            $profile->save();
+                ]);
+            });
 
             TenantMembership::query()->create([
                 'tenant_id' => $tenant->getKey(),
