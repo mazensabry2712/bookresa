@@ -50,7 +50,10 @@ final class KashierGateway implements PaymentGateway
         }
 
         $response = $this->client()
-            ->withHeaders(['api-key' => $config['api_key']])
+            ->withHeaders([
+                'Authorization' => $config['secret_key'],
+                'api-key' => $config['api_key'],
+            ])
             ->post('/v3/payment/sessions', $payload);
 
         if ($response->failed()) {
