@@ -111,7 +111,8 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
 
     Http::assertSent(function ($request): bool {
         return $request['customer']['email'] === 'ahmed@example.com'
-            && $request['customer']['reference'] === 'customer-'.$request['customer']['reference'];
+            && str_starts_with((string) $request['customer']['reference'], 'customer-')
+            && $request['merchantRedirect'] === route('payments.kashier.return');
     });
 });
 
