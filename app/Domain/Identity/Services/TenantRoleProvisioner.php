@@ -11,22 +11,43 @@ final class TenantRoleProvisioner
 {
     public function provisionOwner(Tenant $tenant, User $owner): Role
     {
+        $role = $this->provisionRole($tenant, 'owner');
+
         $previousTeamId = getPermissionsTeamId();
         setPermissionsTeamId($tenant->getKey());
 
         try {
-            $permissions = collect(config('bookresa.rbac.roles.owner', []))
+            $owner->assignRole($role);
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+        }
+
+        return $role;
+    }
+
+    public function provisionRole(Tenant $tenant, string $roleKey): Role
+    {
+        $permissions = config("bookresa.rbac.roles.{$roleKey}", []);
+
+        if (! is_array($permissions)) {
+            throw new \InvalidArgumentException("Unknown BookResa role [{$roleKey}].");
+        }
+
+        $previousTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($tenant->getKey());
+
+        try {
+            $permissionModels = collect($permissions)
                 ->map(fn (string $permission): Permission => Permission::findOrCreate($permission, 'web'))
                 ->all();
 
             $role = Role::firstOrCreate([
-                'name' => 'owner',
+                'name' => $roleKey,
                 'guard_name' => 'web',
                 'tenant_id' => $tenant->getKey(),
             ]);
 
-            $role->syncPermissions($permissions);
-            $owner->assignRole($role);
+            $role->syncPermissions($permissionModels);
 
             return $role;
         } finally {
