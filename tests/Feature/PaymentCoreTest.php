@@ -234,6 +234,46 @@ test('payment payable must belong to the current tenant', function (): void {
     ))->toThrow(LogicException::class);
 });
 
+test('idempotency key cannot be reused for a different payment payload', function (): void {
+    $tenant = paymentTenant('payment-idempotency-mismatch');
+    $booking = paymentBooking($tenant, 'BR-PAY-MISMATCH');
+    $gateway = new FakePaymentGateway();
+
+    app(PaymentService::class)->start(
+        $gateway,
+        $booking,
+        25000,
+        'EGP',
+        'fake',
+        idempotencyKey: 'same-key',
+    );
+
+    expect(fn () => app(PaymentService::class)->start(
+        $gateway,
+        $booking,
+        30000,
+        'EGP',
+        'fake',
+        idempotencyKey: 'same-key',
+    ))->toThrow(RuntimeException::class);
+});
+
+test('booking exposes its payments', function (): void {
+    $tenant = paymentTenant('payment-booking-relation');
+    $booking = paymentBooking($tenant);
+    $gateway = new FakePaymentGateway();
+
+    $payment = app(PaymentService::class)->start(
+        $gateway,
+        $booking,
+        25000,
+        'EGP',
+        'fake',
+    );
+
+    expect($booking->payments()->first()?->is($payment))->toBeTrue();
+});
+
 test('payment amount and currency are validated', function (): void {
     $tenant = paymentTenant('payment-validation');
     $booking = paymentBooking($tenant);
