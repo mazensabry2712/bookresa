@@ -4,7 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Console\Commands\ExpireSubscriptionsCommand;
+use App\Console\Commands\SetPlatformAdminCommand;
 use App\Http\Middleware\ResolveTenant;
+use App\Http\Middleware\EnsurePlatformAdmin;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -13,6 +15,7 @@ use Spatie\Permission\Middleware\PermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         ExpireSubscriptionsCommand::class,
+        SetPlatformAdminCommand::class,
     ])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('subscriptions:expire')
@@ -27,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'tenant' => ResolveTenant::class,
+            'platform' => EnsurePlatformAdmin::class,
             'permission' => PermissionMiddleware::class,
         ]);
 

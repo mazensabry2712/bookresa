@@ -7,6 +7,7 @@ use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Billing\SubscriptionBillingController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\KashierWebhookController;
+use App\Http\Controllers\Platform\PlanAdminController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -52,7 +53,35 @@ Route::middleware(['auth', 'tenant'])->prefix('dashboard/billing')->group(functi
     Route::post('/subscription/{subscription}/checkout', [SubscriptionBillingController::class, 'checkout'])
         ->middleware('permission:subscription.manage')
         ->name('billing.subscription.checkout');
+
+    Route::post('/subscription/{subscription}/plan', [SubscriptionBillingController::class, 'changePlan'])
+        ->middleware('permission:subscription.manage')
+        ->name('billing.subscription.plan');
+
+    Route::post('/subscription/{subscription}/cancel', [SubscriptionBillingController::class, 'cancel'])
+        ->middleware('permission:subscription.manage')
+        ->name('billing.subscription.cancel');
+
+    Route::post('/subscription/{subscription}/reactivate', [SubscriptionBillingController::class, 'reactivate'])
+        ->middleware('permission:subscription.manage')
+        ->name('billing.subscription.reactivate');
+
+    Route::post('/subscription/{subscription}/plan/clear', [SubscriptionBillingController::class, 'clearPlanChange'])
+        ->middleware('permission:subscription.manage')
+        ->name('billing.subscription.plan.clear');
 });
+
+Route::middleware(['auth', 'platform'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function (): void {
+        Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');
+        Route::get('/plans/create', [PlanAdminController::class, 'create'])->name('plans.create');
+        Route::post('/plans', [PlanAdminController::class, 'store'])->name('plans.store');
+        Route::get('/plans/{plan}/edit', [PlanAdminController::class, 'edit'])->name('plans.edit');
+        Route::put('/plans/{plan}', [PlanAdminController::class, 'update'])->name('plans.update');
+        Route::patch('/plans/{plan}/toggle', [PlanAdminController::class, 'toggle'])->name('plans.toggle');
+    });
 
 Route::post('/webhooks/kashier', KashierWebhookController::class)
     ->middleware('throttle:60,1')

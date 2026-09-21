@@ -14,6 +14,8 @@ Future: transaction fees and premium modules.
 - active state
 - enabled modules
 
+Platform pricing is managed in a platform-only admin area. Plan edits affect future subscriptions; existing subscriptions retain their pricing snapshots.
+
 ## Subscription
 - tenant
 - plan
@@ -46,7 +48,7 @@ Recommended default: effective at the next billing boundary. Existing customers 
 Over-limit policy can allow usage charges or restrict creation of new customer profiles.
 
 ## Owner visibility
-Display current customers, included limit, additional count, usage fee and total subscription cost.
+Display current customers, included limit, additional count, usage fee and total subscription cost. The owner billing dashboard also exposes usage history, scheduled plan changes and cancellation/re-activation state.
 
 ## Admin controls
 Plan price, included limit, additional customer price, billing period and enabled modules.
