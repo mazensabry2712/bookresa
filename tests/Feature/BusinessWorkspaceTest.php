@@ -44,10 +44,12 @@ test('authenticated owner can create a business workspace', function (): void {
 
     $response->assertRedirectToRoute('onboarding.workspace');
 
+    app(CurrentTenant::class)->set($tenant);
+
     expect($tenant->profile)->not->toBeNull()
         ->and($tenant->business_type_id)->toBe($type->id)
         ->and($user->tenantMemberships()->where('tenant_id', $tenant->id)->where('status', MembershipStatus::Active)->exists())->toBeTrue()
-        ->and($tenant->modules()->where('enabled', true)->count())->toBe(6);
+        ->and($tenant->modules()->wherePivot('enabled', true)->count())->toBe(6);
 
     setPermissionsTeamId($tenant->id);
     $user->unsetRelation('roles')->unsetRelation('permissions');
@@ -82,10 +84,12 @@ test('business profile cannot be updated across tenant context', function (): vo
     $tenantA = Tenant::query()->create(['slug' => 'tenant-a']);
     $tenantB = Tenant::query()->create(['slug' => 'tenant-b']);
 
-    $profileA = \App\Domain\Business\Models\BusinessProfile::withoutGlobalScopes()->create([
-        'tenant_id' => $tenantA->id,
-        'name' => ['en' => 'A', 'ar' => 'أ'],
-    ]);
+    $profileA = app(CurrentTenant::class)->run($tenantA, function () use ($tenantA) {
+        return \App\Domain\Business\Models\BusinessProfile::query()->create([
+            'tenant_id' => $tenantA->id,
+            'name' => ['en' => 'A', 'ar' => 'أ'],
+        ]);
+    });
 
     app(CurrentTenant::class)->set($tenantB);
 
