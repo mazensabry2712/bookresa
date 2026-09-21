@@ -10,13 +10,19 @@ return new class extends Migration
     {
         Schema::create('staff_availability', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('staff_id')->constrained('staff_profiles')->cascadeOnDelete();
+            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
+            $table->unsignedBigInteger('staff_id');
             $table->date('available_date');
             $table->time('starts_at');
             $table->time('ends_at');
             $table->timestamps();
 
-            $table->index(['staff_id', 'available_date']);
+            $table->foreign(['staff_id', 'tenant_id'])
+                ->references(['id', 'tenant_id'])
+                ->on('staff_profiles')
+                ->cascadeOnDelete();
+
+            $table->index(['tenant_id', 'staff_id', 'available_date']);
         });
     }
 
