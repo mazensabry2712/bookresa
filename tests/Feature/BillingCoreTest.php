@@ -102,7 +102,7 @@ test('subscription snapshots plan pricing and calculates its billing window', fu
         ->and($subscription->pricing_snapshot['included_customer_limit'])->toBe(20);
 });
 
-test('trial subscription uses trial days without pretending a payment occurred', function (): void {
+test('trial subscription uses trial days and keeps payment pending', function (): void {
     billingTenant('trial-clinic');
 
     $plan = billingPlan(['trial_days' => 14]);
@@ -111,7 +111,7 @@ test('trial subscription uses trial days without pretending a payment occurred',
     $subscription = app(CreateSubscription::class)->handle($plan, $start);
 
     expect($subscription->status)->toBe(SubscriptionStatus::Trial)
-        ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Pending)
         ->and($subscription->end_at->equalTo($start->addDays(14)))->toBeTrue();
 });
 
