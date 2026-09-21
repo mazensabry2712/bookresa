@@ -321,7 +321,7 @@ final class AvailabilityService
                     ];
                 }
 
-                $cursor = $cursor->addMinutes(self::SLOT_INTERVAL_MINUTES);
+                $cursor = $cursor->addMinutes((int) config('bookresa.booking.slot_interval_minutes', self::SLOT_INTERVAL_MINUTES));
             }
         }
 
