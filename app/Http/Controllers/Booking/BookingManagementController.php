@@ -55,8 +55,11 @@ class BookingManagementController
             ->when($validated['service_id'] ?? null, fn ($query, int $serviceId) => $query->where('service_id', $serviceId))
             ->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId))
             ->when($validated['date'] ?? null, function ($query, string $date) use ($timezone): void {
-                $start = CarbonImmutable::createFromFormat('Y-m-d H:i:s', $date.' 00:00:00', $timezone)->utc();
+                $start = CarbonImmutable::createFromFormat('Y-m-d H:i:s', $date.' 00:00:00', $timezone);
                 $end = $start->endOfDay();
+
+                $start = $start->utc();
+                $end = $end->utc();
 
                 $query->whereBetween('starts_at', [$start, $end]);
             })
