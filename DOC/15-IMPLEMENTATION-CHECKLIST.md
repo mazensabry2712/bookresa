@@ -59,9 +59,9 @@
 - [x] concurrency protection
 
 ## Payments
-- [ ] PaymentGateway
-- [ ] PaymentService
-- [ ] payments
+- [x] PaymentGateway contract
+- [x] PaymentService
+- [x] payments
 - [ ] Kashier adapter
 - [ ] secure checkout/session
 - [ ] signed webhook
