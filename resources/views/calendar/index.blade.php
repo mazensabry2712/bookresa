@@ -152,6 +152,9 @@
                                     <div class="mt-1 truncate font-semibold">
                                         {{ $booking->customer?->name ?? '—' }}
                                     </div>
+                                    <div class="mt-0.5 truncate font-mono text-[10px] opacity-70">
+                                        {{ $booking->booking_reference }}
+                                    </div>
                                     <div class="mt-0.5 truncate opacity-80">
                                         {{ $serviceName($booking->service) }}
                                     </div>
