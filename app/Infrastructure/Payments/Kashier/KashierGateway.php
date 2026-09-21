@@ -18,6 +18,18 @@ final class KashierGateway implements PaymentGateway
         $config = config('bookresa.payments.kashier');
         $this->assertConfigured($config);
 
+        $merchantRedirect = $request->metadata['merchant_redirect'] ?? $config['merchant_redirect'];
+        $customerEmail = $request->metadata['customer_email'] ?? null;
+        $customerReference = $request->metadata['customer_reference'] ?? null;
+
+        if (blank($merchantRedirect)) {
+            throw new RuntimeException('Kashier merchant redirect URL is required.');
+        }
+
+        if (blank($customerEmail) || blank($customerReference)) {
+            throw new RuntimeException('Kashier customer email and reference are required.');
+        }
+
         $payload = [
             'expireAt' => CarbonImmutable::now('UTC')
                 ->addMinutes((int) $config['expire_minutes'])
@@ -28,6 +40,11 @@ final class KashierGateway implements PaymentGateway
             'currency' => $request->currency,
             'order' => $request->merchantReference,
             'merchantId' => $config['merchant_id'],
+            'merchantRedirect' => $merchantRedirect,
+            'customer' => [
+                'email' => $customerEmail,
+                'reference' => $customerReference,
+            ],
             'display' => $config['display'],
             'type' => 'one-time',
             'allowedMethods' => $config['allowed_methods'],
@@ -36,10 +53,6 @@ final class KashierGateway implements PaymentGateway
             'interactionSource' => 'ECOMMERCE',
             'enable3DS' => (bool) $config['enable_3ds'],
         ];
-
-        if ($config['merchant_redirect']) {
-            $payload['merchantRedirect'] = $config['merchant_redirect'];
-        }
 
         if ($config['server_webhook']) {
             $payload['serverWebhook'] = $config['server_webhook'];
