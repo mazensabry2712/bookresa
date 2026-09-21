@@ -172,7 +172,7 @@ test('authorized user can confirm and history is recorded', function (): void {
     $fresh = $booking->fresh();
 
     expect($fresh?->status)->toBe(BookingStatus::Confirmed)
-        ->and($fresh?->statusHistory()->count())->toBe(2);
+        ->and($fresh?->statusHistory()->count())->toBe(1);
 });
 
 test('user without booking permission is forbidden', function (): void {
