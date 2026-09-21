@@ -64,3 +64,18 @@ Billing must be deterministic, auditable and idempotent against duplicate jobs/e
 - The expiry command is scheduled hourly and uses overlap protection.
 - Renewal is explicit in the MVP: an Expired subscription can be renewed using its scheduled next plan (or current plan) and is reset to payment pending before a new subscription payment settles it.
 - A paid Active subscription is usable only after its subscription payment is Paid. A Trial subscription remains usable during the trial window.
+
+
+## Subscription payment
+
+Paid plans use the shared provider-neutral payment core with a `Subscription` payable. The Business subscription payment is separate from customer booking payments.
+
+The configured payment provider is resolved by the application container. The domain checkout service depends on the `PaymentGateway` contract, while the infrastructure binding selects the active provider (Kashier for the current MVP).
+
+For Kashier, the hosted Payment Session is created through `POST /v3/payment/sessions`; the returned `sessionUrl` is the checkout destination. The server verifies the payment session and also accepts signed server-to-server webhook notifications. The subscription payment is idempotent per tenant/provider/subscription.
+
+Lifecycle entitlement rules remain:
+- Trial: usable during the trial period without requiring a paid subscription payment.
+- Active + Paid: usable.
+- Active + Pending/Failed/Cancelled/Refunded payment: not usable.
+- Expired/Suspended/Cancelled subscription: not usable.

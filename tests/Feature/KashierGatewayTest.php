@@ -93,9 +93,30 @@ test('Kashier gateway verifies a payment session', function (): void {
         ->and($result->paidAt)->not->toBeNull();
 });
 
-test('Kashier gateway rejects an unconfigured integration', function (): void {
+test('Kashier gateway verify only requires the secret key', function (): void {
     kashierConfig([
+        'merchant_id' => null,
         'api_key' => null,
+    ]);
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions/session-123/payment' => Http::response([
+            'data' => [
+                'sessionId' => 'session-123',
+                'status' => 'PAID',
+            ],
+        ]),
+    ]);
+
+    expect(app(KashierGateway::class)->verifyPayment('session-123')->status)
+        ->toBe(PaymentStatus::Paid);
+});
+
+test('Kashier gateway rejects verification without a secret key', function (): void {
+    kashierConfig([
+        'merchant_id' => null,
+        'api_key' => null,
+        'secret_key' => null,
     ]);
 
     expect(fn () => app(KashierGateway::class)->verifyPayment('session-123'))
