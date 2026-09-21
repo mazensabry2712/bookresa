@@ -11,7 +11,6 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Business\Models\BusinessProfile;
-use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -93,7 +92,6 @@ function managementBooking(Tenant $tenant, string $reference = 'BR-MGMT-001'): B
         'buffer_minutes' => 0,
     ]);
 
-    SetBusinessWorkingHours::run();
 
     return Booking::query()->create([
         'customer_id' => Customer::query()->create([
@@ -170,7 +168,7 @@ test('authorized user can confirm and history is recorded', function (): void {
         ->assertRedirect(route('booking.management.show', $booking));
 
     expect($booking->fresh()->status)->toBe(BookingStatus::Confirmed)
-        ->and($booking->statusHistory()->count())->toBe(0);
+        ->and($booking->statusHistory()->count())->toBe(2);
 });
 
 test('user without booking permission is forbidden', function (): void {
