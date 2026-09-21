@@ -11,6 +11,8 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
+use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Models\StaffProfile;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -42,6 +44,16 @@ class Tenant extends Model
     public function profile(): HasOne
     {
         return $this->hasOne(BusinessProfile::class);
+    }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+    public function staffProfiles(): HasMany
+    {
+        return $this->hasMany(StaffProfile::class);
     }
 
     public function tenantModules(): HasMany
