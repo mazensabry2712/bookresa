@@ -68,6 +68,11 @@ final class KashierReturnController
             if ($payment->provider_reference !== null) {
                 try {
                     $result = $gateway->verifyPayment($payment->provider_reference);
+                } catch (RuntimeException) {
+                    $result = null;
+                }
+
+                if ($result !== null) {
                     $updated = $payments->applyResult($payment->fresh(), $result);
                     $bookingPaymentSync->handle($updated, $result->status);
                     $subscriptionPaymentSync->handle($updated, $result->status);
@@ -77,8 +82,6 @@ final class KashierReturnController
                         'failed' => 'Payment was not completed.',
                         default => 'Payment is being verified.',
                     };
-                } catch (RuntimeException) {
-                    // The signed redirect is valid, but webhook/verification may be delayed.
                 }
             }
 
