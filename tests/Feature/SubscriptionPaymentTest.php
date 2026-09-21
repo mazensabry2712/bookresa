@@ -105,8 +105,8 @@ final class FakeSubscriptionGateway implements PaymentGateway
 
         return new PaymentGatewayResult(
             status: PaymentStatus::Processing,
-            providerReference: 'KASHIER-'.str_replace('PAY-', '', $request->merchantReference),
-            checkoutUrl: 'https://payments.example.test/session/'.str_replace('PAY-', '', $request->merchantReference),
+            providerReference: 'KASHIER-SESSION-'.str_pad((string) $this->createCalls, 3, '0', STR_PAD_LEFT),
+            checkoutUrl: 'https://payments.example.test/session/'.str_pad((string) $this->createCalls, 3, '0', STR_PAD_LEFT),
             metadata: ['test_context' => 'subscription'],
         );
     }
@@ -146,7 +146,7 @@ test('subscription checkout creates a tenant-owned payment and returns checkout 
         ->and($payment->amount_minor)->toBe(19900)
         ->and($payment->currency)->toBe('EGP')
         ->and($payment->status)->toBe(PaymentStatus::Processing)
-        ->and($payment->checkout_url)->toStartWith('https://payments.example.test/session/BOOKRESA')
+        ->and($payment->checkout_url)->toBe('https://payments.example.test/session/001')
         ->and($gateway->createCalls)->toBe(1)
         ->and(Payment::query()->count())->toBe(1);
 });
@@ -436,6 +436,7 @@ test('failed subscription payment can start a fresh payment attempt', function (
     expect($payment->id)->not->toBe($failedPayment->id)
         ->and($payment->status)->toBe(PaymentStatus::Processing)
         ->and($payment->idempotency_key)->toBe('subscription-'.$subscription->id.'-kashier-attempt-2')
+        ->and($payment->checkout_url)->toBe('https://payments.example.test/session/002')
         ->and($gateway->createCalls)->toBe(1)
         ->and(Payment::query()->count())->toBe(2);
 });
