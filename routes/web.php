@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
+use App\Http\Controllers\PublicBookingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -20,8 +21,6 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
         ->name('onboarding.workspace');
 });
 
-
-use App\Http\Controllers\PublicBookingController;
 
 Route::prefix('book/{tenant:slug}')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])
