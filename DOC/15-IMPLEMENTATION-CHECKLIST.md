@@ -55,7 +55,7 @@
 - [x] booking lifecycle
 - [x] reference
 - [x] management list/detail/status actions
-- [ ] calendar
+- [x] monthly calendar view
 - [x] concurrency protection
 
 ## Payments
