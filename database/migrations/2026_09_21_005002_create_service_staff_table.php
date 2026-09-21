@@ -10,12 +10,23 @@ return new class extends Migration
     {
         Schema::create('service_staff', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('service_id')->constrained('services')->cascadeOnDelete();
-            $table->foreignId('staff_id')->constrained('staff_profiles')->cascadeOnDelete();
+            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
+            $table->unsignedBigInteger('service_id');
+            $table->unsignedBigInteger('staff_id');
             $table->timestamps();
 
-            $table->unique(['service_id', 'staff_id']);
-            $table->index(['staff_id', 'service_id']);
+            $table->foreign(['service_id', 'tenant_id'])
+                ->references(['id', 'tenant_id'])
+                ->on('services')
+                ->cascadeOnDelete();
+
+            $table->foreign(['staff_id', 'tenant_id'])
+                ->references(['id', 'tenant_id'])
+                ->on('staff_profiles')
+                ->cascadeOnDelete();
+
+            $table->unique(['tenant_id', 'service_id', 'staff_id']);
+            $table->index(['tenant_id', 'staff_id', 'service_id']);
         });
     }
 
