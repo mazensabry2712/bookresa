@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Console\Commands\ExpireSubscriptionsCommand;
 use App\Http\Middleware\ResolveTenant;
+use App\Http\Middleware\EnsurePlatformAdmin;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'tenant' => ResolveTenant::class,
+            'platform' => EnsurePlatformAdmin::class,
             'permission' => PermissionMiddleware::class,
         ]);
 
