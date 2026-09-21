@@ -3,12 +3,17 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Console\Commands\ExpireSubscriptionsCommand;
 use App\Http\Middleware\ResolveTenant;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
+    ->withCommands([
+        ExpireSubscriptionsCommand::class,
+    ])
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('subscriptions:expire')
             ->hourly()
