@@ -71,8 +71,16 @@ final class AvailabilityService
 
             $assigned = $assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff));
 
-            if (! $assigned && $assignedStaff->isNotEmpty()) {
+            if ($assignedStaff->isEmpty()) {
+                throw new LogicException('This service does not use staff assignments.');
+            }
+
+            if (! $assigned) {
                 throw new LogicException('Selected staff member is not assigned to this service.');
+            }
+
+            if ($requestedStaff->status !== StaffStatus::Active) {
+                throw new LogicException('Selected staff member is inactive.');
             }
 
             return $this->staffSlots($service, $requestedStaff, $localDate, $businessWindows);
