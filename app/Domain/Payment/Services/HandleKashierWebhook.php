@@ -66,8 +66,14 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook currency does not match the payment.');
         }
 
+        $tenant = $payment->tenant;
+
+        if ($tenant === null) {
+            throw new RuntimeException('Payment tenant was not found.');
+        }
+
         return $this->currentTenant->run(
-            $payment->tenant_id,
+            $tenant,
             function () use ($payment, $payload, $data, $event, $transactionId, $status): bool {
                 return DB::transaction(function () use ($payment, $payload, $data, $event, $transactionId, $status): bool {
                     $inserted = DB::table('payment_webhook_events')->insertOrIgnore([
