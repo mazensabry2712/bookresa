@@ -29,7 +29,7 @@ afterEach(function (): void {
     app(CurrentTenant::class)->clear();
 });
 
-function paymentTenant(string $slug, string $email = 'owner@example.com'): Tenant
+function subscriptionPaymentTenant(string $slug, string $email = 'owner@example.com'): Tenant
 {
     $tenant = Tenant::query()->create([
         'slug' => $slug,
@@ -48,7 +48,7 @@ function paymentTenant(string $slug, string $email = 'owner@example.com'): Tenan
     return $tenant;
 }
 
-function paymentUser(Tenant $tenant, string $email): User
+function subscriptionPaymentUser(Tenant $tenant, string $email): User
 {
     $user = User::factory()->create(['email' => $email]);
 
@@ -80,7 +80,7 @@ function paymentUser(Tenant $tenant, string $email): User
     return $user;
 }
 
-function paymentPlan(array $overrides = []): Plan
+function subscriptionPaymentPlan(array $overrides = []): Plan
 {
     return Plan::query()->create(array_merge([
         'name' => ['en' => 'Starter', 'ar' => 'المبتدئ'],
@@ -129,8 +129,8 @@ final class FakeSubscriptionGateway implements PaymentGateway
 }
 
 test('subscription checkout creates a tenant-owned payment and returns checkout url', function (): void {
-    $tenant = paymentTenant('subscription-pay');
-    $plan = paymentPlan();
+    $tenant = subscriptionPaymentTenant('subscription-pay');
+    $plan = subscriptionPaymentPlan();
     $subscription = app(CreateSubscription::class)->handle(
         $plan,
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
@@ -152,8 +152,8 @@ test('subscription checkout creates a tenant-owned payment and returns checkout 
 });
 
 test('subscription checkout is idempotent for repeated attempts', function (): void {
-    $tenant = paymentTenant('subscription-idempotent');
-    $plan = paymentPlan();
+    $tenant = subscriptionPaymentTenant('subscription-idempotent');
+    $plan = subscriptionPaymentPlan();
     $subscription = app(CreateSubscription::class)->handle(
         $plan,
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
@@ -171,9 +171,9 @@ test('subscription checkout is idempotent for repeated attempts', function (): v
 });
 
 test('trial subscriptions cannot start a paid checkout', function (): void {
-    paymentTenant('subscription-trial');
+    subscriptionPaymentTenant('subscription-trial');
     $subscription = app(CreateSubscription::class)->handle(
-        paymentPlan(['trial_days' => 14]),
+        subscriptionPaymentPlan(['trial_days' => 14]),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
@@ -185,7 +185,7 @@ test('trial subscriptions cannot start a paid checkout', function (): void {
 });
 
 test('subscription billing page requires billing permission', function (): void {
-    $tenant = paymentTenant('subscription-forbidden');
+    $tenant = subscriptionPaymentTenant('subscription-forbidden');
     $user = User::factory()->create(['email' => 'forbidden@example.com']);
 
     TenantMembership::query()->create([
@@ -202,10 +202,10 @@ test('subscription billing page requires billing permission', function (): void 
 });
 
 test('authorized owner can open subscription billing and start checkout', function (): void {
-    $tenant = paymentTenant('subscription-dashboard');
-    $user = paymentUser($tenant, 'dashboard@example.com');
+    $tenant = subscriptionPaymentTenant('subscription-dashboard');
+    $user = subscriptionPaymentUser($tenant, 'dashboard@example.com');
     $subscription = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
@@ -225,16 +225,16 @@ test('authorized owner can open subscription billing and start checkout', functi
 });
 
 test('subscription checkout route cannot access another tenant subscription', function (): void {
-    $tenantA = paymentTenant('subscription-owner-a');
-    $userA = paymentUser($tenantA, 'owner-a@example.com');
+    $tenantA = subscriptionPaymentTenant('subscription-owner-a');
+    $userA = subscriptionPaymentUser($tenantA, 'owner-a@example.com');
     $subscriptionA = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $tenantB = paymentTenant('subscription-owner-b');
+    $tenantB = subscriptionPaymentTenant('subscription-owner-b');
     $subscriptionB = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
@@ -251,9 +251,9 @@ test('subscription checkout route cannot access another tenant subscription', fu
 
 
 test('paid subscription payment unlocks subscription entitlement', function (): void {
-    $tenant = paymentTenant('subscription-sync-paid');
+    $tenant = subscriptionPaymentTenant('subscription-sync-paid');
     $subscription = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
@@ -286,9 +286,9 @@ test('paid subscription payment unlocks subscription entitlement', function (): 
 });
 
 test('signed Kashier return completes subscription payment and returns to billing', function (): void {
-    $tenant = paymentTenant('subscription-return');
+    $tenant = subscriptionPaymentTenant('subscription-return');
     $subscription = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
@@ -352,9 +352,9 @@ test('signed Kashier return completes subscription payment and returns to billin
 });
 
 test('signed Kashier webhook completes a subscription payment idempotently', function (): void {
-    $tenant = paymentTenant('subscription-webhook');
+    $tenant = subscriptionPaymentTenant('subscription-webhook');
     $subscription = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
@@ -410,9 +410,9 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
 
 
 test('failed subscription payment can start a fresh payment attempt', function (): void {
-    paymentTenant('subscription-retry');
+    subscriptionPaymentTenant('subscription-retry');
     $subscription = app(CreateSubscription::class)->handle(
-        paymentPlan(),
+        subscriptionPaymentPlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
