@@ -221,7 +221,7 @@ test('authorized owner can open subscription billing and start checkout', functi
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
         ->post(route('billing.subscription.checkout', $subscription))
-        ->assertRedirect('https://payments.example.test/session/123');
+        ->assertRedirect('https://payments.example.test/session/001');
 });
 
 test('subscription checkout route cannot access another tenant subscription', function (): void {
