@@ -2,6 +2,10 @@
 
 namespace App\Domain\Staff\Models;
 
+use App\Domain\Scheduling\Models\ServiceStaff;
+use App\Domain\Scheduling\Models\StaffAvailability;
+use App\Domain\Scheduling\Models\StaffDayOff;
+use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
@@ -47,7 +51,12 @@ class StaffProfile extends Model
             'service_staff',
             'staff_id',
             'service_id',
-        )->withTimestamps();
+        )->withPivot('tenant_id')->withTimestamps();
+    }
+
+    public function serviceAssignments(): HasMany
+    {
+        return $this->hasMany(ServiceStaff::class, 'staff_id');
     }
 
     public function workingHours(): HasMany
