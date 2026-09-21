@@ -21,7 +21,7 @@ class BusinessWorkingHour extends Model
     protected function casts(): array
     {
         return [
-            'day_of_week' => 'integer',
+            'day_of_week' => \App\Domain\Scheduling\Enums\DayOfWeek::class,
             'is_closed' => 'boolean',
         ];
     }
