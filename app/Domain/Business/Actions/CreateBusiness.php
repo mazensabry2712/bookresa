@@ -6,11 +6,11 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Module\Models\Module;
-use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -40,9 +40,7 @@ final class CreateBusiness
                 throw new RuntimeException('Business name is required.');
             }
 
-            $slug = $this->uniqueSlug(
-                (string) ($data['slug'] ?? $name),
-            );
+            $slug = $this->uniqueSlug((string) ($data['slug'] ?? $name));
 
             $tenant = Tenant::query()->create([
                 'slug' => $slug,
@@ -56,7 +54,7 @@ final class CreateBusiness
                 ],
             ]);
 
-            $this->currentTenant->run($tenant, function () use ($tenant, $data, $name, $owner): void {
+            return $this->currentTenant->run($tenant, function () use ($owner, $businessType, $data, $name, $tenant): Tenant {
                 BusinessProfile::query()->create([
                     'tenant_id' => $tenant->getKey(),
                     'name' => [
@@ -75,40 +73,40 @@ final class CreateBusiness
                         'customer_account_required' => false,
                     ],
                 ]);
+
+                TenantMembership::query()->create([
+                    'tenant_id' => $tenant->getKey(),
+                    'user_id' => $owner->getKey(),
+                    'status' => MembershipStatus::Active,
+                    'is_primary' => ! $owner->tenantMemberships()->where('is_primary', true)->exists(),
+                ]);
+
+                $this->roleProvisioner->provisionOwner($tenant);
+
+                $defaultModuleKeys = collect($businessType->default_modules ?? [])
+                    ->filter()
+                    ->unique()
+                    ->values();
+
+                if ($defaultModuleKeys->isNotEmpty()) {
+                    $modules = Module::query()
+                        ->whereIn('key', $defaultModuleKeys)
+                        ->where('is_active', true)
+                        ->get(['id', 'key']);
+
+                    $tenant->modules()->sync(
+                        $modules->mapWithKeys(fn (Module $module): array => [
+                            $module->getKey() => [
+                                'enabled' => true,
+                            ],
+                        ])->all(),
+                    );
+                }
+
+                $owner->refresh();
+
+                return $tenant->fresh(['profile', 'businessType', 'modules']);
             });
-
-            TenantMembership::query()->create([
-                'tenant_id' => $tenant->getKey(),
-                'user_id' => $owner->getKey(),
-                'status' => MembershipStatus::Active,
-                'is_primary' => ! $owner->tenantMemberships()->where('is_primary', true)->exists(),
-            ]);
-
-            $this->roleProvisioner->provisionOwner($tenant);
-
-            $defaultModuleKeys = collect($businessType->default_modules ?? [])
-                ->filter()
-                ->unique()
-                ->values();
-
-            if ($defaultModuleKeys->isNotEmpty()) {
-                $modules = Module::query()
-                    ->whereIn('key', $defaultModuleKeys)
-                    ->where('is_active', true)
-                    ->get(['id', 'key']);
-
-                $tenant->modules()->sync(
-                    $modules->mapWithKeys(fn (Module $module): array => [
-                        $module->getKey() => [
-                            'enabled' => true,
-                        ],
-                    ])->all(),
-                );
-            }
-
-            $owner->refresh();
-
-            return $tenant->fresh(['profile', 'businessType', 'modules']);
         });
     }
 
