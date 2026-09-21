@@ -43,7 +43,7 @@ class CalendarController
         $gridEnd = $monthEnd->endOfWeek(CarbonImmutable::SUNDAY);
 
         $rangeStartUtc = $gridStart->utc();
-        $rangeEndUtc = $gridEnd->utc();
+        $rangeEndUtc = $gridEnd->addSecond()->utc();
 
         $bookings = Booking::query()
             ->with([
