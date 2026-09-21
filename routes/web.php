@@ -4,6 +4,7 @@ use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Calendar\CalendarController;
+use App\Http\Controllers\Payment\KashierWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'tenant', 'permission:bookings.view'])
 Route::middleware(['auth', 'tenant', 'permission:calendar.view'])
     ->get('/dashboard/calendar', [CalendarController::class, 'index'])
     ->name('calendar.index');
+
+Route::post('/webhooks/kashier', KashierWebhookController::class)
+    ->middleware('throttle:60,1')
+    ->name('webhooks.kashier');
 
 Route::prefix('book/{tenant:slug}')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])

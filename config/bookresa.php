@@ -23,6 +23,24 @@ return [
         'slot_interval_minutes' => (int) env('BOOKRESA_BOOKING_SLOT_INTERVAL', 15),
     ],
 
+    'payments' => [
+        'default_provider' => env('BOOKRESA_PAYMENT_PROVIDER', 'kashier'),
+        'kashier' => [
+            'mode' => env('KASHIER_MODE', 'test'),
+            'base_url' => env('KASHIER_BASE_URL', 'https://test-api.kashier.io'),
+            'merchant_id' => env('KASHIER_MERCHANT_ID'),
+            'api_key' => env('KASHIER_API_KEY'),
+            'secret_key' => env('KASHIER_SECRET_KEY'),
+            'merchant_redirect' => env('KASHIER_MERCHANT_REDIRECT'),
+            'server_webhook' => env('KASHIER_SERVER_WEBHOOK'),
+            'max_failure_attempts' => (int) env('KASHIER_MAX_FAILURE_ATTEMPTS', 3),
+            'allowed_methods' => env('KASHIER_ALLOWED_METHODS', 'card,wallet'),
+            'display' => env('KASHIER_DISPLAY', 'en'),
+            'expire_minutes' => (int) env('KASHIER_EXPIRE_MINUTES', 30),
+            'enable_3ds' => (bool) env('KASHIER_ENABLE_3DS', true),
+        ],
+    ],
+
     'rbac' => [
         'permissions' => [
             'business.view',
