@@ -11,10 +11,15 @@ return new class extends Migration
         Schema::create('booking_status_history', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
-            $table->foreignId('booking_id')->constrained('bookings')->cascadeOnDelete();
+            $table->unsignedBigInteger('booking_id');
             $table->string('from_status', 32)->nullable();
             $table->string('to_status', 32);
             $table->foreignId('changed_by')->nullable()->constrained('users')->nullOnDelete();
+
+            $table->foreign(['booking_id', 'tenant_id'])
+                ->references(['id', 'tenant_id'])
+                ->on('bookings')
+                ->cascadeOnDelete();
             $table->text('reason')->nullable();
             $table->timestamp('created_at')->useCurrent();
 
