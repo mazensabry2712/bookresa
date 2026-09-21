@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Domain\Staff\Models\StaffProfile;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -25,6 +26,11 @@ class User extends Authenticatable
     public function staffProfiles(): HasMany
     {
         return $this->hasMany(StaffProfile::class);
+    }
+
+    public function platformAdmin(): HasOne
+    {
+        return $this->hasOne(\App\Domain\Platform\Models\PlatformAdmin::class);
     }
 
     public function tenantMemberships(): HasMany
