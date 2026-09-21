@@ -17,6 +17,15 @@
             @endif
         </header>
 
+        @php
+            $staffByService = $services->mapWithKeys(fn ($service) => [
+                $service->id => $service->staff->map(fn ($staff) => [
+                    'id' => $staff->id,
+                    'display_name' => $staff->display_name,
+                ])->values()->all(),
+            ])->all();
+        @endphp
+
         <form method="POST" action="{{ route('public.booking.store', $tenant->slug) }}" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             @csrf
 
@@ -40,7 +49,7 @@
 
             <div>
                 <label for="date" class="block text-sm font-medium">Date</label>
-                <input id="date" type="date" name="date" x-model="date" @change="loadAvailability" min="{{ now()->toDateString() }}"
+                <input id="date" type="date" name="date" x-model="date" @change="loadAvailability" min="{{ $today }}"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
                 @error('date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -50,17 +59,22 @@
                 <select id="staff_id" name="staff_id" x-model="staffId" @change="loadAvailability"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
                     <option value="">Choose automatically</option>
+                    <template x-for="staff in staffs" :key="staff.id">
+                        <option :value="staff.id" x-text="staff.display_name"></option>
+                    </template>
                 </select>
             </div>
 
             <div>
                 <p class="text-sm font-medium">Available times</p>
                 <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                    <button type="button" x-for="slot in slots" @click="selectedTime = slot.time"
-                        class="rounded-lg border px-3 py-2 text-sm"
-                        :class="selectedTime === slot.time ? 'border-black bg-black text-white' : 'border-gray-300 dark:border-gray-700'">
-                        <span x-text="slot.time"></span>
-                    </button>
+                    <template x-for="slot in slots" :key="slot.time + '-' + (slot.staff_id ?? 'auto')">
+                        <button type="button" @click="selectedTime = slot.time"
+                            class="rounded-lg border px-3 py-2 text-sm"
+                            :class="selectedTime === slot.time ? 'border-black bg-black text-white' : 'border-gray-300 dark:border-gray-700'">
+                            <span x-text="slot.time"></span>
+                        </button>
+                    </template>
                 </div>
                 <p x-show="loading" class="mt-3 text-sm text-gray-500">Loading availability…</p>
                 <p x-show="!loading && serviceId && date && !slots.length" class="mt-3 text-sm text-gray-500">No available times.</p>
@@ -102,10 +116,18 @@
                     selectedTime: '',
                     slots: [],
                     staffs: [],
+                    staffByService: @js($staffByService),
                     loading: false,
                     async loadAvailability() {
                         this.selectedTime = '';
-                        if (!this.serviceId || !this.date) return;
+                        this.staffs = this.staffByService[this.serviceId] ?? [];
+                        if (this.staffId && !this.staffs.some(staff => String(staff.id) === String(this.staffId))) {
+                            this.staffId = '';
+                        }
+                        if (!this.serviceId || !this.date) {
+                            this.slots = [];
+                            return;
+                        }
                         this.loading = true;
                         const params = new URLSearchParams({
                             service_id: this.serviceId,
