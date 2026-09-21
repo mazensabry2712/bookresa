@@ -10,15 +10,21 @@ return new class extends Migration
     {
         Schema::create('staff_working_hours', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('staff_id')->constrained('staff_profiles')->cascadeOnDelete();
+            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
+            $table->unsignedBigInteger('staff_id');
             $table->unsignedTinyInteger('day_of_week');
             $table->time('opens_at');
             $table->time('closes_at');
             $table->boolean('is_closed')->default(false);
             $table->timestamps();
 
-            $table->unique(['staff_id', 'day_of_week']);
-            $table->index(['staff_id', 'is_closed']);
+            $table->foreign(['staff_id', 'tenant_id'])
+                ->references(['id', 'tenant_id'])
+                ->on('staff_profiles')
+                ->cascadeOnDelete();
+
+            $table->unique(['tenant_id', 'staff_id', 'day_of_week']);
+            $table->index(['tenant_id', 'staff_id', 'is_closed']);
         });
     }
 
