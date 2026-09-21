@@ -80,7 +80,7 @@ final class KashierReturnController
 
             $booking = $payment->payable;
 
-            if ($booking === null || ! property_exists($booking, 'booking_reference')) {
+            if ($booking === null || blank($booking->booking_reference)) {
                 return redirect()->route('home')->with('status', $notice);
             }
 
