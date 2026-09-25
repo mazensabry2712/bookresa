@@ -22,7 +22,7 @@
 
 ## RBAC
 - [ ] Spatie Permission
-- [ ] Platform Admin
+- [x] Platform Admin
 - [ ] Owner/Manager/Receptionist/Staff
 - [ ] Permissions
 - [ ] Module-aware access
@@ -49,33 +49,40 @@
 - [ ] availability
 
 ## Booking
-- [ ] customers
-- [ ] public booking
-- [ ] availability engine
-- [ ] booking lifecycle
-- [ ] reference
-- [ ] calendar
-- [ ] concurrency protection
+- [x] customers
+- [x] public booking
+- [x] availability engine
+- [x] booking lifecycle
+- [x] reference
+- [x] management list/detail/status actions
+- [x] monthly calendar view
+- [x] concurrency protection
 
 ## Payments
-- [ ] PaymentGateway
-- [ ] PaymentService
-- [ ] payments
-- [ ] Kashier adapter
-- [ ] secure checkout/session
-- [ ] signed webhook
-- [ ] idempotency
-- [ ] gateway tests
+- [x] PaymentGateway contract
+- [x] PaymentService
+- [x] payments
+- [x] Kashier adapter
+- [x] secure checkout/session
+- [x] signed webhook
+- [x] idempotency
+- [x] gateway tests
+- [x] public booking checkout
+- [x] signed merchant return + server-side verification
+- [ ] real Kashier sandbox end-to-end verification
 
 ## Billing
-- [ ] plans
-- [ ] plan modules
-- [ ] subscriptions
-- [ ] pricing snapshots
-- [ ] usage periods/charges
-- [ ] upgrade/downgrade
-- [ ] renewal/expiry
-- [ ] admin pricing
+- [x] plans
+- [x] plan modules
+- [x] subscriptions
+- [x] pricing snapshots
+- [x] usage periods/charges
+- [x] upgrade/downgrade policy
+- [x] owner usage dashboard
+- [x] platform plan CRUD and activation controls
+- [x] renewal/expiry core
+- [x] admin pricing
+- [x] subscription checkout/payment flow
 
 ## Notifications
 - [ ] confirmations
