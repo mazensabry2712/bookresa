@@ -37,7 +37,10 @@ class ResolveTenant
             $membershipQuery->where('tenant_id', (int) $requestedTenantId);
         }
 
-        $membership = $membershipQuery->first();
+        $membership = $membershipQuery
+            ->orderByDesc('is_primary')
+            ->orderBy('id')
+            ->first();
 
         if ($membership === null && $requestedTenantId !== null) {
             $membership = $user->tenantMemberships()
