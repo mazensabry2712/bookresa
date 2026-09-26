@@ -30,6 +30,27 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
 
     public function toArray(object $notifiable): array
     {
+        [$titleEn, $titleAr, $messageEn, $messageAr] = match (true) {
+            $this->includedLimit > 0 && $this->customerCount > $this->includedLimit => [
+                'Customer usage over limit',
+                'تم تجاوز حد العملاء',
+                "You have {$this->customerCount} customers. {$this->customerCount - $this->includedLimit} additional customers are currently billed according to your plan.",
+                "لديك {$this->customerCount} عميلًا. يتم احتساب {$this->customerCount - $this->includedLimit} عميل إضافي حاليًا وفقًا لخطتك.",
+            ],
+            $this->includedLimit > 0 && $this->customerCount >= $this->includedLimit => [
+                'Customer limit reached',
+                'تم الوصول إلى حد العملاء',
+                "You have reached {$this->includedLimit} included customers.",
+                "لقد وصلت إلى حد {$this->includedLimit} عميلًا المضمن في خطتك.",
+            ],
+            default => [
+                'Customer usage warning',
+                'تنبيه استهلاك العملاء',
+                "Customer usage reached {$this->thresholdPercent}% of the included limit.",
+                "وصل استخدام العملاء إلى {$this->thresholdPercent}% من الحد المضمن.",
+            ],
+        ];
+
         return [
             'type' => 'usage_warning',
             'tenant_id' => $this->subscription->tenant_id,
@@ -38,12 +59,12 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
             'included_customer_limit' => $this->includedLimit,
             'threshold_percent' => $this->thresholdPercent,
             'title' => [
-                'en' => 'Customer usage warning',
-                'ar' => 'تنبيه استهلاك العملاء',
+                'en' => $titleEn,
+                'ar' => $titleAr,
             ],
             'message' => [
-                'en' => "Customer usage reached {$this->thresholdPercent}% of the included limit.",
-                'ar' => "وصل استخدام العملاء إلى {$this->thresholdPercent}% من الحد المضمن.",
+                'en' => $messageEn,
+                'ar' => $messageAr,
             ],
         ];
     }
