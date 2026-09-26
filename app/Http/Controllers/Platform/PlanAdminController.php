@@ -85,7 +85,7 @@ final class PlanAdminController
 
     public function toggle(Plan $plan, PlanCatalog $planCatalog): RedirectResponse
     {
-        $plan->forceFill(['is_active' => !$plan->is_active])->save();
+        $plan->forceFill(['is_active' => ! $plan->is_active])->save();
         $planCatalog->forget();
 
         app(AuditLogger::class)->log(
