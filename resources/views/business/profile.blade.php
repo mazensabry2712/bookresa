@@ -86,6 +86,15 @@
                     {{ __('Require customer email during booking') }}
                 </label>
                 <label class="mt-4 block max-w-xs text-sm">
+                    <span class="font-medium">{{ __('Customer limit policy') }}</span>
+                    <select name="customer_limit_policy" class="mt-1.5 w-full rounded-xl border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        @php $customerLimitPolicy = data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'); @endphp
+                        <option value="allow_overage" @selected($customerLimitPolicy === 'allow_overage')>{{ __('Allow over-limit customers and charge usage fees') }}</option>
+                        <option value="block_new_customers" @selected($customerLimitPolicy === 'block_new_customers')>{{ __('Block new customer profiles at the included limit') }}</option>
+                    </select>
+                </label>
+
+                <label class="mt-4 block max-w-xs text-sm">
                     <span class="font-medium">{{ __('Deposit percentage') }}</span>
                     <input type="number" min="1" max="99" name="deposit_percent" value="{{ old('deposit_percent', data_get($profile->booking_settings, 'deposit_percent', 50)) }}" class="mt-1.5 w-full rounded-xl border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
                 </label>
