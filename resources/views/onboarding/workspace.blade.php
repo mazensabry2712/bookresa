@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <x-seo
-        :title="__('Configure Workspace').' — '.config('bookresa.name', 'Velto')"
+        :title="__('Configure Workspace').' — '.config('bookresa.name', 'BookResa')"
         :description="__('Configure your workspace modules and continue setup.')"
         robots="noindex,nofollow,noarchive"
     />
