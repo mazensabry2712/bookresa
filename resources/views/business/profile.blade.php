@@ -63,6 +63,30 @@
                         <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="mt-3 block w-full rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm dark:border-slate-700">
                     </div>
                 </div>
+            <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                <h3 class="font-semibold">{{ __('Booking payments') }}</h3>
+                <p class="mt-1 text-sm text-slate-500">{{ __('Choose whether customers pay the full service price, a deposit, or later.') }}</p>
+                <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                    @php $paymentMode = data_get($profile->booking_settings, 'payment_mode', 'pay_later'); @endphp
+                    <label class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                        <input type="radio" name="payment_mode" value="full" @checked($paymentMode === 'full')>
+                        <span class="ms-2 text-sm font-semibold">{{ __('Full payment') }}</span>
+                    </label>
+                    <label class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                        <input type="radio" name="payment_mode" value="deposit" @checked($paymentMode === 'deposit')>
+                        <span class="ms-2 text-sm font-semibold">{{ __('Deposit') }}</span>
+                    </label>
+                    <label class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                        <input type="radio" name="payment_mode" value="pay_later" @checked($paymentMode === 'pay_later')>
+                        <span class="ms-2 text-sm font-semibold">{{ __('Pay later') }}</span>
+                    </label>
+                </div>
+                <label class="mt-4 block max-w-xs text-sm">
+                    <span class="font-medium">{{ __('Deposit percentage') }}</span>
+                    <input type="number" min="1" max="99" name="deposit_percent" value="{{ old('deposit_percent', data_get($profile->booking_settings, 'deposit_percent', 50)) }}" class="mt-1.5 w-full rounded-xl border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+                </label>
+            </section>
+
             </section>
 
             <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
