@@ -51,6 +51,10 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
         ->middleware('permission:settings.manage')
         ->name('onboarding.workspace.modules');
 
+    Route::post('/onboarding/complete', [BusinessOnboardingController::class, 'complete'])
+        ->middleware('permission:settings.manage')
+        ->name('onboarding.complete');
+
     Route::get('/dashboard/reports', [ReportController::class, 'business'])
         ->middleware('permission:reports.view')
         ->name('reports.business');
