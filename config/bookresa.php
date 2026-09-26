@@ -1,5 +1,8 @@
 <?php
 
+use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
+
 return [
     'name' => env('VELTO_NAME', env('BOOKRESA_NAME', 'Velto')),
 
@@ -144,7 +147,7 @@ return [
     ],
 
     'tenant' => [
-        'model' => \App\Domain\Tenant\Models\Tenant::class,
-        'context' => \App\Domain\Tenant\Services\CurrentTenant::class,
+        'model' => Tenant::class,
+        'context' => CurrentTenant::class,
     ],
 ];
