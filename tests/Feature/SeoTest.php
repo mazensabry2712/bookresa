@@ -81,8 +81,10 @@ test('sitemap includes active public booking pages only', function (): void {
     $response->assertOk()
         ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
         ->assertSee(route('home'), false)
-        ->assertSee(route('public.booking.show', $active), false)
-        ->assertDontSee(route('public.booking.show', $inactive), false);
+        ->assertSee(route('public.booking.canonical.show', $active).'?locale=en', false)
+        ->assertSee(route('public.booking.canonical.show', $active).'?locale=ar', false)
+        ->assertDontSee(route('public.booking.canonical.show', $inactive).'?locale=en', false)
+        ->assertDontSee(route('public.booking.canonical.show', $inactive).'?locale=ar', false);
 });
 
 test('robots disallows private areas and points to sitemap', function (): void {
