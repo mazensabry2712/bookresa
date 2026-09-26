@@ -48,5 +48,7 @@ return [
     'payment_status' => 'حالة الدفع',
     'complete_payment' => 'إكمال الدفع',
     'book_another_appointment' => 'احجز موعدًا آخر',
+    'minutes_short' => 'د',
+    'book_an_appointment_online' => 'احجز موعدًا عبر الإنترنت.',
     'booking_confirmation' => 'تأكيد الحجز :reference.',
 ];
