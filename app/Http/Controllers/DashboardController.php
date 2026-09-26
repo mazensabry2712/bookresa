@@ -37,14 +37,6 @@ final class DashboardController
         $todayEnd = $todayStart->endOfDay();
         $nowUtc = CarbonImmutable::now('UTC');
 
-        $bookingScope = fn ($query) => $query
-            ->whereIn('status', [
-                BookingStatus::Pending->value,
-                BookingStatus::Confirmed->value,
-                BookingStatus::Rescheduled->value,
-            ])
-            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId));
-
         $todayBookings = Booking::query()
             ->whereBetween('starts_at', [$todayStart->utc(), $todayEnd->utc()])
             ->whereNotIn('status', [BookingStatus::Cancelled->value])
