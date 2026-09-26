@@ -41,7 +41,7 @@
                 <span class="truncate text-base font-extrabold tracking-tight text-brand-navy dark:text-white">BookResa</span>
             </a>
 
-            <nav class="hidden flex-1 items-center justify-center gap-1 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+            <nav class="hidden flex-1 items-center justify-center gap-5 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
                 <a href="#features" class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-300 dark:hover:bg-slate-900">
                     {{ __('app.home_ui.features') }}
                 </a>
@@ -53,10 +53,8 @@
                 </a>
             </nav>
 
-            <div class="hidden shrink-0 items-center gap-1.5 lg:flex">
-                <x-locale-switcher />
-                <x-theme-toggle />
-                <a href="{{ route('login') }}" class="rounded-lg px-3.5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900">
+            <div class="hidden shrink-0 items-center gap-1 lg:flex">
+                <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-indigo dark:text-slate-200">
                     {{ __('app.home_ui.login') }}
                 </a>
                 <a href="{{ route('register') }}" class="rounded-lg bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
