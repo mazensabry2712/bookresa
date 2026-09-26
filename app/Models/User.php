@@ -16,6 +16,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
+
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $email
+ * @property-read \App\Domain\Tenant\Models\Tenant|null $tenant
+ */
+
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
