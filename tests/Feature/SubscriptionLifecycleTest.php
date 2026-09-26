@@ -85,6 +85,22 @@ test('trial subscription is usable while trial is active', function (): void {
         ->and($subscription->isUsable())->toBeTrue();
 });
 
+test('subscription is not usable after its end time before expiry command runs', function (): void {
+    lifecycleTenant('usable-end-time');
+
+    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+        lifecyclePlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill([
+        'payment_status' => PaymentStatus::Paid,
+        'end_at' => CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC')->subSecond(),
+    ])->save();
+
+    expect($subscription->fresh()->isUsable())->toBeFalse();
+});
+
 test('cancellation is scheduled for the current billing boundary', function (): void {
     lifecycleTenant('cancel-subscription');
     $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
