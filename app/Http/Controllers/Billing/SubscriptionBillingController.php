@@ -93,20 +93,6 @@ final class SubscriptionBillingController
         }
     }
 
-    public function renew(
-        Subscription $subscription,
-        RenewSubscription $renewSubscription,
-    ): RedirectResponse {
-        try {
-            $renewSubscription->handle($subscription);
-
-            return to_route('billing.subscription')
-                ->with('status', 'Subscription renewed successfully. Continue to payment to activate the new period.');
-        } catch (RuntimeException $exception) {
-            return back()->withErrors(['billing' => $exception->getMessage()]);
-        }
-    }
-
     public function changePlan(
         Request $request,
         Subscription $subscription,
