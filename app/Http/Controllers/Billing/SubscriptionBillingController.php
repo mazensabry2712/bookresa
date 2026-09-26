@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Billing;
 
-use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CalculateSubscriptionUsage;
+use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Billing\Services\CancelSubscription;
 use App\Domain\Billing\Services\ClearPlanChange;
 use App\Domain\Billing\Services\ReactivateSubscription;
@@ -18,7 +18,7 @@ use RuntimeException;
 
 final class SubscriptionBillingController
 {
-    public function index(CurrentTenant $currentTenant, CalculateSubscriptionUsage $calculator): View
+    public function index(CurrentTenant $currentTenant, CalculateSubscriptionUsage $calculator, PlanCatalog $planCatalog): View
     {
         $tenant = $currentTenant->get();
 
@@ -44,7 +44,7 @@ final class SubscriptionBillingController
                 'status',
                 'created_at',
             ]) ?? collect();
-        $plans = Plan::query()->active()->orderBy('price_minor')->get();
+        $plans = $planCatalog->active();
 
         return view('billing.subscription', [
             'tenant' => $tenant->loadMissing('profile'),

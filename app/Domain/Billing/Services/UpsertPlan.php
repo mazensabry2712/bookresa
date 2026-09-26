@@ -39,7 +39,7 @@ final class UpsertPlan
             throw new RuntimeException('Plan English name is required.');
         }
 
-        return DB::transaction(function () use ($plan, $data, $moduleIds, $price, $included, $extra, $currency, $period): Plan {
+        $plan = DB::transaction(function () use ($plan, $data, $moduleIds, $price, $included, $extra, $currency, $period): Plan {
             $plan ??= new Plan();
 
             $plan->forceFill([
@@ -65,5 +65,9 @@ final class UpsertPlan
 
             return $plan->fresh('modules');
         });
+
+        app(PlanCatalog::class)->forget();
+
+        return $plan;
     }
 }

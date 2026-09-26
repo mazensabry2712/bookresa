@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Platform;
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Billing\Services\UpsertPlan;
 use App\Domain\Module\Models\Module;
 use Illuminate\Http\RedirectResponse;
@@ -82,9 +83,10 @@ final class PlanAdminController
         return to_route('admin.plans.edit', $plan->fresh('modules'))->with('status', 'Plan updated successfully.');
     }
 
-    public function toggle(Plan $plan): RedirectResponse
+    public function toggle(Plan $plan, PlanCatalog $planCatalog): RedirectResponse
     {
         $plan->forceFill(['is_active' => ! $plan->is_active])->save();
+        $planCatalog->forget();
 
         app(AuditLogger::class)->log(
             'pricing.plan_toggled',

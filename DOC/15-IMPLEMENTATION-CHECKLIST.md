@@ -110,7 +110,7 @@
 - [x] query/index review
 - [x] no N+1
 - [x] pagination
-- [ ] stable-data cache
+- [x] stable-data cache
 - [x] queue heavy work
 - [ ] Redis production
 - [ ] OPcache

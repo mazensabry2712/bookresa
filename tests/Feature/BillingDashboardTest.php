@@ -3,6 +3,8 @@
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Billing\Services\PlanCatalog;
+use App\Domain\Billing\Services\UpsertPlan;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
@@ -167,4 +169,27 @@ test('billing payment history is bounded to the latest 20 records', function ():
         ->assertOk()
         ->assertSee('<p class="font-mono text-sm font-semibold">SUB-PAY-21</p>', false)
         ->assertDontSee('<p class="font-mono text-sm font-semibold">SUB-PAY-01</p>', false);
+});
+
+
+test('active plan catalog is invalidated when a plan changes', function (): void {
+    $tenant = billingDashboardTenant('plan-catalog-cache');
+    $current = billingDashboardPlan();
+    app(PlanCatalog::class)->active();
+
+    $next = app(UpsertPlan::class)->handle(null, [
+        'name' => ['en' => 'Business', 'ar' => 'أعمال'],
+        'description' => ['en' => 'Business', 'ar' => 'أعمال'],
+        'price_minor' => 39900,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly->value,
+        'included_customer_limit' => 50,
+        'additional_customer_price_minor' => 800,
+        'trial_days' => 7,
+        'is_active' => true,
+    ]);
+
+    expect(app(PlanCatalog::class)->active()->pluck('id')->all())
+        ->toContain($current->id)
+        ->toContain($next->id);
 });
