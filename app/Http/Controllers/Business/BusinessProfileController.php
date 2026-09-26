@@ -29,6 +29,6 @@ final class BusinessProfileController
     ): RedirectResponse {
         $updateBusinessProfile->handle($request->validated());
 
-        return back()->with('status', __('business_ui.profile_updated'));
+        return back()->with('status', __('app.business_ui.profile_updated'));
     }
 }
