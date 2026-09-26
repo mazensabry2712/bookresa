@@ -28,7 +28,6 @@ final class SendBillingNotificationsForSubscription implements ShouldQueue
         private readonly int $expiryHours = 24,
         private readonly int $usageThreshold = 80,
     ) {
-        $this->afterCommit();
     }
 
     public function handle(
