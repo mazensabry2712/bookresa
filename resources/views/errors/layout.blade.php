@@ -5,6 +5,11 @@
     if (is_string($requestedLocale) && in_array($requestedLocale, $supportedLocales, true)) {
         app()->setLocale($requestedLocale);
     }
+
+    if (isset($code)) {
+        $title = __('app.errors_ui.title_'.$code);
+        $message = __('app.errors_ui.message_'.$code);
+    }
 @endphp
 
 <!DOCTYPE html>
