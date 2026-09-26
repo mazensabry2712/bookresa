@@ -5,7 +5,6 @@ namespace App\Domain\Payment\Services;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
-use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use LogicException;
@@ -17,7 +16,6 @@ final class StartBookingPayment
         private readonly CurrentTenant $currentTenant,
         private readonly PaymentService $payments,
         private readonly PaymentGateway $gateway,
-        private readonly TenantModuleAccess $moduleAccess,
     ) {
     }
 
@@ -41,10 +39,6 @@ final class StartBookingPayment
 
         if ($service === null || (int) $service->price_minor <= 0) {
             throw new RuntimeException('This booking cannot be paid online.');
-        }
-
-        if (! $this->moduleAccess->allows('payments')) {
-            throw new RuntimeException('Customer payments are not enabled for this workspace.');
         }
 
         $settings = data_get($this->currentTenant->get()?->profile, 'booking_settings', []);
