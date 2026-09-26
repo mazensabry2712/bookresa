@@ -12,12 +12,16 @@ use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\StartSubscriptionPayment;
+use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
+use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -251,7 +255,6 @@ test('subscription checkout route cannot access another tenant subscription', fu
     expect($subscriptionA->exists)->toBeTrue();
 });
 
-
 test('paid subscription payment unlocks subscription entitlement', function (): void {
     $tenant = subscriptionPaymentTenant('subscription-sync-paid');
     $subscription = app(CreateSubscription::class)->handle(
@@ -270,7 +273,7 @@ test('paid subscription payment unlocks subscription entitlement', function (): 
         'status' => PaymentStatus::Processing,
     ]);
 
-    app(\App\Domain\Payment\Services\PaymentService::class)->applyResult(
+    app(PaymentService::class)->applyResult(
         $payment,
         new PaymentGatewayResult(
             status: PaymentStatus::Paid,
@@ -278,7 +281,7 @@ test('paid subscription payment unlocks subscription entitlement', function (): 
         ),
     );
 
-    app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)
+    app(SyncSubscriptionPaymentStatus::class)
         ->handle($payment->fresh(), PaymentStatus::Paid);
 
     $subscription->refresh();
@@ -337,7 +340,7 @@ test('signed Kashier return completes subscription payment and returns to billin
         'mode' => 'test',
     ];
 
-    $query['signature'] = app(\App\Infrastructure\Payments\Kashier\KashierRedirectVerifier::class)
+    $query['signature'] = app(KashierRedirectVerifier::class)
         ->sign($query, 'api-key');
 
     app(CurrentTenant::class)->clear();
@@ -384,7 +387,7 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
         'method' => 'card',
     ];
 
-    $signature = app(\App\Infrastructure\Payments\Kashier\KashierWebhookVerifier::class)
+    $signature = app(KashierWebhookVerifier::class)
         ->sign($data, 'api-key');
 
     app(CurrentTenant::class)->clear();
@@ -409,7 +412,6 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
         ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
         ->and($subscription->isUsable())->toBeTrue();
 });
-
 
 test('stale subscription payment does not unlock the current billing cycle', function (): void {
     subscriptionPaymentTenant('subscription-stale-payment');
@@ -440,7 +442,7 @@ test('stale subscription payment does not unlock the current billing cycle', fun
         ],
     ]);
 
-    app(\App\Domain\Payment\Services\PaymentService::class)->applyResult(
+    app(PaymentService::class)->applyResult(
         $payment,
         new PaymentGatewayResult(
             status: PaymentStatus::Paid,
@@ -448,7 +450,7 @@ test('stale subscription payment does not unlock the current billing cycle', fun
         ),
     );
 
-    app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)
+    app(SyncSubscriptionPaymentStatus::class)
         ->handle($payment->fresh(), PaymentStatus::Paid);
 
     expect($subscription->fresh()->payment_status)->toBe(PaymentStatus::Pending);
@@ -481,7 +483,7 @@ test('renewed subscription does not reuse a paid payment from the previous cycle
     ]);
 
     $subscription->forceFill([
-        'status' => \App\Domain\Billing\Enums\SubscriptionStatus::Expired,
+        'status' => SubscriptionStatus::Expired,
         'payment_status' => PaymentStatus::Paid,
     ])->save();
 
