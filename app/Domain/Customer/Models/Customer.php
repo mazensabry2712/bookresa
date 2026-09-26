@@ -11,7 +11,9 @@ use Illuminate\Notifications\Notifiable;
 
 class Customer extends Model
 {
-    use HasFactory, BelongsToTenant, Notifiable;
+    use BelongsToTenant;
+    use HasFactory;
+    use Notifiable;
 
     protected $fillable = [
         'tenant_id',
