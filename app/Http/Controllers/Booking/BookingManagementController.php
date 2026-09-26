@@ -32,6 +32,8 @@ class BookingManagementController
         ]);
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
+        $staffUserId = $request->user()?->hasRole('staff') ? $request->user()->getKey() : null;
+        $ownStaffId = $staffUserId === null ? null : StaffProfile::query()->where('user_id', $staffUserId)->value('id');
 
         $bookings = Booking::query()
             ->with([
@@ -53,7 +55,13 @@ class BookingManagementController
             })
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->when($validated['service_id'] ?? null, fn ($query, int $serviceId) => $query->where('service_id', $serviceId))
-            ->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId))
+            ->when($ownStaffId !== null, fn ($query) => $query->where('staff_id', $ownStaffId))
+            ->when($ownStaffId === null, function ($query) use ($staffUserId): void {
+                if ($staffUserId !== null) {
+                    $query->whereRaw('1 = 0');
+                }
+            })
+            ->when($ownStaffId === null, fn ($query) => $query->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId)))
             ->when($validated['date'] ?? null, function ($query, string $date) use ($timezone): void {
                 $start = CarbonImmutable::createFromFormat('Y-m-d H:i:s', $date.' 00:00:00', $timezone);
                 $end = $start->endOfDay();
