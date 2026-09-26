@@ -99,7 +99,7 @@ class PublicBookingController
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                     : null;
 
-                $timezone = $tenant->profile?->timezone ?? config('app.timezone', 'UTC');
+                $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
                 $startsAt = CarbonImmutable::createFromFormat(
                     'Y-m-d H:i',
                     $request->string('date').' '.$request->string('time'),
@@ -117,7 +117,7 @@ class PublicBookingController
                 );
 
                 $paymentRequired = (bool) data_get(
-                    $tenant->profile?->booking_settings ?? [],
+                    data_get($tenant->profile, 'booking_settings', []),
                     'payment_required',
                     false,
                 );
