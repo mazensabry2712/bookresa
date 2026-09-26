@@ -22,12 +22,21 @@ final class CreateCustomer
         $tenantId = $this->currentTenant->idOrFail();
         $phone = $data['phone'] ?? null;
         $normalizedPhone = $this->identity->normalizePhone($phone);
+        $normalizedEmail = filled($data['email'] ?? null) ? strtolower(trim((string) $data['email'])) : null;
 
         if (
             $normalizedPhone !== null
             && Customer::query()->where('normalized_phone', $normalizedPhone)->exists()
         ) {
             throw new RuntimeException('A customer with this phone number already exists.');
+        }
+
+        if (
+            $normalizedPhone === null
+            && $normalizedEmail !== null
+            && Customer::query()->whereRaw('LOWER(email) = ?', [$normalizedEmail])->exists()
+        ) {
+            throw new RuntimeException('A customer with this email already exists.');
         }
 
         if (! $this->usagePolicy->allowsCreation()) {
@@ -41,7 +50,7 @@ final class CreateCustomer
             'normalized_phone' => $normalizedPhone,
             'name' => $data['name'],
             'phone' => $phone,
-            'email' => $data['email'] ?? null,
+            'email' => $normalizedEmail,
             'first_seen_at' => $now,
             'last_seen_at' => $now,
         ]);
