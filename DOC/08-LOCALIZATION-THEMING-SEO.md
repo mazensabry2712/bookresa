@@ -10,14 +10,20 @@ Architecture must allow future languages.
 ## Locale
 Use locale-aware routes where appropriate, e.g. /ar/... and /en/.... Validate locale in middleware and set the Laravel application locale.
 
+The current web foundation validates configured locales through `SetLocale` middleware. A valid `?locale=ar|en` request persists the choice in the session; otherwise a valid session locale takes precedence over the browser `Accept-Language` preference, with the configured default as fallback.
+
 ## UI translations
 Use Laravel localization resources for navigation, actions, validation, statuses, notifications and system messages.
+
+Initial reusable UI dictionary keys are provided under `lang/en/app.php` and `lang/ar/app.php`. Existing literal `__()` calls can be migrated incrementally without changing the domain model or route structure.
 
 ## Business content
 Business/service public content can store localized values (for example JSON keyed by locale).
 
 ## RTL/LTR
 Arabic uses rtl. English uses ltr. Layouts and components must be direction-safe from the start.
+
+Current dashboard/admin/onboarding/public booking document roots already expose the locale direction through `dir="rtl|ltr"`. Full visual RTL/LTR QA remains a release task.
 
 ## Themes
 First-class:
