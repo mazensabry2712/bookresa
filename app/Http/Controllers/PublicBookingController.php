@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Payment\Services\StartBookingPayment;
+use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
@@ -22,11 +23,16 @@ use RuntimeException;
 
 class PublicBookingController
 {
-    public function show(Tenant $tenant, CurrentTenant $currentTenant): View
+    public function show(Tenant $tenant, CurrentTenant $currentTenant, TenantModuleAccess $moduleAccess): View
     {
         $this->ensurePublicTenant($tenant);
 
-        return $currentTenant->run($tenant, function () use ($tenant): View {
+        return $currentTenant->run($tenant, function () use ($tenant, $moduleAccess): View {
+            $paymentsAvailable = $moduleAccess->allows('payments');
+            $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
+            $configuredPaymentMode = (string) data_get($bookingSettings, 'payment_mode', 'pay_later');
+            $paymentMode = $paymentsAvailable ? $configuredPaymentMode : 'pay_later';
+
             return view('public.booking.show', [
                 'tenant' => $tenant->load('profile'),
                 'services' => Service::query()
@@ -35,7 +41,7 @@ class PublicBookingController
                     ->orderBy('id')
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
                 'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
-                'paymentMode' => (string) data_get(data_get($tenant->profile, 'booking_settings', []), 'payment_mode', 'pay_later'),
+                'paymentMode' => $paymentMode,
                 'depositPercent' => (int) data_get(data_get($tenant->profile, 'booking_settings', []), 'deposit_percent', 50),
                 'customerEmailRequired' => (bool) data_get(data_get($tenant->profile, 'booking_settings', []), 'customer_email_required', false),
             ]);
@@ -87,6 +93,7 @@ class PublicBookingController
         CurrentTenant $currentTenant,
         CreateBooking $createBooking,
         StartBookingPayment $startBookingPayment,
+        TenantModuleAccess $moduleAccess,
     ): RedirectResponse {
         $this->ensurePublicTenant($tenant);
 
@@ -116,6 +123,10 @@ class PublicBookingController
 
                 $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
                 $paymentMode = data_get($bookingSettings, 'payment_mode');
+
+                if (! $moduleAccess->allows('payments')) {
+                    $paymentMode = 'pay_later';
+                }
 
                 $paymentRequired = $paymentMode !== null
                     ? in_array($paymentMode, ['full', 'deposit'], true)
