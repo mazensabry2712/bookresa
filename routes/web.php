@@ -3,6 +3,7 @@
 use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Service\ServiceManagementController;
+use App\Http\Controllers\Customer\CustomerManagementController;
 use App\Http\Controllers\Staff\StaffManagementController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
@@ -57,6 +58,20 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
         ->middleware(['module:services', 'permission:services.delete'])
         ->name('services.destroy');
 
+    Route::middleware(['module:customers'])->prefix('dashboard/customers')->group(function (): void {
+        Route::get('/', [CustomerManagementController::class, 'index'])
+            ->middleware('permission:customers.view')
+            ->name('customers.index');
+        Route::post('/', [CustomerManagementController::class, 'store'])
+            ->middleware('permission:customers.create')
+            ->name('customers.store');
+        Route::get('/{customer}', [CustomerManagementController::class, 'show'])
+            ->middleware('permission:customers.view')
+            ->name('customers.show');
+        Route::put('/{customer}', [CustomerManagementController::class, 'update'])
+            ->middleware('permission:customers.update')
+            ->name('customers.update');
+    });
 
     Route::get('/dashboard/staff', [StaffManagementController::class, 'index'])
         ->middleware(['module:staff', 'permission:staff.view'])
