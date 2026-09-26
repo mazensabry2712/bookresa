@@ -9,6 +9,7 @@ use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
+use App\Support\AuditLogger;
 use RuntimeException;
 
 final class UpdateStaffMember
@@ -16,6 +17,7 @@ final class UpdateStaffMember
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly TenantRoleProvisioner $roleProvisioner,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -67,7 +69,21 @@ final class UpdateStaffMember
                 setPermissionsTeamId($previousTeamId);
             }
 
-            return $staff->fresh(['user', 'services']);
+            $fresh = $staff->fresh(['user', 'services']);
+
+            $this->audit->log(
+                'staff.role_or_status_updated',
+                $fresh,
+                [
+                    'tenant_id' => (int) $fresh->tenant_id,
+                    'staff_id' => (int) $fresh->getKey(),
+                    'user_id' => (int) $fresh->user_id,
+                    'role' => $role,
+                    'status' => $status->value,
+                ],
+            );
+
+            return $fresh;
         });
     }
 }
