@@ -4,7 +4,6 @@ namespace App\Domain\Payment\Services;
 
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use LogicException;
