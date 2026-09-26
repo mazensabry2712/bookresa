@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Billing;
 
+use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CalculateSubscriptionUsage;
 use App\Domain\Billing\Services\PlanCatalog;
