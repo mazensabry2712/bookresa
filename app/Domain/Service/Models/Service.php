@@ -10,6 +10,17 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property array<string, mixed> $name
+ * @property array<string, mixed>|null $description
+ * @property int $price_minor
+ * @property string $currency
+ * @property int $duration_minutes
+ * @property int $buffer_minutes
+ * @property bool $is_active
+ */
 class Service extends Model
 {
     use HasFactory, BelongsToTenant;
@@ -37,6 +48,9 @@ class Service extends Model
         ];
     }
 
+    /**
+     * @return BelongsToMany<StaffProfile, $this>
+     */
     public function staff(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -47,6 +61,9 @@ class Service extends Model
         )->withPivot('tenant_id')->withTimestamps();
     }
 
+    /**
+     * @return HasMany<ServiceStaff, $this>
+     */
     public function staffAssignments(): HasMany
     {
         return $this->hasMany(ServiceStaff::class);
