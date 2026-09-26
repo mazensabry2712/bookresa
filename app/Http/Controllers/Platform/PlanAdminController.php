@@ -86,6 +86,12 @@ final class PlanAdminController
     {
         $plan->forceFill(['is_active' => ! $plan->is_active])->save();
 
+        app(AuditLogger::class)->log(
+            'pricing.plan_toggled',
+            $plan,
+            ['plan_id' => (int) $plan->getKey(), 'is_active' => (bool) $plan->is_active],
+        );
+
         return back()->with('status', $plan->is_active
             ? 'Plan activated successfully.'
             : 'Plan deactivated successfully.');
