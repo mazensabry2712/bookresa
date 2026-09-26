@@ -48,11 +48,24 @@ final class AvailabilityService
         }
 
         $timezone = $this->timezone();
+        $settings = data_get($this->currentTenant->get()?->profile, 'booking_settings', []);
+        $now = CarbonImmutable::now($timezone);
+        $minimumNoticeMinutes = max(0, (int) data_get($settings, 'minimum_notice_minutes', 0));
+        $minBookableAt = $now->addMinutes($minimumNoticeMinutes);
+        $maximumAdvanceDays = data_get($settings, 'maximum_advance_days');
+        $maximumAdvanceDate = $maximumAdvanceDays !== null && $maximumAdvanceDays !== ''
+            ? $now->startOfDay()->addDays((int) $maximumAdvanceDays)
+            : null;
+
         $localDate = $date->setTimezone($timezone)->startOfDay();
         $dateStart = $localDate->startOfDay();
         $dateEnd = $dateStart->addDay();
 
-        if ($localDate->isBefore(CarbonImmutable::now($timezone)->startOfDay())) {
+        if ($localDate->isBefore($now->startOfDay())) {
+            return [];
+        }
+
+        if ($maximumAdvanceDate !== null && $localDate->greaterThan($maximumAdvanceDate)) {
             return [];
         }
 
@@ -91,7 +104,7 @@ final class AvailabilityService
         }
 
         if ($assignedStaff->isEmpty()) {
-            return $this->generateSlots($service, $businessWindows, $localDate, null);
+            return $this->generateSlots($service, $businessWindows, $localDate, null, null, $minBookableAt);
         }
 
         $staffIds = $assignedStaff->modelKeys();
@@ -173,6 +186,7 @@ final class AvailabilityService
                     $localDate,
                     $staff,
                     $bookingsByStaff->get($staff->getKey(), collect()),
+                    $minBookableAt,
                 ),
             ];
         }
@@ -369,6 +383,7 @@ final class AvailabilityService
         CarbonImmutable $date,
         ?StaffProfile $staff,
         ?Collection $bookings = null,
+        ?CarbonImmutable $minBookableAt = null,
     ): array {
         $duration = (int) $service->duration_minutes;
         $buffer = (int) $service->buffer_minutes;
@@ -400,6 +415,10 @@ final class AvailabilityService
             $latestStart = $windowEnd->subMinutes($duration + $buffer);
 
             while ($cursor->lessThanOrEqualTo($latestStart)) {
+                if ($minBookableAt !== null && $cursor->lessThanOrEqualTo($minBookableAt)) {
+                    $cursor = $cursor->addMinutes((int) config('bookresa.booking.slot_interval_minutes', self::SLOT_INTERVAL_MINUTES));
+                    continue;
+                }
                 $slotEnd = $cursor->addMinutes($duration);
                 $blockEnd = $slotEnd->addMinutes($buffer);
 
