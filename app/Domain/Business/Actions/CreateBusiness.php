@@ -74,6 +74,7 @@ final class CreateBusiness
                         'payment_required' => false,
                         'payment_mode' => 'pay_later',
                         'deposit_percent' => 50,
+                        'customer_email_required' => false,
                     ],
                 ]);
 
