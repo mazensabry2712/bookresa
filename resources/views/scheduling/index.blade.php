@@ -35,12 +35,12 @@
                             <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day }}">
                             <label class="flex items-center gap-2 text-sm">
                                 <span class="text-slate-500">{{ __('Opens') }}</span>
-                                <input type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $hour?->opens_at?->format('H:i') ?? '09:00' }}"
+                                <input type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $hour?->opens_at ? substr($hour->opens_at, 0, 5) : '09:00' }}"
                                        class="w-full rounded-lg border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
                             </label>
                             <label class="flex items-center gap-2 text-sm">
                                 <span class="text-slate-500">{{ __('Closes') }}</span>
-                                <input type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $hour?->closes_at?->format('H:i') ?? '17:00' }}"
+                                <input type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $hour?->closes_at ? substr($hour->closes_at, 0, 5) : '17:00' }}"
                                        class="w-full rounded-lg border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
                             </label>
                             <label class="flex items-center gap-2 text-sm">
@@ -208,9 +208,9 @@
                                 <div class="grid gap-2 sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-center">
                                     <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day }}">
                                     <span class="text-sm font-medium">{{ $label }}</span>
-                                    <input type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $hour?->opens_at?->format('H:i') ?? '09:00' }}"
+                                    <input type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $hour?->opens_at ? substr($hour->opens_at, 0, 5) : '09:00' }}"
                                            class="rounded-lg border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
-                                    <input type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $hour?->closes_at?->format('H:i') ?? '17:00' }}"
+                                    <input type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $hour?->closes_at ? substr($hour->closes_at, 0, 5) : '17:00' }}"
                                            class="rounded-lg border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950">
                                     <label class="flex items-center gap-2 text-sm">
                                         <input type="hidden" name="hours[{{ $loop->index }}][is_closed]" value="0">
