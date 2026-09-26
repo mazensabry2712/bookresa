@@ -28,7 +28,7 @@ final class ServiceManagementController
 
         return view('services.index', [
             'tenant' => $currentTenant->get(),
-            'services' => Service::query()->latest('id')->get(),
+            'services' => Service::query()->latest('id')->paginate(20)->withQueryString(),
             'editingService' => $editingService,
         ]);
     }
