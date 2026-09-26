@@ -128,7 +128,7 @@
 - [x] subscriptions list
 - [x] payments list
 - [x] usage periods list
-- [ ] platform users management
+- [x] platform users management
 - [ ] support management
 - [ ] platform settings
 
