@@ -70,7 +70,11 @@ final class KashierGateway implements PaymentGateway
             ->post('/v3/payment/sessions', $payload);
 
         if ($response->failed()) {
-            throw new RuntimeException('Kashier payment session creation failed: '.$response->body());
+            report(new RuntimeException(
+                'Kashier payment session creation failed.',
+            ));
+
+            throw new RuntimeException('Unable to start payment checkout.');
         }
 
         $data = $response->json();
@@ -101,7 +105,11 @@ final class KashierGateway implements PaymentGateway
             ->get('/v3/payment/sessions/'.rawurlencode($providerReference).'/payment');
 
         if ($response->failed()) {
-            throw new RuntimeException('Kashier payment verification failed: '.$response->body());
+            report(new RuntimeException(
+                'Kashier payment verification failed.',
+            ));
+
+            throw new RuntimeException('Payment verification failed.');
         }
 
         $body = $response->json();
@@ -152,7 +160,11 @@ final class KashierGateway implements PaymentGateway
             ->get('/v3/payment/sessions/'.rawurlencode($providerReference).'/payment');
 
         if ($lookup->failed()) {
-            throw new RuntimeException('Kashier payment lookup before refund failed: '.$lookup->body());
+            report(new RuntimeException(
+                'Kashier payment lookup before refund failed.',
+            ));
+
+            throw new RuntimeException('Payment refund could not be prepared.');
         }
 
         $data = $lookup->json('data', []);
@@ -177,7 +189,9 @@ final class KashierGateway implements PaymentGateway
             ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Kashier refund failed: '.$response->body());
+            report(new RuntimeException('Kashier refund failed.'));
+
+            throw new RuntimeException('Payment refund failed.');
         }
 
         $status = match (strtoupper((string) ($response->json('status') ?? 'PENDING'))) {
