@@ -25,7 +25,15 @@ final class TenantModuleAccess
         $isCore = in_array($moduleKey, config('bookresa.modules.core', []), true);
 
         if ($module === null) {
-            return $isCore;
+            if (! $isCore) {
+                return false;
+            }
+
+            if (! (bool) data_get($this->currentTenant->get()?->settings, 'onboarding.completed', false)) {
+                return true;
+            }
+
+            return $this->usableSubscriptionExists($tenantId);
         }
 
         if (! $module->is_active) {
