@@ -2,17 +2,13 @@
 
 namespace App\Domain\Scheduling\Models;
 
+use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
-use App\Domain\Scheduling\Enums\DayOfWeek;
-use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
-use Carbon\CarbonInterface;
-use App\Domain\Scheduling\Enums\DayOfWeek;
 /**
  * @property int $id
  * @property int $tenant_id
@@ -22,10 +18,9 @@ use App\Domain\Scheduling\Enums\DayOfWeek;
  * @property string $closes_at
  * @property bool $is_closed
  */
-
 class StaffWorkingHour extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id',
@@ -44,6 +39,7 @@ class StaffWorkingHour extends Model
         ];
     }
 
+    /** @return BelongsTo<StaffProfile, $this> */
     public function staff(): BelongsTo
     {
         return $this->belongsTo(StaffProfile::class);
