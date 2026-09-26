@@ -14,6 +14,7 @@ use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformFinanceController;
 use App\Http\Controllers\Platform\PlatformModuleController;
 use App\Http\Controllers\Platform\PlatformUserController;
+use App\Http\Controllers\Platform\PlatformSettingsController;
 use App\Http\Controllers\Platform\SupportTicketController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Report\ReportController;
@@ -213,6 +214,8 @@ Route::middleware(['auth', 'platform'])
         Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
         Route::get('/reports', [ReportController::class, 'platform'])->name('reports.index');
         Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
+        Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
         Route::patch('/support/{ticket}', [SupportTicketController::class, 'update'])->name('support.update');
         Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
             ->name('businesses.toggle-status');
