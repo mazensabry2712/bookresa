@@ -9,3 +9,5 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('bookresa:send-booking-reminders')->hourly()->withoutOverlapping();
+
+Schedule::command('bookresa:send-billing-notifications')->dailyAt('09:00')->withoutOverlapping();
