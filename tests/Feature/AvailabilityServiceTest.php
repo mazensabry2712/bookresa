@@ -103,7 +103,8 @@ test('business break is removed from generated service slots', function (): void
         ->and(collect($slots)->pluck('start')->map(fn (CarbonImmutable $value): string => $value->format('H:i'))->all())
         ->not->toContain('13:00')
         ->and(collect($slots)->pluck('start')->map(fn (CarbonImmutable $value): string => $value->format('H:i'))->all())
-        ->toContain('12:00', '14:00');
+        ->toContain('12:00')
+        ->toContain('14:00');
 });
 
 test('business holiday produces no slots', function (): void {
@@ -204,4 +205,33 @@ test('staff day off produces no slots even when staff is otherwise scheduled', f
     ]);
 
     expect(app(AvailabilityService::class)->slots($service, mondayInCairo(), $staff))->toBe([]);
+});
+
+test('scheduling actions reject invalid time and date ranges', function (): void {
+    $tenant = availabilityTenant('Availability Invalid');
+    $service = availabilityService($tenant);
+    $staff = availabilityStaff($tenant, $service);
+
+    expect(fn () => app(AddBusinessBreak::class)->handle([
+        'day_of_week' => DayOfWeek::Monday->value,
+        'starts_at' => '14:00',
+        'ends_at' => '13:00',
+    ]))->toThrow(InvalidArgumentException::class);
+
+    expect(fn () => app(UpsertSpecialWorkingHour::class)->handle([
+        'work_date' => '2026-11-05',
+        'opens_at' => '15:00',
+        'closes_at' => '15:00',
+    ]))->toThrow(InvalidArgumentException::class);
+
+    expect(fn () => app(AddStaffDayOff::class)->handle($staff, [
+        'starts_on' => '2026-11-10',
+        'ends_on' => '2026-11-09',
+    ]))->toThrow(InvalidArgumentException::class);
+
+    expect(fn () => app(AddStaffAvailability::class)->handle($staff, [
+        'available_date' => '2026-11-11',
+        'starts_at' => '16:00',
+        'ends_at' => '15:00',
+    ]))->toThrow(InvalidArgumentException::class);
 });
