@@ -66,8 +66,16 @@
 <body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
     <main class="mx-auto max-w-3xl px-5 py-10" x-data="bookingPage()">
         <header class="mb-8">
+            @if ($profile?->cover_path)
+                <img src="{{ Storage::disk('public')->url($profile->cover_path) }}" alt="{{ $businessName }}" class="mb-5 h-40 w-full rounded-2xl object-cover">
+            @endif
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <p class="text-sm text-gray-500">BookResa</p>
+                <div class="flex items-center gap-3">
+                    @if ($profile?->logo_path)
+                        <img src="{{ Storage::disk('public')->url($profile->logo_path) }}" alt="{{ $businessName }}" class="h-12 w-12 rounded-xl object-cover">
+                    @endif
+                    <p class="text-sm font-semibold text-gray-500">{{ config('bookresa.name', 'Velto') }}</p>
+                </div>
                 <div class="flex items-center gap-2">
                     <x-locale-switcher />
                     <x-theme-toggle />
@@ -161,6 +169,16 @@
                 <label for="email" class="block text-sm font-medium">{{ __('app.email') }}</label>
                 <input id="email" type="email" name="email" value="{{ old('email') }}"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
+            </div>
+
+            <div class="rounded-xl bg-gray-50 px-4 py-3 text-sm dark:bg-gray-950/60">
+                @if ($paymentMode === 'full')
+                    {{ __('Full payment is required to confirm this booking.') }}
+                @elseif ($paymentMode === 'deposit')
+                    {{ __('A :percent% deposit is required online. The remaining balance is paid to the business.', ['percent' => $depositPercent]) }}
+                @else
+                    {{ __('Payment is completed later according to the business policy.') }}
+                @endif
             </div>
 
             <button type="submit" :disabled="!serviceId || !date || !selectedTime"
