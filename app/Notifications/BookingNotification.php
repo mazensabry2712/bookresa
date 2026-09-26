@@ -17,7 +17,7 @@ final class BookingNotification extends Notification implements ShouldQueue
     /** @var array<string, string> */
     private readonly array $serviceName;
 
-    private readonly ?string $startsAt;
+    private readonly string $startsAt;
 
     private readonly string $timezone;
 
@@ -26,11 +26,12 @@ final class BookingNotification extends Notification implements ShouldQueue
         private readonly string $kind,
     ) {
         $this->serviceName = $this->resolveServiceName();
-        $this->startsAt = $booking->starts_at?->toIso8601String();
-        $this->timezone = Tenant::query()
-            ->with('profile')
-            ->find($booking->tenant_id)?->profile?->timezone
-            ?? config('app.timezone', 'UTC');
+        $this->startsAt = $booking->starts_at->toIso8601String();
+        $this->timezone = (string) data_get(
+            Tenant::query()->with('profile')->find($booking->tenant_id)?->profile,
+            'timezone',
+            config('app.timezone', 'UTC'),
+        );
 
         $this->afterCommit();
     }
@@ -74,9 +75,7 @@ final class BookingNotification extends Notification implements ShouldQueue
             ->line($content['message_en'])
             ->line('Booking: '.$this->booking->booking_reference)
             ->line('Service: '.($this->serviceName['en'] ?? $this->serviceName['ar'] ?? 'Service'))
-            ->line('Starts: '.($this->startsAt === null
-                ? 'N/A'
-                : \Carbon\CarbonImmutable::parse($this->startsAt)->setTimezone($this->timezone)->format('Y-m-d H:i')));
+            ->line('Starts: '.\Carbon\CarbonImmutable::parse($this->startsAt)->setTimezone($this->timezone)->format('Y-m-d H:i'));
     }
 
     private function content(): array
