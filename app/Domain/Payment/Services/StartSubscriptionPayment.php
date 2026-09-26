@@ -55,7 +55,8 @@ final class StartSubscriptionPayment
             ->first();
 
         if (
-            $latestPayment?->status !== null
+            $latestPayment instanceof Payment
+            && $this->belongsToCurrentBillingCycle($latestPayment, $subscription)
             && (
                 $latestPayment->status === \App\Domain\Payment\Enums\PaymentStatus::Paid
                 || (
@@ -94,5 +95,18 @@ final class StartSubscriptionPayment
             ],
             idempotencyKey: 'subscription-'.$subscription->id.'-'.$provider.'-attempt-'.$attempt,
         );
+    }
+
+    private function belongsToCurrentBillingCycle(Payment $payment, Subscription $subscription): bool
+    {
+        $subscriptionStart = $subscription->start_at?->toIso8601String();
+
+        if ($subscriptionStart === null) {
+            return false;
+        }
+
+        return (string) data_get($payment->metadata, 'subscription_start') === $subscriptionStart
+            && (int) data_get($payment->metadata, 'subscription_id') === (int) $subscription->getKey()
+            && (int) data_get($payment->metadata, 'plan_id') === (int) $subscription->plan_id;
     }
 }
