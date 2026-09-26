@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Service\Models\Service;
 use App\Domain\Tenant\Models\Tenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,10 +14,24 @@ final class BookingNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
+    /** @var array<string, string> */
+    private readonly array $serviceName;
+
+    private readonly ?string $startsAt;
+
+    private readonly string $timezone;
+
     public function __construct(
         private readonly Booking $booking,
         private readonly string $kind,
     ) {
+        $this->serviceName = $this->resolveServiceName();
+        $this->startsAt = $booking->starts_at?->toIso8601String();
+        $this->timezone = Tenant::query()
+            ->with('profile')
+            ->find($booking->tenant_id)?->profile?->timezone
+            ?? config('app.timezone', 'UTC');
+
         $this->afterCommit();
     }
 
@@ -36,8 +51,8 @@ final class BookingNotification extends Notification implements ShouldQueue
             'tenant_id' => $this->booking->tenant_id,
             'booking_id' => $this->booking->getKey(),
             'booking_reference' => $this->booking->booking_reference,
-            'service' => $this->booking->service?->name,
-            'starts_at' => $this->booking->starts_at?->toIso8601String(),
+            'service' => $this->serviceName,
+            'starts_at' => $this->startsAt,
             'title' => [
                 'en' => $content['title_en'],
                 'ar' => $content['title_ar'],
@@ -58,13 +73,21 @@ final class BookingNotification extends Notification implements ShouldQueue
             ->greeting('BookResa')
             ->line($content['message_en'])
             ->line('Booking: '.$this->booking->booking_reference)
-            ->line('Service: '.($this->booking->service?->name['en'] ?? $this->booking->service?->name ?? 'Service'))
-            ->line('Starts: '.$this->booking->starts_at?->setTimezone($this->timezone())->format('Y-m-d H:i'));
+            ->line('Service: '.($this->serviceName['en'] ?? $this->serviceName['ar'] ?? 'Service'))
+            ->line('Starts: '.($this->startsAt === null
+                ? 'N/A'
+                : \Carbon\CarbonImmutable::parse($this->startsAt)->setTimezone($this->timezone)->format('Y-m-d H:i')));
     }
 
     private function content(): array
     {
         return match ($this->kind) {
+            'created' => [
+                'title_en' => 'Booking received',
+                'title_ar' => 'تم استلام الحجز',
+                'message_en' => 'Your booking request was received and is pending confirmation.',
+                'message_ar' => 'تم استلام طلب حجزك وهو في انتظار التأكيد.',
+            ],
             'confirmed' => [
                 'title_en' => 'Booking confirmed',
                 'title_ar' => 'تم تأكيد الحجز',
@@ -83,12 +106,6 @@ final class BookingNotification extends Notification implements ShouldQueue
                 'message_en' => 'Your booking time has been changed.',
                 'message_ar' => 'تم تغيير موعد حجزك.',
             ],
-            'created' => [
-                'title_en' => 'Booking received',
-                'title_ar' => 'تم استلام الحجز',
-                'message_en' => 'Your booking request was received and is pending confirmation.',
-                'message_ar' => 'تم استلام طلب حجزك وهو في انتظار التأكيد.',
-            ],
             'reminder' => [
                 'title_en' => 'Booking reminder',
                 'title_ar' => 'تذكير بالحجز',
@@ -99,11 +116,22 @@ final class BookingNotification extends Notification implements ShouldQueue
         };
     }
 
-    private function timezone(): string
+    /** @return array<string, string> */
+    private function resolveServiceName(): array
     {
-        return Tenant::query()
-            ->with('profile')
-            ->find($this->booking->tenant_id)?->profile?->timezone
-            ?? config('app.timezone', 'UTC');
+        $service = $bookingService = $this->booking->relationLoaded('service')
+            ? $this->booking->service
+            : Service::withoutGlobalScopes()->find($this->booking->service_id);
+
+        $name = $service?->name;
+
+        if (is_array($name)) {
+            return array_filter([
+                'en' => (string) ($name['en'] ?? ''),
+                'ar' => (string) ($name['ar'] ?? ''),
+            ]);
+        }
+
+        return ['en' => (string) ($name ?? 'Service')];
     }
 }
