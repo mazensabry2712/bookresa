@@ -7,7 +7,6 @@ use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use LogicException;
 
 final class UpdateBusinessProfile
 {
