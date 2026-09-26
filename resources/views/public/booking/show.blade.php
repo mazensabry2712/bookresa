@@ -3,8 +3,64 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $tenant->profile?->name['en'] ?? $tenant->slug }} — BookResa</title>
-    <meta name="description" content="{{ $tenant->profile?->description['en'] ?? 'Book an appointment online.' }}">
+
+    @php
+        $profile = $tenant->profile;
+        $locale = app()->getLocale();
+        $businessName = $profile?->name[$locale] ?? $profile?->name['en'] ?? $tenant->slug;
+        $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? 'Book an appointment online.';
+        $canonicalUrl = route('public.booking.show', $tenant->slug);
+        $jsonLd = [
+            '@context' => 'https://schema.org',
+            '@type' => 'LocalBusiness',
+            'name' => $businessName,
+            'description' => $businessDescription,
+            'url' => $canonicalUrl,
+            'potentialAction' => [
+                '@type' => 'ReserveAction',
+                'target' => $canonicalUrl,
+            ],
+        ];
+
+        if ($profile?->phone) {
+            $jsonLd['telephone'] = $profile->phone;
+        }
+
+        if ($profile?->email) {
+            $jsonLd['email'] = $profile->email;
+        }
+
+        if ($profile?->address) {
+            $jsonLd['address'] = [
+                '@type' => 'PostalAddress',
+                'streetAddress' => $profile->address,
+            ];
+        }
+
+        if ($services->isNotEmpty()) {
+            $jsonLd['hasOfferCatalog'] = [
+                '@type' => 'OfferCatalog',
+                'name' => 'Services',
+                'itemListElement' => $services->map(fn ($service) => [
+                    '@type' => 'Offer',
+                    'price' => number_format($service->price_minor / 100, 2, '.', ''),
+                    'priceCurrency' => $service->currency,
+                    'itemOffered' => [
+                        '@type' => 'Service',
+                        'name' => $service->name[$locale] ?? $service->name['en'] ?? 'Service',
+                    ],
+                ])->values()->all(),
+            ];
+        }
+    @endphp
+
+    <x-seo
+        :title="$businessName.' — BookResa'"
+        :description="$businessDescription"
+        :canonical="$canonicalUrl"
+        :json-ld="$jsonLd"
+    />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
