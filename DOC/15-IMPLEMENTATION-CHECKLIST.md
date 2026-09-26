@@ -117,7 +117,7 @@
 - [x] rate limits
 - [x] audit logs
 - [ ] backup/restore test
-- [ ] production build
+- [x] production build
 
 ## Release gate
 - [ ] full test suite
