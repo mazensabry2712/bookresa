@@ -59,6 +59,29 @@ final class StaffManagementController
         }
     }
 
+    public function status(
+        Request $request,
+        StaffProfile $staff,
+        UpdateStaffMember $updateStaffMember,
+    ): RedirectResponse {
+        $status = $request->validate(['status' => ['required', 'in:active,inactive']])['status'];
+
+        try {
+            $role = (string) ($staff->user->roles->first()?->name ?? 'staff');
+            $updateStaffMember->handle($staff, [
+                'display_name' => $staff->display_name,
+                'phone' => $staff->phone,
+                'job_title' => $staff->job_title,
+                'role' => $role,
+                'status' => $status,
+            ]);
+
+            return back()->with('status', __('Staff status updated successfully.'));
+        } catch (RuntimeException $exception) {
+            return back()->withErrors(['staff' => $exception->getMessage()]);
+        }
+    }
+
     public function update(
         UpdateStaffMemberRequest $request,
         StaffProfile $staff,
