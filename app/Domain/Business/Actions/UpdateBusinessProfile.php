@@ -95,6 +95,10 @@ final class UpdateBusinessProfile
                     'deposit_percent' => $paymentMode === 'deposit' ? (int) ($data['deposit_percent'] ?? data_get($profile->booking_settings, 'deposit_percent', 50)) : null,
                     'customer_email_required' => (bool) ($data['customer_email_required'] ?? false),
                     'customer_limit_policy' => $data['customer_limit_policy'] ?? data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'),
+                    'minimum_notice_minutes' => (int) ($data['minimum_notice_minutes'] ?? data_get($profile->booking_settings, 'minimum_notice_minutes', 0)),
+                    'maximum_advance_days' => isset($data['maximum_advance_days']) && $data['maximum_advance_days'] !== ''
+                        ? (int) $data['maximum_advance_days']
+                        : data_get($profile->booking_settings, 'maximum_advance_days'),
                 ]),
             ])->save();
 
