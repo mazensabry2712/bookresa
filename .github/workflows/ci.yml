@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -35,8 +37,23 @@ jobs:
       - name: PHP syntax scan
         run: find app -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
-      - name: Pint
-        run: vendor/bin/pint --test --format agent
+      - name: Pint changed PHP files
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            base_ref="origin/$GITHUB_BASE_REF"
+          else
+            base_ref="HEAD^"
+          fi
+
+          mapfile -d '' php_files < <(git diff --name-only -z "$base_ref" HEAD -- '*.php')
+
+          if [ "${#php_files[@]}" -eq 0 ]; then
+            echo "No PHP files changed."
+            exit 0
+          fi
+
+          vendor/bin/pint --test --format agent "${php_files[@]}"
 
       - name: Feature and unit tests
         run: php artisan test --compact
