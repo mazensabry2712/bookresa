@@ -139,7 +139,7 @@ test('manager can update staff role status and service assignments', function ()
             ->where('tenant_id', $tenant->id)
             ->where('user_id', $staffUser->id)
             ->value('status'))
-        ->toBe(MembershipStatus::Inactive->value);
+        ->toBe(MembershipStatus::Suspended->value);
 
     unset($serviceA);
 });
