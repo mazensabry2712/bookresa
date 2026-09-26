@@ -108,4 +108,9 @@
             </div>
         </section>
     </div>
+    @if ($services->hasPages())
+        <div class="mt-4">
+            {{ $services->links() }}
+        </div>
+    @endif
 @endsection
