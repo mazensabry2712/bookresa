@@ -11,7 +11,6 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Notifications\BookingNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
 use LogicException;
 use RuntimeException;
 
@@ -92,7 +91,6 @@ final class RescheduleBooking
                 ->get();
 
             if ($requestedStaff !== null) {
-                /** @var Collection<int, StaffProfile|null> $candidates */
                 $candidates = collect([$requestedStaff]);
             } elseif ($locked->staff !== null && $locked->staff->status === StaffStatus::Active) {
                 $candidates = collect([$locked->staff]);
