@@ -9,7 +9,7 @@
         $locale = app()->getLocale();
         $businessName = $profile?->name[$locale] ?? $profile?->name['en'] ?? $tenant->slug;
         $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? __('app.book_an_appointment_online');
-        $canonicalUrl = route('public.booking.show', $tenant->slug);
+        $canonicalUrl = route('public.booking.canonical.show', $tenant->slug);
         $jsonLd = [
             '@context' => 'https://schema.org',
             '@type' => 'LocalBusiness',
@@ -55,7 +55,7 @@
     @endphp
 
     <x-seo
-        :title="$businessName.' — BookResa'"
+        :title="$businessName.' — '.config('bookresa.name', 'Velto')"
         :description="$businessDescription"
         :canonical="$canonicalUrl"
         :json-ld="$jsonLd"
@@ -110,7 +110,7 @@
             ])->all();
         @endphp
 
-        <form method="POST" action="{{ route('public.booking.store', $tenant->slug) }}" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <form method="POST" action="{{ route('public.booking.canonical.store', $tenant->slug) }}" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             @csrf
 
             @error('booking')
@@ -174,7 +174,7 @@
                 </div>
                 <div>
                     <label for="phone" class="block text-sm font-medium">{{ __('app.phone') }}</label>
-                    <input id="phone" name="phone" value="{{ old('phone') }}"
+                    <input id="phone" name="phone" value="{{ old('phone') }}" required
                         class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
                 </div>
             </div>
@@ -228,7 +228,7 @@
                             date: this.date,
                         });
                         if (this.staffId) params.set('staff_id', this.staffId);
-                        const response = await fetch(@js(route('public.booking.availability', $tenant->slug)) + '?' + params.toString());
+                        const response = await fetch(@js(route('public.booking.canonical.availability', $tenant->slug)) + '?' + params.toString());
                         const payload = await response.json();
                         this.slots = payload.data ?? [];
                         this.loading = false;
