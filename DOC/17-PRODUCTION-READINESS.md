@@ -3,7 +3,7 @@
 ## Current verified local gate
 
 The latest local verification reported on 2026-09-26:
-- full test suite: 240 passed, 1 skipped, 885 assertions
+- full test suite: 241 passed, 1 skipped, 890 assertions
 - `php artisan view:cache`: passed
 - Vite production build: passed
 - `composer install` and optimized autoload generation: passed
