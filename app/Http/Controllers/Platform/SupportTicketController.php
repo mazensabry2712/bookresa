@@ -19,7 +19,10 @@ final class SupportTicketController
         $search = trim((string) $request->input('search'));
 
         $tickets = SupportTicket::query()
-            ->with(['tenant.profile', 'requester'])
+            ->with([
+                'tenant' => fn ($query) => $query->withoutGlobalScopes()->with('profile'),
+                'requester',
+            ])
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->when($priority !== '', fn ($query) => $query->where('priority', $priority))
             ->when($search !== '', function ($query) use ($search): void {
@@ -43,8 +46,10 @@ final class SupportTicketController
         ]);
     }
 
-    public function update(Request $request, SupportTicket $ticket, AuditLogger $auditLogger): RedirectResponse
+    public function update(Request $request, int $ticket, AuditLogger $auditLogger): RedirectResponse
     {
+        $ticket = SupportTicket::withoutGlobalScopes()->findOrFail($ticket);
+
         $validated = $request->validate([
             'status' => ['required', 'in:'.implode(',', array_column(SupportTicketStatus::cases(), 'value'))],
             'priority' => ['required', 'in:'.implode(',', array_column(SupportTicketPriority::cases(), 'value'))],
