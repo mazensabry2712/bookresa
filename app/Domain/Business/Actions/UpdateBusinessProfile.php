@@ -79,6 +79,11 @@ final class UpdateBusinessProfile
                 ],
                 'timezone' => $data['timezone'],
                 'locale' => $data['locale'],
+                'booking_settings' => array_merge($profile->booking_settings ?? [], [
+                    'payment_mode' => $data['payment_mode'],
+                    'payment_required' => in_array($data['payment_mode'], ['full', 'deposit'], true),
+                    'deposit_percent' => $data['payment_mode'] === 'deposit' ? (int) $data['deposit_percent'] : null,
+                ]),
             ])->save();
 
             return $profile->fresh();
