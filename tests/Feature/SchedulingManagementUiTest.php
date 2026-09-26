@@ -11,7 +11,6 @@ use App\Domain\Scheduling\Models\StaffAvailability;
 use App\Domain\Scheduling\Models\StaffDayOff;
 use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Actions\AddStaffMember;
-use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
