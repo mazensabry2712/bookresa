@@ -176,6 +176,9 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permiss
 
         Route::post('/{booking}/status', [BookingManagementController::class, 'status'])
             ->name('booking.management.status');
+
+        Route::post('/{booking}/reschedule', [BookingManagementController::class, 'reschedule'])
+            ->name('booking.management.reschedule');
     });
 
 Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:calendar.view'])
