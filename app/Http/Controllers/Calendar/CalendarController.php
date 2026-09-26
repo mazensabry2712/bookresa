@@ -27,7 +27,7 @@ class CalendarController
             'status' => ['nullable', 'string', 'in:pending,confirmed,completed,cancelled,rescheduled,no_show'],
         ]);
 
-        $timezone = $tenant->profile?->timezone ?? config('app.timezone', 'UTC');
+        $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
         $month = $validated['month'] ?? CarbonImmutable::now($timezone)->format('Y-m');
 
         try {
