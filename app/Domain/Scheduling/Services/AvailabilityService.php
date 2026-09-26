@@ -100,7 +100,7 @@ final class AvailabilityService
                 throw new LogicException('Selected staff member is inactive.');
             }
 
-            return $this->staffSlots($service, $requestedStaff, $localDate, $businessWindows);
+            return $this->staffSlots($service, $requestedStaff, $localDate, $businessWindows, $minBookableAt);
         }
 
         if ($assignedStaff->isEmpty()) {
@@ -216,6 +216,7 @@ final class AvailabilityService
         StaffProfile $staff,
         CarbonImmutable $date,
         Collection $businessWindows,
+        CarbonImmutable $minBookableAt,
     ): array {
         if ((int) $staff->tenant_id !== $this->currentTenant->idOrFail()) {
             throw new LogicException('Staff must belong to the current tenant.');
@@ -257,7 +258,7 @@ final class AvailabilityService
                     'end' => $window->closes_at,
                 ]);
             } else {
-                return $this->generateSlots($service, $businessWindows, $date, $staff);
+                return $this->generateSlots($service, $businessWindows, $date, $staff, null, $minBookableAt);
             }
         } else {
             $staffWindows = $staffWindows->map(fn (StaffAvailability $window): array => [
@@ -267,7 +268,7 @@ final class AvailabilityService
         }
 
         $intersection = $this->intersectWindows($businessWindows, $staffWindows);
-        return $this->generateSlots($service, $intersection, $date, $staff);
+        return $this->generateSlots($service, $intersection, $date, $staff, null, $minBookableAt);
     }
 
     private function businessWindows(int $tenantId, CarbonImmutable $date): Collection
