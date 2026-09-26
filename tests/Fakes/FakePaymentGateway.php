@@ -2,6 +2,12 @@
 
 namespace Tests\Fakes;
 
+use App\Domain\Payment\Contracts\PaymentGateway;
+use App\Domain\Payment\Data\PaymentGatewayResult;
+use App\Domain\Payment\Data\PaymentRequest;
+use App\Domain\Payment\Enums\PaymentStatus;
+use Carbon\CarbonImmutable;
+
 final class FakePaymentGateway implements PaymentGateway
 {
     public int $createCalls = 0;
