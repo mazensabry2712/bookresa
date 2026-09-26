@@ -6,6 +6,7 @@ use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Enums\PaymentStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Notifications\BookingNotification;
+use App\Notifications\BusinessBookingNotification;
 use App\Domain\Customer\Actions\FindOrCreateCustomer;
 use App\Domain\Service\Models\Service;
 use App\Domain\Scheduling\Services\AvailabilityService;
@@ -125,6 +126,13 @@ final class CreateBooking
         }, 3);
 
         $booking->customer?->notify(new BookingNotification($booking, 'created'));
+
+        $owner = $this->currentTenant->get()?->memberships()
+            ->where('is_primary', true)
+            ->with('user')
+            ->first()?->user;
+
+        $owner?->notify(new BusinessBookingNotification($booking, 'created'));
 
         return $booking;
     }
