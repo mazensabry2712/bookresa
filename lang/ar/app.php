@@ -176,7 +176,7 @@ return [
         'payment_partial' => 'مدفوع جزئيًا',
         'payment_paid' => 'مدفوع',
         'payment_refunded' => 'مسترد',
-    ],,
+    ],
     'business_ui' => [
         'business_profile' => 'ملف النشاط',
         'open_booking_page' => 'فتح صفحة الحجز',

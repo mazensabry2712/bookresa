@@ -176,7 +176,7 @@ return [
         'payment_partial' => 'Partially paid',
         'payment_paid' => 'Paid',
         'payment_refunded' => 'Refunded',
-    ],,
+    ],
     'business_ui' => [
         'business_profile' => 'Business profile',
         'open_booking_page' => 'Open booking page',
