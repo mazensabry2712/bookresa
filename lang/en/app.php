@@ -48,5 +48,7 @@ return [
     'payment_status' => 'Payment status',
     'complete_payment' => 'Complete payment',
     'book_another_appointment' => 'Book another appointment',
+    'minutes_short' => 'min',
+    'book_an_appointment_online' => 'Book an appointment online.',
     'booking_confirmation' => 'Booking confirmation for :reference.',
 ];
