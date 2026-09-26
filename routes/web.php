@@ -5,6 +5,7 @@ use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Service\ServiceManagementController;
 use App\Http\Controllers\Customer\CustomerManagementController;
 use App\Http\Controllers\Staff\StaffManagementController;
+use App\Http\Controllers\Scheduling\SchedulingManagementController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Calendar\CalendarController;
@@ -84,6 +85,60 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
         ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.update');
+
+    Route::middleware(['module:calendar'])->prefix('dashboard/scheduling')->group(function (): void {
+        Route::get('/', [SchedulingManagementController::class, 'index'])
+            ->middleware('permission:calendar.view')
+            ->name('scheduling.index');
+
+        Route::put('/business-hours', [SchedulingManagementController::class, 'updateBusinessHours'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.business-hours.update');
+
+        Route::post('/breaks', [SchedulingManagementController::class, 'storeBreak'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.breaks.store');
+
+        Route::delete('/breaks/{break}', [SchedulingManagementController::class, 'destroyBreak'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.breaks.destroy');
+
+        Route::post('/holidays', [SchedulingManagementController::class, 'storeHoliday'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.holidays.store');
+
+        Route::delete('/holidays/{holiday}', [SchedulingManagementController::class, 'destroyHoliday'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.holidays.destroy');
+
+        Route::post('/special-hours', [SchedulingManagementController::class, 'storeSpecialWorkingHour'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.special-hours.store');
+
+        Route::delete('/special-hours/{specialWorkingHour}', [SchedulingManagementController::class, 'destroySpecialWorkingHour'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.special-hours.destroy');
+
+        Route::put('/staff/{staff}/hours', [SchedulingManagementController::class, 'updateStaffHours'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.staff-hours.update');
+
+        Route::post('/staff/{staff}/days-off', [SchedulingManagementController::class, 'storeDayOff'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.staff-days-off.store');
+
+        Route::delete('/staff/{staff}/days-off/{dayOff}', [SchedulingManagementController::class, 'destroyDayOff'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.staff-days-off.destroy');
+
+        Route::post('/staff/{staff}/availability', [SchedulingManagementController::class, 'storeAvailability'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.staff-availability.store');
+
+        Route::delete('/staff/{staff}/availability/{availability}', [SchedulingManagementController::class, 'destroyAvailability'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.staff-availability.destroy');
+    });
 });
 
 Route::middleware(['auth', 'tenant', 'module:appointments', 'permission:bookings.view'])
