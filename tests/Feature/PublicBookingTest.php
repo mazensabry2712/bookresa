@@ -176,3 +176,26 @@ test('public booking cannot use a service from another tenant', function (): voi
 
     expect(Booking::withoutGlobalScopes()->count())->toBe(0);
 });
+
+
+test('public booking page renders localized Arabic content', function (): void {
+    $tenant = publicTenant('arabic-clinic');
+
+    app(CurrentTenant::class)->set($tenant);
+    $tenant->profile()->update([
+        'name' => ['en' => 'Arabic Clinic', 'ar' => 'عيادة عربية'],
+        'description' => ['en' => 'English description', 'ar' => 'وصف عربي'],
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.show', $tenant->slug).'?locale=ar')
+        ->assertOk()
+        ->assertSee('<html lang="ar" dir="rtl">', false)
+        ->assertSee('عيادة عربية')
+        ->assertSee('وصف عربي')
+        ->assertSee('الخدمة')
+        ->assertSee('اختر خدمة');
+
+    expect(app()->getLocale())->toBe('ar');
+});
