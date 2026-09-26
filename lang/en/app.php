@@ -51,4 +51,9 @@ return [
     'minutes_short' => 'min',
     'book_an_appointment_online' => 'Book an appointment online.',
     'booking_confirmation' => 'Booking confirmation for :reference.',
+    'verify_email_title' => 'Verify your email address',
+    'verify_email_message' => 'Please verify your email address using the link we sent to you before continuing to your workspace.',
+    'verification_link_sent' => 'A new verification link has been sent to your email address.',
+    'resend_verification' => 'Resend verification email',
+    'logout' => 'Log out',
 ];
