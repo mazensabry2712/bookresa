@@ -1,14 +1,12 @@
-<?php
-
 namespace App\Http\Controllers\Booking;
 
 use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Booking\Services\RescheduleBooking;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Domain\Booking\Services\RescheduleBooking;
 use App\Http\Requests\Booking\RescheduleBookingRequest;
 use App\Http\Requests\Booking\UpdateBookingStatusRequest;
 use Carbon\CarbonImmutable;
