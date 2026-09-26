@@ -35,10 +35,10 @@
 </head>
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
     <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div class="mx-auto flex min-h-[8rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" class="flex shrink-0 items-center rounded-lg" aria-label="BookResa">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" width="800" height="192" decoding="async" fetchpriority="high" class="h-48 w-auto max-w-[800px] object-contain dark:hidden">
-                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="800" height="192" decoding="async" class="hidden h-48 w-auto max-w-[800px] object-contain dark:block">
+        <div class="mx-auto flex min-h-[5.5rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+            <a href="{{ route('home') }}" class="relative flex h-12 w-[250px] shrink-0 items-center overflow-hidden rounded-lg sm:h-14 sm:w-[350px]" aria-label="BookResa">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" width="707" height="353" decoding="async" fetchpriority="high" class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
+                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="707" height="353" decoding="async" class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
             </a>
 
             <nav class="hidden flex-1 items-center justify-center gap-7 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
