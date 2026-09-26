@@ -34,6 +34,7 @@ final class PlatformModuleController
                 SubscriptionStatus::Active->value,
             ])
             ->latest('start_at')
+            ->get()
             ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
 
         $entitledModuleKeys = collect(data_get($subscription?->pricing_snapshot, 'modules', []))
@@ -77,6 +78,7 @@ final class PlatformModuleController
                 SubscriptionStatus::Active->value,
             ])
             ->latest('start_at')
+            ->get()
             ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
 
         $entitledModuleKeys = collect(data_get($subscription?->pricing_snapshot, 'modules', []))
