@@ -115,21 +115,14 @@ class BookingManagementController
         RescheduleBookingRequest $request,
         Booking $booking,
         RescheduleBooking $rescheduleBooking,
+        CurrentTenant $currentTenant,
     ): RedirectResponse {
         try {
-            $timezone = (string) data_get(
-                $this->tenantFromRequest($currentTenant ?? null)?->profile,
-                'timezone',
-                config('app.timezone', 'UTC'),
-            );
-        } catch (\Throwable) {
-            $timezone = (string) config('app.timezone', 'UTC');
-        }
-
-        try {
-            $tenant = app(CurrentTenant::class)->get();
+            $tenant = $currentTenant->get();
             $timezone = (string) data_get($tenant?->profile, 'timezone', config('app.timezone', 'UTC'));
-            $staff = $request->filled('staff_id') ? StaffProfile::query()->findOrFail($request->integer('staff_id')) : null;
+            $staff = $request->filled('staff_id')
+                ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
+                : null;
             $startsAt = CarbonImmutable::createFromFormat(
                 'Y-m-d H:i',
                 $request->validated('date').' '.$request->validated('time'),
