@@ -47,6 +47,12 @@ Recommended default: effective at the next billing boundary. Existing customers 
 
 Over-limit policy can allow usage charges or restrict creation of new customer profiles.
 
+Current BookResa defaults:
+- customer limit policy: `allow_overage`
+- usage warning threshold: 75% of the included customer limit
+
+The strict `block_new_customers` policy is supported for tenants that want creation blocked at the limit.
+
 ## Owner visibility
 Display current customers, included limit, additional count, usage fee and total subscription cost. The owner billing dashboard also exposes usage history, scheduled plan changes and cancellation/re-activation state.
 
