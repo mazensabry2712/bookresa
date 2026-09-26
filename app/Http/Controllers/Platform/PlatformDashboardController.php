@@ -20,13 +20,15 @@ final class PlatformDashboardController
             SubscriptionStatus::Trial->value,
             SubscriptionStatus::Active->value,
         ];
+        $paidActiveSubscriptionStatuses = [SubscriptionStatus::Active->value];
 
         $subscriptionTenantIds = Subscription::withoutGlobalScopes()
             ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
             ->select('tenant_id');
 
         $activeSubscriptions = Subscription::withoutGlobalScopes()
-            ->whereIn('status', $activeSubscriptionStatuses)
+            ->whereIn('status', $paidActiveSubscriptionStatuses)
+            ->where('payment_status', PaymentStatus::Paid)
             ->get([
                 'tenant_id',
                 'price_minor',
@@ -77,6 +79,7 @@ final class PlatformDashboardController
                     ->count(),
                 'bookings' => Booking::withoutGlobalScopes()->count(),
                 'customers' => Customer::withoutGlobalScopes()->count(),
+                'users' => \App\Models\User::query()->count(),
                 'paidSubscriptionRevenueMinor' => Payment::withoutGlobalScopes()
                     ->where('payable_type', Subscription::class)
                     ->where('status', PaymentStatus::Paid)
@@ -87,6 +90,7 @@ final class PlatformDashboardController
                     ->sum('usage_periods.usage_charge_minor'),
                 'mrrMinor' => $mrrMinor,
                 'overLimitBusinesses' => $overLimitBusinesses,
+                'additionalUsageRevenueMinor' => $additionalUsageRevenueMinor,
                 'additionalUsageRevenueMinor' => $additionalUsageRevenueMinor,
             ],
             'recentBusinesses' => Tenant::query()
