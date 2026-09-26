@@ -114,7 +114,7 @@
 - [ ] Redis production
 - [ ] OPcache
 - [x] rate limits
-- [ ] audit logs
+- [x] audit logs
 - [ ] backup/restore test
 - [ ] production build
 
