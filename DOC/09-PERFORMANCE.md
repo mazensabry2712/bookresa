@@ -55,6 +55,7 @@ Track request time, DB query count/time, memory, cache hit rate and frontend met
 - Service management now paginates at 20 records per page.
 - Staff management now paginates at 20 records per page.
 - Subscription billing limits payment history to the latest 20 records instead of loading an unbounded relation.
+- Scheduled subscription billing notification evaluation is dispatched per subscription through a queued job, so usage calculation and notification eligibility checks do not run inside the scheduler command.
 - Active business types used by onboarding use a short cache with explicit invalidation after the seeder runs.
 - Pricing and security-critical module checks intentionally remain database-backed so authorization and current pricing/module state are not served from stale cache.
 - Composer PHP target is aligned to PHP 8.4.
