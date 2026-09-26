@@ -205,24 +205,26 @@ test('enabled optional module requires subscription entitlement', function (): v
 
     app(CurrentTenant::class)->set($tenant);
 
-    Subscription::query()->create([
-        'tenant_id' => $tenant->id,
-        'plan_id' => $plan->id,
-        'start_at' => now(),
-        'end_at' => now()->addMonth(),
-        'status' => SubscriptionStatus::Active,
-        'payment_status' => PaymentStatus::Paid,
-        'price_minor' => 10000,
-        'currency' => 'EGP',
-        'billing_period' => PlanBillingPeriod::Monthly,
-        'included_customer_limit' => 10,
-        'additional_customer_price_minor' => 1000,
-        'pricing_snapshot' => [
-            'modules' => [
-                ['key' => 'payments', 'settings' => null],
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $plan): void {
+        Subscription::query()->create([
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'start_at' => now(),
+            'end_at' => now()->addMonth(),
+            'status' => SubscriptionStatus::Active,
+            'payment_status' => PaymentStatus::Paid,
+            'price_minor' => 10000,
+            'currency' => 'EGP',
+            'billing_period' => PlanBillingPeriod::Monthly,
+            'included_customer_limit' => 10,
+            'additional_customer_price_minor' => 1000,
+            'pricing_snapshot' => [
+                'modules' => [
+                    ['key' => 'payments', 'settings' => null],
+                ],
             ],
-        ],
-    ]);
+        ]);
+    });
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
@@ -298,20 +300,22 @@ test('expired subscription blocks core operations after onboarding completion', 
         'is_active' => true,
     ]);
 
-    Subscription::query()->create([
-        'tenant_id' => $tenant->id,
-        'plan_id' => $plan->id,
-        'start_at' => now()->subMonth(),
-        'end_at' => now()->subDay(),
-        'status' => SubscriptionStatus::Expired,
-        'payment_status' => PaymentStatus::Paid,
-        'price_minor' => 10000,
-        'currency' => 'EGP',
-        'billing_period' => PlanBillingPeriod::Monthly,
-        'included_customer_limit' => 10,
-        'additional_customer_price_minor' => 1000,
-        'pricing_snapshot' => ['modules' => []],
-    ]);
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $plan): void {
+        Subscription::query()->create([
+            'tenant_id' => $tenant->id,
+            'plan_id' => $plan->id,
+            'start_at' => now()->subMonth(),
+            'end_at' => now()->subDay(),
+            'status' => SubscriptionStatus::Expired,
+            'payment_status' => PaymentStatus::Paid,
+            'price_minor' => 10000,
+            'currency' => 'EGP',
+            'billing_period' => PlanBillingPeriod::Monthly,
+            'included_customer_limit' => 10,
+            'additional_customer_price_minor' => 1000,
+            'pricing_snapshot' => ['modules' => []],
+        ]);
+    });
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
