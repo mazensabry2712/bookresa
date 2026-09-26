@@ -230,6 +230,51 @@ test('enabled optional module requires subscription entitlement', function (): v
         ->assertOk();
 });
 
+test('completed workspace requires a usable subscription for core operations', function (): void {
+    [$owner, $tenant] = moduleWorkspace('Subscription Gate');
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', true);
+    $tenant->forceFill(['settings' => $settings])->save();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index'))
+        ->assertForbidden();
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Core Plan'],
+        'description' => ['en' => 'Core plan'],
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    Subscription::query()->create([
+        'tenant_id' => $tenant->id,
+        'plan_id' => $plan->id,
+        'start_at' => now(),
+        'end_at' => now()->addMonth(),
+        'status' => SubscriptionStatus::Active,
+        'payment_status' => PaymentStatus::Paid,
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'pricing_snapshot' => ['modules' => []],
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index'))
+        ->assertOk();
+});
+
 test('inactive global module blocks tenant access even when tenant module is enabled', function (): void {
     [$owner, $tenant] = moduleWorkspace();
 
