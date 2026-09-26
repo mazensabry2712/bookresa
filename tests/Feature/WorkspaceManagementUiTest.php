@@ -4,6 +4,7 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Service\Models\Service;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
@@ -16,6 +17,11 @@ beforeEach(function (): void {
         ModuleSeeder::class,
         BusinessTypeSeeder::class,
     ]);
+});
+
+afterEach(function (): void {
+    app(CurrentTenant::class)->clear();
+    setPermissionsTeamId(null);
 });
 
 function workspaceOwner(string $name = 'Workspace Owner'): array
@@ -65,6 +71,8 @@ test('owner can view and update business profile', function (): void {
         ->assertRedirect()
         ->assertSessionHas('status');
 
+    app(CurrentTenant::class)->set($tenant);
+
     expect($tenant->fresh('profile')->profile->name['en'])->toBe('Updated Clinic')
         ->and($tenant->fresh('profile')->profile->locale)->toBe('ar')
         ->and($tenant->fresh('profile')->profile->phone)->toBe('01012345678');
@@ -86,6 +94,8 @@ test('owner can create and update a service through workspace ui', function (): 
             'is_active' => 1,
         ])
         ->assertRedirect(route('services.index'));
+
+    app(CurrentTenant::class)->set($tenant);
 
     $service = Service::query()->firstOrFail();
 
@@ -124,6 +134,8 @@ test('workspace service management stays tenant isolated', function (): void {
             'buffer_minutes' => 0,
             'is_active' => 1,
         ]);
+
+    app(CurrentTenant::class)->set($tenantA);
 
     $serviceA = Service::query()->firstOrFail();
 
