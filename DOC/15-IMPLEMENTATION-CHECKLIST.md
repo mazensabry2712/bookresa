@@ -95,15 +95,16 @@
 - [x] queue delivery
 
 ## SEO
-- [ ] SEO helper/component
-- [ ] title/description
-- [ ] canonical
-- [ ] hreflang
-- [ ] Open Graph
-- [ ] JSON-LD
-- [ ] sitemap
-- [ ] robots
-- [ ] noindex private areas
+- [x] SEO helper/component
+- [x] title/description
+- [x] canonical
+- [ ] hreflang (pending locale-prefixed public URLs)
+- [x] Open Graph
+- [ ] social image (waiting for configured public image source)
+- [x] JSON-LD
+- [x] sitemap
+- [x] robots
+- [x] noindex private areas
 
 ## Performance/Security
 - [x] query/index review
