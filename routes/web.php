@@ -101,5 +101,6 @@ Route::prefix('book/{tenant:slug}')->group(function (): void {
         ->name('public.booking.store');
 
     Route::get('/confirmation/{booking}', [PublicBookingController::class, 'confirmation'])
+        ->middleware('signed')
         ->name('public.booking.confirmation');
 });
