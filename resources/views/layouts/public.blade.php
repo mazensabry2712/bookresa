@@ -20,7 +20,7 @@
         :description="__('app.home_ui.meta_description')"
         :canonical="$homeCanonical"
         :alternates="$homeAlternates"
-        :json-l-d="[
+        :json-ld="[
             '@context' => 'https://schema.org',
             '@type' => 'SoftwareApplication',
             'name' => config('bookresa.name', 'BookResa'),
