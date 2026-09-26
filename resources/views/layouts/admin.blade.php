@@ -16,6 +16,7 @@
             <nav class="space-y-1 p-3">
                 <a href="{{ route('admin.dashboard') }}" class="block rounded-xl px-3 py-2.5 text-sm font-semibold dark:bg-slate-800">{{ __('Dashboard') }}</a>
                 <a href="{{ route('admin.businesses.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Businesses') }}</a>
+                <a href="{{ route('admin.users.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Users') }}</a>
                 <a href="{{ route('admin.subscriptions.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Subscriptions') }}</a>
                 <a href="{{ route('admin.payments.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Payments') }}</a>
                 <a href="{{ route('admin.usage.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Usage') }}</a>
