@@ -218,4 +218,3 @@ test('failed Kashier refund does not regress a paid payment', function (): void 
             'kashier_refund_status' => 'FAILURE',
         ]);
 });
-\n
