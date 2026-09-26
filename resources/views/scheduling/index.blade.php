@@ -188,9 +188,9 @@
 
             @forelse ($staffMembers as $staff)
                 @php
-                    $staffHours = $staff->workingHours()->orderBy('day_of_week')->get()->keyBy(fn ($hour) => $hour->day_of_week->value);
-                    $daysOff = $staff->daysOff()->orderBy('starts_on')->get();
-                    $availability = $staff->availability()->orderBy('available_date')->orderBy('starts_at')->get();
+                    $staffHours = $staff->workingHours->keyBy(fn ($hour) => $hour->day_of_week->value);
+                    $daysOff = $staff->daysOff;
+                    $availability = $staff->availability;
                 @endphp
 
                 <div class="mb-6 rounded-2xl border border-slate-200 p-4 last:mb-0 dark:border-slate-800">
