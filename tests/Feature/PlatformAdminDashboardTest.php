@@ -5,6 +5,7 @@ use App\Domain\Business\Models\BusinessType;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
@@ -169,11 +170,11 @@ test('platform routes remain independent from current tenant context', function 
     $owner = User::factory()->create(['email' => 'independent-owner@example.com']);
     adminDashboardTenant($owner, 'Independent Clinic');
 
-    app(\App\Domain\Tenant\Services\CurrentTenant::class)->clear();
+    app(CurrentTenant::class)->clear();
 
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
         ->assertOk();
 
-    expect(app(\App\Domain\Tenant\Services\CurrentTenant::class)->get())->toBeNull();
+    expect(app(CurrentTenant::class)->get())->toBeNull();
 });
