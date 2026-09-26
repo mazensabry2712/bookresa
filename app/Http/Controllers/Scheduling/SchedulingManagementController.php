@@ -45,7 +45,14 @@ final class SchedulingManagementController
                 ->orderBy('work_date')
                 ->get(),
             'staffMembers' => StaffProfile::query()
-                ->with('user')
+                ->with([
+                    'user',
+                    'workingHours' => fn ($query) => $query->orderBy('day_of_week'),
+                    'daysOff' => fn ($query) => $query->orderBy('starts_on'),
+                    'availability' => fn ($query) => $query
+                        ->orderBy('available_date')
+                        ->orderBy('starts_at'),
+                ])
                 ->orderBy('display_name')
                 ->get(),
             'tenantId' => $tenantId,
