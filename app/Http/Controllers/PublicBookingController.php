@@ -37,6 +37,7 @@ class PublicBookingController
                 'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
                 'paymentMode' => (string) data_get(data_get($tenant->profile, 'booking_settings', []), 'payment_mode', 'pay_later'),
                 'depositPercent' => (int) data_get(data_get($tenant->profile, 'booking_settings', []), 'deposit_percent', 50),
+                'customerEmailRequired' => (bool) data_get(data_get($tenant->profile, 'booking_settings', []), 'customer_email_required', false),
             ]);
         });
     }
