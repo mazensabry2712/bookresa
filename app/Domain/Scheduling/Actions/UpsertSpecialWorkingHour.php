@@ -17,6 +17,15 @@ final class UpsertSpecialWorkingHour
         $tenantId = $this->currentTenant->idOrFail();
         $closed = (bool) ($data['is_closed'] ?? false);
 
+        if (! $closed) {
+            $opensAt = $data['opens_at'] ?? null;
+            $closesAt = $data['closes_at'] ?? null;
+
+            if (! is_string($opensAt) || ! is_string($closesAt) || $closesAt <= $opensAt) {
+                throw new \InvalidArgumentException('Special working hours must have a valid opening window.');
+            }
+        }
+
         return SpecialWorkingHour::query()->updateOrCreate(
             ['work_date' => $data['work_date']],
             [
