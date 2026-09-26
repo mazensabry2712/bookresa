@@ -1,12 +1,14 @@
 <?php
 
 use App\Http\Controllers\Billing\SubscriptionBillingController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Customer\CustomerManagementController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Payment\KashierReturnController;
+use App\Http\Controllers\Payment\PaymentManagementController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
@@ -40,8 +42,14 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 });
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
     Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
         ->name('onboarding.workspace');
+
+    Route::post('/onboarding/workspace/modules', [BusinessOnboardingController::class, 'updateModules'])
+        ->middleware('permission:settings.manage')
+        ->name('onboarding.workspace.modules');
 
     Route::get('/dashboard/reports', [ReportController::class, 'business'])
         ->middleware('permission:reports.view')
@@ -97,6 +105,10 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
     Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
         ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.update');
+
+    Route::patch('/dashboard/staff/{staff}/status', [StaffManagementController::class, 'status'])
+        ->middleware(['module:staff', 'permission:staff.manage'])
+        ->name('staff.status');
 
     Route::middleware(['module:calendar'])->prefix('dashboard/scheduling')->group(function (): void {
         Route::get('/', [SchedulingManagementController::class, 'index'])
@@ -169,6 +181,12 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permiss
 Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:calendar.view'])
     ->get('/dashboard/calendar', [CalendarController::class, 'index'])
     ->name('calendar.index');
+
+Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
+    Route::get('/dashboard/payments', [PaymentManagementController::class, 'index'])
+        ->middleware(['module:payments', 'permission:billing.view'])
+        ->name('payments.index');
+});
 
 Route::middleware(['auth', 'verified', 'tenant'])->prefix('dashboard/billing')->group(function (): void {
     Route::get('/subscription', [SubscriptionBillingController::class, 'index'])
