@@ -7,6 +7,7 @@ use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Payment\Models\Payment;
 use App\Support\AuditLogger;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -30,12 +31,13 @@ final class PlatformFinanceController
         Subscription $subscription,
         AuditLogger $audit,
     ): RedirectResponse {
-        $next = in_array($subscription->status, [
+        $from = $subscription->status;
+        $next = in_array($from, [
             SubscriptionStatus::Trial,
             SubscriptionStatus::Active,
         ], true)
             ? SubscriptionStatus::Suspended
-            : ($subscription->status === SubscriptionStatus::Suspended ? SubscriptionStatus::Active : null);
+            : ($from === SubscriptionStatus::Suspended ? SubscriptionStatus::Active : null);
 
         if ($next === null) {
             return back()->withErrors(['subscription' => __('Only active, trial or suspended subscriptions can be toggled by platform admin.')]);
@@ -51,7 +53,7 @@ final class PlatformFinanceController
             [
                 'subscription_id' => (int) $subscription->getKey(),
                 'tenant_id' => (int) $subscription->tenant_id,
-                'from_status' => $subscription->status->value === $next->value ? null : null,
+                'from_status' => $from->value,
                 'status' => $next->value,
             ],
         );
