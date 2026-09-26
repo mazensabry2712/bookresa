@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Domain\Booking\Models;
@@ -10,7 +9,7 @@ use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
-use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,23 +22,23 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property int $customer_id
  * @property int $service_id
  * @property int|null $staff_id
- * @property CarbonImmutable $starts_at
- * @property CarbonImmutable $ends_at
- * @property CarbonImmutable|null $block_ends_at
+ * @property CarbonInterface $starts_at
+ * @property CarbonInterface $ends_at
+ * @property CarbonInterface|null $block_ends_at
  * @property BookingStatus $status
  * @property PaymentStatus $payment_status
  * @property string $booking_reference
  * @property string|null $notes
- * @property CarbonImmutable|null $reminder_sent_at
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property CarbonInterface|null $reminder_sent_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  * @property-read Customer $customer
  * @property-read Service $service
  * @property-read StaffProfile|null $staff
  */
 class Booking extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id',
