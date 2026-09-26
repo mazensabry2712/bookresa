@@ -68,7 +68,7 @@ function platformModulesSubscription(Tenant $tenant, Module $module): Subscripti
     ]);
     $plan->modules()->sync([$module->id]);
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle($plan);
+    $subscription = app(CreateSubscription::class)->handle($plan);
 
     app(CurrentTenant::class)->clear();
 
