@@ -38,28 +38,28 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
         ->name('business.profile.update');
 
     Route::get('/dashboard/services', [ServiceManagementController::class, 'index'])
-        ->middleware('permission:services.view')
+        ->middleware(['module:services', 'permission:services.view'])
         ->name('services.index');
 
     Route::post('/dashboard/services', [ServiceManagementController::class, 'store'])
-        ->middleware('permission:services.create')
+        ->middleware(['module:services', 'permission:services.create'])
         ->name('services.store');
 
     Route::put('/dashboard/services/{service}', [ServiceManagementController::class, 'update'])
-        ->middleware('permission:services.update')
+        ->middleware(['module:services', 'permission:services.update'])
         ->name('services.update');
 
     Route::delete('/dashboard/services/{service}', [ServiceManagementController::class, 'destroy'])
-        ->middleware('permission:services.delete')
+        ->middleware(['module:services', 'permission:services.delete'])
         ->name('services.destroy');
 
 
     Route::get('/dashboard/staff', [StaffManagementController::class, 'index'])
-        ->middleware('permission:staff.view')
+        ->middleware(['module:staff', 'permission:staff.view'])
         ->name('staff.index');
 
     Route::post('/dashboard/staff', [StaffManagementController::class, 'store'])
-        ->middleware('permission:staff.manage')
+        ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.store');
 
     Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
@@ -67,7 +67,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
         ->name('staff.update');
 });
 
-Route::middleware(['auth', 'tenant', 'permission:bookings.view'])
+Route::middleware(['auth', 'tenant', 'module:appointments', 'permission:bookings.view'])
     ->prefix('dashboard/bookings')
     ->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])
@@ -80,7 +80,7 @@ Route::middleware(['auth', 'tenant', 'permission:bookings.view'])
             ->name('booking.management.status');
     });
 
-Route::middleware(['auth', 'tenant', 'permission:calendar.view'])
+Route::middleware(['auth', 'tenant', 'module:calendar', 'permission:calendar.view'])
     ->get('/dashboard/calendar', [CalendarController::class, 'index'])
     ->name('calendar.index');
 
@@ -129,7 +129,7 @@ Route::post('/webhooks/kashier', KashierWebhookController::class)
 Route::match(['get', 'post'], '/payments/kashier/return', KashierReturnController::class)
     ->name('payments.kashier.return');
 
-Route::prefix('book/{tenant:slug}')->group(function (): void {
+Route::middleware('module:appointments')->prefix('book/{tenant:slug}')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])
         ->name('public.booking.show');
 
