@@ -18,6 +18,10 @@ final class AddStaffDayOff
     {
         $tenantId = $this->currentTenant->idOrFail();
 
+        if ((string) $data['ends_on'] < (string) $data['starts_on']) {
+            throw new \InvalidArgumentException('Staff day off must end on or after it starts.');
+        }
+
         if ((int) $staff->tenant_id !== $tenantId) {
             throw new LogicException('Staff must belong to the current tenant.');
         }
