@@ -41,6 +41,17 @@ return [
         ],
     ],
 
+    'modules' => [
+        'core' => [
+            'appointments',
+            'calendar',
+            'customers',
+            'services',
+            'staff',
+            'notifications',
+        ],
+    ],
+
     'rbac' => [
         'permissions' => [
             'business.view',
