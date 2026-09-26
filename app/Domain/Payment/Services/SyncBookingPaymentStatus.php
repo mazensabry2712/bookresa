@@ -29,6 +29,7 @@ final class SyncBookingPaymentStatus
 
         if ($status === PaymentStatus::Refunded && $paidMinor <= 0) {
             $booking->forceFill(['payment_status' => BookingPaymentStatus::Refunded])->save();
+
             return;
         }
 
