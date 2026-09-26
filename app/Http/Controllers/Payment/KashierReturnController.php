@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Payment;
 
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\SyncBookingPaymentStatus;
@@ -100,7 +101,7 @@ final class KashierReturnController
                     ->with('payment_notice', $notice);
             }
 
-            if ($payable === null || blank($payable->booking_reference)) {
+            if (! $payable instanceof Booking || blank($payable->booking_reference)) {
                 return redirect()->route('home')->with('status', $notice);
             }
 
