@@ -13,11 +13,10 @@ final class UpdateCustomer
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly CustomerIdentity $identity,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array{name:string,phone?:string|null,email?:string|null} $data
+     * @param array{name: string, phone?: string|null, email?: string|null} $data
      */
     public function handle(Customer $customer, array $data): Customer
     {
@@ -34,7 +33,7 @@ final class UpdateCustomer
             $normalizedPhone !== null
             && Customer::query()
                 ->where('normalized_phone', $normalizedPhone)
-                ->whereKeyNot($customer->getKey())
+                ->where($customer->getKeyName(), '!=', $customer->getKey())
                 ->exists()
         ) {
             throw new RuntimeException('A customer with this phone number already exists.');
