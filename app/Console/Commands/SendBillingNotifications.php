@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
+use App\Jobs\SendBillingNotificationsForSubscription;
 use Illuminate\Console\Command;
 
 final class SendBillingNotifications extends Command
