@@ -1,14 +1,31 @@
+
 <?php
 
 namespace App\Domain\Billing\Models;
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Module\Models\Module;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property array<string, mixed> $name
+ * @property array<string, mixed>|null $description
+ * @property int $price_minor
+ * @property string $currency
+ * @property PlanBillingPeriod $billing_period
+ * @property int $included_customer_limit
+ * @property int $additional_customer_price_minor
+ * @property int $trial_days
+ * @property bool $is_active
+ * @property array<string, mixed>|null $metadata
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ */
 class Plan extends Model
 {
     use HasFactory;
@@ -41,11 +58,14 @@ class Plan extends Model
         ];
     }
 
-    public function scopeActive($query)
+    scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
+    /**
+     * @return BelongsToMany<Module, $this>
+     */
     public function modules(): BelongsToMany
     {
         return $this->belongsToMany(Module::class, 'plan_modules')
@@ -53,6 +73,9 @@ class Plan extends Model
             ->withTimestamps();
     }
 
+    /**
+     * @return HasMany<Subscription, $this>
+     */
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
