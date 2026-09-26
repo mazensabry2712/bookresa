@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Platform;
 
-use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Support\AuditLogger;
