@@ -29,6 +29,13 @@ final class SetStaffWorkingHours
                 $day = DayOfWeek::from((int) $item['day_of_week']);
                 $closed = (bool) ($item['is_closed'] ?? false);
 
+                if (! $closed && (
+                    ! isset($item['opens_at'], $item['closes_at'])
+                    || (string) $item['closes_at'] <= (string) $item['opens_at']
+                )) {
+                    throw new \InvalidArgumentException('Staff working hours must have a valid opening window.');
+                }
+
                 StaffWorkingHour::query()->updateOrCreate(
                     [
                         'staff_id' => $staff->getKey(),
