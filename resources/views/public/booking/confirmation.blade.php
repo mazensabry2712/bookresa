@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <x-seo
-        :title="'Booking '.$booking->booking_reference.' — BookResa'"
+        :title="'Booking '.$booking->booking_reference.' — Velto'"
         :description="'Booking confirmation for '.$booking->booking_reference.'.'"
         robots="noindex,nofollow,noarchive"
         og-type="website"
