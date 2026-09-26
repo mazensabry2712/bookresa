@@ -31,7 +31,7 @@ Route::get('/', function () {
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots.txt');
 
-Route::middleware('auth')->group(function (): void {
+Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/onboarding/business', [BusinessOnboardingController::class, 'create'])
         ->name('onboarding.business.create');
 
@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function (): void {
         ->name('onboarding.business.store');
 });
 
-Route::middleware(['auth', 'tenant'])->group(function (): void {
+Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
     Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
         ->name('onboarding.workspace');
 
@@ -153,7 +153,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     });
 });
 
-Route::middleware(['auth', 'tenant', 'module:appointments', 'permission:bookings.view'])
+Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permission:bookings.view'])
     ->prefix('dashboard/bookings')
     ->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])
@@ -166,11 +166,11 @@ Route::middleware(['auth', 'tenant', 'module:appointments', 'permission:bookings
             ->name('booking.management.status');
     });
 
-Route::middleware(['auth', 'tenant', 'module:calendar', 'permission:calendar.view'])
+Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:calendar.view'])
     ->get('/dashboard/calendar', [CalendarController::class, 'index'])
     ->name('calendar.index');
 
-Route::middleware(['auth', 'tenant'])->prefix('dashboard/billing')->group(function (): void {
+Route::middleware(['auth', 'verified', 'tenant'])->prefix('dashboard/billing')->group(function (): void {
     Route::get('/subscription', [SubscriptionBillingController::class, 'index'])
         ->middleware('permission:billing.view')
         ->name('billing.subscription');
@@ -196,7 +196,7 @@ Route::middleware(['auth', 'tenant'])->prefix('dashboard/billing')->group(functi
         ->name('billing.subscription.plan.clear');
 });
 
-Route::middleware(['auth', 'platform'])
+Route::middleware(['auth', 'verified', 'platform'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function (): void {
