@@ -15,7 +15,7 @@ class UpdateStaffWorkingHoursRequest extends FormRequest
     {
         return [
             'hours' => ['required', 'array', 'size:7'],
-            'hours.*.day_of_week' => ['required', 'integer', 'between:1,7'],
+            'hours.*.day_of_week' => ['required', 'integer', 'between:1,7', 'distinct'],
             'hours.*.opens_at' => ['nullable', 'date_format:H:i'],
             'hours.*.closes_at' => ['nullable', 'date_format:H:i'],
             'hours.*.is_closed' => ['nullable', 'boolean'],
