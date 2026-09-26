@@ -359,6 +359,69 @@ test('booking exposes its payments', function (): void {
     expect($booking->payments()->first()?->is($payment))->toBeTrue();
 });
 
+test('pending idempotent payment is not sent to the provider twice', function (): void {
+    $tenant = paymentTenant('payment-concurrent-pending');
+    $booking = paymentBooking($tenant);
+    $gateway = new FakePaymentGateway();
+
+    $payment = Payment::query()->create([
+        'tenant_id' => $tenant->id,
+        'payable_type' => $booking->getMorphClass(),
+        'payable_id' => $booking->id,
+        'reference' => 'PAY-PENDING-001',
+        'provider' => 'fake',
+        'amount_minor' => 25000,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Pending,
+        'idempotency_key' => 'pending-key',
+    ]);
+
+    $result = app(PaymentService::class)->start(
+        $gateway,
+        $booking,
+        25000,
+        'EGP',
+        'fake',
+        idempotencyKey: $payment->idempotency_key,
+    );
+
+    expect($result->id)->toBe($payment->id)
+        ->and($result->status)->toBe(PaymentStatus::Pending)
+        ->and($gateway->createCalls)->toBe(0);
+});
+
+test('expired booking payment session creates a fresh attempt', function (): void {
+    $tenant = paymentTenant('payment-expired-session');
+    $booking = paymentBooking($tenant);
+    $booking->customer()->update(['email' => 'customer@example.com']);
+
+    $expired = Payment::query()->create([
+        'payable_type' => $booking->getMorphClass(),
+        'payable_id' => $booking->id,
+        'reference' => 'PAY-EXPIRED-001',
+        'provider' => 'fake',
+        'provider_reference' => 'expired-session',
+        'amount_minor' => 25000,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+        'checkout_url' => 'https://payments.example.test/expired',
+        'expires_at' => now()->subMinute(),
+        'idempotency_key' => 'booking-'.$booking->id.'-fake-attempt-1',
+    ]);
+
+    $gateway = new FakePaymentGateway();
+    $this->app->instance(PaymentGateway::class, $gateway);
+    config(['bookresa.payments.default_provider' => 'fake']);
+
+    $fresh = app(StartBookingPayment::class)->handle($booking->fresh());
+
+    expect($fresh->id)->not->toBe($expired->id)
+        ->and($fresh->status)->toBe(PaymentStatus::Processing)
+        ->and($fresh->idempotency_key)->toBe('booking-'.$booking->id.'-fake-attempt-2')
+        ->and($gateway->createCalls)->toBe(1)
+        ->and(Payment::query()->count())->toBe(2);
+});
+
 test('payment amount and currency are validated', function (): void {
     $tenant = paymentTenant('payment-validation');
     $booking = paymentBooking($tenant);
