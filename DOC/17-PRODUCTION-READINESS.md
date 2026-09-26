@@ -3,13 +3,15 @@
 ## Current verified local gate
 
 The latest local verification reported:
-- full test suite: 164 passed, 556 assertions
-- Laravel Pint: passed
-- Vite production build: passed
-- SEO regression tests: passed
-- composer.json / composer.lock are synchronized for PHP 8.4
+- full test suite: 213 passed, 773 assertions
+- PHPStan: 0 errors
+- Pint: touched files pass; the full repository currently has 96 existing style issues across 267 files
+- Vite production build: previously verified
+- SEO regression tests: previously verified
+- PHP 8.4 is the project target
+- Larastan is declared in Composer and locked on `main`, so CI can enforce PHPStan
 
-The CI workflow in `.github/workflows/ci.yml` repeats the PHP test, Pint, syntax, Composer and frontend build checks.
+The CI workflow in `.github/workflows/ci.yml` runs Composer validation/install, PHPStan, syntax, changed-file Pint, frontend build and the full test suite.
 
 ## Production environment
 
