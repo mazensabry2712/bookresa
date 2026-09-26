@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Onboarding;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
+use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -75,6 +76,32 @@ class BusinessOnboardingController
                 ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $tenant->staffProfiles()->exists()],
             ],
         ]);
+    }
+
+    public function complete(
+        Request $request,
+        CurrentTenant $currentTenant,
+    ): RedirectResponse {
+        $tenant = $currentTenant->get();
+        abort_unless($tenant !== null, 404);
+
+        $hasModules = $tenant->modules()->wherePivot('enabled', true)->exists();
+        $hasServices = $tenant->services()->exists();
+        $hasHours = BusinessWorkingHour::query()->exists();
+        $hasStaff = $tenant->staffProfiles()->exists();
+
+        if (! $hasModules || ! $hasServices || ! $hasHours || ! $hasStaff) {
+            return back()->withErrors([
+                'onboarding' => __('Complete workspace modules, services, working hours and staff before finishing onboarding.'),
+            ]);
+        }
+
+        $settings = $tenant->settings ?? [];
+        data_set($settings, 'onboarding.step', 'ready');
+        data_set($settings, 'onboarding.completed', true);
+        $tenant->forceFill(['settings' => $settings])->save();
+
+        return to_route('dashboard')->with('status', __('Workspace is ready. Your booking page is now available.'));
     }
 
     public function updateModules(
