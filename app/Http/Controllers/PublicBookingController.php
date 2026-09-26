@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Payment\Services\StartBookingPayment;
-use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
@@ -23,15 +22,13 @@ use RuntimeException;
 
 class PublicBookingController
 {
-    public function show(Tenant $tenant, CurrentTenant $currentTenant, TenantModuleAccess $moduleAccess): View
+    public function show(Tenant $tenant, CurrentTenant $currentTenant): View
     {
         $this->ensurePublicTenant($tenant);
 
-        return $currentTenant->run($tenant, function () use ($tenant, $moduleAccess): View {
-            $paymentsAvailable = $moduleAccess->allows('payments');
+        return $currentTenant->run($tenant, function () use ($tenant): View {
             $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
-            $configuredPaymentMode = (string) data_get($bookingSettings, 'payment_mode', 'pay_later');
-            $paymentMode = $paymentsAvailable ? $configuredPaymentMode : 'pay_later';
+            $paymentMode = (string) data_get($bookingSettings, 'payment_mode', 'pay_later');
 
             return view('public.booking.show', [
                 'tenant' => $tenant->load('profile'),
@@ -93,12 +90,11 @@ class PublicBookingController
         CurrentTenant $currentTenant,
         CreateBooking $createBooking,
         StartBookingPayment $startBookingPayment,
-        TenantModuleAccess $moduleAccess,
     ): RedirectResponse {
         $this->ensurePublicTenant($tenant);
 
         try {
-            return $currentTenant->run($tenant, function () use ($request, $createBooking, $startBookingPayment, $moduleAccess, $tenant): RedirectResponse {
+            return $currentTenant->run($tenant, function () use ($request, $createBooking, $startBookingPayment, $tenant): RedirectResponse {
                 $service = Service::query()->findOrFail($request->integer('service_id'));
                 $staff = $request->filled('staff_id')
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
@@ -124,9 +120,6 @@ class PublicBookingController
                 $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
                 $paymentMode = data_get($bookingSettings, 'payment_mode');
 
-                if (! $moduleAccess->allows('payments')) {
-                    $paymentMode = 'pay_later';
-                }
 
                 $paymentRequired = $paymentMode !== null
                     ? in_array($paymentMode, ['full', 'deposit'], true)
