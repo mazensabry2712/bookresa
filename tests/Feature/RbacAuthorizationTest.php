@@ -172,11 +172,6 @@ test('forged tenant session falls back to an authorized tenant instead of switch
     [, $tenantA] = rbacWorkspace('Authorized Tenant');
     [, $tenantB] = rbacWorkspace('Other Tenant');
 
-    $ownerA = Tenant\Models\TenantMembership::query()
-        ->where('tenant_id', $tenantA->id)
-        ->where('is_primary', true)
-        ->firstOrFail()
-        ->user;
 
     $this->actingAs($ownerA)
         ->withSession(['tenant_id' => $tenantB->id])
