@@ -15,7 +15,7 @@ beforeEach(function (): void {
 
 test('public booking page renders reusable seo metadata and structured data', function (): void {
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
-    $tenant = Tenant::factory()->create([
+    $tenant = Tenant::query()->create([
         'business_type_id' => $type->id,
         'slug' => 'seo-clinic',
         'status' => TenantStatus::Active,
@@ -41,8 +41,10 @@ test('public booking page renders reusable seo metadata and structured data', fu
 test('private dashboards send noindex metadata', function (): void {
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
-    $tenant = Tenant::factory()->create([
+    $tenant = Tenant::query()->create([
         'business_type_id' => $type->id,
+        'slug' => 'private-seo-tenant',
+        'status' => TenantStatus::Active,
     ]);
 
     $tenant->memberships()->create([
@@ -59,13 +61,13 @@ test('private dashboards send noindex metadata', function (): void {
 test('sitemap includes active public booking pages only', function (): void {
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $active = Tenant::factory()->create([
+    $active = Tenant::query()->create([
         'business_type_id' => $type->id,
         'slug' => 'active-clinic',
         'status' => TenantStatus::Active,
     ]);
 
-    $inactive = Tenant::factory()->create([
+    $inactive = Tenant::query()->create([
         'business_type_id' => $type->id,
         'slug' => 'inactive-clinic',
         'status' => TenantStatus::Suspended,
