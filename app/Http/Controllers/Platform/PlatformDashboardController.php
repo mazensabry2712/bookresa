@@ -36,7 +36,7 @@ final class PlatformDashboardController
                     ->count(),
                 'subscriptions' => Subscription::withoutGlobalScopes()->count(),
                 'activeSubscriptions' => Subscription::withoutGlobalScopes()
-                    ->whereIn('status', $activeSubscriptionStatuses)
+                    ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
                     ->count(),
                 'bookings' => Booking::withoutGlobalScopes()->count(),
                 'customers' => Customer::withoutGlobalScopes()->count(),
@@ -45,7 +45,7 @@ final class PlatformDashboardController
                     ->where('status', PaymentStatus::Paid)
                     ->sum('amount_minor'),
                 'usageRevenueMinor' => Subscription::withoutGlobalScopes()
-                    ->whereIn('status', $activeSubscriptionStatuses)
+                    ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
                     ->join('usage_periods', 'subscriptions.id', '=', 'usage_periods.subscription_id')
                     ->sum('usage_periods.usage_charge_minor'),
             ],
