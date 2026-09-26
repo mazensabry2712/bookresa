@@ -48,7 +48,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'platform' => EnsurePlatformAdmin::class,
             'permission' => PermissionMiddleware::class,
             'module' => EnsureTenantModuleEnabled::class,
-            'security' => SecurityHeaders::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
