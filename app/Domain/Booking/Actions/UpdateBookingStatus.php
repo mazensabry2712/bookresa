@@ -76,6 +76,17 @@ final class UpdateBookingStatus
                 $fresh?->customer?->notify(new BookingNotification($fresh, $notificationKind));
             }
 
+            $this->audit->log(
+                'booking.status_changed',
+                $fresh,
+                [
+                    'tenant_id' => (int) $fresh->tenant_id,
+                    'booking_id' => (int) $fresh->getKey(),
+                    'from_status' => $from->value,
+                    'to_status' => $status->value,
+                ],
+            );
+
             return $fresh;
         });
     }
