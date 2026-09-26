@@ -5,7 +5,7 @@
 
 @section('content')
     @php
-        $money = static fn (int $minor): string => number_format($minor / 100, 2).' '.($tenant->profile?->booking_settings['currency'] ?? 'EGP');
+        $money = static fn (int $minor): string => number_format($minor / 100, 2).' '.(data_get($tenant->profile?->booking_settings, 'currency', 'EGP'));
     @endphp
 
     <div class="space-y-6">

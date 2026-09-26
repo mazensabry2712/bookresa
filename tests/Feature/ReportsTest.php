@@ -179,7 +179,6 @@ test('platform report aggregates all tenants independently', function (): void {
     ]);
 
     $tenantA = reportTenant('platform-report-a');
-    $ownerA = reportUser($tenantA, 'platform-owner-a@example.com');
     $bookingA = reportBooking($tenantA, 'BR-PLATFORM-A', '2026-09-28 10:00', BookingStatus::Completed);
     reportPayment($tenantA, $bookingA, 100000, 'PAY-PLATFORM-A');
 

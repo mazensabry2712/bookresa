@@ -200,5 +200,9 @@
     "Over-limit businesses": "Over-limit businesses",
     "Subscription revenue": "Subscription revenue",
     "Total platform revenue": "Total platform revenue",
-    "All platform statistics are tenant-independent.": "All platform statistics are tenant-independent."
+    "All platform statistics are tenant-independent.": "All platform statistics are tenant-independent.",
+    "Bookings, customers and revenue for the selected period.": "Bookings, customers and revenue for the selected period.",
+    "Most booked services in this period.": "Most booked services in this period.",
+    "Platform-level businesses, bookings, subscriptions, usage and revenue.": "Platform-level businesses, bookings, subscriptions, usage and revenue.",
+    "No Show": "No Show"
 }

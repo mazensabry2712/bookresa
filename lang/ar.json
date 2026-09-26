@@ -187,5 +187,9 @@
     "Over-limit businesses": "المنشآت المتجاوزة للحد",
     "Subscription revenue": "إيرادات الاشتراكات",
     "Total platform revenue": "إجمالي إيرادات المنصة",
-    "All platform statistics are tenant-independent.": "جميع إحصائيات المنصة مستقلة عن الـworkspace الحالي."
+    "All platform statistics are tenant-independent.": "جميع إحصائيات المنصة مستقلة عن الـworkspace الحالي.",
+    "Bookings, customers and revenue for the selected period.": "الحجوزات والعملاء والإيرادات للفترة المحددة.",
+    "Most booked services in this period.": "أكثر الخدمات حجزًا خلال هذه الفترة.",
+    "Platform-level businesses, bookings, subscriptions, usage and revenue.": "إحصائيات المنصة للمنشآت والحجوزات والاشتراكات والاستخدام والإيرادات.",
+    "No Show": "لم يحضر"
 }
