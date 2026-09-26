@@ -9,7 +9,6 @@ use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Booking\Services\RescheduleBooking;
-use App\Domain\Staff\Models\StaffProfile;
 use App\Http\Requests\Booking\RescheduleBookingRequest;
 use App\Http\Requests\Booking\UpdateBookingStatusRequest;
 use Carbon\CarbonImmutable;
