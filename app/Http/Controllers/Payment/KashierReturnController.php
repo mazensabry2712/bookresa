@@ -13,6 +13,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use RuntimeException;
 
 final class KashierReturnController
@@ -98,10 +99,10 @@ final class KashierReturnController
             }
 
             return redirect()
-                ->route('public.booking.confirmation', [
+                ->to(URL::signedRoute('public.booking.confirmation', [
                     'tenant' => $tenant->slug,
                     'booking' => $payable->booking_reference,
-                ])
+                ]))
                 ->with('payment_notice', $notice);
         });
     }
