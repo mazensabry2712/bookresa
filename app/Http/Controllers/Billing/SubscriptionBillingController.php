@@ -39,7 +39,7 @@ final class SubscriptionBillingController
         return view('billing.subscription', [
             'tenant' => $tenant->loadMissing('profile'),
             'subscription' => $subscription,
-            'payments' => $subscription?->payments ?? collect(),
+            'payments' => $payments,
             'usageSummary' => $usageSummary,
             'usagePeriods' => $usagePeriods,
             'plans' => $plans,
