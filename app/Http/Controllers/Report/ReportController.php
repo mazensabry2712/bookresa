@@ -37,12 +37,14 @@ final class ReportController
             ->distinct()
             ->count('customer_id');
 
-        $revenueMinor = Payment::query()
+        $revenueQuery = Payment::query()
             ->where('payable_type', (new Booking)->getMorphClass())
             ->where('status', PaymentStatus::Paid)
             ->whereNotNull('paid_at')
-            ->whereBetween('paid_at', [$startUtc, $endUtc])
-            ->sum('amount_minor');
+            ->whereBetween('paid_at', [$startUtc, $endUtc]);
+
+        $revenueMinor = (int) $revenueQuery->sum('amount_minor');
+        $currency = (string) ($revenueQuery->value('currency') ?? 'EGP');
 
         $topServices = (clone $bookings)
             ->select('service_id', DB::raw('COUNT(*) as booking_count'))
@@ -58,6 +60,7 @@ final class ReportController
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'timezone' => $timezone,
+            'currency' => $currency,
             'metrics' => [
                 'bookings' => (int) $statusCounts->sum(),
                 'customers' => $customers,
