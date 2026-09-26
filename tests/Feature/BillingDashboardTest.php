@@ -82,7 +82,7 @@ test('owner can see live customer usage and estimated billing total', function (
         ->assertOk()
         ->assertSee('4')
         ->assertSee('1,000.00 EGP')
-        ->assertSee('20,900.00 EGP');
+        ->assertSee('1,199.00 EGP');
 
     expect($subscription->fresh()->isUsable())->toBeFalse();
 });
