@@ -2,7 +2,7 @@
 
 return [
 
-    'name' => env('APP_NAME', 'Velto'),
+    'name' => env('APP_NAME', 'BookResa'),
 
     'env' => env('APP_ENV', 'production'),
 
