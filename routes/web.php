@@ -191,7 +191,7 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
     Route::get('/dashboard/payments', [PaymentManagementController::class, 'index'])
-        ->middleware(['module:payments', 'permission:payments.view'])
+        ->middleware(['module:payments', 'permission:billing.view'])
         ->name('payments.index');
 });
 
