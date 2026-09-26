@@ -11,8 +11,7 @@ final class CustomerUsagePolicy
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    ) {}
 
     public function allowsCreation(): bool
     {
