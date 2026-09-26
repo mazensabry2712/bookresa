@@ -28,9 +28,10 @@ final class PlatformFinanceController
     }
 
     public function toggleSubscriptionStatus(
-        Subscription $subscription,
+        int $subscriptionId,
         AuditLogger $audit,
     ): RedirectResponse {
+        $subscription = Subscription::withoutGlobalScopes()->findOrFail($subscriptionId);
         $from = $subscription->status;
         $next = in_array($from, [
             SubscriptionStatus::Trial,
