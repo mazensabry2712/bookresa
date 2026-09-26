@@ -26,10 +26,12 @@ use App\Notifications\BookingNotification;
 use App\Notifications\PaymentNotification;
 use App\Notifications\SubscriptionExpiryNotification;
 use App\Notifications\UsageWarningNotification;
+use App\Jobs\SendBillingNotificationsForSubscription;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -232,6 +234,46 @@ test('booking reminder command is idempotent for the same booking', function ():
     Notification::assertSentTo($booking->customer, BookingNotification::class, function (BookingNotification $notification) use ($booking): bool {
         return $notification->toArray($booking->customer)['type'] === 'booking_reminder';
     });
+});
+
+test('billing notification command dispatches one job per active subscription', function (): void {
+    Queue::fake();
+
+    $tenant = notificationTenant('notify-dispatch');
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Starter', 'ar' => 'البداية'],
+        'price_minor' => 50000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    $subscription = Subscription::query()->create([
+        'tenant_id' => $tenant->id,
+        'plan_id' => $plan->id,
+        'start_at' => CarbonImmutable::now('UTC'),
+        'end_at' => CarbonImmutable::now('UTC')->addMonth(),
+        'status' => SubscriptionStatus::Active,
+        'payment_status' => PaymentStatus::Paid,
+        'price_minor' => 50000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'pricing_snapshot' => [],
+    ]);
+
+    expect(Artisan::call('bookresa:send-billing-notifications'))->toBe(0);
+
+    Queue::assertPushed(
+        SendBillingNotificationsForSubscription::class,
+        fn (SendBillingNotificationsForSubscription $job): bool => true,
+    );
+
+    expect($subscription->exists)->toBeTrue();
 });
 
 test('billing notification command warns the workspace owner about expiry', function (): void {
