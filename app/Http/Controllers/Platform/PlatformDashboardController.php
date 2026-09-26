@@ -91,8 +91,7 @@ final class PlatformDashboardController
                 'mrrMinor' => $mrrMinor,
                 'overLimitBusinesses' => $overLimitBusinesses,
                 'additionalUsageRevenueMinor' => $additionalUsageRevenueMinor,
-                'additionalUsageRevenueMinor' => $additionalUsageRevenueMinor,
-            ],
+                            ],
             'recentBusinesses' => Tenant::query()
                 ->with([
                     'profile' => fn ($query) => $query->withoutGlobalScopes(),
