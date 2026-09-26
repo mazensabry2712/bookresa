@@ -8,6 +8,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use LogicException;
 use RuntimeException;
 
+// @php-cs-fixer-ignore single_line_empty_body
 final class UpdateCustomer
 {
     public function __construct(
