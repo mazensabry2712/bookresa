@@ -1,9 +1,5 @@
 <?php
 
-use IlluminateFoundationTestingRefreshDatabase;
-
-uses(RefreshDatabase::class);
-
 test('public home page renders the BookResa landing page', function (): void {
     $this->get(route('home'))
         ->assertOk()
