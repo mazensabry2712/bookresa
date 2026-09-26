@@ -5,12 +5,15 @@ namespace App\Http\Controllers\Onboarding;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
+use App\Domain\Billing\Models\Subscription;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class BusinessOnboardingController
@@ -88,7 +91,24 @@ class BusinessOnboardingController
 
         $modules = Module::query()
             ->where('is_active', true)
-            ->get(['id', 'is_core']);
+            ->get(['id', 'key', 'is_core']);
+
+        $subscription = Subscription::query()
+            ->with('plan.modules')
+            ->whereIn('status', [
+                SubscriptionStatus::Trial->value,
+                SubscriptionStatus::Active->value,
+            ])
+            ->latest('start_at')
+            ->first();
+
+        $entitledKeys = collect(
+            data_get($subscription?->pricing_snapshot, 'modules', [])
+        )->pluck('key')->filter()->values();
+
+        if ($subscription?->pricing_snapshot === null && $subscription?->isUsable()) {
+            $entitledKeys = $subscription->plan?->modules->pluck('key') ?? collect();
+        }
 
         $selected = collect($validated['module_ids'] ?? [])
             ->map(static fn ($id): int => (int) $id)
@@ -96,6 +116,16 @@ class BusinessOnboardingController
 
         $coreIds = $modules->where('is_core', true)->pluck('id');
         $selected = $selected->merge($coreIds->mapWithKeys(fn (int $id): array => [$id => true]));
+
+        $unavailable = $modules
+            ->where('is_core', false)
+            ->filter(fn (Module $module): bool => $selected->has($module->id) && ! $entitledKeys->contains($module->key));
+
+        if ($unavailable->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'module_ids' => __('Some selected modules are not included in the current subscription plan.'),
+            ]);
+        }
 
         $now = now();
         DB::transaction(function () use ($tenant, $modules, $selected, $now): void {
