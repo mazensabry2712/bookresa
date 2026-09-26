@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'BookResa Admin')</title>
+    <title>@yield('title', 'Velto Admin')</title>
     <meta name="robots" content="noindex,nofollow,noarchive">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -11,7 +11,7 @@
     <div class="min-h-screen lg:flex">
         <aside class="border-b border-slate-200 bg-white lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-e dark:border-slate-800 dark:bg-slate-900">
             <div class="flex h-16 items-center px-5">
-                <a href="{{ route('admin.plans.index') }}" class="text-lg font-bold tracking-tight">BookResa Admin</a>
+                <a href="{{ route('admin.plans.index') }}" class="text-lg font-bold tracking-tight">Velto Admin</a>
             </div>
             <nav class="space-y-1 p-3">
                 <a href="{{ route('admin.dashboard') }}" class="block rounded-xl px-3 py-2.5 text-sm font-semibold dark:bg-slate-800">{{ __('app.dashboard') }}</a>
@@ -31,7 +31,7 @@
             <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">BookResa</p>
+                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">Velto</p>
                         <h1 class="text-lg font-semibold">@yield('heading', __('Admin'))</h1>
                     </div>
                     <div class="flex items-center gap-2">
