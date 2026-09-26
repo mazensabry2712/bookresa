@@ -126,6 +126,7 @@ return [
                 'calendar.view',
                 'settings.manage',
                 'reports.view',
+                'notifications.view',
             ],
             'receptionist' => [
                 'business.view',
