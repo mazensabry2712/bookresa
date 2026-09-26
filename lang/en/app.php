@@ -336,6 +336,7 @@ return [
         'login' => 'Log in',
         'get_started' => 'Get started',
         'open_navigation' => 'Open navigation',
+        'close_navigation' => 'Close navigation',
         'eyebrow' => 'Booking operations, without the clutter',
         'hero_title' => 'Run your bookings and your business from one clear workspace.',
         'hero_description' => 'BookResa brings bookings, customers, services, staff, availability and payment-aware operations together for clinics, salons, barbers and other service businesses.',
