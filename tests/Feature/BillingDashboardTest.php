@@ -5,6 +5,8 @@ use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -136,4 +138,33 @@ test('owner cannot mutate another tenant subscription through billing actions', 
         ->assertNotFound();
 
     expect($subscriptionA->fresh()->cancelled_at)->toBeNull();
+});
+
+test('billing payment history is bounded to the latest 20 records', function (): void {
+    $tenant = billingDashboardTenant('payment-history-dashboard');
+    $user = billingDashboardUser($tenant, 'payment-history@example.com');
+    $subscription = app(CreateSubscription::class)->handle(
+        billingDashboardPlan(),
+        CarbonImmutable::parse('2026-10-01', 'UTC'),
+    );
+
+    for ($i = 1; $i <= 21; $i++) {
+        Payment::query()->create([
+            'tenant_id' => $tenant->id,
+            'payable_type' => $subscription->getMorphClass(),
+            'payable_id' => $subscription->id,
+            'reference' => 'SUB-PAY-'.str_pad((string) $i, 2, '0', STR_PAD_LEFT),
+            'provider' => 'kashier',
+            'amount_minor' => 19900,
+            'currency' => 'EGP',
+            'status' => PaymentStatus::Pending,
+            'idempotency_key' => 'payment-history-'.$i,
+        ]);
+    }
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('billing.subscription'))
+        ->assertOk()
+        ->assertSee('<p class="font-mono text-sm font-semibold">SUB-PAY-21</p>', false)
+        ->assertDontSee('<p class="font-mono text-sm font-semibold">SUB-PAY-01</p>', false);
 });
