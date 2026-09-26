@@ -9,7 +9,7 @@ use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
 use App\Domain\Tenant\Models\Tenant;
-use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,8 +34,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property CarbonImmutable|null $plan_change_effective_at
  * @property CarbonImmutable|null $cancelled_at
  * @property array<string, mixed>|null $metadata
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  */
 class Subscription extends Model
 {
