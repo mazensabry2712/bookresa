@@ -55,7 +55,7 @@
         <section class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="min-w-0">
                 <a href="{{ route('booking.management.index') }}" class="text-sm font-bold text-slate-500 hover:text-brand-indigo">
-                    ← {{ __('app.booking_ui.back_to_bookings') }}
+                    <span class="br-direction-arrow" aria-hidden="true">←</span> {{ __('app.booking_ui.back_to_bookings') }}
                 </a>
 
                 <div class="mt-4 flex flex-wrap items-center gap-3">
