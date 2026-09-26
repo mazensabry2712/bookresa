@@ -22,8 +22,8 @@ final class CustomerUsagePolicy
         }
 
         $policy = (string) data_get(
-            $tenant->settings,
-            'billing.customer_limit_policy',
+            $tenant->profile?->booking_settings,
+            'customer_limit_policy',
             'allow_overage',
         );
 
