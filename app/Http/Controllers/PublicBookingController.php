@@ -114,11 +114,12 @@ class PublicBookingController
                     $request->filled('notes') ? $request->string('notes')->toString() : null,
                 );
 
-                $paymentRequired = (bool) data_get(
-                    data_get($tenant->profile, 'booking_settings', []),
-                    'payment_required',
-                    false,
-                );
+                $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
+                $paymentMode = data_get($bookingSettings, 'payment_mode');
+
+                $paymentRequired = $paymentMode !== null
+                    ? in_array($paymentMode, ['full', 'deposit'], true)
+                    : (bool) data_get($bookingSettings, 'payment_required', false);
 
                 if ($paymentRequired) {
                     $payment = $startBookingPayment->handle($booking);
