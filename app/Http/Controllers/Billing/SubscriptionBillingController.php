@@ -70,7 +70,7 @@ final class SubscriptionBillingController
 
             if ($subscription->status->value === 'trial') {
                 return to_route('billing.subscription')
-                    ->with('status', 'Your trial subscription is active.');
+                    ->with('status', __('app.billing_ui.trial_active'));
             }
 
             $payment = $startPayment->handle($subscription);
@@ -94,7 +94,7 @@ final class SubscriptionBillingController
 
             if ($payment->status->value === 'paid') {
                 return to_route('billing.subscription')
-                    ->with('status', 'Subscription payment is already completed.');
+                    ->with('status', __('app.billing_ui.payment_already_completed'));
             }
 
             if (blank($payment->checkout_url)) {
@@ -114,7 +114,7 @@ final class SubscriptionBillingController
         try {
             $renewSubscription->handle($subscription);
 
-            return to_route('billing.subscription')->with('status', 'Subscription renewed successfully. Continue to payment to activate the new period.');
+            return to_route('billing.subscription')->with('status', __('app.billing_ui.renewed'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
@@ -133,7 +133,7 @@ final class SubscriptionBillingController
             $plan = Plan::query()->findOrFail((int) $validated['plan_id']);
             $schedulePlanChange->handle($subscription, $plan);
 
-            return back()->with('status', 'Plan change scheduled for the next billing boundary.');
+            return back()->with('status', __('app.billing_ui.plan_change_scheduled'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
@@ -146,7 +146,7 @@ final class SubscriptionBillingController
         try {
             $cancelSubscription->handle($subscription);
 
-            return back()->with('status', 'Subscription cancellation scheduled for the billing boundary.');
+            return back()->with('status', __('app.billing_ui.cancellation_scheduled_flash'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
@@ -159,7 +159,7 @@ final class SubscriptionBillingController
         try {
             $reactivateSubscription->handle($subscription);
 
-            return back()->with('status', 'Subscription cancellation was reactivated.');
+            return back()->with('status', __('app.billing_ui.reactivated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
@@ -172,7 +172,7 @@ final class SubscriptionBillingController
         try {
             $clearPlanChange->handle($subscription);
 
-            return back()->with('status', 'Scheduled plan change cleared.');
+            return back()->with('status', __('app.billing_ui.change_cleared'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
