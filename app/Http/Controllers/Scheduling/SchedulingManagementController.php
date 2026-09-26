@@ -91,7 +91,7 @@ final class SchedulingManagementController
                 ->values()
                 ?? collect(),
             'selectedStaffAvailability' => $selectedStaff?->availability
-                ->sortBy(['available_date', 'starts_at'])
+                ->sortBy(fn (StaffAvailability $availability): string => $availability->available_date->format('Y-m-d').' '.(string) $availability->starts_at)
                 ->values()
                 ?? collect(),
         ]);
