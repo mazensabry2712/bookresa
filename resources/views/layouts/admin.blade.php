@@ -14,17 +14,17 @@
                 <a href="{{ route('admin.plans.index') }}" class="text-lg font-bold tracking-tight">BookResa Admin</a>
             </div>
             <nav class="space-y-1 p-3">
-                <a href="{{ route('admin.dashboard') }}" class="block rounded-xl px-3 py-2.5 text-sm font-semibold dark:bg-slate-800">{{ __('Dashboard') }}</a>
+                <a href="{{ route('admin.dashboard') }}" class="block rounded-xl px-3 py-2.5 text-sm font-semibold dark:bg-slate-800">{{ __('app.dashboard') }}</a>
                 <a href="{{ route('admin.businesses.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Businesses') }}</a>
-                <a href="{{ route('admin.users.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Users') }}</a>
-                <a href="{{ route('admin.subscriptions.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Subscriptions') }}</a>
-                <a href="{{ route('admin.payments.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Payments') }}</a>
-                <a href="{{ route('admin.usage.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Usage') }}</a>
-                <a href="{{ route('admin.reports.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Reports') }}</a>
-                <a href="{{ route('admin.support.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Support') }}</a>
-                <a href="{{ route('admin.settings.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Settings') }}</a>
-                <a href="{{ route('admin.plans.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Plans') }}</a>
-                <a href="{{ route('home') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Public site') }}</a>
+                <a href="{{ route('admin.users.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.users') }}</a>
+                <a href="{{ route('admin.subscriptions.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.subscriptions') }}</a>
+                <a href="{{ route('admin.payments.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.payments') }}</a>
+                <a href="{{ route('admin.usage.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.usage') }}</a>
+                <a href="{{ route('admin.reports.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.reports') }}</a>
+                <a href="{{ route('admin.support.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.support') }}</a>
+                <a href="{{ route('admin.settings.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.settings') }}</a>
+                <a href="{{ route('admin.plans.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.plans') }}</a>
+                <a href="{{ route('home') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('app.public_site') }}</a>
             </nav>
         </aside>
         <div class="min-w-0 flex-1">
@@ -34,7 +34,8 @@
                         <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">BookResa</p>
                         <h1 class="text-lg font-semibold">@yield('heading', __('Admin'))</h1>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <x-locale-switcher />
                         <x-theme-toggle />
                         <div class="text-end">
                             <p class="text-sm font-medium">{{ auth()->user()->name }}</p>
