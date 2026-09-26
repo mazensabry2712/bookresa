@@ -169,9 +169,8 @@ test('a tenant role cannot be reused to grant access in another tenant', functio
 });
 
 test('forged tenant session falls back to an authorized tenant instead of switching access', function (): void {
-    [, $tenantA] = rbacWorkspace('Authorized Tenant');
+    [$ownerA, $tenantA] = rbacWorkspace('Authorized Tenant');
     [, $tenantB] = rbacWorkspace('Other Tenant');
-
 
     $this->actingAs($ownerA)
         ->withSession(['tenant_id' => $tenantB->id])
