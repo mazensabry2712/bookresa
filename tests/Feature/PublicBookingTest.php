@@ -11,7 +11,6 @@ use App\Domain\Business\Models\BusinessProfile;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Vite;
 
 uses(RefreshDatabase::class);
 
