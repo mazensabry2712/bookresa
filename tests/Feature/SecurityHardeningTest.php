@@ -152,3 +152,32 @@ test('platform pricing changes are audited', function (): void {
         ->and($activity->properties['plan_id'] ?? null)->toBe($plan->id)
         ->and($activity->properties['price_minor'] ?? null)->toBe(19900);
 });
+
+
+test('platform administrator grants and revocations are audited', function (): void {
+    $user = User::factory()->create(['email' => 'platform-audit@example.com']);
+
+    $this->artisan('platform-admin:set', ['email' => $user->email])
+        ->assertExitCode(0);
+
+    $granted = Activity::query()
+        ->where('log_name', 'security')
+        ->where('description', 'platform_admin.granted')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($granted->properties['user_id'] ?? null)->toBe($user->id)
+        ->and($granted->properties['is_active'] ?? null)->toBeTrue();
+
+    $this->artisan('platform-admin:set', ['email' => $user->email, '--revoke' => true])
+        ->assertExitCode(0);
+
+    $revoked = Activity::query()
+        ->where('log_name', 'security')
+        ->where('description', 'platform_admin.revoked')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($revoked->properties['user_id'] ?? null)->toBe($user->id)
+        ->and($revoked->properties['is_active'] ?? null)->toBeFalse();
+});
