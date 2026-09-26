@@ -7,6 +7,7 @@ use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -19,7 +20,7 @@ function supportTenant(string $slug): Tenant
         'status' => TenantStatus::Active,
     ]);
 
-    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
+    app(CurrentTenant::class)->set($tenant);
 
     BusinessProfile::query()->create([
         'tenant_id' => $tenant->id,
