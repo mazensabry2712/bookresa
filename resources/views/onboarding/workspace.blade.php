@@ -25,7 +25,7 @@
             </a>
         </div>
 
-        <div class="mt-8 grid gap-3 sm:grid-cols-5">
+        <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             @foreach ($steps as $step)
                 <div class="rounded-2xl border p-4 {{ $step['complete'] ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/30' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900' }}">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $loop->iteration }}</p>
@@ -52,6 +52,7 @@
                         @php
                             $enabled = $tenant->modules->contains('id', $module->id);
                             $isCore = $module->is_core;
+                            $entitled = $isCore || $entitledModuleKeys->contains($module->key);
                         @endphp
                         <label class="flex gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 {{ $isCore ? 'cursor-default' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-950' }}">
                             <input
@@ -59,7 +60,7 @@
                                 name="module_ids[]"
                                 value="{{ $module->id }}"
                                 @checked($enabled)
-                                @disabled($isCore)
+                                @disabled($isCore || ! $entitled)
                                 class="mt-1 rounded border-slate-300"
                             >
                             <span class="min-w-0">
@@ -67,6 +68,8 @@
                                     {{ data_get($module->name, app()->getLocale()) ?? data_get($module->name, 'en') ?? $module->key }}
                                     @if ($isCore)
                                         <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ __('Core') }}</span>
+                                    @elseif (! $entitled)
+                                        <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:bg-amber-950 dark:text-amber-200">{{ __('Upgrade') }}</span>
                                     @endif
                                 </span>
                                 @if ($module->description)
@@ -81,6 +84,10 @@
                     <p class="mt-4 text-sm font-medium text-rose-600">{{ $message }}</p>
                 @enderror
 
+                @if (! $hasSubscription)
+                    <p class="mt-4 text-sm text-amber-700 dark:text-amber-300">{{ __('Optional modules require a subscription plan. Core modules are enabled now.') }}</p>
+                @endif
+
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
                     <a href="{{ route('services.index') }}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-center text-sm font-semibold dark:border-slate-700">
                         {{ __('Continue to services') }}
@@ -90,6 +97,16 @@
                     </button>
                 </div>
             </form>
+                @if ($steps[4]['complete'] && ! $steps[5]['complete'])
+                    <div class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/30">
+                        <p class="text-sm text-emerald-800 dark:text-emerald-200">{{ __('Your workspace configuration is complete. Finish setup to publish the booking page.') }}</p>
+                        <form method="POST" action="{{ route('onboarding.complete') }}" class="mt-3">
+                            @csrf
+                            <button type="submit" class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('Finish onboarding') }}</button>
+                        </form>
+                    </div>
+                @endif
+
         </section>
     </main>
 </body>
