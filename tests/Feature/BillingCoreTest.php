@@ -158,6 +158,67 @@ test('subscription usage counts unique customers rather than bookings', function
         ->and($summary->currency)->toBe('EGP');
 });
 
+test('customer limit policy can allow overage or block new customer creation', function (): void {
+    billingTenant('customer-limit-policy');
+
+    $plan = billingPlan([
+        'included_customer_limit' => 2,
+        'additional_customer_price_minor' => 500,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+    $subscription->forceFill(['payment_status' => PaymentStatus::Paid])->save();
+
+    for ($i = 1; $i <= 2; $i++) {
+        Customer::query()->create([
+            'name' => 'Customer '.$i,
+            'phone' => sprintf('0100000000%d', $i),
+            'normalized_phone' => sprintf('20100000000%d', $i),
+        ]);
+    }
+
+    app(\App\Domain\Business\Actions\UpdateBusinessProfile::class)->handle([
+        'name_en' => 'Policy Test',
+        'name_ar' => 'اختبار',
+        'description_en' => null,
+        'description_ar' => null,
+        'phone' => null,
+        'email' => null,
+        'location' => null,
+        'address' => null,
+        'website' => null,
+        'facebook' => null,
+        'instagram' => null,
+        'timezone' => 'Africa/Cairo',
+        'locale' => 'en',
+        'payment_mode' => 'pay_later',
+        'deposit_percent' => 50,
+        'customer_email_required' => false,
+        'customer_limit_policy' => 'block_new_customers',
+    ]);
+
+    expect(fn () => app(\App\Domain\Customer\Actions\CreateCustomer::class)->handle([
+        'name' => 'Customer 3',
+        'phone' => '01000000003',
+        'email' => null,
+    ]))->toThrow(RuntimeException::class);
+
+    app(\App\Domain\Business\Models\BusinessProfile::class)->firstOrFail()->update([
+        'booking_settings->customer_limit_policy' => 'allow_overage',
+    ]);
+
+    $created = app(\App\Domain\Customer\Actions\CreateCustomer::class)->handle([
+        'name' => 'Customer 3',
+        'phone' => '01000000003',
+        'email' => null,
+    ]);
+
+    expect($created->name)->toBe('Customer 3');
+});
+
 test('usage period is immutable and idempotent for the same subscription window', function (): void {
     billingTenant('usage-period-clinic');
     $plan = billingPlan([
