@@ -233,11 +233,17 @@ Public Customer Booking Page is mobile-first.
 Initial UI themes: Light Mode and Dark Mode.
 
 ## 32. MVP
-Must Have: Authentication, Business Creation, Workspace, Business Profile, Services, Staff, Working Hours, Calendar, Availability, Bookings, Customers, Public Booking Page, Booking Notifications, Subscription, Customer Usage Tracking and Platform Admin Dashboard.
+The current MVP release scope includes the operational platform already defined by this specification:
 
-Later: Online Payments, Deposits, Invoices, Reports, WhatsApp, SMS, Multiple Branches, Inventory, Recurring Bookings, CRM, Mobile App and Advanced Analytics.
+Must Have:
+Authentication, Business Creation, Workspace, Business Profile, Services, Staff, Working Hours, Calendar, Availability, Bookings, Customers, Public Booking Page, Booking Notifications, Subscription, Customer Usage Tracking, Payments, Platform Admin Dashboard and basic Reports.
 
-Payment abstraction, localization, themes, SEO and scalable architecture are required foundations even when some later UI is postponed.
+Payments in the MVP use the provider-neutral PaymentGateway architecture with Kashier as the first provider. Booking payment modes include Full Payment, Deposit and Pay Later. Real Kashier sandbox end-to-end verification remains a release-gate activity until completed against the real test environment.
+
+Later / Post-MVP:
+Invoices, additional payment providers beyond the current MVP provider, WhatsApp, SMS, Multiple Branches, Inventory, Recurring Bookings, CRM, Mobile App, Advanced Analytics, advanced tax/invoicing capabilities and other premium modules.
+
+Localization, themes, SEO, security, tenant isolation and scalable architecture are MVP foundations, even when some production hardening tasks are completed separately.
 
 ## 33. Recommended Technical Architecture
 Frontend: Blade + Alpine.js + Tailwind CSS + Vite.
