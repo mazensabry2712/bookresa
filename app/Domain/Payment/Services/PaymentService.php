@@ -83,7 +83,7 @@ final class PaymentService
                     return $existing;
                 }
 
-                if (! isset($existing->metadata['provider_creation_failed_at'])) {
+                if (blank(data_get($existing->metadata, 'provider_creation_failed_at'))) {
                     return $existing;
                 }
 
@@ -132,7 +132,7 @@ final class PaymentService
                     return $payment;
                 }
 
-                if (! isset($payment->metadata['provider_creation_failed_at'])) {
+                if (blank(data_get($payment->metadata, 'provider_creation_failed_at'))) {
                     return $payment;
                 }
             }
@@ -147,8 +147,6 @@ final class PaymentService
                 metadata: $metadata,
                 idempotencyKey: $idempotencyKey,
             ));
-
-            return $this->applyResult($payment, $result);
         } catch (\Throwable $e) {
             $payment->forceFill([
                 'metadata' => array_merge($payment->metadata ?? [], [
@@ -158,6 +156,8 @@ final class PaymentService
 
             throw $e;
         }
+
+        return $this->applyResult($payment, $result);
     }
 
     public function applyResult(Payment $payment, PaymentGatewayResult $result): Payment
