@@ -2,6 +2,7 @@
 
 namespace App\Domain\Customer\Actions;
 
+use App\Domain\Billing\Services\CustomerUsagePolicy;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Services\CustomerIdentity;
 use App\Domain\Tenant\Services\CurrentTenant;
