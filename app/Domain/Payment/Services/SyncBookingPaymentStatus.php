@@ -21,13 +21,25 @@ final class SyncBookingPaymentStatus
             return;
         }
 
-        $target = match ($status) {
-            PaymentStatus::Paid => BookingPaymentStatus::Paid,
-            PaymentStatus::Refunded => BookingPaymentStatus::Refunded,
-            default => null,
-        };
+        $booking->loadMissing('service');
 
-        if ($target !== null && $booking->payment_status !== $target) {
+        $paidMinor = $booking->payments()
+            ->where('status', PaymentStatus::Paid)
+            ->sum('amount_minor');
+
+        if ($status === PaymentStatus::Refunded && $paidMinor <= 0) {
+            $booking->forceFill(['payment_status' => BookingPaymentStatus::Refunded])->save();
+            return;
+        }
+
+        $totalMinor = (int) ($booking->service?->price_minor ?? 0);
+        $target = $paidMinor <= 0
+            ? BookingPaymentStatus::Unpaid
+            : ($totalMinor > 0 && $paidMinor < $totalMinor
+                ? BookingPaymentStatus::PartiallyPaid
+                : BookingPaymentStatus::Paid);
+
+        if ($booking->payment_status !== $target) {
             $booking->forceFill(['payment_status' => $target])->save();
         }
     }
