@@ -39,7 +39,7 @@ test('a valid locale query parameter persists for the session', function (): voi
     $response = $this->get('/?locale=ar');
 
     $response->assertOk()
-        ->assertSee('<html lang="ar">', false);
+        ->assertSee('<html lang="ar" dir="rtl">', false);
 
     expect(session('locale'))->toBe('ar')
         ->and(app()->getLocale())->toBe('ar');
