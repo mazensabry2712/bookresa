@@ -13,6 +13,7 @@ final class FindOrCreateCustomer
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly CustomerIdentity $identity,
+        private readonly CustomerUsagePolicy $usagePolicy,
     ) {}
 
     public function handle(
@@ -38,6 +39,10 @@ final class FindOrCreateCustomer
             ])->save();
 
             return $customer;
+        }
+
+        if (! $this->usagePolicy->allowsCreation()) {
+            throw new \RuntimeException('The included customer limit has been reached.');
         }
 
         return Customer::query()->create([
