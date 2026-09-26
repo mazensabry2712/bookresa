@@ -1,3 +1,5 @@
+<?php
+
 namespace App\Http\Controllers\Booking;
 
 use App\Domain\Booking\Actions\UpdateBookingStatus;
