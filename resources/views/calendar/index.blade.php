@@ -175,6 +175,7 @@
                                                 </div>
                                                 <p class="mt-1 truncate text-xs font-bold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</p>
                                                 <p class="mt-0.5 truncate text-[11px] text-slate-500">{{ $serviceName($booking->service) }}</p>
+                                                <p class="mt-1 truncate font-mono text-[10px] text-slate-400">{{ $booking->booking_reference }}</p>
                                                 <span class="mt-1.5 inline-flex max-w-full truncate rounded-full border px-2 py-0.5 text-[10px] font-bold {{ $statusClasses[$bookingStatus] ?? $statusClasses['pending'] }}">
                                                     {{ $statusLabels[$bookingStatus] ?? $bookingStatus }}
                                                 </span>
