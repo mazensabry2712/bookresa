@@ -93,10 +93,15 @@ final class SendBillingNotificationsForSubscription implements ShouldQueue
                 ? $customerCount >= (int) ceil($limit * ($threshold / 100))
                 : $customerCount > 0;
 
+            $stage = $limit > 0 && $customerCount > $limit
+                ? 'over_limit'
+                : ($limit > 0 && $customerCount >= $limit ? 'limit_reached' : 'threshold');
+
             if (
                 $thresholdReached
                 && ! $owner->notifications()
                     ->where('type', UsageWarningNotification::class)
+                    ->whereJsonContains('data->stage', $stage)
                     ->where('created_at', '>=', $now->subDay())
                     ->exists()
             ) {
