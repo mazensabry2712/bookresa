@@ -9,6 +9,8 @@ use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use App\Http\Controllers\Platform\PlanAdminController;
+use App\Http\Controllers\Platform\PlatformBusinessController;
+use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Scheduling\SchedulingManagementController;
 use App\Http\Controllers\SeoController;
@@ -188,6 +190,10 @@ Route::middleware(['auth', 'platform'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function (): void {
+        Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
+        Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
+            ->name('businesses.toggle-status');
         Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');
         Route::get('/plans/create', [PlanAdminController::class, 'create'])->name('plans.create');
         Route::post('/plans', [PlanAdminController::class, 'store'])->name('plans.store');
