@@ -3,7 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Booking Confirmed — BookResa</title>
+
+    <x-seo
+        :title="'Booking '.$booking->booking_reference.' — BookResa'"
+        :description="'Booking confirmation for '.$booking->booking_reference.'.'"
+        robots="noindex,nofollow,noarchive"
+        og-type="website"
+    />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
