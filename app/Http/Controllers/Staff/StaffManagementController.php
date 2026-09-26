@@ -12,6 +12,7 @@ use App\Http\Requests\Staff\StoreStaffMemberRequest;
 use App\Http\Requests\Staff\UpdateStaffMemberRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -67,7 +68,7 @@ final class StaffManagementController
         $status = $request->validate(['status' => ['required', 'in:active,inactive']])['status'];
 
         try {
-            $role = (string) ($staff->user->roles->first()?->name ?? 'staff');
+            $role = (string) ($staff->user->getRoleNames()->first() ?? 'staff');
             $updateStaffMember->handle($staff, [
                 'display_name' => $staff->display_name,
                 'phone' => $staff->phone,
