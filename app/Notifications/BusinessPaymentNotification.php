@@ -50,7 +50,7 @@ final class BusinessPaymentNotification extends Notification implements ShouldQu
 
         return (new MailMessage)
             ->subject($data['title']['en'].' · '.$this->payment->reference)
-            ->greeting('Velto')
+            ->greeting('BookResa')
             ->line($data['message']['en'])
             ->line('Payment: '.$this->payment->reference)
             ->line('Amount: '.number_format($this->payment->amount_minor / 100, 2).' '.$this->payment->currency);
