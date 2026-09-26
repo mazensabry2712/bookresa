@@ -80,22 +80,40 @@ const setupMobileNavigation = () => {
     const drawer = document.querySelector('[data-bookresa-sidebar]');
     const backdrop = document.querySelector('[data-bookresa-sidebar-backdrop]');
     const closeButtons = document.querySelectorAll('[data-bookresa-sidebar-close]');
+    const toggleButtons = document.querySelectorAll('[data-bookresa-sidebar-toggle]');
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    let isOpen = false;
 
     if (!drawer || !backdrop) {
         return;
     }
 
-    const setOpen = (open) => {
+    const syncAccessibility = () => {
+        drawer.setAttribute('aria-hidden', desktopQuery.matches || isOpen ? 'false' : 'true');
+    };
+
+    const setOpen = (open, restoreFocus = true) => {
+        isOpen = open;
         drawer.classList.toggle('is-open', open);
         backdrop.classList.toggle('is-open', open);
         document.body.classList.toggle('overflow-hidden', open);
 
-        document.querySelectorAll('[data-bookresa-sidebar-toggle]').forEach((button) => {
+        toggleButtons.forEach((button) => {
             button.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
+
+        syncAccessibility();
+
+        if (open) {
+            closeButtons[0]?.focus();
+        } else if (restoreFocus) {
+            toggleButtons[0]?.focus();
+        }
     };
 
-    document.querySelectorAll('[data-bookresa-sidebar-toggle]').forEach((button) => {
+    syncAccessibility();
+
+    toggleButtons.forEach((button) => {
         button.addEventListener('click', () => setOpen(true));
     });
 
@@ -106,13 +124,22 @@ const setupMobileNavigation = () => {
     });
 
     drawer.querySelectorAll('a').forEach((link) => {
-        link.addEventListener('click', () => setOpen(false));
+        link.addEventListener('click', () => setOpen(false, false));
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && isOpen) {
             setOpen(false);
         }
+    });
+
+    desktopQuery.addEventListener('change', (event) => {
+        if (event.matches) {
+            setOpen(false, false);
+            return;
+        }
+
+        syncAccessibility();
     });
 };
 
