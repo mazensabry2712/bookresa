@@ -5,6 +5,7 @@ namespace App\Domain\Business\Actions;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use LogicException;
 
 final class UpdateBusinessProfile
@@ -29,7 +30,36 @@ final class UpdateBusinessProfile
                 throw new LogicException('Business profile must belong to the current tenant.');
             }
 
+            $logoPath = $profile->logo_path;
+            $coverPath = $profile->cover_path;
+
+            if (($data['remove_logo'] ?? false) && $logoPath) {
+                Storage::disk('public')->delete($logoPath);
+                $logoPath = null;
+            }
+
+            if (($data['remove_cover'] ?? false) && $coverPath) {
+                Storage::disk('public')->delete($coverPath);
+                $coverPath = null;
+            }
+
+            if (($data['logo'] ?? null) instanceof \Illuminate\Http\UploadedFile) {
+                if ($logoPath) {
+                    Storage::disk('public')->delete($logoPath);
+                }
+                $logoPath = $data['logo']->store('businesses/'.$tenantId.'/logo', 'public');
+            }
+
+            if (($data['cover'] ?? null) instanceof \Illuminate\Http\UploadedFile) {
+                if ($coverPath) {
+                    Storage::disk('public')->delete($coverPath);
+                }
+                $coverPath = $data['cover']->store('businesses/'.$tenantId.'/cover', 'public');
+            }
+
             $profile->fill([
+                'logo_path' => $logoPath,
+                'cover_path' => $coverPath,
                 'name' => [
                     'en' => $data['name_en'],
                     'ar' => $data['name_ar'] ?: $data['name_en'],
