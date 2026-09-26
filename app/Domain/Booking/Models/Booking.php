@@ -1,3 +1,4 @@
+
 <?php
 
 namespace App\Domain\Booking\Models;
@@ -9,12 +10,33 @@ use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $customer_id
+ * @property int $service_id
+ * @property int|null $staff_id
+ * @property CarbonImmutable $starts_at
+ * @property CarbonImmutable $ends_at
+ * @property CarbonImmutable|null $block_ends_at
+ * @property BookingStatus $status
+ * @property PaymentStatus $payment_status
+ * @property string $booking_reference
+ * @property string|null $notes
+ * @property CarbonImmutable|null $reminder_sent_at
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property-read Customer $customer
+ * @property-read Service $service
+ * @property-read StaffProfile|null $staff
+ */
 class Booking extends Model
 {
     use HasFactory, BelongsToTenant;
@@ -39,31 +61,47 @@ class Booking extends Model
             'starts_at' => 'immutable_datetime',
             'ends_at' => 'immutable_datetime',
             'block_ends_at' => 'immutable_datetime',
+            'reminder_sent_at' => 'immutable_datetime',
             'status' => BookingStatus::class,
             'payment_status' => PaymentStatus::class,
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<Service, $this>
+     */
     public function service(): BelongsTo
     {
         return $this->belongsTo(Service::class);
     }
 
+    /**
+     * @return BelongsTo<StaffProfile, $this>
+     */
     public function staff(): BelongsTo
     {
         return $this->belongsTo(StaffProfile::class);
     }
 
+    /**
+     * @return HasMany<BookingStatusHistory, $this>
+     */
     public function statusHistory(): HasMany
     {
         return $this->hasMany(BookingStatusHistory::class);
     }
 
+    /**
+     * @return MorphMany<Payment, $this>
+     */
     public function payments(): MorphMany
     {
         return $this->morphMany(Payment::class, 'payable');
