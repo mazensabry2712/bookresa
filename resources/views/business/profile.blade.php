@@ -11,7 +11,7 @@
             <p class="mt-1 text-sm text-slate-500">{{ __('Keep the public business information and booking preferences up to date.') }}</p>
         </div>
 
-        <form method="POST" action="{{ route('business.profile.update') }}" class="space-y-6">
+        <form method="POST" action="{{ route('business.profile.update') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -34,6 +34,34 @@
                         <span class="font-medium">{{ __('Description (Arabic)') }}</span>
                         <textarea name="description_ar" rows="3" class="w-full rounded-xl border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">{{ old('description_ar', data_get($profile->description, 'ar')) }}</textarea>
                     </label>
+                </div>
+            </section>
+
+            <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                <h3 class="font-semibold">{{ __('Branding') }}</h3>
+                <div class="mt-4 grid gap-5 lg:grid-cols-2">
+                    <div>
+                        <p class="text-sm font-medium">{{ __('Logo') }}</p>
+                        @if ($profile->logo_path)
+                            <img src="{{ Storage::disk('public')->url($profile->logo_path) }}" alt="{{ __('Business logo') }}" class="mt-3 h-24 w-24 rounded-2xl object-cover ring-1 ring-slate-200 dark:ring-slate-700">
+                            <label class="mt-3 flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="remove_logo" value="1" class="rounded border-slate-300">
+                                {{ __('Remove current logo') }}
+                            </label>
+                        @endif
+                        <input type="file" name="logo" accept="image/jpeg,image/png,image/webp" class="mt-3 block w-full rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm dark:border-slate-700">
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium">{{ __('Cover image') }}</p>
+                        @if ($profile->cover_path)
+                            <img src="{{ Storage::disk('public')->url($profile->cover_path) }}" alt="{{ __('Business cover') }}" class="mt-3 h-28 w-full rounded-2xl object-cover ring-1 ring-slate-200 dark:ring-slate-700">
+                            <label class="mt-3 flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="remove_cover" value="1" class="rounded border-slate-300">
+                                {{ __('Remove current cover') }}
+                            </label>
+                        @endif
+                        <input type="file" name="cover" accept="image/jpeg,image/png,image/webp" class="mt-3 block w-full rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm dark:border-slate-700">
+                    </div>
                 </div>
             </section>
 
