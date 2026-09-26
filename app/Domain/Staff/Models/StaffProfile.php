@@ -53,11 +53,13 @@ class StaffProfile extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsToMany<Service, $this> */
     public function services(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -68,21 +70,25 @@ class StaffProfile extends Model
         )->withPivot('tenant_id')->withTimestamps();
     }
 
+    /** @return HasMany<ServiceStaff, $this> */
     public function serviceAssignments(): HasMany
     {
         return $this->hasMany(ServiceStaff::class, 'staff_id');
     }
 
+    /** @return HasMany<StaffWorkingHour, $this> */
     public function workingHours(): HasMany
     {
         return $this->hasMany(StaffWorkingHour::class, 'staff_id');
     }
 
+    /** @return HasMany<StaffDayOff, $this> */
     public function daysOff(): HasMany
     {
         return $this->hasMany(StaffDayOff::class, 'staff_id');
     }
 
+    /** @return HasMany<StaffAvailability, $this> */
     public function availability(): HasMany
     {
         return $this->hasMany(StaffAvailability::class, 'staff_id');
