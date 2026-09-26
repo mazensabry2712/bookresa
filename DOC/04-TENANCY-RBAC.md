@@ -41,6 +41,7 @@ services.view/create/update/delete
 staff.view/manage
 customers.view/create/update
 bookings.view/create/update/cancel/complete
+schedule management uses calendar.view for access and settings.manage for mutations
 calendar.view
 billing.view
 subscription.manage
