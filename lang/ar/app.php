@@ -43,4 +43,10 @@ return [
     'email' => 'البريد الإلكتروني',
     'book_appointment' => 'احجز موعدًا',
     'book_online' => 'احجز عبر الإنترنت',
+    'booking_confirmed' => 'تم تأكيد الحجز',
+    'booking_received' => 'تم استلام الحجز',
+    'payment_status' => 'حالة الدفع',
+    'complete_payment' => 'إكمال الدفع',
+    'book_another_appointment' => 'احجز موعدًا آخر',
+    'booking_confirmation' => 'تأكيد الحجز :reference.',
 ];
