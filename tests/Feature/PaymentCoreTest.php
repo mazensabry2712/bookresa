@@ -10,6 +10,7 @@ use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
+use App\Domain\Payment\Services\StartBookingPayment;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -161,6 +162,90 @@ test('idempotency key returns the existing payment without creating another gate
     expect($second->is($first))->toBeTrue()
         ->and($gateway->createCalls)->toBe(1)
         ->and(Payment::query()->count())->toBe(1);
+});
+
+test('an incomplete idempotent payment can retry provider creation', function (): void {
+    $tenant = paymentTenant('payment-retry');
+    $booking = paymentBooking($tenant);
+
+    $gateway = new class implements PaymentGateway {
+        public int $createCalls = 0;
+
+        public function createPayment(PaymentRequest $request): PaymentGatewayResult
+        {
+            $this->createCalls++;
+
+            if ($this->createCalls === 1) {
+                throw new RuntimeException('Temporary gateway failure.');
+            }
+
+            return new PaymentGatewayResult(
+                status: PaymentStatus::Processing,
+                providerReference: 'FAKE-RETRY-'.$request->merchantReference,
+                checkoutUrl: 'https://payments.example.test/retry/'.$request->merchantReference,
+            );
+        }
+
+        public function verifyPayment(string $providerReference): PaymentGatewayResult
+        {
+            return new PaymentGatewayResult(status: PaymentStatus::Paid, providerReference: $providerReference);
+        }
+
+        public function refundPayment(string $providerReference, int $amountMinor): PaymentGatewayResult
+        {
+            return new PaymentGatewayResult(status: PaymentStatus::Refunded, providerReference: $providerReference);
+        }
+    };
+
+    expect(fn () => app(PaymentService::class)->start(
+        $gateway,
+        $booking,
+        25000,
+        'EGP',
+        'fake',
+        idempotencyKey: 'retryable-payment',
+    ))->toThrow(RuntimeException::class);
+
+    $pending = Payment::query()->where('idempotency_key', 'retryable-payment')->firstOrFail();
+
+    expect($pending->status)->toBe(PaymentStatus::Pending)
+        ->and($pending->provider_reference)->toBeNull();
+
+    $retried = app(PaymentService::class)->start(
+        $gateway,
+        $booking,
+        25000,
+        'EGP',
+        'fake',
+        idempotencyKey: 'retryable-payment',
+    );
+
+    expect($retried->status)->toBe(PaymentStatus::Processing)
+        ->and($retried->provider_reference)->toStartWith('FAKE-RETRY-')
+        ->and($gateway->createCalls)->toBe(2)
+        ->and(Payment::query()->count())->toBe(1);
+});
+
+test('booking payment creates a new attempt after a failed payment', function (): void {
+    $tenant = paymentTenant('booking-payment-retry');
+    $booking = paymentBooking($tenant);
+    $booking->customer()->update(['email' => 'customer@example.com']);
+
+    $gateway = new FakePaymentGateway();
+
+    $this->app->instance(PaymentGateway::class, $gateway);
+    config(['bookresa.payments.default_provider' => 'fake']);
+
+    $first = app(StartBookingPayment::class)->handle($booking);
+    $first->forceFill(['status' => PaymentStatus::Failed])->save();
+
+    $second = app(StartBookingPayment::class)->handle($booking->fresh());
+
+    expect($first->id)->not->toBe($second->id)
+        ->and($first->idempotency_key)->toBe('booking-'.$booking->id.'-fake-attempt-1')
+        ->and($second->idempotency_key)->toBe('booking-'.$booking->id.'-fake-attempt-2')
+        ->and($gateway->createCalls)->toBe(2)
+        ->and(Payment::query()->count())->toBe(2);
 });
 
 test('verified gateway result can move payment to paid and paid payment cannot regress', function (): void {
