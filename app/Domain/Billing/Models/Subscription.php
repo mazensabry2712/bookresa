@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Domain\Billing\Models;
@@ -20,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property int $id
  * @property int $tenant_id
  * @property int $plan_id
- * @property CarbonImmutable $start_at
- * @property CarbonImmutable $end_at
+ * @property CarbonInterface $start_at
+ * @property CarbonInterface $end_at
  * @property SubscriptionStatus $status
  * @property PaymentStatus $payment_status
  * @property int $price_minor
@@ -31,15 +30,15 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property int $additional_customer_price_minor
  * @property array<string, mixed>|null $pricing_snapshot
  * @property int|null $next_plan_id
- * @property CarbonImmutable|null $plan_change_effective_at
- * @property CarbonImmutable|null $cancelled_at
+ * @property CarbonInterface|null $plan_change_effective_at
+ * @property CarbonInterface|null $cancelled_at
  * @property array<string, mixed>|null $metadata
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  */
 class Subscription extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id',
