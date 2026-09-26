@@ -1,3 +1,4 @@
+
 <?php
 
 namespace App\Console\Commands;
@@ -9,6 +10,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Notifications\BookingNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Collection;
 
 final class SendBookingReminders extends Command
 {
@@ -31,7 +33,8 @@ final class SendBookingReminders extends Command
             ->whereBetween('starts_at', [$from, $to])
             ->whereNull('reminder_sent_at')
             ->orderBy('id')
-            ->chunkById(100, function ($bookings) use ($currentTenant, &$sent): void {
+            ->chunkById(100, function (Collection $bookings) use ($currentTenant, &$sent): void {
+                /** @var Collection<int, Booking> $bookings */
                 foreach ($bookings as $booking) {
                     $tenant = Tenant::query()->find((int) $booking->tenant_id);
 
