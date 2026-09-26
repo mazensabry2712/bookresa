@@ -6,6 +6,7 @@ use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\AuditLogger;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -15,6 +16,7 @@ final class SchedulePlanChange
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -51,7 +53,15 @@ final class SchedulePlanChange
                 'plan_change_effective_at' => $effectiveAt,
             ])->save();
 
-            return $subscription->fresh(['nextPlan']);
+            $fresh = $subscription->fresh(['nextPlan']);
+
+            $this->audit->log(
+                'subscription.plan_change_scheduled',
+                $fresh,
+                ['tenant_id' => (int) $fresh->tenant_id, 'subscription_id' => (int) $fresh->getKey(), 'from_plan_id' => (int) $subscription->plan_id, 'to_plan_id' => (int) $plan->getKey()],
+            );
+
+            return $fresh;
         });
     }
 }
