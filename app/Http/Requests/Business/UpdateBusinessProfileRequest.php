@@ -30,6 +30,8 @@ class UpdateBusinessProfileRequest extends FormRequest
             'deposit_percent' => $this->input('deposit_percent', 50),
             'customer_email_required' => filter_var($this->input('customer_email_required'), FILTER_VALIDATE_BOOL),
             'customer_limit_policy' => (string) $this->input('customer_limit_policy', 'allow_overage'),
+            'minimum_notice_minutes' => $this->input('minimum_notice_minutes', 0),
+            'maximum_advance_days' => $this->input('maximum_advance_days'),
         ]);
     }
 
@@ -53,6 +55,8 @@ class UpdateBusinessProfileRequest extends FormRequest
             'deposit_percent' => ['required_if:payment_mode,deposit', 'nullable', 'integer', 'min:1', 'max:99'],
             'customer_email_required' => ['boolean'],
             'customer_limit_policy' => ['required', Rule::in(['allow_overage', 'block_new_customers'])],
+            'minimum_notice_minutes' => ['required', 'integer', 'min:0', 'max:43200'],
+            'maximum_advance_days' => ['nullable', 'integer', 'min:1', 'max:730'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             'remove_logo' => ['boolean'],
