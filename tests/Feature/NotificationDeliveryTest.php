@@ -8,6 +8,7 @@ use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Enums\PaymentStatus;
@@ -16,6 +17,7 @@ use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Service\Actions\CreateService;
+use App\Domain\Service\Models\Service;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -49,7 +51,7 @@ function notificationTenant(string $slug): Tenant
 
     app(CurrentTenant::class)->set($tenant);
 
-    \App\Domain\Business\Models\BusinessProfile::query()->create([
+    BusinessProfile::query()->create([
         'tenant_id' => $tenant->id,
         'name' => ['en' => $slug, 'ar' => $slug],
         'timezone' => 'Africa/Cairo',
@@ -58,7 +60,7 @@ function notificationTenant(string $slug): Tenant
     return $tenant;
 }
 
-function notificationService(): \App\Domain\Service\Models\Service
+function notificationService(): Service
 {
     return app(CreateService::class)->handle([
         'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
