@@ -23,7 +23,7 @@ Business/service public content can store localized values (for example JSON key
 ## RTL/LTR
 Arabic uses rtl. English uses ltr. Layouts and components must be direction-safe from the start.
 
-Current dashboard/admin/onboarding/public booking document roots already expose the locale direction through `dir="rtl|ltr"`. Full visual RTL/LTR QA remains a release task.
+Current dashboard/admin/onboarding/public booking document roots expose the locale direction through `dir="rtl|ltr"`. The shared app entry also normalizes document direction for layouts such as the welcome page that do not render the `dir` attribute themselves. Full visual RTL/LTR QA remains a release task.
 
 ## Themes
 First-class:
