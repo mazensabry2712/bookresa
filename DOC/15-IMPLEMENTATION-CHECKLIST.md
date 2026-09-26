@@ -120,14 +120,14 @@
 - [x] production build
 
 ## Release gate
-- [ ] full test suite
+- [x] full test suite (164 passed / 556 assertions locally)
 - [ ] static analysis
-- [ ] Pint
-- [ ] production build
-- [ ] tenant isolation green
+- [x] Pint
+- [x] production build
+- [x] tenant isolation green (covered by automated suite)
 - [ ] payment sandbox green
 - [ ] mobile booking QA
 - [ ] Arabic/English QA
 - [ ] RTL/LTR QA
 - [ ] dark/light QA
-- [ ] SEO QA
+- [x] SEO QA (automated metadata/sitemap/robots checks)
