@@ -27,10 +27,16 @@ final class TenantRoleProvisioner
 
     public function provisionRole(Tenant $tenant, string $roleKey): Role
     {
-        $permissions = config("bookresa.rbac.roles.{$roleKey}", []);
+        $roles = config('bookresa.rbac.roles', []);
+
+        if (! is_array($roles) || ! array_key_exists($roleKey, $roles)) {
+            throw new \InvalidArgumentException("Unknown BookResa role [{$roleKey}].");
+        }
+
+        $permissions = $roles[$roleKey];
 
         if (! is_array($permissions)) {
-            throw new \InvalidArgumentException("Unknown BookResa role [{$roleKey}].");
+            throw new \InvalidArgumentException("Invalid permission mapping for BookResa role [{$roleKey}].");
         }
 
         $previousTeamId = getPermissionsTeamId();
