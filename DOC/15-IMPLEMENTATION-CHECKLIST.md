@@ -113,8 +113,8 @@
 - [ ] queue heavy work
 - [ ] Redis production
 - [ ] OPcache
-- [ ] rate limits
-- [ ] audit logs
+- [x] rate limits
+- [x] audit logs
 - [ ] backup/restore test
 - [ ] production build
 
