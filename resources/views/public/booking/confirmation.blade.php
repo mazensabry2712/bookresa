@@ -43,7 +43,7 @@
                 @if ($payment->status->value !== 'paid' && $payment->checkout_url)
                     <a href="{{ $payment->checkout_url }}"
                         class="mt-4 inline-flex w-full justify-center rounded-lg bg-black px-5 py-3 font-medium text-white dark:bg-white dark:text-black">
-                        Complete payment
+                        {{ __('app.complete_payment') }}
                     </a>
                 @endif
             </div>
@@ -51,7 +51,7 @@
 
         <a href="{{ route('public.booking.show', $tenant->slug) }}"
             class="mt-8 inline-flex rounded-lg bg-black px-5 py-3 font-medium text-white dark:bg-white dark:text-black">
-            Book another appointment
+            {{ __('app.book_another_appointment') }}
         </a>
     </main>
 </body>
