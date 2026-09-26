@@ -48,6 +48,8 @@ final class AvailabilityService
 
         $timezone = $this->timezone();
         $localDate = $date->setTimezone($timezone)->startOfDay();
+        $dateStart = $localDate->startOfDay();
+        $dateEnd = $dateStart->addDay();
 
         if ($localDate->isBefore(CarbonImmutable::now($timezone)->startOfDay())) {
             return [];
