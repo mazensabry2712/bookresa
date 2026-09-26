@@ -38,7 +38,15 @@ final class TenantModuleAccess
             ->first();
 
         if ($module->is_core || $isCore) {
-            return $tenantModule?->enabled !== false;
+            if ($tenantModule?->enabled === false) {
+                return false;
+            }
+
+            if (! (bool) data_get($this->currentTenant->get()?->settings, 'onboarding.completed', false)) {
+                return true;
+            }
+
+            return $this->usableSubscriptionExists($tenantId);
         }
 
         if ($tenantModule?->enabled !== true) {
@@ -62,4 +70,17 @@ final class TenantModuleAccess
         return collect(data_get($subscription->pricing_snapshot, 'modules', []))
             ->contains(fn (array $item): bool => ($item['key'] ?? null) === $moduleKey);
     }
+    private function usableSubscriptionExists(int $tenantId): bool
+    {
+        return Subscription::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', [
+                SubscriptionStatus::Trial->value,
+                SubscriptionStatus::Active->value,
+            ])
+            ->latest('start_at')
+            ->get()
+            ->contains(fn (Subscription $subscription): bool => $subscription->isUsable());
+    }
+
 }
