@@ -60,6 +60,6 @@ final class BusinessBookingNotification extends Notification implements ShouldQu
             ->greeting('Velto')
             ->line($data['message']['en'])
             ->line('Booking: '.$this->booking->booking_reference)
-            ->line('Customer: '.($this->booking->customer?->name ?? 'Customer'));
+            ->line('Customer: '.($this->booking->customer->name ?? 'Customer'));
     }
 }
