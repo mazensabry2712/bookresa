@@ -49,10 +49,18 @@ settings.manage
 reports.view
 
 ## Module-aware authorization
-Core modules are available to every active tenant by default and can be explicitly disabled through `tenant_modules`.
-Optional modules require an explicit enabled `tenant_modules` record.
+Module access is the combination of:
+1. global module activation;
+2. tenant module state;
+3. subscription entitlement for optional/plan-gated modules;
+4. the onboarding exception for a newly created tenant that has not yet completed onboarding;
+5. the current user's role/permission.
 
-A module is available only when the global module is active and the tenant module state permits access.
+Core modules are available during unfinished onboarding. After onboarding is marked completed, a tenant without a usable subscription cannot continue normal core operations.
+
+Optional modules require an enabled tenant module and a usable subscription whose plan includes the module.
+
+A module is never considered authorized merely because its UI is visible. Backend middleware/services/policies remain authoritative.
 
 ## Authorization order
 Authenticated → membership → tenant status → module enabled → role/permission → resource policy.
