@@ -5,7 +5,7 @@ namespace App\Domain\Billing\Models;
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Module\Models\Module;
-use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -23,8 +23,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $trial_days
  * @property bool $is_active
  * @property array<string, mixed>|null $metadata
- * @property CarbonImmutable|null $created_at
- * @property CarbonImmutable|null $updated_at
+ * @property CarbonInterface|null $created_at
+ * @property CarbonInterface|null $updated_at
  */
 class Plan extends Model
 {
