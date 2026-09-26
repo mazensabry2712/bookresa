@@ -42,9 +42,13 @@ class ResolveTenant
             ->orderBy('id')
             ->first();
 
-        if ($membership === null && $requestedTenantId !== null) {
+        if (
+            $membership === null
+            || $membership->tenant?->status !== TenantStatus::Active
+        ) {
             $membership = $user->tenantMemberships()
                 ->where('status', MembershipStatus::Active->value)
+                ->whereHas('tenant', fn ($query) => $query->where('status', TenantStatus::Active->value))
                 ->with('tenant')
                 ->orderByDesc('is_primary')
                 ->orderBy('id')
