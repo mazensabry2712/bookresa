@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
-use Carbon\CarbonInterface;
 /**
  * @property int $id
  * @property int $tenant_id
@@ -19,10 +17,9 @@ use Carbon\CarbonInterface;
  * @property string $starts_at
  * @property string $ends_at
  */
-
 class StaffAvailability extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $table = 'staff_availability';
 
@@ -39,6 +36,7 @@ class StaffAvailability extends Model
         return ['available_date' => 'date'];
     }
 
+    /** @return BelongsTo<StaffProfile, $this> */
     public function staff(): BelongsTo
     {
         return $this->belongsTo(StaffProfile::class);
