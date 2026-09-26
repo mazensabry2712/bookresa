@@ -114,7 +114,7 @@ final class CustomerManagementController
 
         $paymentHistory = null;
 
-        if ($request = request() and request()->user()?->can('billing.view')) {
+        if ($request->user()?->can('billing.view')) {
             $paymentHistory = Payment::query()
                 ->where('payable_type', (new Booking)->getMorphClass())
                 ->whereIn('payable_id', $customerBookingIds)
