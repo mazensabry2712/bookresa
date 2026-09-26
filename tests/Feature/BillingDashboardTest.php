@@ -37,6 +37,7 @@ function billingDashboardTenant(string $slug): Tenant
         'timezone' => 'Africa/Cairo',
         'email' => $slug.'@example.com',
     ]);
+
     return $tenant;
 }
 
