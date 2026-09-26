@@ -1,13 +1,13 @@
 <?php
 
+use App\Domain\Business\Models\BusinessProfile;
+use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Support\Enums\SupportTicketPriority;
 use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
-use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Models\User;
-use App\Domain\Platform\Models\PlatformAdmin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
