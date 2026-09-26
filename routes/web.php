@@ -3,6 +3,7 @@
 use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Service\ServiceManagementController;
+use App\Http\Controllers\Staff\StaffManagementController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Calendar\CalendarController;
@@ -51,6 +52,19 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::delete('/dashboard/services/{service}', [ServiceManagementController::class, 'destroy'])
         ->middleware('permission:services.delete')
         ->name('services.destroy');
+
+
+    Route::get('/dashboard/staff', [StaffManagementController::class, 'index'])
+        ->middleware('permission:staff.view')
+        ->name('staff.index');
+
+    Route::post('/dashboard/staff', [StaffManagementController::class, 'store'])
+        ->middleware('permission:staff.manage')
+        ->name('staff.store');
+
+    Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
+        ->middleware('permission:staff.manage')
+        ->name('staff.update');
 });
 
 

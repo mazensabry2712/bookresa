@@ -27,6 +27,17 @@ final class AddStaffMember
             throw new RuntimeException('Invalid staff role.');
         }
 
+        $previousTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($tenantId);
+
+        try {
+            if ($user->hasRole('owner')) {
+                throw new RuntimeException('The workspace owner cannot be added as staff.');
+            }
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+        }
+
         return DB::transaction(function () use ($user, $role, $data, $tenantId): StaffProfile {
             $membership = TenantMembership::query()->firstOrCreate(
                 [
@@ -44,7 +55,10 @@ final class AddStaffMember
             }
 
             $staff = StaffProfile::query()->updateOrCreate(
-                ['user_id' => $user->getKey()],
+                [
+                    'tenant_id' => $tenantId,
+                    'user_id' => $user->getKey(),
+                ],
                 [
                     'tenant_id' => $tenantId,
                     'display_name' => $data['display_name'] ?? $user->name,

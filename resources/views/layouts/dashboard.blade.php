@@ -49,6 +49,12 @@
                         {{ __('Services') }}
                     </a>
                 @endcan
+                @can('staff.view')
+                    <a href="{{ route('staff.index') }}"
+                       class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                        {{ __('Staff') }}
+                    </a>
+                @endcan
                 <a href="{{ route('onboarding.workspace') }}"
                    class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                     {{ __('Workspace') }}
