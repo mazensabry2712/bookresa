@@ -21,6 +21,17 @@ final class SyncSubscriptionPaymentStatus
             return;
         }
 
+        $subscriptionStart = $subscription->start_at?->toIso8601String();
+        $paymentSubscriptionStart = data_get($payment->metadata, 'subscription_start');
+
+        if (
+            $subscriptionStart !== null
+            && filled($paymentSubscriptionStart)
+            && (string) $paymentSubscriptionStart !== $subscriptionStart
+        ) {
+            return;
+        }
+
         $updates = [];
 
         if ($status === PaymentStatus::Paid) {
