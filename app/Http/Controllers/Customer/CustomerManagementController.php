@@ -75,7 +75,12 @@ final class CustomerManagementController
         }
     }
 
-    public function show(Customer $customer, CurrentTenant $currentTenant): View
+    public function show(
+        Customer $customer,
+        CurrentTenant $currentTenant,
+        CalculateSubscriptionUsage $usageCalculator,
+        Request $request,
+    ): View
     {
         abort_unless($currentTenant->get() !== null, 404);
 
