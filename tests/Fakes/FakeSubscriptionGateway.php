@@ -2,6 +2,11 @@
 
 namespace Tests\Fakes;
 
+use App\Domain\Payment\Contracts\PaymentGateway;
+use App\Domain\Payment\Data\PaymentGatewayResult;
+use App\Domain\Payment\Data\PaymentRequest;
+use App\Domain\Payment\Enums\PaymentStatus;
+
 final class FakeSubscriptionGateway implements PaymentGateway
 {
     public int $createCalls = 0;
