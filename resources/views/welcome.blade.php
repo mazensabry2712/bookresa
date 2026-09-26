@@ -54,19 +54,19 @@
                             </div>
 
                             <div class="mt-6">
-                                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('app.home_ui.date') ?? __('app.date') }}</p>
+                                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('app.date') }}</p>
                                 <div class="mt-2 grid grid-cols-5 gap-2">
-                                    @foreach (['Mon 22', 'Tue 23', 'Wed 24', 'Thu 25', 'Fri 26'] as $date)
+                                    @foreach (['24', '25', '26', '27', '28'] as $date)
                                         <div class="{{ $loop->index === 2 ? 'border-brand-indigo bg-indigo-50 text-brand-indigo dark:border-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300' : 'border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-300' }} rounded-xl border px-2 py-3 text-center">
-                                            <span class="block text-[10px] font-semibold uppercase">{{ strtok($date, ' ') }}</span>
-                                            <span class="mt-1 block text-sm font-bold">{{ str_replace(strtok($date, ' '), '', $date) }}</span>
+                                            <span class="block text-[10px] font-semibold uppercase">Sep</span>
+                                            <span class="mt-1 block text-sm font-bold">{{ $date }}</span>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
 
                             <div class="mt-6">
-                                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('app.home_ui.preview_title') }}</p>
+                                <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">{{ __('app.available_times') }}</p>
                                 <div class="mt-3 space-y-2.5">
                                     @foreach ([
                                         ['service' => __('app.home_ui.preview_service_1'), 'time' => '09:00'],
@@ -76,7 +76,7 @@
                                         <div class="flex items-center justify-between gap-4 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
                                             <div class="min-w-0">
                                                 <p class="truncate text-sm font-bold text-slate-950 dark:text-white">{{ $item['service'] }}</p>
-                                                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ __('app.home_ui.available_times') }}</p>
+                                                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ __('app.available_times') }}</p>
                                             </div>
                                             <span class="shrink-0 text-sm font-extrabold text-brand-indigo">{{ $item['time'] }}</span>
                                         </div>
