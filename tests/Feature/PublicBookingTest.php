@@ -234,7 +234,8 @@ test('booking confirmation renders localized Arabic content', function (): void 
     $this->get(URL::signedRoute('public.booking.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
-    ]). '&locale=ar')
+        'locale' => 'ar',
+    ]))
         ->assertOk()
         ->assertSee('تم استلام الحجز')
         ->assertSee('استشارة')
