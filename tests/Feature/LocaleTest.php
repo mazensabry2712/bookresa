@@ -21,7 +21,7 @@ test('the session locale overrides the browser preference', function (): void {
         ])
         ->get('/')
         ->assertOk()
-        ->assertSee('<html lang="ar">', false);
+        ->assertSee('<html lang="ar" dir="rtl">', false);
 
     expect(app()->getLocale())->toBe('ar');
 });
