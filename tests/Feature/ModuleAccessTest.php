@@ -235,7 +235,9 @@ test('completed workspace requires a usable subscription for core operations', f
 
     $settings = $tenant->settings ?? [];
     data_set($settings, 'onboarding.completed', true);
-    $tenant->forceFill(['settings' => $settings])->save();
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $settings): void {
+        $tenant->forceFill(['settings' => $settings])->save();
+    });
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
