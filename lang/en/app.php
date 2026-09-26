@@ -43,4 +43,10 @@ return [
     'email' => 'Email',
     'book_appointment' => 'Book Appointment',
     'book_online' => 'Book online',
+    'booking_confirmed' => 'Booking confirmed',
+    'booking_received' => 'Booking received',
+    'payment_status' => 'Payment status',
+    'complete_payment' => 'Complete payment',
+    'book_another_appointment' => 'Book another appointment',
+    'booking_confirmation' => 'Booking confirmation for :reference.',
 ];
