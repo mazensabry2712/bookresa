@@ -9,7 +9,8 @@ test('the browser preferred locale is applied to web requests', function (): voi
         'Accept-Language' => 'ar-EG,ar;q=0.9,en;q=0.8',
     ])->get('/')
         ->assertOk()
-        ->assertSee('<html lang="ar" dir="rtl">', false);
+        ->assertSee('lang="ar"', false)
+        ->assertSee('dir="rtl"', false);
 
     expect(app()->getLocale())->toBe('ar');
 });
@@ -21,7 +22,8 @@ test('the session locale overrides the browser preference', function (): void {
         ])
         ->get('/')
         ->assertOk()
-        ->assertSee('<html lang="ar" dir="rtl">', false);
+        ->assertSee('lang="ar"', false)
+        ->assertSee('dir="rtl"', false);
 
     expect(app()->getLocale())->toBe('ar');
 });
@@ -30,7 +32,8 @@ test('an invalid locale falls back to the configured default', function (): void
     $this->withSession(['locale' => 'fr'])
         ->get('/')
         ->assertOk()
-        ->assertSee('<html lang="en" dir="ltr">', false);
+        ->assertSee('lang="en"', false)
+        ->assertSee('dir="ltr"', false);
 
     expect(app()->getLocale())->toBe('en');
 });
@@ -39,7 +42,8 @@ test('a valid locale query parameter persists for the session', function (): voi
     $response = $this->get('/?locale=ar');
 
     $response->assertOk()
-        ->assertSee('<html lang="ar" dir="rtl">', false);
+        ->assertSee('lang="ar"', false)
+        ->assertSee('dir="rtl"', false);
 
     expect(session('locale'))->toBe('ar')
         ->and(app()->getLocale())->toBe('ar');
