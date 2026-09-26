@@ -2,11 +2,16 @@
 
 ## Current verified local gate
 
-The latest local verification reported:
-- full test suite: 219 passed, 1 skipped, 794 assertions
-- PHPStan: 0 errors
-- Pint: touched files pass; the full repository currently has 96 existing style issues across 267 files
-- Vite production build: previously verified
+The latest local verification reported on 2026-09-26:
+- full test suite: 237 passed, 1 skipped, 876 assertions
+- `php artisan view:cache`: passed
+- Vite production build: passed
+- `composer install` and optimized autoload generation: passed
+- `php artisan optimize:clear`: passed
+
+The latest GitHub Actions CI run for `ef94bc0` completed successfully and covered PHPStan, PHP syntax, changed-file Pint, frontend build and the full test suite.
+
+Pint: touched files pass; the full repository currently has 96 existing style issues across 267 files
 - SEO regression tests: previously verified
 - PHP 8.4 is the project target
 - Larastan is declared in Composer and locked on `main`, so CI can enforce PHPStan
