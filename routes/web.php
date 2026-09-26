@@ -284,26 +284,6 @@ Route::middleware('module:appointments')->prefix('{tenant:slug}/book')->group(fu
         ->name('public.booking.canonical.confirmation');
 });
 
-Route::middleware('module:appointments')->group(function (): void {
-    Route::get('/{tenant:slug}', [PublicBookingController::class, 'show'])
-        ->name('public.booking.slug');
-
-    Route::get('/{tenant:slug}/book', [PublicBookingController::class, 'show'])
-        ->name('public.booking.canonical.show');
-
-    Route::get('/{tenant:slug}/book/availability', [PublicBookingController::class, 'availability'])
-        ->middleware('throttle:60,1')
-        ->name('public.booking.canonical.availability.alt');
-
-    Route::post('/{tenant:slug}/book', [PublicBookingController::class, 'store'])
-        ->middleware('throttle:10,1')
-        ->name('public.booking.canonical.store.alt');
-
-    Route::get('/{tenant:slug}/book/confirmation/{booking}', [PublicBookingController::class, 'confirmation'])
-        ->middleware('signed')
-        ->name('public.booking.canonical.confirmation.alt');
-});
-
 Route::middleware('module:appointments')->prefix('book/{tenant:slug}')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])
         ->name('public.booking.show');
