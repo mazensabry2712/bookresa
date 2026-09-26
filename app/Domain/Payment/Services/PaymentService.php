@@ -9,6 +9,7 @@ use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Booking\Models\Booking;
 use App\Notifications\PaymentNotification;
+use App\Notifications\BusinessPaymentNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
@@ -223,10 +224,21 @@ final class PaymentService
 
             if ($payable instanceof Booking) {
                 $payable->load('customer');
+                $freshPayment = $payment->fresh();
+
                 $payable->customer?->notify(new PaymentNotification(
-                    $payment->fresh(),
+                    $freshPayment,
                     $result->status === PaymentStatus::Paid ? 'paid' : 'failed',
                 ));
+
+                if ($result->status === PaymentStatus::Paid) {
+                    $owner = $this->currentTenant->get()?->memberships()
+                        ->where('is_primary', true)
+                        ->with('user')
+                        ->first()?->user;
+
+                    $owner?->notify(new BusinessPaymentNotification($freshPayment));
+                }
             }
         }
 
