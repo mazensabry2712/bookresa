@@ -10,6 +10,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Business\Models\BusinessProfile;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 
 uses(RefreshDatabase::class);
@@ -108,13 +109,50 @@ test('public customer can book without an account', function (): void {
     app(CurrentTenant::class)->set($tenant);
     $booking->load('customer');
 
-    $response->assertRedirectToRoute('public.booking.confirmation', [
+    $response->assertRedirect(URL::signedRoute('public.booking.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
-    ]);
+    ]));
 
     expect($booking->customer->name)->toBe('Ahmed')
         ->and($booking->service_id)->toBe($service->id);
+});
+
+test('public booking confirmation requires a signed url', function (): void {
+    $tenant = publicTenant('confirmation-secure');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'duration_minutes' => 30,
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->post(route('public.booking.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ])->assertRedirect();
+
+    $booking = Booking::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    $this->get(route('public.booking.confirmation', [
+        'tenant' => $tenant->slug,
+        'booking' => $booking->booking_reference,
+    ]))->assertForbidden();
+
+    $this->get(URL::signedRoute('public.booking.confirmation', [
+        'tenant' => $tenant->slug,
+        'booking' => $booking->booking_reference,
+    ]))
+        ->assertOk()
+        ->assertSee($booking->booking_reference);
 });
 
 test('public booking cannot use a service from another tenant', function (): void {
