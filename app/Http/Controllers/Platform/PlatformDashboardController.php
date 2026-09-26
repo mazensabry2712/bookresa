@@ -50,8 +50,15 @@ final class PlatformDashboardController
                     ->sum('usage_periods.usage_charge_minor'),
             ],
             'recentBusinesses' => Tenant::query()
-                ->with(['profile', 'businessType'])
-                ->withCount(['memberships', 'services', 'staffProfiles'])
+                ->with([
+                    'profile' => fn ($query) => $query->withoutGlobalScopes(),
+                    'businessType',
+                ])
+                ->withCount([
+                    'memberships' => fn ($query) => $query->withoutGlobalScopes(),
+                    'services' => fn ($query) => $query->withoutGlobalScopes(),
+                    'staffProfiles' => fn ($query) => $query->withoutGlobalScopes(),
+                ])
                 ->latest('id')
                 ->limit(10)
                 ->get(),
