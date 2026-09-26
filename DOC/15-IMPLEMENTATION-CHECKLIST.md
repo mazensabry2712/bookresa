@@ -129,7 +129,7 @@
 - [x] payments list
 - [x] usage periods list
 - [x] platform users management
-- [ ] support management
+- [x] support management
 - [ ] platform settings
 
 ## Reports
