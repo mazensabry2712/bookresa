@@ -16,8 +16,15 @@ final class PlatformBusinessController
         $search = trim((string) $request->input('search'));
 
         $businesses = Tenant::query()
-            ->with(['profile', 'businessType'])
-            ->withCount(['memberships', 'services', 'staffProfiles'])
+            ->with([
+                'profile' => fn ($query) => $query->withoutGlobalScopes(),
+                'businessType',
+            ])
+            ->withCount([
+                'memberships' => fn ($query) => $query->withoutGlobalScopes(),
+                'services' => fn ($query) => $query->withoutGlobalScopes(),
+                'staffProfiles' => fn ($query) => $query->withoutGlobalScopes(),
+            ])
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($nested) use ($search): void {
                     $nested
