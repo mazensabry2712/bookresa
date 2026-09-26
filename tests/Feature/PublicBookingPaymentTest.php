@@ -37,6 +37,8 @@ function paidBookingTenant(string $slug): Tenant
         'booking_settings' => [
             'customer_account_required' => false,
             'payment_required' => true,
+            'payment_mode' => 'full',
+            'customer_email_required' => false,
         ],
     ]);
 
