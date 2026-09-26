@@ -13,7 +13,9 @@ final class UpdateCustomer
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly CustomerIdentity $identity,
-    ) {}
+    ) {
+    }
+
     public function handle(Customer $customer, array $data): Customer
     {
         $tenantId = $this->currentTenant->idOrFail();
