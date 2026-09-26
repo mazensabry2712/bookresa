@@ -48,3 +48,11 @@ Enable OPcache, optimized Composer autoload, production config/cache, supervised
 
 ## Measurement
 Track request time, DB query count/time, memory, cache hit rate and frontend metrics.
+
+## Implemented hardening
+- Availability calculation batches staff day-offs, explicit availability, recurring working hours and bookings to avoid per-staff N+1 queries.
+- Booking management and calendar use pagination/range-bounded queries where result sets can grow.
+- Service management now paginates at 20 records per page.
+- Active business types used by onboarding use a short cache with explicit invalidation after the seeder runs.
+- Pricing and security-critical module checks intentionally remain database-backed so authorization and current pricing/module state are not served from stale cache.
+- Composer PHP target is aligned to PHP 8.4.
