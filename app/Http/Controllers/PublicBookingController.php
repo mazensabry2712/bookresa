@@ -119,11 +119,9 @@ class PublicBookingController
 
                 $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
                 $paymentMode = data_get($bookingSettings, 'payment_mode');
-                $hasExplicitPaymentMode = is_string($paymentMode) && trim($paymentMode) !== '';
 
-                $paymentRequired = $hasExplicitPaymentMode
-                    ? in_array($paymentMode, ['full', 'deposit'], true)
-                    : (bool) data_get($bookingSettings, 'payment_required', false);
+                $paymentRequired = (bool) data_get($bookingSettings, 'payment_required', false)
+                    || in_array($paymentMode, ['full', 'deposit'], true);
 
                 if ($paymentRequired) {
                     $payment = $startBookingPayment->handle($booking);
