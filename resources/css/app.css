@@ -3,7 +3,48 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-navy: #1E2A44;
+    --color-brand-indigo: #6366F1;
+    --color-brand-coral: #FF7A66;
+    --color-brand-soft: #EDEFF6;
+    --color-brand-slate: #4B5563;
+}
+
+:root {
+    color-scheme: light;
+    --br-background: #ffffff;
+    --br-surface: #f8fafc;
+    --br-foreground: #0f172a;
+    --br-muted: #4b5563;
+    --br-border: #e2e8f0;
+    --br-primary: #1e2a44;
+    --br-accent: #6366f1;
+}
+
+.dark {
+    color-scheme: dark;
+    --br-background: #020617;
+    --br-surface: #0f172a;
+    --br-foreground: #f8fafc;
+    --br-muted: #94a3b8;
+    --br-border: #334155;
+    --br-primary: #818cf8;
+    --br-accent: #a5b4fc;
+}
+
+@layer base {
+    html {
+        background-color: var(--br-background);
+        color: var(--br-foreground);
+    }
+
+    body {
+        background-color: var(--br-background);
+        color: var(--br-foreground);
+    }
 }
