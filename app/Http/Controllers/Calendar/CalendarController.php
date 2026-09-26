@@ -41,7 +41,7 @@ class CalendarController
         }
 
         [$gridStart, $gridEnd] = match ($viewMode) {
-            'day' => [$reference, $reference],
+            'day' => [$reference, $reference->endOfDay()],
             'week' => [$reference->startOfWeek(CarbonImmutable::MONDAY), $reference->endOfWeek(CarbonImmutable::SUNDAY)],
             default => [$reference->startOfMonth()->startOfWeek(CarbonImmutable::MONDAY), $reference->endOfMonth()->endOfWeek(CarbonImmutable::SUNDAY)],
         };
