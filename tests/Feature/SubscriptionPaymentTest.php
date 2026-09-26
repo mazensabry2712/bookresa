@@ -142,7 +142,7 @@ test('subscription checkout creates a tenant-owned payment and returns checkout 
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $payment = app(StartSubscriptionPayment::class)->handle($subscription);
@@ -165,7 +165,7 @@ test('subscription checkout is idempotent for repeated attempts', function (): v
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $first = app(StartSubscriptionPayment::class)->handle($subscription);
@@ -183,7 +183,7 @@ test('trial subscriptions cannot start a paid checkout', function (): void {
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     expect(fn () => app(StartSubscriptionPayment::class)->handle($subscription))
@@ -215,7 +215,7 @@ test('authorized owner can open subscription billing and start checkout', functi
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $this->actingAs($user)
@@ -244,7 +244,7 @@ test('subscription checkout route cannot access another tenant subscription', fu
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $this->actingAs($userA)
@@ -492,7 +492,7 @@ test('renewed subscription does not reuse a paid payment from the previous cycle
         CarbonImmutable::parse('2026-11-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $payment = app(StartSubscriptionPayment::class)->handle($renewed);
@@ -526,7 +526,7 @@ test('expired subscription payment session creates a fresh attempt', function ()
         'idempotency_key' => 'subscription-'.$subscription->id.'-kashier-attempt-1',
     ]);
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $fresh = app(StartSubscriptionPayment::class)->handle($subscription->fresh());
@@ -558,7 +558,7 @@ test('failed subscription payment can start a fresh payment attempt', function (
         'idempotency_key' => 'subscription-'.$subscription->id.'-kashier-attempt-1',
     ]);
 
-    $gateway = new FakeSubscriptionGateway();
+    $gateway = new FakeSubscriptionGateway;
     $this->app->instance(PaymentGateway::class, $gateway);
 
     $payment = app(StartSubscriptionPayment::class)->handle($subscription->fresh());
