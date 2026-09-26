@@ -33,11 +33,22 @@ final class EnsureTenantModuleEnabled
 
         $module = Module::query()
             ->where('key', $moduleKey)
-            ->where('is_active', true)
             ->first();
 
+        $isCore = in_array($moduleKey, config('bookresa.modules.core', []), true);
+
+        if ($module === null) {
+            abort_unless(
+                $isCore,
+                Response::HTTP_FORBIDDEN,
+                'This feature is not available.',
+            );
+
+            return $next($request);
+        }
+
         abort_unless(
-            $module !== null,
+            $module->is_active,
             Response::HTTP_FORBIDDEN,
             'This feature is not available.',
         );
@@ -47,7 +58,7 @@ final class EnsureTenantModuleEnabled
             ->where('module_id', $module->getKey())
             ->first();
 
-        if ($module->is_core) {
+        if ($module->is_core || $isCore) {
             abort_if(
                 $tenantModule !== null && ! $tenantModule->enabled,
                 Response::HTTP_FORBIDDEN,
