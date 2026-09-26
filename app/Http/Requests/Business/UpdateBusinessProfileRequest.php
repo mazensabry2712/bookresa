@@ -24,6 +24,8 @@ class UpdateBusinessProfileRequest extends FormRequest
             'website' => trim((string) $this->input('website')),
             'facebook' => trim((string) $this->input('facebook')),
             'instagram' => trim((string) $this->input('instagram')),
+            'remove_logo' => filter_var($this->input('remove_logo'), FILTER_VALIDATE_BOOL),
+            'remove_cover' => filter_var($this->input('remove_cover'), FILTER_VALIDATE_BOOL),
         ]);
     }
 
@@ -43,6 +45,10 @@ class UpdateBusinessProfileRequest extends FormRequest
             'instagram' => ['nullable', 'url:http,https', 'max:500'],
             'timezone' => ['required', 'timezone'],
             'locale' => ['required', Rule::in(config('bookresa.locales', ['en', 'ar']))],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
+            'remove_logo' => ['boolean'],
+            'remove_cover' => ['boolean'],
         ];
     }
 }
