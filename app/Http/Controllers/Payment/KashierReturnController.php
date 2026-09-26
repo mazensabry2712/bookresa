@@ -9,8 +9,8 @@ use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\SyncBookingPaymentStatus;
 use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
-use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -101,16 +101,16 @@ final class KashierReturnController
                     ->with('payment_notice', $notice);
             }
 
-            if (! $payable instanceof Booking || blank($payable->booking_reference)) {
-                return redirect()->route('home')->with('status', $notice);
-            }
-
-            return redirect()
+            if ($payable instanceof Booking && filled($payable->booking_reference)) {
+                return redirect()
                 ->to(URL::signedRoute('public.booking.canonical.confirmation', [
                     'tenant' => $tenant->slug,
                     'booking' => $payable->booking_reference,
                 ]))
                 ->with('payment_notice', $notice);
+            }
+
+            return redirect()->route('home')->with('status', $notice);
         });
     }
 
