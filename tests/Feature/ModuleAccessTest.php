@@ -7,8 +7,8 @@ use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
-use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Module\Models\TenantModule;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
@@ -27,7 +27,7 @@ beforeEach(function (): void {
 
     Route::middleware(['web', 'auth', 'tenant', 'module:payments'])
         ->get('/__test/optional-payments-module', fn () => 'ok');
-}
+});
 
 afterEach(function (): void {
     app(CurrentTenant::class)->clear();
