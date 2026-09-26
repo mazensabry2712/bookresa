@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'name' => env('BOOKRESA_NAME', 'BookResa'),
+    'name' => env('VELTO_NAME', env('BOOKRESA_NAME', 'Velto')),
 
     'locales' => [
         'en',
