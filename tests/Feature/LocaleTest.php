@@ -9,7 +9,7 @@ test('the browser preferred locale is applied to web requests', function (): voi
         'Accept-Language' => 'ar-EG,ar;q=0.9,en;q=0.8',
     ])->get('/')
         ->assertOk()
-        ->assertSee('<html lang="ar">', false);
+        ->assertSee('<html lang="ar" dir="rtl">', false);
 
     expect(app()->getLocale())->toBe('ar');
 });
@@ -30,7 +30,7 @@ test('an invalid locale falls back to the configured default', function (): void
     $this->withSession(['locale' => 'fr'])
         ->get('/')
         ->assertOk()
-        ->assertSee('<html lang="en">', false);
+        ->assertSee('<html lang="en" dir="ltr">', false);
 
     expect(app()->getLocale())->toBe('en');
 });
