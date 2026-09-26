@@ -1,11 +1,11 @@
 # BookResa — Implementation Checklist
 
-**Current implementation progress: 107/121 (88.4%).**
+**Current implementation progress: 110/122 (90.2%).**
 
 ## Foundation
-- [ ] Confirm Herd PHP 8.4
+- [x] Confirm Herd PHP 8.4
 - [x] Align Composer PHP constraint to target
-- [ ] Configure MySQL
+- [x] Configure MySQL
 - [x] Define timezone policy
 - [x] Arabic/English locale (middleware + browser/session resolution + EN/AR dictionaries)
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
@@ -21,6 +21,7 @@
 - [x] TenantResolver/context
 - [x] tenant-aware authorization (middleware/context/scopes/services/tests)
 - [x] cross-tenant tests
+- [x] email verification (Fortify + verified middleware + verification tests)
 
 ## RBAC
 - [x] Spatie Permission
@@ -139,8 +140,8 @@
 - [x] platform reports
 
 ## Release gate
-- [x] full test suite (219 passed / 1 skipped / 794 assertions on 2026-09-26)
-- [x] static analysis (PHPStan 0 errors on 2026-09-26)
+- [x] full test suite (221 passed / 1 skipped / 806 assertions on 2026-09-26; rerun required after email verification hardening)
+- [x] static analysis (PHPStan 0 errors on 2026-09-26 before email verification hardening; CI rerun pending)
 - [ ] Pint (full repository: 96 existing style issues across 267 files; changed-file CI checks pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)
