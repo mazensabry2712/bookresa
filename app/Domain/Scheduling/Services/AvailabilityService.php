@@ -90,10 +90,88 @@ final class AvailabilityService
             return $this->generateSlots($service, $businessWindows, $localDate, null);
         }
 
+        $staffIds = $assignedStaff->modelKeys();
+
+        $dayOffs = StaffDayOff::query()
+            ->whereIn('staff_id', $staffIds)
+            ->whereDate('starts_on', '<=', $localDate->toDateString())
+            ->whereDate('ends_on', '>=', $localDate->toDateString())
+            ->get(['staff_id'])
+            ->groupBy('staff_id');
+
+        $staffWindowsByStaff = StaffAvailability::query()
+            ->whereIn('staff_id', $staffIds)
+            ->whereDate('available_date', $localDate->toDateString())
+            ->orderBy('staff_id')
+            ->orderBy('starts_at')
+            ->get(['staff_id', 'starts_at', 'ends_at'])
+            ->groupBy('staff_id');
+
+        $workingHoursByStaff = StaffWorkingHour::query()
+            ->whereIn('staff_id', $staffIds)
+            ->where('day_of_week', $localDate->dayOfWeekIso)
+            ->get(['staff_id', 'opens_at', 'closes_at', 'is_closed'])
+            ->groupBy('staff_id');
+
+        $bookingsByStaff = Booking::query()
+            ->where('service_id', $service->getKey())
+            ->whereIn('staff_id', $staffIds)
+            ->whereIn('status', [
+                BookingStatus::Pending->value,
+                BookingStatus::Confirmed->value,
+                BookingStatus::Rescheduled->value,
+            ])
+            ->where('starts_at', '<', $dateEnd->setTimezone('UTC'))
+            ->where('block_ends_at', '>', $dateStart->setTimezone('UTC'))
+            ->get(['staff_id', 'starts_at', 'block_ends_at'])
+            ->groupBy('staff_id');
+
         $slots = [];
 
         foreach ($assignedStaff as $staff) {
-            $slots = [...$slots, ...$this->staffSlots($service, $staff, $localDate, $businessWindows)];
+            $staffWindows = $staffWindowsByStaff->get($staff->getKey(), collect());
+            $configuredHours = $workingHoursByStaff->get($staff->getKey(), collect());
+
+            if ($dayOffs->has($staff->getKey())) {
+                continue;
+            }
+
+            if ($staffWindows->isNotEmpty()) {
+                $staffWindows = $staffWindows->map(fn (StaffAvailability $window): array => [
+                    'start' => $window->starts_at,
+                    'end' => $window->ends_at,
+                ]);
+            } elseif ($configuredHours->isNotEmpty()) {
+                $openHours = $configuredHours->where('is_closed', false);
+
+                if ($openHours->isEmpty()) {
+                    continue;
+                }
+
+                $staffWindows = $openHours->map(fn (StaffWorkingHour $window): array => [
+                    'start' => $window->opens_at,
+                    'end' => $window->closes_at,
+                ]);
+            } else {
+                $staffWindows = $businessWindows;
+            }
+
+            $intersection = $this->intersectWindows($businessWindows, $staffWindows);
+
+            if ($intersection->isEmpty()) {
+                continue;
+            }
+
+            $slots = [
+                ...$slots,
+                ...$this->generateSlots(
+                    $service,
+                    $intersection,
+                    $localDate,
+                    $staff,
+                    $bookingsByStaff->get($staff->getKey(), collect()),
+                ),
+            ];
         }
 
         return $slots;
@@ -285,6 +363,7 @@ final class AvailabilityService
         Collection $windows,
         CarbonImmutable $date,
         ?StaffProfile $staff,
+        ?Collection $bookings = null,
     ): array {
         $duration = (int) $service->duration_minutes;
         $buffer = (int) $service->buffer_minutes;
@@ -293,7 +372,7 @@ final class AvailabilityService
         $dateStart = $date->startOfDay();
         $dateEnd = $dateStart->addDay();
 
-        $bookings = Booking::query()
+        $bookings ??= Booking::query()
             ->where('service_id', $service->getKey())
             ->when(
                 $staff !== null,
