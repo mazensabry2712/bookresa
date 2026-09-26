@@ -18,6 +18,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots.txt');
+
 Route::middleware('auth')->group(function (): void {
     Route::get('/onboarding/business', [BusinessOnboardingController::class, 'create'])
         ->name('onboarding.business.create');
