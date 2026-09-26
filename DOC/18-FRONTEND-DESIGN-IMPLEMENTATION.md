@@ -1420,3 +1420,18 @@ Official product references used for UX study:
 - SimplyBook.me system features — https://simplybook.me/en/booking-system-features
 
 These references are inspiration for interaction and product patterns only. BookResa keeps its own brand, copy, information architecture, backend rules, and implementation.
+
+## 35. Automated QA verification baseline
+
+Latest verified frontend/application gate on 2026-09-26:
+
+- PHP test suite: 240 passed, 1 skipped, 885 assertions
+- Calendar feature tests: 4 passed, 13 assertions
+- Vite production build: passed
+- Blade view cache: passed
+- GitHub Actions CI for commit `1cdb7443`: passed
+- PHPStan, PHP syntax scan and changed-file Pint: passed in CI
+- Mobile sidebar keyboard/accessibility behavior: verified by automated build/test gate
+- RTL directional-arrow primitive: covered in Calendar feature tests
+
+Manual browser review is still required for the visual/responsive checklist in section 31 across the target widths, locales and themes.
