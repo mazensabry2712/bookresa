@@ -95,8 +95,16 @@ class CalendarController
             'reference' => $reference,
             'periodStart' => $periodStart,
             'periodEnd' => $periodEnd,
-            'previousDate' => match ($viewMode) { 'day' => $reference->subDay(), 'week' => $reference->subWeek(), default => $reference->subMonth() },
-            'nextDate' => match ($viewMode) { 'day' => $reference->addDay(), 'week' => $reference->addWeek(), default => $reference->addMonth() },
+            'previousDate' => match ($viewMode) {
+                'day' => $reference->subDay(),
+                'week' => $reference->subWeek(),
+                default => $reference->subMonth(),
+            },
+            'nextDate' => match ($viewMode) {
+                'day' => $reference->addDay(),
+                'week' => $reference->addWeek(),
+                default => $reference->addMonth(),
+            },
             'calendarDays' => $calendarDays,
             'bookings' => $bookings,
             'bookingsByDate' => $bookingsByDate,

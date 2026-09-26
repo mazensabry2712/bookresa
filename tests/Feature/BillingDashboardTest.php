@@ -56,6 +56,7 @@ function billingDashboardUser(Tenant $tenant, string $email): User
     $role = Role::firstOrCreate(['name' => 'billing-owner', 'guard_name' => 'web', 'tenant_id' => $tenant->id]);
     $role->syncPermissions(['billing.view', 'subscription.manage']);
     $user->assignRole($role);
+
     return $user;
 }
 
