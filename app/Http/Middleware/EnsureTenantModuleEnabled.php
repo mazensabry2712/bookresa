@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
-use App\Domain\Module\Models\Module;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
