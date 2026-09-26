@@ -53,7 +53,7 @@ final class UpdateStaffMember
             $membership->update([
                 'status' => $status === StaffStatus::Active
                     ? MembershipStatus::Active
-                    : MembershipStatus::Inactive,
+                    : MembershipStatus::Suspended,
             ]);
 
             $roleModel = $this->roleProvisioner->provisionRole($tenant, $role);
