@@ -17,7 +17,7 @@ final class CreateCustomer
     }
 
     /**
-     * @param array{name: string, phone?: string|null, email?: string|null} $data
+     * @param array<string, mixed> $data
      */
     public function handle(array $data): Customer
     {
