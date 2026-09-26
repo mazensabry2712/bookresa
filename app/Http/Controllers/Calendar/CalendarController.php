@@ -98,6 +98,7 @@ class CalendarController
             'previousDate' => match ($viewMode) { 'day' => $reference->subDay(), 'week' => $reference->subWeek(), default => $reference->subMonth() },
             'nextDate' => match ($viewMode) { 'day' => $reference->addDay(), 'week' => $reference->addWeek(), default => $reference->addMonth() },
             'calendarDays' => $calendarDays,
+            'bookings' => $bookings,
             'bookingsByDate' => $bookingsByDate,
             'statuses' => BookingStatus::cases(),
             'services' => Service::query()->orderBy('id')->get(['id', 'name']),

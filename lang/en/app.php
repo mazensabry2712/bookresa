@@ -734,6 +734,7 @@ return [
         'customers' => 'customers',
         'included' => 'included',
         'additional' => 'additional',
+        'usage_charge' => 'Usage charge',
         'estimated_total' => 'Estimated total',
         'plan_change' => 'Plan change',
         'plan_change_title' => 'Schedule your next plan',

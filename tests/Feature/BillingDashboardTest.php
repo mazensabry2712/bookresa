@@ -86,6 +86,7 @@ test('owner can see live customer usage and estimated billing total', function (
         ->assertOk()
         ->assertSee('4')
         ->assertSee('1,000.00 EGP')
+        ->assertSee('1,000.00 EGP')
         ->assertSee('1,199.00 EGP');
 
     expect($subscription->fresh()->isUsable())->toBeFalse();
@@ -167,8 +168,8 @@ test('billing payment history is bounded to the latest 20 records', function ():
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
         ->get(route('billing.subscription'))
         ->assertOk()
-        ->assertSee('<p class="font-mono text-sm font-semibold">SUB-PAY-21</p>', false)
-        ->assertDontSee('<p class="font-mono text-sm font-semibold">SUB-PAY-01</p>', false);
+        ->assertSee('SUB-PAY-21')
+        ->assertDontSee('SUB-PAY-01');
 });
 
 

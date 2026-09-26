@@ -144,6 +144,7 @@
                             [__('app.billing_ui.customers'), number_format($usageSummary->uniqueCustomerCount)],
                             [__('app.billing_ui.included'), number_format($usageSummary->includedCustomerLimit)],
                             [__('app.billing_ui.additional'), number_format($usageSummary->additionalCustomerCount)],
+                            [__('app.billing_ui.usage_charge'), number_format($usageSummary->usageChargeMinor / 100, 2).' '.$usageSummary->currency],
                             [__('app.billing_ui.estimated_total'), number_format($usageSummary->totalChargeMinor / 100, 2).' '.$usageSummary->currency],
                         ] as [$label, $value])
                             <div class="rounded-xl br-surface-soft p-4">

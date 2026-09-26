@@ -734,6 +734,7 @@ return [
         'customers' => 'عملاء',
         'included' => 'مضمن',
         'additional' => 'إضافي',
+        'usage_charge' => 'رسوم الاستخدام',
         'estimated_total' => 'الإجمالي التقديري',
         'plan_change' => 'تغيير الخطة',
         'plan_change_title' => 'جدولة الخطة التالية',
