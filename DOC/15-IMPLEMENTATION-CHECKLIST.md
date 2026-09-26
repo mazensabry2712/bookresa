@@ -1,6 +1,6 @@
 # BookResa — Implementation Checklist
 
-**Current implementation progress: 110/122 (90.2%).**
+**Current implementation progress: 111/122 (91.0%).**
 
 ## Foundation
 - [x] Confirm Herd PHP 8.4
@@ -103,7 +103,7 @@
 - [x] SEO helper/component
 - [x] title/description
 - [x] canonical
-- [ ] hreflang (pending locale-prefixed public URLs)
+- [x] hreflang (locale query variants for public booking URLs)
 - [x] Open Graph
 - [ ] social image (waiting for configured public image source)
 - [x] JSON-LD
