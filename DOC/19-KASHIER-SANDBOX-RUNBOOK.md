@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook verifies the real Kashier test environment without storing credentials in source control.
+This runbook verifies the real Kashier test environment without storing credentials in source control. It is a release verification document, not part of the browser frontend flow.
 
 Kashier's current documentation uses:
 
