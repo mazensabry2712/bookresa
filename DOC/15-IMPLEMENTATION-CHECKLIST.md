@@ -29,11 +29,11 @@
 - [x] Negative authorization tests
 
 ## Business
-- [ ] business types
-- [ ] business profile
-- [ ] modules
-- [ ] tenant modules
-- [ ] localized content
+- [x] business types
+- [x] business profile
+- [x] modules
+- [x] tenant modules (core access enforced; admin UI pending)
+- [x] localized content
 - [ ] public slug
 
 ## Scheduling
@@ -120,6 +120,21 @@
 - [x] audit logs
 - [ ] backup/restore test
 - [x] production build
+
+## Platform Admin
+- [x] platform admin dashboard
+- [x] businesses list/search
+- [x] business suspension/activation
+- [x] subscriptions list
+- [x] payments list
+- [x] usage periods list
+- [ ] platform users management
+- [ ] support management
+- [ ] platform settings
+
+## Reports
+- [ ] business reports
+- [ ] platform reports
 
 ## Release gate
 - [ ] full test suite (refresh after latest backend additions)
