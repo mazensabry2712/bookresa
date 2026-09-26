@@ -16,6 +16,7 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use LogicException;
 
@@ -61,6 +62,7 @@ final class AvailabilityService
             return [];
         }
 
+        /** @var EloquentCollection<int, StaffProfile> $assignedStaff */
         $assignedStaff = $service->staff()
             ->where('status', StaffStatus::Active->value)
             ->orderBy('staff_profiles.id')
@@ -216,6 +218,7 @@ final class AvailabilityService
             return [];
         }
 
+        /** @var EloquentCollection<int, StaffAvailability> $staffWindows */
         $staffWindows = StaffAvailability::query()
             ->where('staff_id', $staff->getKey())
             ->whereDate('available_date', $date->toDateString())
@@ -223,6 +226,7 @@ final class AvailabilityService
             ->get(['starts_at', 'ends_at']);
 
         if ($staffWindows->isEmpty()) {
+            /** @var EloquentCollection<int, StaffWorkingHour> $configuredHours */
             $configuredHours = StaffWorkingHour::query()
                 ->where('staff_id', $staff->getKey())
                 ->where('day_of_week', $date->dayOfWeekIso)
