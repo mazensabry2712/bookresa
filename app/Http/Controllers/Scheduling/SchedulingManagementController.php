@@ -104,7 +104,7 @@ final class SchedulingManagementController
         try {
             $action->handle(array_values($request->validated('hours')));
 
-            return to_route('scheduling.index')->with('status', __('Business working hours updated successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.business_hours_updated'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -117,7 +117,7 @@ final class SchedulingManagementController
         try {
             $action->handle($request->validated());
 
-            return to_route('scheduling.index')->with('status', __('Business break added successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.break_added'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -130,7 +130,7 @@ final class SchedulingManagementController
         try {
             $action->handle($break);
 
-            return to_route('scheduling.index')->with('status', __('Business break removed successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.break_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -143,7 +143,7 @@ final class SchedulingManagementController
         try {
             $action->handle($request->validated());
 
-            return to_route('scheduling.index')->with('status', __('Business holiday saved successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.holiday_saved'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -156,7 +156,7 @@ final class SchedulingManagementController
         try {
             $action->handle($holiday);
 
-            return to_route('scheduling.index')->with('status', __('Business holiday removed successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.holiday_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -169,7 +169,7 @@ final class SchedulingManagementController
         try {
             $action->handle($request->validated());
 
-            return to_route('scheduling.index')->with('status', __('Special working hours saved successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.special_hours_saved'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -182,7 +182,7 @@ final class SchedulingManagementController
         try {
             $action->handle($specialWorkingHour);
 
-            return to_route('scheduling.index')->with('status', __('Special working hours removed successfully.'));
+            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.special_hours_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -196,7 +196,7 @@ final class SchedulingManagementController
         try {
             $action->handle($staff, array_values($request->validated('hours')));
 
-            return $this->staffRedirect($staff)->with('status', __('Staff working hours updated successfully.'));
+            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_hours_updated'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -210,7 +210,7 @@ final class SchedulingManagementController
         try {
             $action->handle($staff, $request->validated());
 
-            return $this->staffRedirect($staff)->with('status', __('Staff day off added successfully.'));
+            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_day_off_added'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -226,7 +226,7 @@ final class SchedulingManagementController
         try {
             $action->handle($dayOff);
 
-            return $this->staffRedirect($staff)->with('status', __('Staff day off removed successfully.'));
+            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_day_off_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -240,7 +240,7 @@ final class SchedulingManagementController
         try {
             $action->handle($staff, $request->validated());
 
-            return $this->staffRedirect($staff)->with('status', __('Staff availability added successfully.'));
+            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_availability_added'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -256,7 +256,7 @@ final class SchedulingManagementController
         try {
             $action->handle($availability);
 
-            return $this->staffRedirect($staff)->with('status', __('Staff availability removed successfully.'));
+            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_availability_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
