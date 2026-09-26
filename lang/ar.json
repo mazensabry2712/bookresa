@@ -212,5 +212,15 @@
     "High": "مرتفعة",
     "Urgent": "عاجلة",
     "Support ticket updated successfully.": "تم تحديث تذكرة الدعم بنجاح."
+,
+    "Platform settings": "إعدادات المنصة",
+    "Manage global defaults and operational contact details for BookResa.": "إدارة الإعدادات العامة وبيانات التواصل التشغيلية لمنصة BookResa.",
+    "Platform name": "اسم المنصة",
+    "Support email": "بريد الدعم",
+    "Default locale": "اللغة الافتراضية",
+    "Default timezone": "المنطقة الزمنية الافتراضية",
+    "Booking slot interval (minutes)": "الفاصل الزمني لمواعيد الحجز (بالدقائق)",
+    "Save settings": "حفظ الإعدادات",
+    "Platform settings updated successfully.": "تم تحديث إعدادات المنصة بنجاح."
 
 }
