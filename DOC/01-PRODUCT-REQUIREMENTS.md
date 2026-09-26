@@ -52,20 +52,18 @@ Cross-tenant data access must be prevented even when a user manipulates:
 - request parameters
 - API-like calls
 
-## 5. User types
+## 5. User types and RBAC
 ### Platform Admin
-Can manage businesses, users, plans, subscriptions, platform revenue, platform settings, suspension/activation and support.
+Platform-level user outside tenant ownership. Can manage businesses, users, plans, subscriptions, platform payments/revenue, usage, reports, platform settings, suspension/activation and support.
 
-### Business Owner
-Can manage business profile, services, staff, customers, bookings, calendar, payments, subscription, settings and reports.
+### Business Users
+Tenant members governed by RBAC:
+- Owner — full tenant management within granted permissions/module limits.
+- Manager — broad business operations.
+- Receptionist — bookings, customers and calendar operations.
+- Staff — own schedule, assigned bookings and allowed booking status operations.
 
-### Business Staff
-Tenant members with role-based permissions. Example roles:
-- Manager
-- Receptionist
-- Staff Member
-
-The application uses RBAC.
+The backend is the authorization source of truth. The frontend may hide unavailable actions but cannot grant access.
 
 ## 6. Registration/onboarding
 Register → Verify Account → Create Business → Select Business Type → Configure Workspace → Select Required Modules → Set Services → Set Working Hours → Add Staff → Workspace Ready.
