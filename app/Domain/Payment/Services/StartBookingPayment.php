@@ -41,10 +41,26 @@ final class StartBookingPayment
             throw new RuntimeException('This booking cannot be paid online.');
         }
 
+        $settings = data_get($this->currentTenant->get()?->profile, 'booking_settings', []);
+        $paymentMode = (string) data_get($settings, 'payment_mode', 'full');
+
+        if ($paymentMode === 'pay_later') {
+            throw new RuntimeException('Online payment is disabled for this workspace.');
+        }
+
+        $amountMinor = (int) $service->price_minor;
+
+        if ($paymentMode === 'deposit') {
+            $percent = max(1, min(99, (int) data_get($settings, 'deposit_percent', 50)));
+            $amountMinor = max(1, (int) ceil($amountMinor * ($percent / 100)));
+        }
+
         $metadata = [
             'booking_reference' => $booking->booking_reference,
             'customer_reference' => 'customer-'.$booking->customer_id,
             'customer_email' => $email,
+            'payment_mode' => $paymentMode,
+            'deposit_percent' => $paymentMode === 'deposit' ? (int) data_get($settings, 'deposit_percent', 50) : null,
             'merchant_redirect' => route('payments.kashier.return'),
         ];
 
@@ -81,7 +97,7 @@ final class StartBookingPayment
                 return $this->payments->start(
                     gateway: $this->gateway,
                     payable: $booking,
-                    amountMinor: (int) $service->price_minor,
+                    amountMinor: $amountMinor,
                     currency: (string) $service->currency,
                     provider: $provider,
                     description: 'Booking '.$booking->booking_reference,
@@ -98,7 +114,7 @@ final class StartBookingPayment
         return $this->payments->start(
             gateway: $this->gateway,
             payable: $booking,
-            amountMinor: (int) $service->price_minor,
+            amountMinor: $amountMinor,
             currency: (string) $service->currency,
             provider: $provider,
             description: 'Booking '.$booking->booking_reference,
