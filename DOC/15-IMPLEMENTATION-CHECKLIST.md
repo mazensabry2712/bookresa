@@ -130,7 +130,7 @@
 - [x] usage periods list
 - [x] platform users management
 - [x] support management
-- [ ] platform settings
+- [x] platform settings
 
 ## Reports
 - [x] business reports
