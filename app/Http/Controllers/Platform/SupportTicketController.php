@@ -26,9 +26,10 @@ final class SupportTicketController
                 $query->where(function ($nested) use ($search): void {
                     $nested
                         ->where('subject', 'like', '%'.$search.'%')
-                        ->orWhere('message', 'like', '%'.$search.'%');
-                })->orWhereHas('tenant.profile', function ($profile) use ($search): void {
-                    $profile->where('email', 'like', '%'.$search.'%');
+                        ->orWhere('message', 'like', '%'.$search.'%')
+                        ->orWhereHas('tenant.profile', function ($profile) use ($search): void {
+                            $profile->where('email', 'like', '%'.$search.'%');
+                        });
                 });
             })
             ->latest('id')
