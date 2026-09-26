@@ -4,13 +4,6 @@ namespace App\Console\Commands;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
-use App\Domain\Billing\Services\CalculateSubscriptionUsage;
-use App\Domain\Tenant\Enums\MembershipStatus;
-use App\Domain\Tenant\Models\Tenant;
-use App\Domain\Tenant\Services\CurrentTenant;
-use App\Notifications\SubscriptionExpiryNotification;
-use App\Notifications\UsageWarningNotification;
-use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
 final class SendBillingNotifications extends Command
@@ -19,10 +12,7 @@ final class SendBillingNotifications extends Command
 
     protected $description = 'Queue subscription expiry and customer usage warning notifications.';
 
-    public function handle(
-        CurrentTenant $currentTenant,
-        CalculateSubscriptionUsage $usageCalculator,
-    ): int {
+    public function handle(): int {
         $expiryHours = max((int) $this->option('expiry-hours'), 1);
         $threshold = min(max((int) $this->option('usage-threshold'), 1), 100);
         $dispatched = 0;
@@ -45,7 +35,6 @@ final class SendBillingNotifications extends Command
                 }
             });
 
-        $currentTenant->clear();
 
         $this->info("Dispatched {$dispatched} subscription billing notification job(s).");
 
