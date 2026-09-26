@@ -15,8 +15,6 @@ const getStoredTheme = () => {
 const storedTheme = getStoredTheme();
 const theme = supportedThemes.includes(storedTheme ?? '') ? storedTheme : 'system';
 
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
 const applyTheme = (nextTheme) => {
     const shouldUseDark =
         nextTheme === 'dark' ||
