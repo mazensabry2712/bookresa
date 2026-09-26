@@ -144,8 +144,8 @@ This checklist measures the current backend/product implementation scope, not th
 ## Release gate
 
 The items below are release verification tasks. A previously green baseline does not stay green automatically after code changes.
-- [x] full test suite (237 passed / 1 skipped / 876 assertions on 2026-09-26)
-- [x] static analysis (PHPStan 0 errors in GitHub Actions CI for `ef94bc0`)
+- [x] full test suite (240 passed / 1 skipped / 883 assertions on 2026-09-26)
+- [x] static analysis (PHPStan 0 errors in GitHub Actions CI; latest verified baseline remains clean)
 - [ ] Pint (full repository currently has 104 style issues across 290 files; changed-file CI checks pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)
