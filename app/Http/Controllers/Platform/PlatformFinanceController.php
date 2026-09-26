@@ -6,6 +6,8 @@ use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
