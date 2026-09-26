@@ -24,6 +24,7 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -234,4 +235,32 @@ test('scheduling actions reject invalid time and date ranges', function (): void
         'starts_at' => '16:00',
         'ends_at' => '15:00',
     ]))->toThrow(InvalidArgumentException::class);
+});
+
+
+test('assigned staff availability uses batched scheduling queries', function (): void {
+    $tenant = availabilityTenant('Availability Query Budget');
+    $service = availabilityService($tenant);
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    for ($i = 0; $i < 3; $i++) {
+        availabilityStaff($tenant, $service);
+    }
+
+    $queries = [];
+
+    DB::listen(function ($query) use (&$queries): void {
+        $queries[] = strtolower($query->sql);
+    });
+
+    $slots = app(AvailabilityService::class)->slots($service, mondayInCairo());
+
+    expect($slots)->not->toBeEmpty()
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`bookings\`'))->count())->toBe(1)
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`staff_day_offs\`'))->count())->toBe(1)
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`staff_availability\`'))->count())->toBe(1)
+        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`staff_working_hours\`'))->count())->toBe(1);
 });
