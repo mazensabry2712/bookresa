@@ -26,15 +26,30 @@ final class UpsertSpecialWorkingHour
             }
         }
 
-        return SpecialWorkingHour::query()->updateOrCreate(
-            ['work_date' => $data['work_date']],
-            [
-                'tenant_id' => $tenantId,
+        $workDate = (string) $data['work_date'];
+
+        $special = SpecialWorkingHour::query()
+            ->whereDate('work_date', $workDate)
+            ->first();
+
+        if ($special !== null) {
+            $special->fill([
                 'opens_at' => $closed ? null : ($data['opens_at'] ?? null),
                 'closes_at' => $closed ? null : ($data['closes_at'] ?? null),
                 'is_closed' => $closed,
                 'reason' => $data['reason'] ?? null,
-            ],
-        );
+            ])->save();
+
+            return $special->fresh();
+        }
+
+        return SpecialWorkingHour::query()->create([
+            'tenant_id' => $tenantId,
+            'work_date' => $workDate,
+            'opens_at' => $closed ? null : ($data['opens_at'] ?? null),
+            'closes_at' => $closed ? null : ($data['closes_at'] ?? null),
+            'is_closed' => $closed,
+            'reason' => $data['reason'] ?? null,
+        ]);
     }
 }
