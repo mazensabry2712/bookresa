@@ -233,3 +233,32 @@ test('workspace owner cannot be added as staff', function (): void {
     expect(fn () => app(AddStaffMember::class)->handle($owner, 'staff'))
         ->toThrow(RuntimeException::class);
 });
+
+
+test('staff management paginates large staff lists', function (): void {
+    [$owner, $tenant] = staffWorkspaceOwner('Pagination Owner');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    for ($i = 1; $i <= 21; $i++) {
+        $user = User::factory()->create([
+            'email' => 'pagination-staff-'.$i.'@example.com',
+            'name' => 'Pagination Staff '.$i,
+        ]);
+
+        app(AddStaffMember::class)->handle($user, 'staff', [
+            'display_name' => 'Pagination Staff '.$i,
+        ]);
+    }
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('staff.index'))
+        ->assertOk()
+        ->assertSee('Pagination Staff 21')
+        ->assertDontSee('Pagination Staff 1</p>');
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('staff.index', ['page' => 2]))
+        ->assertOk()
+        ->assertSee('Pagination Staff 1</p>');
+});
