@@ -61,6 +61,30 @@ class BusinessOnboardingController
         $tenant = $currentTenant->get();
         abort_unless($tenant !== null, 404);
 
+        $subscription = Subscription::query()
+            ->with('plan.modules')
+            ->whereIn('status', [
+                SubscriptionStatus::Trial->value,
+                SubscriptionStatus::Active->value,
+            ])
+            ->latest('start_at')
+            ->first();
+
+        $entitledModuleKeys = collect(data_get($subscription?->pricing_snapshot, 'modules', []))
+            ->pluck('key')
+            ->filter()
+            ->values();
+
+        if ($subscription?->pricing_snapshot === null && $subscription?->isUsable()) {
+            $entitledModuleKeys = $subscription->plan?->modules->pluck('key') ?? collect();
+        }
+
+        $hasModules = $tenant->modules()->wherePivot('enabled', true)->exists();
+        $hasServices = $tenant->services()->exists();
+        $hasHours = BusinessWorkingHour::query()->exists();
+        $hasStaff = $tenant->staffProfiles()->exists();
+        $isReady = (bool) data_get($tenant->settings, 'onboarding.completed', false);
+
         return view('onboarding.workspace', [
             'tenant' => $tenant->loadMissing(['profile', 'businessType', 'modules']),
             'modules' => Module::query()
@@ -68,12 +92,15 @@ class BusinessOnboardingController
                 ->orderByDesc('is_core')
                 ->orderBy('id')
                 ->get(),
+            'entitledModuleKeys' => $entitledModuleKeys,
+            'hasSubscription' => $subscription !== null,
             'steps' => [
                 ['key' => 'workspace', 'label' => __('Workspace'), 'route' => 'onboarding.workspace', 'complete' => true],
-                ['key' => 'modules', 'label' => __('Modules'), 'route' => 'onboarding.workspace', 'complete' => $tenant->modules->isNotEmpty()],
-                ['key' => 'services', 'label' => __('Services'), 'route' => 'services.index', 'complete' => $tenant->services()->exists()],
-                ['key' => 'hours', 'label' => __('Working hours'), 'route' => 'scheduling.index', 'complete' => $tenant->settings['onboarding']['step'] !== 'hours'],
-                ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $tenant->staffProfiles()->exists()],
+                ['key' => 'modules', 'label' => __('Modules'), 'route' => 'onboarding.workspace', 'complete' => $hasModules],
+                ['key' => 'services', 'label' => __('Services'), 'route' => 'services.index', 'complete' => $hasServices],
+                ['key' => 'hours', 'label' => __('Working hours'), 'route' => 'scheduling.index', 'complete' => $hasHours],
+                ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $hasStaff],
+                ['key' => 'ready', 'label' => __('Ready'), 'route' => 'dashboard', 'complete' => $isReady],
             ],
         ]);
     }
