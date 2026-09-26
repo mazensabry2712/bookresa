@@ -14,7 +14,7 @@
         <aside class="border-b border-slate-200 bg-white lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-e dark:border-slate-800 dark:bg-slate-900">
             <div class="flex h-16 items-center justify-between px-5">
                 <a href="{{ route('dashboard') }}" class="text-lg font-bold tracking-tight">
-                    {{ config('bookresa.name', 'Velto') }}
+                    {{ config('bookresa.name', 'BookResa') }}
                 </a>
                 <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {{ $tenant->profile?->name[app()->getLocale()] ?? $tenant->profile?->name['en'] ?? $tenant->slug }}
@@ -94,7 +94,7 @@
             <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">{{ config('bookresa.name', 'Velto') }}</p>
+                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">{{ config('bookresa.name', 'BookResa') }}</p>
                         <h1 class="text-lg font-semibold">@yield('heading', __('Bookings'))</h1>
                     </div>
 
