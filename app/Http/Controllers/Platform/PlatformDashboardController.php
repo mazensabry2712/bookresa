@@ -22,7 +22,7 @@ final class PlatformDashboardController
         ];
 
         $subscriptionTenantIds = Subscription::withoutGlobalScopes()
-            ->whereIn('status', $activeSubscriptionStatuses)
+            ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
             ->select('tenant_id');
 
         return view('admin.dashboard', [
@@ -32,7 +32,7 @@ final class PlatformDashboardController
                 'suspendedBusinesses' => Tenant::query()->where('status', TenantStatus::Suspended)->count(),
                 'trialBusinesses' => Tenant::query()
                     ->whereIn('id', $subscriptionTenantIds)
-                    ->whereHas('subscriptions', fn ($query) => $query->withoutGlobalScopes()->where('status', SubscriptionStatus::Trial))
+                    ->whereHas('subscriptions', fn ($query) => $query->withoutGlobalScopes()->where('subscriptions.status', SubscriptionStatus::Trial))
                     ->count(),
                 'subscriptions' => Subscription::withoutGlobalScopes()->count(),
                 'activeSubscriptions' => Subscription::withoutGlobalScopes()
