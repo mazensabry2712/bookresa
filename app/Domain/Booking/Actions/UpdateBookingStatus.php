@@ -4,6 +4,7 @@ namespace App\Domain\Booking\Actions;
 
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
+use App\Notifications\BookingNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -60,7 +61,20 @@ final class UpdateBookingStatus
                 'reason' => $reason,
             ]);
 
-            return $booking->fresh(['customer', 'service', 'staff', 'statusHistory']);
+            $notificationKind = match ($status) {
+                BookingStatus::Confirmed => 'confirmed',
+                BookingStatus::Cancelled => 'cancelled',
+                BookingStatus::Rescheduled => 'rescheduled',
+                default => null,
+            };
+
+            $fresh = $booking->fresh(['customer', 'service', 'staff', 'statusHistory']);
+
+            if ($notificationKind !== null) {
+                $fresh?->customer?->notify(new BookingNotification($fresh, $notificationKind));
+            }
+
+            return $fresh;
         });
     }
 }
