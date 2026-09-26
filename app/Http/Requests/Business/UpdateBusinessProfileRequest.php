@@ -26,6 +26,9 @@ class UpdateBusinessProfileRequest extends FormRequest
             'instagram' => trim((string) $this->input('instagram')),
             'remove_logo' => filter_var($this->input('remove_logo'), FILTER_VALIDATE_BOOL),
             'remove_cover' => filter_var($this->input('remove_cover'), FILTER_VALIDATE_BOOL),
+            'payment_mode' => (string) $this->input('payment_mode', 'pay_later'),
+            'deposit_percent' => $this->input('deposit_percent', 50),
+            'customer_email_required' => filter_var($this->input('customer_email_required'), FILTER_VALIDATE_BOOL),
         ]);
     }
 
