@@ -21,6 +21,7 @@
                 [__('Active businesses'), $metrics['activeBusinesses']],
                 [__('Suspended businesses'), $metrics['suspendedBusinesses']],
                 [__('Customers'), $metrics['customers']],
+                [__('Users'), $metrics['users']],
             ] as [$label, $value])
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $label }}</p>
