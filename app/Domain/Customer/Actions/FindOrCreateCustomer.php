@@ -6,15 +6,13 @@ use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Services\CustomerIdentity;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
-use LogicException;
 
 final class FindOrCreateCustomer
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly CustomerIdentity $identity,
-    ) {
-    }
+    ) {}
 
     public function handle(
         string $name,
