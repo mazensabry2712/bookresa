@@ -3,9 +3,10 @@
 ## Current verified local gate
 
 The latest local verification reported:
-- full test suite: 159 passed, 528 assertions
+- full test suite: 160 passed, 533 assertions
 - Laravel Pint: passed
 - Vite production build: passed
+- SEO regression tests added; local verification pending after the SEO commit
 - composer.json / composer.lock are synchronized for PHP 8.4
 
 The CI workflow in `.github/workflows/ci.yml` repeats the PHP test, Pint, syntax, Composer and frontend build checks.
