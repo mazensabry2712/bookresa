@@ -47,6 +47,12 @@ subscription.manage
 settings.manage
 reports.view
 
+## Module-aware authorization
+Core modules are available to every active tenant by default and can be explicitly disabled through `tenant_modules`.
+Optional modules require an explicit enabled `tenant_modules` record.
+
+A module is available only when the global module is active and the tenant module state permits access.
+
 ## Authorization order
 Authenticated → membership → tenant status → module enabled → role/permission → resource policy.
 
