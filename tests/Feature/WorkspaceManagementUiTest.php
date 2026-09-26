@@ -210,3 +210,33 @@ test('service delete is blocked when booking history exists', function (): void 
     expect($service->fresh())->not->toBeNull()
         ->and($service->fresh()->is_active)->toBeTrue();
 });
+
+
+test('service management paginates large service lists', function (): void {
+    [$user, $tenant] = workspaceOwner();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    for ($i = 1; $i <= 21; $i++) {
+        Service::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => ['en' => 'Service '.$i, 'ar' => 'خدمة '.$i],
+            'price_minor' => 10000,
+            'currency' => 'EGP',
+            'duration_minutes' => 30,
+            'buffer_minutes' => 0,
+            'is_active' => true,
+        ]);
+    }
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index'))
+        ->assertOk()
+        ->assertSee('Service 21')
+        ->assertDontSee('Service 1');
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index', ['page' => 2]))
+        ->assertOk()
+        ->assertSee('Service 1');
+});
