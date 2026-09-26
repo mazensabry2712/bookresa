@@ -6,7 +6,17 @@ test('public home page renders the BookResa landing page', function (): void {
         ->assertSee('BookResa')
         ->assertSee('Start free')
         ->assertSee('See how it works')
-        ->assertSee('Bookings')
+        ->assertSee('A simpler way to run your bookings.')
+        ->assertSee('Customer booking')
         ->assertSee('/logo.png')
         ->assertDontSee('The PHP Framework for Web Artisans');
+});
+
+
+test('public home page supports Arabic navigation and copy', function (): void {
+    $this->get(route('home').'?locale=ar')
+        ->assertOk()
+        ->assertSee('<html lang="ar" dir="rtl">', false)
+        ->assertSee('طريقة أبسط لإدارة حجوزاتك.')
+        ->assertSee('حجز العميل');
 });
