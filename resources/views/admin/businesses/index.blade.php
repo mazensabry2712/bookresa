@@ -48,13 +48,16 @@
                                 <td class="px-5 py-4">{{ number_format($business->services_count) }}</td>
                                 <td class="px-5 py-4">{{ number_format($business->staff_profiles_count) }}</td>
                                 <td class="px-5 py-4">
-                                    <form method="POST" action="{{ route('admin.businesses.toggle-status', $business) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">
-                                            {{ $business->status === \App\Domain\Tenant\Enums\TenantStatus::Suspended ? __('Activate') : __('Suspend') }}
-                                        </button>
-                                    </form>
+                                    <div class="flex flex-wrap gap-2">
+                                        <a href="{{ route('admin.businesses.modules.index', $business) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Modules') }}</a>
+                                        <form method="POST" action="{{ route('admin.businesses.toggle-status', $business) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">
+                                                {{ $business->status === \App\Domain\Tenant\Enums\TenantStatus::Suspended ? __('Activate') : __('Suspend') }}
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
