@@ -29,10 +29,10 @@ Current dashboard/admin/onboarding/public booking document roots expose the loca
 First-class:
 - Light
 - Dark
-Optional later:
-- System
 
-Use Tailwind dark mode and centralized design tokens/CSS variables. Apply stored browser preference early to reduce theme flash.
+The shared app entry supports `light`, `dark` and `system` preferences without adding a frontend dependency. The selected preference is stored in `localStorage` under `bookresa-theme`; system mode follows `prefers-color-scheme`.
+
+Tailwind `dark:` variants use the shared `.dark` document class. Centralized BookResa brand and semantic CSS variables are defined in `resources/css/app.css` so Blade views can adopt consistent tokens incrementally.
 
 ## SEO scope
 Primarily public pages:
