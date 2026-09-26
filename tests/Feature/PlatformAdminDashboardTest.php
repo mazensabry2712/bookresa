@@ -129,6 +129,41 @@ test('platform admin can suspend and reactivate a business', function (): void {
     expect($tenant->fresh()->status)->toBe(TenantStatus::Active);
 });
 
+test('platform admin can view subscriptions payments and usage', function (): void {
+    $admin = adminDashboardUser();
+
+    $this->actingAs($admin)
+        ->get(route('admin.subscriptions.index'))
+        ->assertOk()
+        ->assertSee('Subscriptions');
+
+    $this->actingAs($admin)
+        ->get(route('admin.payments.index'))
+        ->assertOk()
+        ->assertSee('Payments');
+
+    $this->actingAs($admin)
+        ->get(route('admin.usage.index'))
+        ->assertOk()
+        ->assertSee('Usage');
+});
+
+test('platform finance pages reject non platform admins', function (): void {
+    $user = adminDashboardUser(false);
+
+    $this->actingAs($user)
+        ->get(route('admin.subscriptions.index'))
+        ->assertForbidden();
+
+    $this->actingAs($user)
+        ->get(route('admin.payments.index'))
+        ->assertForbidden();
+
+    $this->actingAs($user)
+        ->get(route('admin.usage.index'))
+        ->assertForbidden();
+});
+
 test('platform routes remain independent from current tenant context', function (): void {
     $admin = adminDashboardUser();
     $owner = User::factory()->create(['email' => 'independent-owner@example.com']);
