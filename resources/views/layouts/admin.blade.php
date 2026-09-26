@@ -34,9 +34,12 @@
                         <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">BookResa</p>
                         <h1 class="text-lg font-semibold">@yield('heading', __('Admin'))</h1>
                     </div>
-                    <div class="text-end">
-                        <p class="text-sm font-medium">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-slate-500">{{ auth()->user()->email }}</p>
+                    <div class="flex items-center gap-3">
+                        <x-theme-toggle />
+                        <div class="text-end">
+                            <p class="text-sm font-medium">{{ auth()->user()->name }}</p>
+                            <p class="text-xs text-slate-500">{{ auth()->user()->email }}</p>
+                        </div>
                     </div>
                 </div>
             </header>
