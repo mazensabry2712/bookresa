@@ -13,11 +13,10 @@ final class CreateCustomer
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly CustomerIdentity $identity,
-    ) {
-    }
+    ) {}
 
     /**
-     * @param array{name:string,phone?:string|null,email?:string|null} $data
+     * @param array{name: string, phone?: string|null, email?: string|null} $data
      */
     public function handle(array $data): Customer
     {
