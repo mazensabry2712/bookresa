@@ -35,10 +35,10 @@
 </head>
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
     <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div class="mx-auto flex min-h-[4.75rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto flex min-h-[8rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center rounded-lg" aria-label="BookResa">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" width="200" height="48" decoding="async" fetchpriority="high" class="h-12 w-auto max-w-[200px] object-contain dark:hidden">
-                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="200" height="48" decoding="async" class="hidden h-12 w-auto max-w-[200px] object-contain dark:block">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" width="800" height="192" decoding="async" fetchpriority="high" class="h-48 w-auto max-w-[800px] object-contain dark:hidden">
+                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="800" height="192" decoding="async" class="hidden h-48 w-auto max-w-[800px] object-contain dark:block">
             </a>
 
             <nav class="hidden flex-1 items-center justify-center gap-7 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
