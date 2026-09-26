@@ -7,7 +7,7 @@ Pest, Larastan and Pint. Debugbar is development-only.
 Slot calculation, usage math, price calculation and status transition rules.
 
 ## Feature tests
-Authentication, tenant access, CRUD, public booking, billing, payment webhooks and admin permissions.
+Authentication, tenant access, CRUD, public booking, billing, payment webhooks, admin permissions and email verification.
 
 ## Mandatory tenant tests
 - Tenant A cannot read Tenant B customer.
