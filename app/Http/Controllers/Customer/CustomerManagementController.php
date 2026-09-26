@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Domain\Booking\Enums\BookingStatus;
+use App\Domain\Booking\Models\Booking;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Customer\Actions\CreateCustomer;
 use App\Domain\Customer\Actions\UpdateCustomer;
 use App\Domain\Customer\Models\Customer;
@@ -74,9 +78,32 @@ final class CustomerManagementController
 
         $customer->loadCount('bookings');
 
+        $customerBookingIds = $customer->bookings()->select('id');
+
+        $metrics = [
+            'totalBookings' => (int) $customer->bookings()->count(),
+            'completedBookings' => (int) $customer->bookings()->where('status', BookingStatus::Completed)->count(),
+            'cancelledBookings' => (int) $customer->bookings()->where('status', BookingStatus::Cancelled)->count(),
+            'noShows' => (int) $customer->bookings()->where('status', BookingStatus::NoShow)->count(),
+            'totalSpentMinor' => (int) Payment::query()
+                ->where('payable_type', (new Booking)->getMorphClass())
+                ->whereIn('payable_id', $customerBookingIds)
+                ->where('status', PaymentStatus::Paid)
+                ->sum('amount_minor'),
+        ];
+
+        $upcomingBooking = $customer->bookings()
+            ->with(['service', 'staff'])
+            ->where('starts_at', '>=', now('UTC'))
+            ->whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed, BookingStatus::Rescheduled])
+            ->orderBy('starts_at')
+            ->first();
+
         return view('customers.show', [
             'tenant' => $currentTenant->get(),
             'customer' => $customer,
+            'metrics' => $metrics,
+            'upcomingBooking' => $upcomingBooking,
             'bookings' => $customer->bookings()
                 ->with(['service', 'staff'])
                 ->latest('starts_at')
