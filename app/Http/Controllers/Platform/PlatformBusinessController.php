@@ -23,6 +23,7 @@ final class PlatformBusinessController
                     $nested
                         ->where('slug', 'like', '%'.$search.'%')
                         ->orWhereHas('profile', function ($profile) use ($search): void {
+                            $profile->withoutGlobalScopes();
                             $profile
                                 ->where('name->en', 'like', '%'.$search.'%')
                                 ->orWhere('name->ar', 'like', '%'.$search.'%')
