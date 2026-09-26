@@ -37,7 +37,8 @@
     <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div class="mx-auto flex min-h-[4.75rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
             <a href="{{ route('home') }}" class="flex shrink-0 items-center rounded-lg" aria-label="BookResa">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" width="185" height="44" decoding="async" fetchpriority="high" class="h-11 w-auto max-w-[185px] object-contain">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" width="185" height="44" decoding="async" fetchpriority="high" class="h-11 w-auto max-w-[185px] object-contain dark:hidden">
+                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="185" height="44" decoding="async" class="hidden h-11 w-auto max-w-[185px] object-contain dark:block">
             </a>
 
             <nav class="hidden flex-1 items-center justify-center gap-7 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
@@ -144,7 +145,8 @@
     <footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div class="flex items-center gap-4">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" width="145" height="32" loading="lazy" decoding="async" class="h-8 w-auto max-w-[145px] object-contain">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" width="145" height="32" loading="lazy" decoding="async" class="h-8 w-auto max-w-[145px] object-contain dark:hidden">
+                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="145" height="32" loading="lazy" decoding="async" class="hidden h-8 w-auto max-w-[145px] object-contain dark:block">
                 <span class="text-xs text-slate-400">© {{ now()->year }} BookResa</span>
             </div>
             <div class="flex items-center gap-4 text-xs font-semibold text-slate-500">
