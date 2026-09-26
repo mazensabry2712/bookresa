@@ -1,8 +1,13 @@
 <?php
 
 use App\Domain\Business\Actions\CreateBusiness;
+use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -165,6 +170,63 @@ test('missing optional tenant module row does not grant access', function (): vo
         ->withSession(['tenant_id' => $tenant->id])
         ->get('/__test/optional-payments-module')
         ->assertForbidden();
+});
+
+test('enabled optional module requires subscription entitlement', function (): void {
+    [$owner, $tenant] = moduleWorkspace();
+
+    $payments = Module::query()->where('key', 'payments')->firstOrFail();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    TenantModule::query()->create([
+        'tenant_id' => $tenant->id,
+        'module_id' => $payments->id,
+        'enabled' => true,
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get('/__test/optional-payments-module')
+        ->assertForbidden();
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Payments Plan'],
+        'description' => ['en' => 'Payments plan'],
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    $plan->modules()->sync([$payments->id]);
+
+    Subscription::query()->create([
+        'tenant_id' => $tenant->id,
+        'plan_id' => $plan->id,
+        'start_at' => now(),
+        'end_at' => now()->addMonth(),
+        'status' => SubscriptionStatus::Active,
+        'payment_status' => PaymentStatus::Paid,
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'pricing_snapshot' => [
+            'modules' => [
+                ['key' => 'payments', 'settings' => null],
+            ],
+        ],
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get('/__test/optional-payments-module')
+        ->assertOk();
 });
 
 test('inactive global module blocks tenant access even when tenant module is enabled', function (): void {
