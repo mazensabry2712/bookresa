@@ -221,6 +221,8 @@ final class SchedulingManagementController
         StaffDayOff $dayOff,
         RemoveStaffDayOff $action,
     ): RedirectResponse {
+        abort_unless((int) $dayOff->staff_id === (int) $staff->getKey(), 404);
+
         try {
             $action->handle($dayOff);
 
@@ -249,6 +251,8 @@ final class SchedulingManagementController
         StaffAvailability $availability,
         RemoveStaffAvailability $action,
     ): RedirectResponse {
+        abort_unless((int) $availability->staff_id === (int) $staff->getKey(), 404);
+
         try {
             $action->handle($availability);
 
