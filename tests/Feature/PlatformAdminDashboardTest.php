@@ -3,6 +3,11 @@
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Platform\Models\PlatformAdmin;
+use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -148,6 +153,43 @@ test('platform admin can view subscriptions payments and usage', function (): vo
         ->get(route('admin.usage.index'))
         ->assertOk()
         ->assertSee('Usage');
+});
+
+test('platform admin can suspend and activate a subscription', function (): void {
+    $admin = adminDashboardUser();
+    $owner = User::factory()->create(['email' => 'subscription-admin-owner@example.com']);
+    $tenant = adminDashboardTenant($owner, 'Subscription Admin Clinic');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Professional', 'ar' => 'احترافي'],
+        'price_minor' => 29900,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 20,
+        'additional_customer_price_minor' => 1000,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle($plan);
+    $subscription->forceFill(['payment_status' => PaymentStatus::Paid])->save();
+    app(CurrentTenant::class)->clear();
+
+    $this->actingAs($admin)
+        ->patch(route('admin.subscriptions.toggle-status', $subscription))
+        ->assertRedirect()
+        ->assertSessionHas('status', 'Subscription suspended successfully.');
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Suspended);
+
+    $this->actingAs($admin)
+        ->patch(route('admin.subscriptions.toggle-status', $subscription->fresh()))
+        ->assertRedirect()
+        ->assertSessionHas('status', 'Subscription activated successfully.');
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Active);
 });
 
 test('platform finance pages reject non platform admins', function (): void {
