@@ -282,7 +282,9 @@ test('expired subscription blocks core operations after onboarding completion', 
 
     $settings = $tenant->settings ?? [];
     data_set($settings, 'onboarding.completed', true);
-    $tenant->forceFill(['settings' => $settings])->save();
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $settings): void {
+        $tenant->forceFill(['settings' => $settings])->save();
+    });
 
     $plan = Plan::query()->create([
         'name' => ['en' => 'Expired Plan'],
