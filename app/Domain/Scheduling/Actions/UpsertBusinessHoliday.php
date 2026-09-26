@@ -15,13 +15,24 @@ final class UpsertBusinessHoliday
     public function handle(array $data): BusinessHoliday
     {
         $tenantId = $this->currentTenant->idOrFail();
+        $holidayDate = (string) $data['holiday_date'];
 
-        return BusinessHoliday::query()->updateOrCreate(
-            ['holiday_date' => $data['holiday_date']],
-            [
-                'tenant_id' => $tenantId,
+        $holiday = BusinessHoliday::query()
+            ->whereDate('holiday_date', $holidayDate)
+            ->first();
+
+        if ($holiday !== null) {
+            $holiday->fill([
                 'reason' => $data['reason'] ?? null,
-            ],
-        );
+            ])->save();
+
+            return $holiday->fresh();
+        }
+
+        return BusinessHoliday::query()->create([
+            'tenant_id' => $tenantId,
+            'holiday_date' => $holidayDate,
+            'reason' => $data['reason'] ?? null,
+        ]);
     }
 }
