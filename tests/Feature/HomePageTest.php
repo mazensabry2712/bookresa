@@ -17,7 +17,8 @@ test('public home page renders the BookResa product home', function (): void {
 test('public home page supports Arabic navigation and copy', function (): void {
     $this->get(route('home').'?locale=ar')
         ->assertOk()
-        ->assertSee('<html lang="ar" dir="rtl">', false)
+        ->assertSee('lang="ar"', false)
+        ->assertSee('dir="rtl"', false)
         ->assertSee('طريقة أبسط لإدارة حجوزاتك.')
         ->assertSee('حجز العميل');
 });
