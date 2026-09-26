@@ -3,6 +3,7 @@
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +22,7 @@ test('public booking page renders reusable seo metadata and structured data', fu
         'status' => TenantStatus::Active,
     ]);
 
-    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
+    app(CurrentTenant::class)->set($tenant);
 
     $tenant->profile()->create([
         'name' => ['en' => 'SEO Clinic', 'ar' => 'عيادة SEO'],
