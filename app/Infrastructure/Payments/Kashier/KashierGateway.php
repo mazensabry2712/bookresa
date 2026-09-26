@@ -30,10 +30,11 @@ final class KashierGateway implements PaymentGateway
             throw new RuntimeException('Kashier customer email and reference are required.');
         }
 
+        $expiresAt = CarbonImmutable::now('UTC')
+            ->addMinutes((int) $config['expire_minutes']);
+
         $payload = [
-            'expireAt' => CarbonImmutable::now('UTC')
-                ->addMinutes((int) $config['expire_minutes'])
-                ->toIso8601String(),
+            'expireAt' => $expiresAt->toIso8601String(),
             'maxFailureAttempts' => (int) $config['max_failure_attempts'],
             'paymentType' => 'credit',
             'amount' => number_format($request->amountMinor / 100, 2, '.', ''),
@@ -92,6 +93,7 @@ final class KashierGateway implements PaymentGateway
                 'merchant_order' => data_get($data, 'paymentParams.order'),
                 'merchant_id' => $config['merchant_id'],
             ],
+            expiresAt: $expiresAt,
         );
     }
 
