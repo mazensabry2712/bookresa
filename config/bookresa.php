@@ -78,6 +78,7 @@ return [
             'subscription.manage',
             'settings.manage',
             'reports.view',
+            'notifications.view',
         ],
 
         'roles' => [
@@ -103,6 +104,7 @@ return [
                 'subscription.manage',
                 'settings.manage',
                 'reports.view',
+                'notifications.view',
             ],
             'manager' => [
                 'business.view',
@@ -135,6 +137,7 @@ return [
                 'bookings.update',
                 'bookings.cancel',
                 'calendar.view',
+                'notifications.view',
             ],
             'staff' => [
                 'business.view',
@@ -142,6 +145,7 @@ return [
                 'bookings.update',
                 'bookings.complete',
                 'calendar.view',
+                'notifications.view',
             ],
         ],
     ],

@@ -100,6 +100,13 @@
                         </a>
                     @endcan
 
+                    @can('notifications.view')
+                        <a href="{{ route('notifications.index') }}" data-active="{{ request()->routeIs('notifications.*') ? 'true' : 'false' }}" class="br-nav-link">
+                            <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
+                            <span>{{ __('app.notification_ui.notifications') }}</span>
+                        </a>
+                    @endcan
+
                     @can('reports.view')
                         <a href="{{ route('reports.business') }}" data-active="{{ request()->routeIs('reports.business') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M5 19V9M12 19V5M19 19v-7M3 19h18"/></svg></span>
@@ -156,6 +163,15 @@
                     </div>
 
                     <div class="flex shrink-0 items-center gap-2">
+                        @can('notifications.view')
+                            <a href="{{ route('notifications.index') }}"
+                               class="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                               aria-label="{{ __('app.notification_ui.notifications') }}">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path stroke-linecap="round" d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/>
+                                </svg>
+                            </a>
+                        @endcan
                         <x-locale-switcher />
                         <x-theme-toggle />
                     </div>

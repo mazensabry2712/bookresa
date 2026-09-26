@@ -7,6 +7,7 @@ use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Customer\CustomerManagementController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\PaymentManagementController;
 use App\Http\Controllers\Payment\KashierWebhookController;
@@ -55,6 +56,18 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
     Route::post('/onboarding/complete', [BusinessOnboardingController::class, 'complete'])
         ->middleware('permission:settings.manage')
         ->name('onboarding.complete');
+
+    Route::get('/dashboard/notifications', [NotificationController::class, 'index'])
+        ->middleware('permission:notifications.view')
+        ->name('notifications.index');
+
+    Route::post('/dashboard/notifications/read-all', [NotificationController::class, 'readAll'])
+        ->middleware('permission:notifications.view')
+        ->name('notifications.read-all');
+
+    Route::post('/dashboard/notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->middleware('permission:notifications.view')
+        ->name('notifications.read');
 
     Route::get('/dashboard/reports', [ReportController::class, 'business'])
         ->middleware('permission:reports.view')
