@@ -24,7 +24,10 @@ beforeEach(function (): void {
         ModuleSeeder::class,
         BusinessTypeSeeder::class,
     ]);
-});
+
+    Route::middleware(['web', 'auth', 'tenant', 'module:payments'])
+        ->get('/__test/optional-payments-module', fn () => 'ok');
+}
 
 afterEach(function (): void {
     app(CurrentTenant::class)->clear();
@@ -162,9 +165,6 @@ test('disabled appointments module blocks booking management and public booking'
 
 test('missing optional tenant module row does not grant access', function (): void {
     [$owner, $tenant] = moduleWorkspace();
-
-    Route::middleware(['web', 'auth', 'tenant', 'module:payments'])
-        ->get('/__test/optional-payments-module', fn () => 'ok');
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
