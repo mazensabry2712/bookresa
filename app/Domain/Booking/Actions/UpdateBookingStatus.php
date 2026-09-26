@@ -6,6 +6,7 @@ use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Notifications\BookingNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use RuntimeException;
