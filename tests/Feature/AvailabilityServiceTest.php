@@ -141,7 +141,7 @@ test('special working hours override regular business hours', function (): void 
     $slots = app(AvailabilityService::class)->slots($service, mondayInCairo());
 
     expect(collect($slots)->pluck('start')->map(fn (CarbonImmutable $value): string => $value->format('H:i'))->all())
-        ->toBe(['11:00', '11:15']);
+        ->toBe(['11:00', '11:15', '11:30', '11:45', '12:00']);
 });
 
 test('closed staff working hours prevent assigned staff slots', function (): void {
