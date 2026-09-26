@@ -21,7 +21,7 @@ final class RescheduleBookingRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('staff_profiles', 'id')->where(
-                    fn ($query) => $query->where('tenant_id', $this->user()?->currentTenantId()),
+                    fn ($query) => $query->where('tenant_id', optional($this->route('booking'))->tenant_id),
                 ),
             ],
         ];
