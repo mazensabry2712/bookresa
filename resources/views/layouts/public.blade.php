@@ -41,7 +41,7 @@
                 <img src="{{ asset('logodark.png') }}" alt="BookResa" width="707" height="353" decoding="async" class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
             </a>
 
-            <nav class="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+            <nav class="hidden min-w-0 flex-1 items-center justify-center gap-6 xl:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
                 <a href="#features" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.features') }}
                 </a>
@@ -50,7 +50,7 @@
                 </a>
             </nav>
 
-            <div class="hidden shrink-0 items-center gap-1.5 lg:flex">
+            <div class="hidden shrink-0 items-center gap-1.5 xl:flex">
                 <div class="relative">
                     <button type="button"
                             class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
@@ -91,7 +91,7 @@
             </div>
 
             <button type="button"
-                    class="ms-auto rounded-lg border border-slate-200 p-2.5 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 lg:hidden"
+                    class="ms-auto rounded-lg border border-slate-200 p-2.5 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 xl:hidden"
                     data-bookresa-public-menu
                     aria-expanded="false"
                     aria-controls="bookresa-public-menu"
