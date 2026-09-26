@@ -24,12 +24,18 @@ final class DashboardController
         abort_unless($tenant !== null, 404);
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
+        $staffId = null;
+        if (auth()->user()?->hasRole('staff')) {
+            $staffId = StaffProfile::query()->where('user_id', auth()->id())->value('id');
+        }
+
         $todayStart = CarbonImmutable::now($timezone)->startOfDay();
         $todayEnd = $todayStart->endOfDay();
 
         $todayBookings = Booking::query()
             ->whereBetween('starts_at', [$todayStart->utc(), $todayEnd->utc()])
             ->whereNotIn('status', [BookingStatus::Cancelled->value])
+            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
             ->count();
 
         $todayRevenueMinor = Payment::query()
@@ -37,6 +43,7 @@ final class DashboardController
             ->where('status', PaymentStatus::Paid)
             ->whereNotNull('paid_at')
             ->whereBetween('paid_at', [$todayStart->utc(), $todayEnd->utc()])
+            ->when($staffId !== null, fn ($query) => $query->whereHasMorph('payable', [Booking::class], fn ($query) => $query->where('staff_id', $staffId)))
             ->sum('amount_minor');
 
         $upcomingBookings = Booking::query()
@@ -47,6 +54,7 @@ final class DashboardController
                 BookingStatus::Confirmed->value,
                 BookingStatus::Rescheduled->value,
             ])
+            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
             ->orderBy('starts_at')
             ->limit(8)
             ->get();
@@ -67,7 +75,7 @@ final class DashboardController
                 'todayBookings' => (int) $todayBookings,
                 'todayRevenueMinor' => (int) $todayRevenueMinor,
                 'customers' => Customer::query()->count(),
-                'employees' => StaffProfile::query()->where('status', StaffStatus::Active)->count(),
+                'employees' => auth()->user()?->hasRole('staff') ? 1 : StaffProfile::query()->where('status', StaffStatus::Active)->count(),
             ],
             'upcomingBookings' => $upcomingBookings,
             'subscription' => $subscription,
