@@ -70,7 +70,7 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject($titleEn)
-            ->greeting('Velto')
+            ->greeting('BookResa')
             ->line($messageEn)
             ->line("Current customers: {$this->customerCount}")
             ->line("Included customers: {$this->includedLimit}");
