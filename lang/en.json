@@ -204,5 +204,26 @@
     "Bookings, customers and revenue for the selected period.": "Bookings, customers and revenue for the selected period.",
     "Most booked services in this period.": "Most booked services in this period.",
     "Platform-level businesses, bookings, subscriptions, usage and revenue.": "Platform-level businesses, bookings, subscriptions, usage and revenue.",
-    "No Show": "No Show"
+    "No Show": "No Show",
+    "Support": "Support",
+    "Platform operations": "Platform operations",
+    "Review support requests and update their status, priority and internal notes.": "Review support requests and update their status, priority and internal notes.",
+    "Search subject or business email": "Search subject or business email",
+    "All priorities": "All priorities",
+    "Ticket": "Ticket",
+    "Priority": "Priority",
+    "Update": "Update",
+    "Internal notes": "Internal notes",
+    "Save": "Save",
+    "No support tickets found.": "No support tickets found.",
+    "Open": "Open",
+    "In progress": "In progress",
+    "Resolved": "Resolved",
+    "Closed": "Closed",
+    "Low": "Low",
+    "Normal": "Normal",
+    "High": "High",
+    "Urgent": "Urgent",
+    "Support ticket updated successfully.": "Support ticket updated successfully."
+
 }
