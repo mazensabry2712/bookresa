@@ -33,6 +33,8 @@ return [
     'support' => 'الدعم',
     'plans' => 'الخطط',
     'admin' => 'الإدارة',
+    'platform' => 'المنصة',
+    'businesses' => 'الأنشطة',
     'service' => 'الخدمة',
     'select_service' => 'اختر خدمة',
     'date' => 'التاريخ',
