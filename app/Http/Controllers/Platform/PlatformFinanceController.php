@@ -44,7 +44,9 @@ final class PlatformFinanceController
             return back()->withErrors(['subscription' => __('Only active, trial or suspended subscriptions can be toggled by platform admin.')]);
         }
 
-        $subscription->forceFill(['status' => $next])->save();
+        Subscription::withoutEvents(
+            fn (): bool => $subscription->forceFill(['status' => $next])->save(),
+        );
 
         $audit->log(
             $next === SubscriptionStatus::Suspended
