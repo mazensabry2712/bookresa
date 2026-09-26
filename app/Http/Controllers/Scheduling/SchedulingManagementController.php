@@ -148,8 +148,8 @@ final class SchedulingManagementController
         SpecialWorkingHour::query()->updateOrCreate(
             ['work_date' => $validated['work_date']],
             [
-                'opens_at' => $validated['opens_at'] ?? null,
-                'closes_at' => $validated['closes_at'] ?? null,
+                'opens_at' => $closed ? null : ($validated['opens_at'] ?? null),
+                'closes_at' => $closed ? null : ($validated['closes_at'] ?? null),
                 'is_closed' => $closed,
                 'reason' => $validated['reason'] ?? null,
             ],
