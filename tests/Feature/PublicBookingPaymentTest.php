@@ -133,5 +133,6 @@ test('online paid booking requires customer email', function (): void {
         'date' => '2026-09-28',
         'time' => '10:00',
         'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
     ])->assertSessionHasErrors('booking');
 });
