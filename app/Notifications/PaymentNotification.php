@@ -21,7 +21,9 @@ final class PaymentNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return filled($notifiable->routeNotificationFor('mail'))
+            ? ['database', 'mail']
+            : ['database'];
     }
 
     public function toArray(object $notifiable): array
