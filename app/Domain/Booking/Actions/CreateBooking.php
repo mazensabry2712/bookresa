@@ -15,6 +15,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Collection;
 use LogicException;
 use RuntimeException;
 
@@ -49,6 +50,7 @@ final class CreateBooking
             throw new RuntimeException('Bookings must be scheduled in the future.');
         }
 
+        /** @var Collection<int, StaffProfile> $assignedStaff */
         $assignedStaff = $service->staff()
             ->where('status', StaffStatus::Active->value)
             ->orderBy('staff_profiles.id')
@@ -98,6 +100,7 @@ final class CreateBooking
                 );
             }
 
+            /** @var Collection<int, StaffProfile> $candidates */
             $candidates = $requestedStaff !== null
                 ? collect([$requestedStaff])
                 : $assignedStaff->sortBy(fn (StaffProfile $staff): int => $staff->getKey());
