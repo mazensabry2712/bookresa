@@ -30,17 +30,14 @@ final class EnsureTenantModuleEnabled
 
         abort_unless($tenant !== null, Response::HTTP_FORBIDDEN, 'A workspace is required for this feature.');
 
-        $result = $this->currentTenant->run(
-            $tenant,
-            fn (): bool => $this->access->allows($moduleKey),
-        );
+        return $this->currentTenant->run($tenant, function () use ($request, $next, $moduleKey): Response {
+            abort_unless(
+                $this->access->allows($moduleKey),
+                Response::HTTP_FORBIDDEN,
+                'This feature is not enabled for the current workspace or subscription plan.',
+            );
 
-        abort_unless(
-            $result,
-            Response::HTTP_FORBIDDEN,
-            'This feature is not enabled for the current workspace or subscription plan.',
-        );
-
-        return $next($request);
+            return $next($request);
+        });
     }
 }
