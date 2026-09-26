@@ -21,6 +21,19 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
         $this->afterCommit();
     }
 
+    public function stage(): string
+    {
+        if ($this->includedLimit > 0 && $this->customerCount > $this->includedLimit) {
+            return 'over_limit';
+        }
+
+        if ($this->includedLimit > 0 && $this->customerCount >= $this->includedLimit) {
+            return 'limit_reached';
+        }
+
+        return 'threshold';
+    }
+
     public function via(object $notifiable): array
     {
         return filled($notifiable->routeNotificationFor('mail'))
@@ -34,6 +47,7 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
 
         return [
             'type' => 'usage_warning',
+            'stage' => $this->stage(),
             'tenant_id' => $this->subscription->tenant_id,
             'subscription_id' => $this->subscription->getKey(),
             'customer_count' => $this->customerCount,
