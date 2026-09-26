@@ -81,6 +81,10 @@
                         <span class="ms-2 text-sm font-semibold">{{ __('Pay later') }}</span>
                     </label>
                 </div>
+                <label class="mt-4 flex items-center gap-2 text-sm">
+                    <input type="checkbox" name="customer_email_required" value="1" @checked(data_get($profile->booking_settings, 'customer_email_required', false)) class="rounded border-slate-300">
+                    {{ __('Require customer email during booking') }}
+                </label>
                 <label class="mt-4 block max-w-xs text-sm">
                     <span class="font-medium">{{ __('Deposit percentage') }}</span>
                     <input type="number" min="1" max="99" name="deposit_percent" value="{{ old('deposit_percent', data_get($profile->booking_settings, 'deposit_percent', 50)) }}" class="mt-1.5 w-full rounded-xl border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
