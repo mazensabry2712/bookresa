@@ -9,19 +9,19 @@
 - [ ] RTL/LTR foundation
 - [ ] Light/Dark foundation
 - [ ] Blade design tokens
-- [ ] Testing baseline
+- [x] Testing baseline (213 tests / 773 assertions on 2026-09-26)
 
 ## Identity/Tenancy
-- [ ] Fortify
-- [ ] users
-- [ ] tenants
-- [ ] memberships
-- [ ] TenantResolver/context
+- [x] Fortify
+- [x] users
+- [x] tenants
+- [x] memberships
+- [x] TenantResolver/context
 - [ ] tenant-aware policies
 - [x] cross-tenant tests
 
 ## RBAC
-- [ ] Spatie Permission
+- [x] Spatie Permission
 - [x] Platform Admin
 - [x] Owner/Manager/Receptionist/Staff
 - [x] Permissions
@@ -34,7 +34,7 @@
 - [x] modules
 - [x] tenant modules
 - [x] localized content
-- [ ] public slug
+- [x] public slug
 
 ## Scheduling
 - [x] services
@@ -138,8 +138,8 @@
 
 ## Release gate
 - [x] full test suite (213 passed / 773 assertions on 2026-09-26)
-- [ ] static analysis
-- [x] Pint
+- [x] static analysis (PHPStan 0 errors on 2026-09-26)
+- [ ] Pint (full repository: 96 existing style issues across 267 files; touched files pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)
 - [ ] payment sandbox green
