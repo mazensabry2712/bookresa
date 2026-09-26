@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -16,7 +17,7 @@ final class EnsureTenantModuleEnabled
     ) {
     }
 
-    public function handle(Request $request, Closure $next, string $module): Response
+    public function handle(Request $request, Closure $next, string $moduleKey): Response
     {
         $tenant = $this->currentTenant->get();
 
@@ -28,15 +29,36 @@ final class EnsureTenantModuleEnabled
             }
         }
 
+        abort_unless($tenant !== null, Response::HTTP_FORBIDDEN, 'A workspace is required for this feature.');
+
+        $module = Module::query()
+            ->where('key', $moduleKey)
+            ->where('is_active', true)
+            ->first();
+
         abort_unless(
-            $tenant !== null
-                && TenantModule::withoutGlobalScope('tenant')
-                    ->where('tenant_id', $tenant->getKey())
-                    ->where('enabled', true)
-                    ->whereHas('module', fn ($query) => $query
-                        ->where('key', $module)
-                        ->where('is_active', true))
-                    ->exists(),
+            $module !== null,
+            Response::HTTP_FORBIDDEN,
+            'This feature is not available.',
+        );
+
+        $tenantModule = TenantModule::withoutGlobalScope('tenant')
+            ->where('tenant_id', $tenant->getKey())
+            ->where('module_id', $module->getKey())
+            ->first();
+
+        if ($module->is_core) {
+            abort_if(
+                $tenantModule !== null && ! $tenantModule->enabled,
+                Response::HTTP_FORBIDDEN,
+                'This feature is not enabled for the current workspace.',
+            );
+
+            return $next($request);
+        }
+
+        abort_unless(
+            $tenantModule?->enabled === true,
             Response::HTTP_FORBIDDEN,
             'This feature is not enabled for the current workspace.',
         );
