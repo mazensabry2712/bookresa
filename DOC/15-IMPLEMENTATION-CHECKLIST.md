@@ -37,16 +37,17 @@
 - [ ] public slug
 
 ## Scheduling
-- [ ] services
-- [ ] staff profiles
-- [ ] service_staff
-- [ ] business hours
-- [ ] breaks
-- [ ] holidays
-- [ ] special hours
-- [ ] staff hours
-- [ ] days off
-- [ ] availability
+- [x] services
+- [x] staff profiles
+- [x] service_staff
+- [x] business hours
+- [x] breaks
+- [x] holidays
+- [x] special hours
+- [x] staff hours
+- [x] days off
+- [x] availability
+- [x] tenant-facing scheduling management
 
 ## Booking
 - [x] customers
