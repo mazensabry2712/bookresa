@@ -136,6 +136,73 @@ test('signed Kashier return verifies the payment server-side and redirects to co
         ->and($booking->payment_status)->toBe(BookingPaymentStatus::Paid);
 });
 
+test('malformed Kashier return amount is rejected with a validation response', function (): void {
+    $tenant = Tenant::query()->create([
+        'slug' => 'return-invalid-amount',
+        'status' => TenantStatus::Active,
+    ]);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    BusinessProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'name' => ['en' => 'Return Invalid Amount', 'ar' => 'Return Invalid Amount'],
+        'timezone' => 'Africa/Cairo',
+    ]);
+
+    $booking = Booking::query()->create([
+        'customer_id' => Customer::query()->create([
+            'name' => 'Invalid Amount Customer',
+            'phone' => '01000000123',
+            'normalized_phone' => '201000001123',
+        ])->id,
+        'service_id' => app(\App\Domain\Service\Actions\CreateService::class)->handle([
+            'name' => ['en' => 'Consultation'],
+            'price_minor' => 20000,
+            'currency' => 'EGP',
+            'duration_minutes' => 30,
+        ])->id,
+        'starts_at' => now()->addDay()->setTime(10, 0)->utc(),
+        'ends_at' => now()->addDay()->setTime(10, 30)->utc(),
+        'block_ends_at' => now()->addDay()->setTime(10, 30)->utc(),
+        'status' => BookingStatus::Pending,
+        'payment_status' => BookingPaymentStatus::Unpaid,
+        'booking_reference' => 'BR-RETURN-INVALID-AMOUNT',
+    ]);
+
+    $payment = Payment::query()->create([
+        'payable_type' => $booking->getMorphClass(),
+        'payable_id' => $booking->id,
+        'reference' => 'PAY-RETURN-INVALID-AMOUNT',
+        'provider' => 'kashier',
+        'provider_reference' => null,
+        'amount_minor' => 20000,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+    ]);
+
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $query = [
+        'paymentStatus' => 'SUCCESS',
+        'orderReference' => $payment->reference,
+        'transactionId' => 'TX-RETURN-INVALID-AMOUNT',
+        'amount' => 'not-a-number',
+        'currency' => 'EGP',
+        'mode' => 'test',
+    ];
+
+    $query['signature'] = app(KashierRedirectVerifier::class)->sign($query, 'api-key');
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('payments.kashier.return').'?'.http_build_query($query))
+        ->assertStatus(422);
+
+    expect(Payment::withoutGlobalScopes()->findOrFail($payment->id)->status)
+        ->toBe(PaymentStatus::Processing);
+});
+
 test('invalid Kashier return signature is rejected before payment lookup changes anything', function (): void {
     $tenant = Tenant::query()->create([
         'slug' => 'return-invalid-clinic',
