@@ -143,20 +143,25 @@ final class AvailabilityService
             ->get(['starts_at', 'ends_at']);
 
         if ($staffWindows->isEmpty()) {
-            $staffWindows = StaffWorkingHour::query()
+            $configuredHours = StaffWorkingHour::query()
                 ->where('staff_id', $staff->getKey())
                 ->where('day_of_week', $date->dayOfWeekIso)
-                ->where('is_closed', false)
-                ->get(['opens_at', 'closes_at']);
+                ->get(['opens_at', 'closes_at', 'is_closed']);
 
-            if ($staffWindows->isEmpty()) {
+            if ($configuredHours->isNotEmpty()) {
+                $openHours = $configuredHours->where('is_closed', false);
+
+                if ($openHours->isEmpty()) {
+                    return [];
+                }
+
+                $staffWindows = $openHours->map(fn (StaffWorkingHour $window): array => [
+                    'start' => $window->opens_at,
+                    'end' => $window->closes_at,
+                ]);
+            } else {
                 return $this->generateSlots($service, $businessWindows, $date, $staff);
             }
-
-            $staffWindows = $staffWindows->map(fn (StaffWorkingHour $window): array => [
-                'start' => $window->opens_at,
-                'end' => $window->closes_at,
-            ]);
         } else {
             $staffWindows = $staffWindows->map(fn (StaffAvailability $window): array => [
                 'start' => $window->starts_at,
