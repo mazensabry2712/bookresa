@@ -4,6 +4,7 @@ use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Billing\Services\RenewSubscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
@@ -408,6 +409,55 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
         ->and($subscription->isUsable())->toBeTrue();
 });
 
+
+test('renewed subscription does not reuse a paid payment from the previous cycle', function (): void {
+    subscriptionPaymentTenant('subscription-cycle-isolation');
+    $subscription = app(CreateSubscription::class)->handle(
+        subscriptionPaymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $oldStart = $subscription->start_at->toIso8601String();
+
+    $oldPayment = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-OLD-CYCLE',
+        'provider' => 'kashier',
+        'provider_reference' => 'session-old-cycle',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Paid,
+        'paid_at' => CarbonImmutable::parse('2026-10-01 01:00:00', 'UTC'),
+        'metadata' => [
+            'subscription_start' => $oldStart,
+            'subscription_id' => $subscription->id,
+            'plan_id' => $subscription->plan_id,
+        ],
+    ]);
+
+    $subscription->forceFill([
+        'status' => \App\Domain\Billing\Enums\SubscriptionStatus::Expired,
+        'payment_status' => PaymentStatus::Paid,
+    ])->save();
+
+    $renewed = app(RenewSubscription::class)->handle(
+        $subscription->fresh(),
+        CarbonImmutable::parse('2026-11-01 00:00:00', 'UTC'),
+    );
+
+    $gateway = new FakeSubscriptionGateway();
+    $this->app->instance(PaymentGateway::class, $gateway);
+
+    $payment = app(StartSubscriptionPayment::class)->handle($renewed);
+
+    expect($payment->id)->not->toBe($oldPayment->id)
+        ->and($payment->status)->toBe(PaymentStatus::Processing)
+        ->and($payment->metadata['subscription_start'])->toBe($renewed->start_at->toIso8601String())
+        ->and($payment->metadata['subscription_id'])->toBe($renewed->id)
+        ->and($gateway->createCalls)->toBe(1)
+        ->and(Payment::query()->count())->toBe(2);
+});
 
 test('expired subscription payment session creates a fresh attempt', function (): void {
     subscriptionPaymentTenant('subscription-expired-session');
