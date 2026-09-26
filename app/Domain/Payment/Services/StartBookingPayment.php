@@ -4,6 +4,7 @@ namespace App\Domain\Payment\Services;
 
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use LogicException;
@@ -18,7 +19,7 @@ final class StartBookingPayment
     ) {
     }
 
-    public function handle(Booking $booking): \App\Domain\Payment\Models\Payment
+    public function handle(Booking $booking): Payment
     {
         $tenantId = $this->currentTenant->idOrFail();
 
