@@ -26,7 +26,8 @@ final class StaffManagementController
             'staffMembers' => StaffProfile::query()
                 ->with(['user', 'services'])
                 ->latest('id')
-                ->get(),
+                ->paginate(20)
+                ->withQueryString(),
             'services' => Service::query()->orderBy('id')->get(),
             'roles' => array_values(array_filter(
                 array_keys(config('bookresa.rbac.roles', [])),
