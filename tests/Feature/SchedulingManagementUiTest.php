@@ -2,7 +2,6 @@
 
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
-use App\Domain\Customer\Models\Customer;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Models\BusinessBreak;
 use App\Domain\Scheduling\Models\BusinessHoliday;
@@ -286,5 +285,5 @@ test('scheduling requests reject invalid time windows', function (): void {
 
     app(CurrentTenant::class)->set($tenant);
 
-    expect(Customer::query()->count())->toBe(0);
+    expect(BusinessBreak::query()->count())->toBe(0);
 });
