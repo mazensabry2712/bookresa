@@ -118,7 +118,6 @@ final class AvailabilityService
             ->groupBy('staff_id');
 
         $bookingsByStaff = Booking::query()
-            ->where('service_id', $service->getKey())
             ->whereIn('staff_id', $staffIds)
             ->whereIn('status', [
                 BookingStatus::Pending->value,
@@ -379,7 +378,6 @@ final class AvailabilityService
         $dateEnd = $dateStart->addDay();
 
         $bookings ??= Booking::query()
-            ->where('service_id', $service->getKey())
             ->when(
                 $staff !== null,
                 fn ($query) => $query->where('staff_id', $staff->getKey()),
