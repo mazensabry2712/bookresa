@@ -50,7 +50,7 @@ final class SubscriptionExpiryNotification extends Notification implements Shoul
             ->subject('Subscription expiring soon')
             ->greeting('BookResa')
             ->line('Your subscription will expire within the next 24 hours.')
-            ->line('Plan: '.($this->subscription->plan?->name['en'] ?? $this->subscription->plan?->name ?? 'Plan'))
+            ->line('Plan: '.(data_get($this->subscription->plan, 'name.en') ?? data_get($this->subscription->plan, 'name') ?? 'Plan'))
             ->line('Ends: '.$this->subscription->end_at?->format('Y-m-d H:i').' UTC');
     }
 }
