@@ -32,7 +32,7 @@ final class SyncBookingPaymentStatus
             return;
         }
 
-        $totalMinor = (int) ($booking->service?->price_minor ?? 0);
+        $totalMinor = (int) ($booking->service->price_minor ?? 0);
         $target = $paidMinor <= 0
             ? BookingPaymentStatus::Unpaid
             : ($totalMinor > 0 && $paidMinor < $totalMinor
