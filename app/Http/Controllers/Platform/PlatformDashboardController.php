@@ -25,11 +25,48 @@ final class PlatformDashboardController
             ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
             ->select('tenant_id');
 
+        $activeSubscriptions = Subscription::withoutGlobalScopes()
+            ->whereIn('status', $activeSubscriptionStatuses)
+            ->get([
+                'tenant_id',
+                'price_minor',
+                'billing_period',
+                'included_customer_limit',
+                'additional_customer_price_minor',
+            ]);
+
+        $customerCounts = Customer::withoutGlobalScopes()
+            ->selectRaw('tenant_id, COUNT(*) as aggregate')
+            ->groupBy('tenant_id')
+            ->pluck('aggregate', 'tenant_id');
+
+        $mrrMinor = (int) $activeSubscriptions->sum(
+            fn (Subscription $subscription): int => (int) round(
+                $subscription->price_minor / $subscription->billing_period->months(),
+            ),
+        );
+
+        $overLimitBusinesses = 0;
+        $additionalUsageRevenueMinor = 0;
+
+        foreach ($activeSubscriptions as $subscription) {
+            $count = (int) ($customerCounts[$subscription->tenant_id] ?? 0);
+            $additional = max($count - $subscription->included_customer_limit, 0);
+
+            if ($additional > 0) {
+                $overLimitBusinesses++;
+                $additionalUsageRevenueMinor += $additional * $subscription->additional_customer_price_minor;
+            }
+        }
+
         return view('admin.dashboard', [
             'metrics' => [
                 'businesses' => Tenant::query()->count(),
                 'activeBusinesses' => Tenant::query()->where('status', TenantStatus::Active)->count(),
                 'suspendedBusinesses' => Tenant::query()->where('status', TenantStatus::Suspended)->count(),
+                'expiredBusinesses' => Tenant::query()
+                    ->whereHas('subscriptions', fn ($query) => $query->withoutGlobalScopes()->where('subscriptions.status', SubscriptionStatus::Expired))
+                    ->count(),
                 'trialBusinesses' => Tenant::query()
                     ->whereIn('id', $subscriptionTenantIds)
                     ->whereHas('subscriptions', fn ($query) => $query->withoutGlobalScopes()->where('subscriptions.status', SubscriptionStatus::Trial))
@@ -48,6 +85,9 @@ final class PlatformDashboardController
                     ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
                     ->join('usage_periods', 'subscriptions.id', '=', 'usage_periods.subscription_id')
                     ->sum('usage_periods.usage_charge_minor'),
+                'mrrMinor' => $mrrMinor,
+                'overLimitBusinesses' => $overLimitBusinesses,
+                'additionalUsageRevenueMinor' => $additionalUsageRevenueMinor,
             ],
             'recentBusinesses' => Tenant::query()
                 ->with([
