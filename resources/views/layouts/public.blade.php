@@ -50,8 +50,37 @@
             </nav>
 
             <div class="hidden shrink-0 items-center gap-2 lg:flex">
-                <x-locale-switcher compact />
-                <x-theme-toggle compact />
+                <div class="relative">
+                    <button type="button"
+                            class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                            data-bookresa-utility-menu
+                            aria-expanded="false"
+                            aria-controls="bookresa-utility-panel"
+                            aria-haspopup="true"
+                            aria-label="{{ __('app.language') }} & {{ __('app.theme') }}">
+                        <span class="text-lg font-bold leading-none" aria-hidden="true">•••</span>
+                    </button>
+
+                    <div id="bookresa-utility-panel"
+                         class="invisible absolute end-0 top-[calc(100%+0.6rem)] z-50 w-64 translate-y-1 rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-xl shadow-slate-900/10 transition duration-150 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/25"
+                         data-bookresa-utility-panel
+                         aria-hidden="true">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.language') }}</p>
+                            <div class="mt-2">
+                                <x-locale-switcher />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800">
+                            <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.theme') }}</p>
+                            <div class="mt-2">
+                                <x-theme-toggle />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <a href="{{ route('login') }}" class="px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-navy dark:text-slate-200 dark:hover:text-white">
                     {{ __('app.home_ui.login') }}
                 </a>
@@ -127,50 +156,86 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const button = document.querySelector('[data-bookresa-public-menu]');
-            const panel = document.querySelector('[data-bookresa-public-menu-panel]');
-            const firstLink = panel?.querySelector('a');
-            const desktopQuery = window.matchMedia('(min-width: 1024px)');
+            const navButton = document.querySelector('[data-bookresa-public-menu]');
+            const navPanel = document.querySelector('[data-bookresa-public-menu-panel]');
+            const firstNavLink = navPanel?.querySelector('a');
 
-            if (!button || !panel) {
-                return;
+            if (navButton && navPanel) {
+                const setNavOpen = (open, restoreFocus = true) => {
+                    navPanel.classList.toggle('hidden', !open);
+                    navPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+                    navButton.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    navButton.setAttribute(
+                        'aria-label',
+                        open
+                            ? @json(__('app.home_ui.close_navigation'))
+                            : @json(__('app.home_ui.open_navigation'))
+                    );
+
+                    if (open) {
+                        firstNavLink?.focus();
+                    } else if (restoreFocus) {
+                        navButton.focus();
+                    }
+                };
+
+                navButton.addEventListener('click', () => {
+                    setNavOpen(navPanel.classList.contains('hidden'));
+                });
+
+                navPanel.querySelectorAll('a').forEach((link) => {
+                    link.addEventListener('click', () => setNavOpen(false, false));
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && !navPanel.classList.contains('hidden')) {
+                        setNavOpen(false);
+                    }
+                });
             }
 
-            const setOpen = (open, restoreFocus = true) => {
-                panel.classList.toggle('hidden', !open);
-                panel.setAttribute('aria-hidden', open ? 'false' : 'true');
-                button.setAttribute('aria-expanded', open ? 'true' : 'false');
-                button.setAttribute(
-                    'aria-label',
-                    open
-                        ? @json(__('app.home_ui.close_navigation'))
-                        : @json(__('app.home_ui.open_navigation'))
-                );
+            const utilityButton = document.querySelector('[data-bookresa-utility-menu]');
+            const utilityPanel = document.querySelector('[data-bookresa-utility-panel]');
 
-                if (open) {
-                    firstLink?.focus();
-                } else if (restoreFocus) {
-                    button.focus();
-                }
-            };
+            if (utilityButton && utilityPanel) {
+                const setUtilityOpen = (open, restoreFocus = true) => {
+                    utilityPanel.classList.toggle('invisible', !open);
+                    utilityPanel.classList.toggle('opacity-0', !open);
+                    utilityPanel.classList.toggle('translate-y-1', !open);
+                    utilityPanel.classList.toggle('visible', open);
+                    utilityPanel.classList.toggle('translate-y-0', open);
+                    utilityPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
+                    utilityButton.setAttribute('aria-expanded', open ? 'true' : 'false');
 
-            button.addEventListener('click', () => setOpen(panel.classList.contains('hidden')));
+                    if (!open && restoreFocus) {
+                        utilityButton.focus();
+                    }
+                };
 
-            panel.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => setOpen(false, false));
-            });
+                utilityButton.addEventListener('click', () => {
+                    setUtilityOpen(utilityPanel.classList.contains('invisible'));
+                });
 
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape' && !panel.classList.contains('hidden')) {
-                    setOpen(false);
-                }
-            });
+                utilityPanel.querySelectorAll('a, button').forEach((control) => {
+                    control.addEventListener('click', () => {
+                        if (control.tagName === 'A') {
+                            setUtilityOpen(false, false);
+                        }
+                    });
+                });
 
-            desktopQuery.addEventListener('change', (event) => {
-                if (event.matches) {
-                    setOpen(false, false);
-                }
-            });
+                document.addEventListener('click', (event) => {
+                    if (!utilityPanel.contains(event.target) && !utilityButton.contains(event.target)) {
+                        setUtilityOpen(false, false);
+                    }
+                });
+
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && !utilityPanel.classList.contains('invisible')) {
+                        setUtilityOpen(false);
+                    }
+                });
+            }
         });
     </script>
 </body>
