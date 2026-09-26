@@ -15,6 +15,12 @@ final class AddBusinessBreak
     public function handle(array $data): BusinessBreak
     {
         $tenantId = $this->currentTenant->idOrFail();
+        $startsAt = (string) $data['starts_at'];
+        $endsAt = (string) $data['ends_at'];
+
+        if ($endsAt <= $startsAt) {
+            throw new \InvalidArgumentException('Business break must end after it starts.');
+        }
 
         return BusinessBreak::query()->create([
             'tenant_id' => $tenantId,
