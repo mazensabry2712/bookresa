@@ -99,6 +99,20 @@ test('cancellation is scheduled for the current billing boundary', function (): 
         ->and($result->metadata['cancel_at_period_end'])->toBeTrue();
 });
 
+test('suspended subscription cancellation fails with a domain exception', function (): void {
+    lifecycleTenant('cancel-suspended');
+
+    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+        lifecyclePlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill(['status' => SubscriptionStatus::Suspended])->save();
+
+    expect(fn () => app(CancelSubscription::class)->handle($subscription->fresh()))
+        ->toThrow(RuntimeException::class);
+});
+
 test('scheduled cancellation can be reactivated before the boundary', function (): void {
     lifecycleTenant('reactivate-subscription');
     $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
