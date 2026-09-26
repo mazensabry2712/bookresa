@@ -57,7 +57,7 @@ final class BusinessBookingNotification extends Notification implements ShouldQu
 
         return (new MailMessage)
             ->subject($data['title']['en'].' · '.$this->booking->booking_reference)
-            ->greeting('Velto')
+            ->greeting('BookResa')
             ->line($data['message']['en'])
             ->line('Booking: '.$this->booking->booking_reference)
             ->line('Customer: '.($this->booking->customer->name ?? 'Customer'));
