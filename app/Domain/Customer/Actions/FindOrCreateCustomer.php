@@ -23,18 +23,21 @@ final class FindOrCreateCustomer
     ): Customer {
         $tenantId = $this->currentTenant->idOrFail();
         $normalizedPhone = $this->identity->normalizePhone($phone);
+        $normalizedEmail = filled($email) ? strtolower(trim($email)) : null;
 
         $query = Customer::query();
 
         $customer = $normalizedPhone !== null
             ? $query->where('normalized_phone', $normalizedPhone)->first()
-            : null;
+            : ($normalizedEmail !== null
+                ? $query->whereRaw('LOWER(email) = ?', [$normalizedEmail])->first()
+                : null);
 
         if ($customer !== null) {
             $customer->fill([
                 'name' => $name,
                 'phone' => $phone,
-                'email' => $email,
+                'email' => $normalizedEmail,
                 'last_seen_at' => CarbonImmutable::now('UTC'),
             ])->save();
 
@@ -50,7 +53,7 @@ final class FindOrCreateCustomer
             'normalized_phone' => $normalizedPhone,
             'name' => $name,
             'phone' => $phone,
-            'email' => $email,
+            'email' => $normalizedEmail,
             'first_seen_at' => CarbonImmutable::now('UTC'),
             'last_seen_at' => CarbonImmutable::now('UTC'),
         ]);
