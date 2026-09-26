@@ -9,7 +9,6 @@ use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
@@ -203,6 +202,8 @@ test('enabled optional module requires subscription entitlement', function (): v
     ]);
 
     $plan->modules()->sync([$payments->id]);
+
+    app(CurrentTenant::class)->set($tenant);
 
     Subscription::query()->create([
         'tenant_id' => $tenant->id,
