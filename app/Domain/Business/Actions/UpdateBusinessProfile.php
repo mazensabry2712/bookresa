@@ -83,6 +83,7 @@ final class UpdateBusinessProfile
                     'payment_mode' => $data['payment_mode'],
                     'payment_required' => in_array($data['payment_mode'], ['full', 'deposit'], true),
                     'deposit_percent' => $data['payment_mode'] === 'deposit' ? (int) $data['deposit_percent'] : null,
+                    'customer_email_required' => (bool) ($data['customer_email_required'] ?? false),
                 ]),
             ])->save();
 
