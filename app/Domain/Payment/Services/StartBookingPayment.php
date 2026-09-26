@@ -29,7 +29,7 @@ final class StartBookingPayment
 
         $booking->loadMissing(['customer', 'service']);
 
-        $email = trim((string) ($booking->customer?->email ?? ''));
+        $email = trim((string) data_get($booking->customer, 'email', ''));
 
         if ($email === '') {
             throw new RuntimeException('Email is required for online payment.');
