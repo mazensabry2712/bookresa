@@ -6,7 +6,7 @@
 - [ ] Configure MySQL
 - [x] Define timezone policy
 - [x] Arabic/English locale (middleware + browser/session resolution + EN/AR dictionaries)
-- [ ] RTL/LTR foundation
+- [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
 - [ ] Light/Dark foundation
 - [ ] Blade design tokens
 - [x] Testing baseline (213 tests / 773 assertions on 2026-09-26)
