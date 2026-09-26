@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->middleware('subscription.usable')
         ->name('dashboard');
     Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
         ->name('onboarding.workspace');
@@ -269,7 +270,7 @@ Route::post('/webhooks/kashier', KashierWebhookController::class)
 Route::match(['get', 'post'], '/payments/kashier/return', KashierReturnController::class)
     ->name('payments.kashier.return');
 
-Route::middleware('module:appointments')->prefix('{tenant:slug}/book')->group(function (): void {
+Route::middleware(['subscription.usable', 'module:appointments'])->prefix('{tenant:slug}/book')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])
         ->name('public.booking.canonical.show');
 
@@ -286,7 +287,7 @@ Route::middleware('module:appointments')->prefix('{tenant:slug}/book')->group(fu
         ->name('public.booking.canonical.confirmation');
 });
 
-Route::middleware('module:appointments')->prefix('book/{tenant:slug}')->group(function (): void {
+Route::middleware(['subscription.usable', 'module:appointments'])->prefix('book/{tenant:slug}')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])
         ->name('public.booking.show');
 
