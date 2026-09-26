@@ -52,7 +52,9 @@ function adminDashboardTenant(User $owner, string $name, TenantStatus $status = 
     ]);
 
     if ($status !== TenantStatus::Active) {
-        $tenant->forceFill(['status' => $status])->save();
+        app(CurrentTenant::class)->run($tenant, function () use ($tenant, $status): void {
+            $tenant->forceFill(['status' => $status])->save();
+        });
     }
 
     return $tenant->fresh();
