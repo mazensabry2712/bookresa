@@ -138,6 +138,7 @@ Route::middleware('module:appointments')->prefix('book/{tenant:slug}')->group(fu
         ->name('public.booking.show');
 
     Route::get('/availability', [PublicBookingController::class, 'availability'])
+        ->middleware('throttle:60,1')
         ->name('public.booking.availability');
 
     Route::post('/bookings', [PublicBookingController::class, 'store'])
