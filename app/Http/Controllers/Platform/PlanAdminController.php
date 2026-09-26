@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Support\AuditLogger;
 
 final class PlanAdminController
 {
@@ -47,6 +48,12 @@ final class PlanAdminController
     {
         $validated = $this->validated($request);
         $plan = $upsertPlan->handle(null, $this->toPlanData($validated), $validated['module_ids'] ?? []);
+
+        app(AuditLogger::class)->log(
+            'pricing.plan_created',
+            $plan,
+            ['plan_id' => (int) $plan->getKey(), 'price_minor' => (int) $plan->price_minor, 'currency' => $plan->currency],
+        );
 
         return to_route('admin.plans.edit', $plan)->with('status', 'Plan created successfully.');
     }
