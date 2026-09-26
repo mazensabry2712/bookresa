@@ -23,6 +23,36 @@
             </div>
         </div>
 
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            @foreach ([
+                [__('Total bookings'), $metrics['totalBookings']],
+                [__('Completed'), $metrics['completedBookings']],
+                [__('Cancelled'), $metrics['cancelledBookings']],
+                [__('No-shows'), $metrics['noShows']],
+                [__('Total spent'), number_format($metrics['totalSpentMinor'] / 100, 2).' '.($customer->bookings->first()?->service?->currency ?? 'EGP')],
+            ] as [$label, $value])
+                <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $label }}</p>
+                    <p class="mt-2 text-2xl font-bold">{{ $value }}</p>
+                </div>
+            @endforeach
+        </section>
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h3 class="font-semibold">{{ __('Upcoming booking') }}</h3>
+            @if ($upcomingBooking)
+                <a href="{{ route('booking.management.show', $upcomingBooking) }}" class="mt-3 block rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                    <p class="font-semibold">{{ data_get($upcomingBooking->service?->name, app()->getLocale()) ?? data_get($upcomingBooking->service?->name, 'en') ?? '—' }}</p>
+                    <p class="mt-1 text-sm text-slate-500">
+                        {{ $upcomingBooking->starts_at->format('d M Y, H:i') }}
+                        · {{ $upcomingBooking->staff?->display_name ?? __('Auto assigned') }}
+                    </p>
+                </a>
+            @else
+                <p class="mt-2 text-sm text-slate-500">{{ __('No upcoming booking.') }}</p>
+            @endif
+        </section>
+
         <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div class="mb-5">
                 <h3 class="font-semibold">{{ __('Customer details') }}</h3>
