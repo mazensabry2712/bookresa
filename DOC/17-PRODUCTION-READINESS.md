@@ -11,7 +11,7 @@ The latest local verification reported on 2026-09-26:
 
 The latest GitHub Actions CI run for `ef94bc0` completed successfully and covered PHPStan, PHP syntax, changed-file Pint, frontend build and the full test suite.
 
-Pint: touched files pass; the full repository currently has 96 existing style issues across 267 files
+Pint: touched files pass; the full repository currently has 104 existing style issues across 290 files
 - SEO regression tests: previously verified
 - PHP 8.4 is the project target
 - Larastan is declared in Composer and locked on `main`, so CI can enforce PHPStan
