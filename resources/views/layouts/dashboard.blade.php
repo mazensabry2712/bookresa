@@ -24,57 +24,57 @@
             <nav class="space-y-1 p-3">
                 <a href="{{ route('booking.management.index') }}"
                    class="block rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-900 dark:bg-slate-800 dark:text-slate-100">
-                    {{ __('Bookings') }}
+                    {{ __('app.bookings') }}
                 </a>
                 @can('calendar.view')
                     <a href="{{ route('calendar.index') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Calendar') }}
+                        {{ __('app.calendar') }}
                     </a>
                     <a href="{{ route('scheduling.index') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Scheduling') }}
+                        {{ __('app.scheduling') }}
                     </a>
                 @endcan
                 @can('reports.view')
                     <a href="{{ route('reports.business') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Reports') }}
+                        {{ __('app.reports') }}
                     </a>
                 @endcan
                 @can('billing.view')
                     <a href="{{ route('billing.subscription') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Billing') }}
+                        {{ __('app.billing') }}
                     </a>
                 @endcan
                 @can('business.view')
                     <a href="{{ route('business.profile.edit') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Business') }}
+                        {{ __('app.business') }}
                     </a>
                 @endcan
                 @can('customers.view')
                     <a href="{{ route('customers.index') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Customers') }}
+                        {{ __('app.customers') }}
                     </a>
                 @endcan
                 @can('services.view')
                     <a href="{{ route('services.index') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Services') }}
+                        {{ __('app.services') }}
                     </a>
                 @endcan
                 @can('staff.view')
                     <a href="{{ route('staff.index') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                        {{ __('Staff') }}
+                        {{ __('app.staff') }}
                     </a>
                 @endcan
                 <a href="{{ route('onboarding.workspace') }}"
                    class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-                    {{ __('Workspace') }}
+                    {{ __('app.workspace') }}
                 </a>
             </nav>
         </aside>
@@ -87,7 +87,8 @@
                         <h1 class="text-lg font-semibold">@yield('heading', __('Bookings'))</h1>
                     </div>
 
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <x-locale-switcher />
                         <x-theme-toggle />
                         <div class="text-end">
                             <p class="text-sm font-medium">{{ auth()->user()->name }}</p>
