@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Domain\Business\Models\BusinessType;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 
 class BusinessTypeSeeder extends Seeder
 {
@@ -42,5 +43,7 @@ class BusinessTypeSeeder extends Seeder
                 ],
             );
         }
+
+        Cache::forget('bookresa:business-types:active');
     }
 }
