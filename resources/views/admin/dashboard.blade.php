@@ -35,12 +35,25 @@
                 [__('Active / trial subscriptions'), $metrics['activeSubscriptions']],
                 [__('Bookings'), $metrics['bookings']],
                 [__('Trial businesses'), $metrics['trialBusinesses']],
+                [__('Expired businesses'), $metrics['expiredBusinesses']],
+                [__('Businesses over customer limit'), $metrics['overLimitBusinesses']],
             ] as [$label, $value])
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $label }}</p>
                     <p class="mt-2 text-2xl font-bold">{{ number_format($value) }}</p>
                 </div>
             @endforeach
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Monthly recurring revenue') }}</p>
+                <p class="mt-2 text-2xl font-bold">{{ $money((int) $metrics['mrrMinor']) }}</p>
+            </div>
+            <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Additional usage revenue') }}</p>
+                <p class="mt-2 text-2xl font-bold">{{ $money((int) $metrics['additionalUsageRevenueMinor']) }}</p>
+            </div>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-2">
