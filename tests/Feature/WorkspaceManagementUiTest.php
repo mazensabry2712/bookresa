@@ -233,7 +233,7 @@ test('service management paginates large service lists', function (): void {
         ->get(route('services.index'))
         ->assertOk()
         ->assertSee('Service 21')
-        ->assertDontSee('Service 1');
+        ->assertDontSee('<p class="font-semibold">Service 1</p>');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
         ->get(route('services.index', ['page' => 2]))
