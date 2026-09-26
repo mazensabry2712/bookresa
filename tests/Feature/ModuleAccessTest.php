@@ -12,6 +12,7 @@ use App\Domain\Module\Models\TenantModule;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -206,11 +207,9 @@ test('enabled optional module requires subscription entitlement', function (): v
 
     app(CurrentTenant::class)->set($tenant);
 
-    app(CurrentTenant::class)->set($tenant);
-
     $subscription = app(CreateSubscription::class)->handle(
         $plan,
-        now(),
+        CarbonImmutable::now(),
     );
 
     $subscription->forceFill([
@@ -255,20 +254,18 @@ test('completed workspace requires a usable subscription for core operations', f
         'is_active' => true,
     ]);
 
-    Subscription::query()->create([
-        'tenant_id' => $tenant->id,
-        'plan_id' => $plan->id,
-        'start_at' => now(),
-        'end_at' => now()->addMonth(),
-        'status' => SubscriptionStatus::Active,
+    app(CurrentTenant::class)->set($tenant);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::now(),
+    );
+
+    $subscription->forceFill([
         'payment_status' => PaymentStatus::Paid,
-        'price_minor' => 10000,
-        'currency' => 'EGP',
-        'billing_period' => PlanBillingPeriod::Monthly,
-        'included_customer_limit' => 10,
-        'additional_customer_price_minor' => 1000,
+        'end_at' => CarbonImmutable::now()->addMonth(),
         'pricing_snapshot' => ['modules' => []],
-    ]);
+    ])->save();
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
@@ -301,7 +298,7 @@ test('expired subscription blocks core operations after onboarding completion', 
 
     $subscription = app(CreateSubscription::class)->handle(
         $plan,
-        now()->subMonth(),
+        CarbonImmutable::now()->subMonth(),
     );
 
     $subscription->forceFill([
