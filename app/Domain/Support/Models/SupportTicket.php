@@ -10,6 +10,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $requester_user_id
+ * @property SupportTicketStatus $status
+ * @property SupportTicketPriority $priority
+ * @property-read Tenant $tenant
+ * @property-read User|null $requester
+ */
 class SupportTicket extends Model
 {
     use HasFactory;
@@ -36,11 +45,13 @@ class SupportTicket extends Model
         ];
     }
 
+    /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requester_user_id');
