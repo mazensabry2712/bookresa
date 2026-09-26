@@ -3,7 +3,7 @@
 ## Current verified local gate
 
 The latest local verification reported:
-- full test suite: 213 passed, 773 assertions
+- full test suite: 219 passed, 1 skipped, 794 assertions
 - PHPStan: 0 errors
 - Pint: touched files pass; the full repository currently has 96 existing style issues across 267 files
 - Vite production build: previously verified
