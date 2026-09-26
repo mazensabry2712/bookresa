@@ -5,6 +5,7 @@ namespace App\Domain\Booking\Actions;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Notifications\BookingNotification;
+use App\Notifications\BusinessBookingNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Support\Facades\DB;
@@ -74,6 +75,15 @@ final class UpdateBookingStatus
 
             if ($notificationKind !== null) {
                 $fresh?->customer?->notify(new BookingNotification($fresh, $notificationKind));
+            }
+
+            if ($status === BookingStatus::Cancelled) {
+                $owner = $this->currentTenant->get()?->memberships()
+                    ->where('is_primary', true)
+                    ->with('user')
+                    ->first()?->user;
+
+                $owner?->notify(new BusinessBookingNotification($fresh, 'cancelled'));
             }
 
             $this->audit->log(
