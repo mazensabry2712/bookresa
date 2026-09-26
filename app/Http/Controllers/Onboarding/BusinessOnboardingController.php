@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Onboarding;
 
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
+use App\Domain\Module\Models\Module;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class BusinessOnboardingController
@@ -52,8 +54,70 @@ class BusinessOnboardingController
     ): View {
         abort_unless($request->user() !== null, 401);
 
+        $tenant = $currentTenant->get();
+        abort_unless($tenant !== null, 404);
+
         return view('onboarding.workspace', [
-            'tenant' => $currentTenant->get(),
+            'tenant' => $tenant->loadMissing(['profile', 'businessType', 'modules']),
+            'modules' => Module::query()
+                ->where('is_active', true)
+                ->orderByDesc('is_core')
+                ->orderBy('id')
+                ->get(),
+            'steps' => [
+                ['key' => 'workspace', 'label' => __('Workspace'), 'route' => 'onboarding.workspace', 'complete' => true],
+                ['key' => 'modules', 'label' => __('Modules'), 'route' => 'onboarding.workspace', 'complete' => $tenant->modules->isNotEmpty()],
+                ['key' => 'services', 'label' => __('Services'), 'route' => 'services.index', 'complete' => $tenant->services()->exists()],
+                ['key' => 'hours', 'label' => __('Working hours'), 'route' => 'scheduling.index', 'complete' => $tenant->settings['onboarding']['step'] !== 'hours'],
+                ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $tenant->staffProfiles()->exists()],
+            ],
         ]);
+    }
+
+    public function updateModules(
+        Request $request,
+        CurrentTenant $currentTenant,
+    ): RedirectResponse {
+        $tenant = $currentTenant->get();
+        abort_unless($tenant !== null, 404);
+
+        $validated = $request->validate([
+            'module_ids' => ['nullable', 'array'],
+            'module_ids.*' => ['integer', 'distinct', 'exists:modules,id'],
+        ]);
+
+        $modules = Module::query()
+            ->where('is_active', true)
+            ->get(['id', 'is_core']);
+
+        $selected = collect($validated['module_ids'] ?? [])
+            ->map(static fn ($id): int => (int) $id)
+            ->flip();
+
+        $coreIds = $modules->where('is_core', true)->pluck('id');
+        $selected = $selected->merge($coreIds->mapWithKeys(fn (int $id): array => [$id => true]));
+
+        $now = now();
+        DB::transaction(function () use ($tenant, $modules, $selected, $now): void {
+            $rows = $modules->map(fn (Module $module): array => [
+                'tenant_id' => $tenant->getKey(),
+                'module_id' => $module->getKey(),
+                'enabled' => $selected->has($module->id),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all();
+
+            \App\Domain\Module\Models\TenantModule::withoutGlobalScopes()->upsert(
+                $rows,
+                ['tenant_id', 'module_id'],
+                ['enabled', 'updated_at'],
+            );
+        });
+
+        $settings = $tenant->settings ?? [];
+        data_set($settings, 'onboarding.step', 'services');
+        $tenant->forceFill(['settings' => $settings])->save();
+
+        return to_route('services.index')->with('status', __('Workspace modules configured. Next, add your services.'));
     }
 }
