@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Platform;
 use App\Domain\Support\Enums\SupportTicketPriority;
 use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,21 +58,24 @@ final class SupportTicketController
         ]);
 
         $status = SupportTicketStatus::from($validated['status']);
+        $tenant = $ticket->tenant()->withoutGlobalScopes()->firstOrFail();
 
-        $ticket->update([
-            'status' => $status,
-            'priority' => SupportTicketPriority::from($validated['priority']),
-            'admin_notes' => $validated['admin_notes'] ?? null,
-            'resolved_at' => in_array($status, [
-                SupportTicketStatus::Resolved,
-                SupportTicketStatus::Closed,
-            ], true) ? now() : null,
-        ]);
+        app(CurrentTenant::class)->run($tenant, function () use ($ticket, $status, $validated, $auditLogger): void {
+            $ticket->update([
+                'status' => $status,
+                'priority' => SupportTicketPriority::from($validated['priority']),
+                'admin_notes' => $validated['admin_notes'] ?? null,
+                'resolved_at' => in_array($status, [
+                    SupportTicketStatus::Resolved,
+                    SupportTicketStatus::Closed,
+                ], true) ? now() : null,
+            ]);
 
-        $auditLogger->log('Platform support ticket updated', $ticket, [
-            'status' => $status->value,
-            'priority' => $ticket->priority->value,
-        ]);
+            $auditLogger->log('Platform support ticket updated', $ticket, [
+                'status' => $status->value,
+                'priority' => $ticket->priority->value,
+            ]);
+        });
 
         return back()->with('status', __('Support ticket updated successfully.'));
     }
