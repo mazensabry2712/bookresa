@@ -15,6 +15,10 @@
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
     <main class="mx-auto max-w-xl px-6 py-16 text-center">
+        <div class="mb-8 flex items-center justify-center gap-2">
+            <x-locale-switcher />
+            <x-theme-toggle />
+        </div>
         @if (session('payment_notice'))
             <div class="mb-6 rounded-xl border border-gray-200 bg-white p-4 text-sm shadow-sm dark:border-gray-800 dark:bg-gray-900">
                 {{ session('payment_notice') }}
@@ -22,11 +26,11 @@
         @endif
 
         <p class="text-sm uppercase tracking-wide text-gray-500">
-            {{ $booking->status->value === 'confirmed' ? 'Booking confirmed' : 'Booking received' }}
+            {{ $booking->status->value === 'confirmed' ? __('app.booking_confirmed') : __('app.booking_received') }}
         </p>
         <h1 class="mt-3 text-4xl font-bold">{{ $booking->booking_reference }}</h1>
         <p class="mt-4 text-gray-600 dark:text-gray-400">
-            {{ $booking->service->name['en'] ?? 'Service' }}
+            {{ $booking->service->name[app()->getLocale()] ?? $booking->service->name['en'] ?? __('app.service') }}
             ·
             {{ $booking->starts_at->setTimezone($tenant->profile?->timezone ?? 'UTC')->format('Y-m-d H:i') }}
         </p>
@@ -34,7 +38,7 @@
 
         @if ($payment)
             <div class="mt-6 rounded-xl border border-gray-200 p-4 text-left dark:border-gray-800">
-                <p class="text-sm text-gray-500">Payment status</p>
+                <p class="text-sm text-gray-500">{{ __('app.payment_status') }}</p>
                 <p class="mt-1 font-semibold">{{ str($payment->status->value)->headline() }}</p>
 
                 @if ($payment->status->value !== 'paid' && $payment->checkout_url)
