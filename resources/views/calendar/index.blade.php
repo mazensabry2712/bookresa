@@ -83,7 +83,8 @@
                 <div class="flex items-center gap-2">
                     <a href="{{ route('calendar.index', ['view' => $viewMode, 'date' => $previousDate->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                        ← {{ __('app.calendar_ui.previous') }}
+                        <span class="br-direction-arrow" aria-hidden="true">←</span>
+                        {{ __('app.calendar_ui.previous') }}
                     </a>
                     <a href="{{ route('calendar.index', ['view' => $viewMode, 'date' => $today]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-navy px-3.5 py-2 text-sm font-bold text-white hover:bg-slate-800">
@@ -91,7 +92,8 @@
                     </a>
                     <a href="{{ route('calendar.index', ['view' => $viewMode, 'date' => $nextDate->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                        {{ __('app.calendar_ui.next') }} →
+                        {{ __('app.calendar_ui.next') }}
+                        <span class="br-direction-arrow" aria-hidden="true">→</span>
                     </a>
                 </div>
 
