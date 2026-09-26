@@ -23,11 +23,13 @@ final class UpdateBusinessProfile
 
         $paymentMode = (string) ($data['payment_mode'] ?? data_get($this->currentTenant->get()?->profile, 'booking_settings.payment_mode', 'pay_later'));
 
-        if (in_array($paymentMode, ['full', 'deposit'], true) && ! $this->moduleAccess->allows('payments')) {
-            throw new LogicException('Customer payments are not enabled for this workspace.');
+        $paymentsAvailable = $this->moduleAccess->allows('payments');
+
+        if (! $paymentsAvailable && in_array($paymentMode, ['full', 'deposit'], true)) {
+            $paymentMode = 'pay_later';
         }
 
-        return DB::transaction(function () use ($data, $tenantId): BusinessProfile {
+        return DB::transaction(function () use ($data, $tenantId, $paymentMode): BusinessProfile {
             $profile = BusinessProfile::query()->first();
 
             if ($profile === null) {
