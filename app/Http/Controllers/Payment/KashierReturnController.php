@@ -103,7 +103,7 @@ final class KashierReturnController
 
             if ($payable instanceof Booking && filled($payable->booking_reference)) {
                 return redirect()
-                ->to(URL::signedRoute('public.booking.canonical.confirmation', [
+                ->to(URL::signedRoute('public.booking.confirmation', [
                     'tenant' => $tenant->slug,
                     'booking' => $payable->booking_reference,
                 ]))
