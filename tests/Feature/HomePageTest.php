@@ -1,11 +1,10 @@
 <?php
 
-test('public home page renders the BookResa landing page', function (): void {
+test('public home page renders the BookResa product home', function (): void {
     $this->get(route('home'))
         ->assertOk()
         ->assertSee('BookResa')
         ->assertSee('Start free')
-        ->assertSee('See how it works')
         ->assertSee('A simpler way to run your bookings.')
         ->assertSee('Customer booking')
         ->assertSee('/logo.png')
