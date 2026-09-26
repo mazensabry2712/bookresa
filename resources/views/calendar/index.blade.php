@@ -152,7 +152,7 @@
 
                         <div class="grid grid-cols-7">
                             @foreach ($calendarDays as $day)
-                                @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $day->toDateString()); @endphp
+                                @php $dayBookings = $bookingsByDate->get($day->toDateString(), collect()); @endphp
                                 <div class="min-h-40 border-b border-slate-200 p-2.5 dark:border-slate-800 {{ $day->toDateString() === $today ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : '' }}">
                                     <div class="flex items-center justify-between gap-2">
                                         <a href="{{ route('calendar.index', ['view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
@@ -199,7 +199,7 @@
                 <div class="overflow-x-auto">
                     <div class="grid min-w-[1050px] grid-cols-7 divide-x divide-slate-200 dark:divide-slate-800">
                         @foreach ($calendarDays as $day)
-                            @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $day->toDateString()); @endphp
+                            @php $dayBookings = $bookingsByDate->get($day->toDateString(), collect()); @endphp
                             <div class="{{ $day->toDateString() === $today ? 'bg-indigo-50/40 dark:bg-indigo-950/15' : '' }}">
                                 <div class="border-b border-slate-200 px-3 py-4 dark:border-slate-800">
                                     <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ $dayLabels[$day->dayOfWeekIso] }}</p>
@@ -233,7 +233,7 @@
                 </div>
             </section>
         @else
-            @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $reference->toDateString()); @endphp
+            @php $dayBookings = $bookingsByDate->get($reference->toDateString(), collect()); @endphp
             <section class="br-panel overflow-hidden">
                 <div class="flex flex-col gap-1 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.calendar_ui.day_schedule') }}</p>
