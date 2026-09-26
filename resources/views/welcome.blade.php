@@ -36,7 +36,8 @@
                         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                             <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
                                 <div class="flex min-w-0 items-center gap-3">
-                                    <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-9 w-auto max-w-[145px] object-contain">
+                                    <img src="{{ asset('logo.png') }}" alt="BookResa" width="160" height="38" loading="lazy" decoding="async" class="h-10 w-auto max-w-[160px] object-contain dark:hidden">
+                                    <img src="{{ asset('logodark.png') }}" alt="BookResa" width="160" height="38" loading="lazy" decoding="async" class="hidden h-10 w-auto max-w-[160px] object-contain dark:block">
                                     <div class="min-w-0">
                                         <p class="truncate text-sm font-bold text-slate-900 dark:text-white">{{ __('app.home_ui.preview_business') }}</p>
                                         <p class="truncate text-xs text-slate-400">{{ __('app.home_ui.preview_label') }}</p>
