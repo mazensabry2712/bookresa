@@ -193,6 +193,12 @@
                     </div>
                 @endforelse
             </div>
+
+            @if ($staffMembers->hasPages())
+                <div class="border-t border-slate-200 px-5 py-4 dark:border-slate-800">
+                    {{ $staffMembers->links() }}
+                </div>
+            @endif
         </section>
     </div>
 @endsection
