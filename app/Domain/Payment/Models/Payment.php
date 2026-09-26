@@ -27,6 +27,7 @@ class Payment extends Model
         'idempotency_key',
         'metadata',
         'paid_at',
+        'expires_at',
     ];
 
     protected function casts(): array
@@ -36,6 +37,7 @@ class Payment extends Model
             'status' => PaymentStatus::class,
             'metadata' => 'array',
             'paid_at' => 'immutable_datetime',
+            'expires_at' => 'immutable_datetime',
         ];
     }
 
