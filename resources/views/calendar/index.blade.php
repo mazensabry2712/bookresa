@@ -105,6 +105,7 @@
                                 @foreach ($dayBookings->take(5) as $booking)
                                     <a href="{{ route('booking.management.show', $booking) }}" class="block rounded-lg border border-slate-200 px-2 py-1.5 text-xs hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                                         <div class="font-bold">{{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}</div>
+                                        <div class="truncate text-[11px] font-semibold text-slate-400">{{ $booking->booking_reference }}</div>
                                         <div class="truncate font-semibold">{{ $booking->customer?->name ?? '—' }}</div>
                                         <div class="truncate text-slate-500">{{ $serviceName($booking->service) }}</div>
                                     </a>
@@ -130,6 +131,7 @@
                             @forelse ($dayBookings as $booking)
                                 <a href="{{ route('booking.management.show', $booking) }}" class="block rounded-xl border border-slate-200 p-3 dark:border-slate-800">
                                     <p class="text-xs font-bold">{{ $booking->starts_at->setTimezone($timezone)->format('H:i') }} — {{ $booking->ends_at->setTimezone($timezone)->format('H:i') }}</p>
+                                    <p class="mt-1 text-[11px] font-semibold text-slate-400">{{ $booking->booking_reference }}</p>
                                     <p class="mt-1 truncate text-sm font-semibold">{{ $booking->customer?->name ?? '—' }}</p>
                                     <p class="mt-1 truncate text-xs text-slate-500">{{ $serviceName($booking->service) }} · {{ $booking->staff?->display_name ?? __('Auto assigned') }}</p>
                                     <p class="mt-1 text-[11px] text-slate-400">{{ $statusLabel($booking->status->value) }} · {{ $statusLabel($booking->payment_status->value) }}</p>
@@ -151,7 +153,8 @@
                     @forelse ($dayBookings as $booking)
                         <a href="{{ route('booking.management.show', $booking) }}" class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <p class="font-semibold">{{ $booking->customer?->name ?? '—' }}</p>
+                                <p class="text-[11px] font-semibold text-slate-400">{{ $booking->booking_reference }}</p>
+                                <p class="mt-1 font-semibold">{{ $booking->customer?->name ?? '—' }}</p>
                                 <p class="mt-1 text-sm text-slate-500">{{ $serviceName($booking->service) }} · {{ $booking->staff?->display_name ?? __('Auto assigned') }}</p>
                             </div>
                             <div class="text-start sm:text-end">
