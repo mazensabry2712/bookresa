@@ -50,22 +50,25 @@ The backend determines the current Tenant from the authenticated user's membersh
 
 Cross-Tenant Data Access must be blocked for URLs, request parameters, forms and API-like calls.
 
-## 5. User Types
+## 5. User Types and RBAC
 ### Platform Admin
-Can view/manage Businesses, Users, Plans, Subscriptions, Platform Revenue, Platform Settings, suspension/activation and Support.
+Platform-level user outside tenant ownership. Can view/manage Businesses, Users, Plans, Subscriptions, Platform Payments/Revenue, Usage, Reports, Platform Settings, suspension/activation and Support.
 
-### Business Owner
-Can manage Business Profile, Services, Staff, Customers, Bookings, Calendar, Payments, Subscription, Settings and Reports.
+### Business Users
+Business users operate inside one tenant/workspace and are governed by RBAC.
 
-### Business Staff
-Business employees use RBAC roles such as Manager, Receptionist and Staff Member.
+Business roles:
+- Owner — full tenant management within granted platform/module limits.
+- Manager — broad business operations.
+- Receptionist — bookings, customers and calendar operations.
+- Staff — own schedule, assigned bookings and allowed booking status operations.
 
-Manager: broad business permissions.
-Receptionist: Bookings, Customers, Calendar.
-Staff Member: own schedule, assigned bookings and booking status updates.
+Permissions are enforced server-side. The frontend may hide unavailable actions, but UI visibility is not an authorization boundary.
 
 ## 6. Business Registration Flow
 Register → Verify Account → Create Business → Select Business Type → Configure Workspace → Select Required Modules → Set Services → Set Working Hours → Add Staff → Workspace Ready.
+
+After onboarding is completed, normal tenant operations require a usable subscription. During unfinished onboarding, the tenant may continue the required core setup flow.
 
 ## 7. Business Profile
 Each Business has Business Name, Logo, Cover Image, Description, Business Type, Phone, Email, Location, Address, Social Links, Working Hours and Booking URL.
@@ -104,7 +107,10 @@ Double Booking must be prevented even for concurrent requests.
 Frontend availability is advisory only. Database transaction/locking is authoritative.
 
 ## 13. Customer Booking Flow
-Public flow: Business → Service → Staff when applicable → Date → Available Time → Name → Phone → Email according to Business settings → Payment according to policy → Confirmation → Booking Reference.
+Public flow:
+Business → Service → Staff when applicable → Date → Available Time → Name → Phone → Email according to Business settings → Payment according to policy → Confirmation → Booking Reference.
+
+Phone is required by the current public booking contract. Email is optional by default and becomes required only when Business booking settings require it. Customer account creation is not required.
 
 Customer Account is not required by default.
 
@@ -118,7 +124,7 @@ Views: Day, Week, Month.
 
 Booking cards show Customer, Service, Staff, Start Time, End Time, Status and Payment Status.
 
-Actions: Confirm, Cancel, Reschedule, Complete, Mark as No-show.
+Management actions include Confirm, Cancel, Reschedule, Complete and No-show where the current booking lifecycle and user permission allow the transition.
 
 ## 16. Booking Status
 Booking statuses: Pending, Confirmed, Completed, Cancelled, Rescheduled, No-show.
@@ -194,9 +200,9 @@ Recommended MVP default: downgrade takes effect at the next billing boundary. Ov
 ## 25. Notifications
 Customer: Booking Confirmation, Cancellation, Reschedule, Appointment Reminder.
 
-Business: New Booking, Cancellation, Payment Received, Subscription Expiry, Usage Warning.
+Business: New Booking, Cancellation, Payment Received, Subscription Expiry, Usage Threshold/Limit/Over-limit Warning.
 
-Use Laravel Notifications and queues where asynchronous delivery is appropriate.
+Use Laravel Notifications and queues where asynchronous delivery is appropriate. Database and email delivery are supported for the current billing/usage notification flows.
 
 ## 26. Usage Notifications
 Before limit: approaching warning.
@@ -387,13 +393,24 @@ Development tools: Pest, Pest Laravel plugin, Larastan, Pint and Debugbar.
 Not planned for MVP without a new requirement: stancl/tenancy, Cashier, Livewire, Jetstream, Passport, Scout, Media Library, GraphQL, microservices and multiple frontend frameworks.
 
 ## 46. Local and Production Environment
-Local development target: Windows + Laravel Herd + PHP 8.4 + MySQL. Redis is optional locally but supported by architecture.
+Local development target: Windows + Laravel Herd + PHP 8.4 + MySQL.
+
+BookResa local application URL: http://bookresa.test/
+
+Redis is optional locally but supported by the production architecture.
 
 Production target: web server/Nginx + Laravel/PHP + MySQL + Redis + queue workers + scheduler + persistent storage + HTTPS + OPcache.
 
 Backups must include database and important files, with retention, offsite copies and restore testing.
 
 ## 47. Documentation Rule
-The DOC folder is the source of truth for BookResa product and architecture decisions.
+The DOC folder is the single source of truth for BookResa product, architecture, UX and release decisions.
 
-Code changes that alter agreed architecture must first update the relevant technical decision/document.
+Hierarchy:
+1. This document defines the overall product and technical contract.
+2. Other numbered DOC files refine a specific domain.
+3. DOC/15 records implemented backend status.
+4. DOC/17 records production release readiness.
+5. DOC/18 records the frontend design and execution contract.
+
+When implementation changes an agreed behavior, update the existing relevant DOC first. Do not create duplicate documentation for the same subject.
