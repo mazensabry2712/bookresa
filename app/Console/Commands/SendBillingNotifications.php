@@ -12,7 +12,8 @@ final class SendBillingNotifications extends Command
 
     protected $description = 'Queue subscription expiry and customer usage warning notifications.';
 
-    public function handle(): int {
+    public function handle(): int
+    {
         $expiryHours = max((int) $this->option('expiry-hours'), 1);
         $threshold = min(max((int) $this->option('usage-threshold'), 1), 100);
         $dispatched = 0;
@@ -34,7 +35,6 @@ final class SendBillingNotifications extends Command
                     $dispatched++;
                 }
             });
-
 
         $this->info("Dispatched {$dispatched} subscription billing notification job(s).");
 
