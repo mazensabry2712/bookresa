@@ -33,6 +33,8 @@ return [
     'support' => 'Support',
     'plans' => 'Plans',
     'admin' => 'Admin',
+    'platform' => 'Platform',
+    'businesses' => 'Businesses',
     'service' => 'Service',
     'select_service' => 'Select a service',
     'date' => 'Date',
