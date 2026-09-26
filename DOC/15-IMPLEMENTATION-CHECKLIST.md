@@ -32,7 +32,7 @@
 - [x] business types
 - [x] business profile
 - [x] modules
-- [x] tenant modules (core access enforced; admin UI pending)
+- [x] tenant modules
 - [x] localized content
 - [ ] public slug
 
