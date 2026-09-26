@@ -56,3 +56,13 @@ Avoid packages for functionality already covered by Laravel.
 
 ## API readiness
 MVP is Blade-first. Add versioned APIs and Sanctum when mobile/third-party API work actually starts.
+
+## Timezone policy
+
+- Application infrastructure defaults to UTC.
+- Each tenant's BusinessProfile owns the business timezone.
+- Business hours, breaks, holidays, staff availability and public booking times are interpreted in the tenant timezone.
+- Booking timestamps are persisted as UTC instants.
+- Public availability accepts a calendar date and returns local times for the tenant timezone.
+- Payment expiry and payment timestamps are handled in UTC; UI presentation may convert to the tenant timezone.
+- A tenant timezone must be a valid IANA timezone.
