@@ -4,9 +4,21 @@ namespace App\Domain\Scheduling\Models;
 
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+
+use Carbon\CarbonInterface;
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $staff_id
+ * @property CarbonInterface $available_date
+ * @property string $starts_at
+ * @property string $ends_at
+ */
 
 class StaffAvailability extends Model
 {
