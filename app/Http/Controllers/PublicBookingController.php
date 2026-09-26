@@ -15,6 +15,7 @@ use App\Http\Requests\StorePublicBookingRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 use LogicException;
 use RuntimeException;
@@ -131,10 +132,10 @@ class PublicBookingController
                     return redirect()->away($payment->checkout_url);
                 }
 
-                return to_route('public.booking.confirmation', [
+                return redirect()->to(URL::signedRoute('public.booking.confirmation', [
                     'tenant' => $tenant->slug,
                     'booking' => $booking->booking_reference,
-                ]);
+                ]));
             });
         } catch (RuntimeException|LogicException $exception) {
             return back()
