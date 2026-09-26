@@ -167,7 +167,7 @@
 
             <div>
                 <label for="email" class="block text-sm font-medium">{{ __('app.email') }}</label>
-                <input id="email" type="email" name="email" value="{{ old('email') }}"
+                <input id="email" type="email" name="email" value="{{ old('email') }}" @required($customerEmailRequired)
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
             </div>
 
