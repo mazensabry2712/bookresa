@@ -108,6 +108,7 @@ class BookingManagementController
             'tenant' => $currentTenant->get(),
             'booking' => $booking,
             'timezone' => (string) data_get($currentTenant->get()->profile, 'timezone', config('app.timezone', 'UTC')),
+            'staffMembers' => StaffProfile::query()->where('status', 'active')->orderBy('display_name')->get(['id', 'display_name']),
         ]);
     }
 
