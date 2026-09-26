@@ -1,18 +1,18 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
 use App\Console\Commands\ExpireSubscriptionsCommand;
-use App\Console\Commands\SetPlatformAdminCommand;
-use App\Console\Commands\SendBookingReminders;
 use App\Console\Commands\SendBillingNotifications;
-use App\Http\Middleware\ResolveTenant;
+use App\Console\Commands\SendBookingReminders;
+use App\Console\Commands\SetPlatformAdminCommand;
 use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureTenantModuleEnabled;
+use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Spatie\Permission\Middleware\PermissionMiddleware;
