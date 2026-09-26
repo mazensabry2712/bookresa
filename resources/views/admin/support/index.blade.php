@@ -61,10 +61,10 @@
                                     {{ data_get($ticket->tenant->profile?->name, app()->getLocale()) ?? $ticket->tenant->slug }}
                                 </td>
                                 <td class="px-5 py-4 align-top">
-                                    {{ __(str($ticket->priority->value)->headline()) }}
+                                    {{ __(str((string) $ticket->priority->value)->headline()->toString()) }}
                                 </td>
                                 <td class="px-5 py-4 align-top">
-                                    {{ __(str($ticket->status->value)->headline()) }}
+                                    {{ __(str((string) $ticket->status->value)->headline()->toString()) }}
                                 </td>
                                 <td class="px-5 py-4 align-top text-slate-500">
                                     {{ $ticket->created_at->format('Y-m-d H:i') }}
