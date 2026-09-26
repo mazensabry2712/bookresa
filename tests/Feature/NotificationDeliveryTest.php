@@ -104,7 +104,7 @@ function notificationBooking(Tenant $tenant, string $reference = 'BR-NOTIFY-001'
         'ends_at' => $start->addMinutes(30),
         'block_ends_at' => $start->addMinutes(30),
         'status' => BookingStatus::Pending,
-        'payment_status' => PaymentStatus::Unpaid,
+        'payment_status' => 'unpaid',
         'booking_reference' => $reference,
     ])->fresh(['customer', 'service']);
 }
@@ -130,7 +130,7 @@ test('creating a booking queues a bilingual booking receipt', function (): void 
         'Ahmed',
         '01000000111',
         'ahmed@example.com',
-        CarbonImmutable::now('Africa/Cairo')->addDay()->addHour(),
+        CarbonImmutable::now('Africa/Cairo')->addDay()->addHour()->startOfHour(),
     );
 
     Notification::assertSentTo($booking->customer, BookingNotification::class, function (BookingNotification $notification) use ($booking): bool {
