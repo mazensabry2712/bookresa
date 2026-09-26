@@ -71,6 +71,14 @@ final class PlanAdminController
         $validated = $this->validated($request);
         $upsertPlan->handle($plan, $this->toPlanData($validated), $validated['module_ids'] ?? []);
 
+        $fresh = $plan->fresh();
+
+        app(AuditLogger::class)->log(
+            'pricing.plan_updated',
+            $fresh,
+            ['plan_id' => (int) $fresh->getKey(), 'price_minor' => (int) $fresh->price_minor, 'currency' => $fresh->currency],
+        );
+
         return to_route('admin.plans.edit', $plan->fresh('modules'))->with('status', 'Plan updated successfully.');
     }
 
