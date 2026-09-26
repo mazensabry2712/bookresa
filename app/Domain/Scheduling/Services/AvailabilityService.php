@@ -428,8 +428,11 @@ final class AvailabilityService
 
     private function timezone(): string
     {
-        return $this->currentTenant->get()?->profile?->timezone
-            ?? config('app.timezone', 'UTC');
+        return (string) data_get(
+            $this->currentTenant->get()?->profile,
+            'timezone',
+            config('app.timezone', 'UTC'),
+        );
     }
 
     private function atTime(CarbonImmutable $date, string $time): CarbonImmutable
