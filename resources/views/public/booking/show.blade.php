@@ -8,7 +8,7 @@
         $profile = $tenant->profile;
         $locale = app()->getLocale();
         $businessName = $profile?->name[$locale] ?? $profile?->name['en'] ?? $tenant->slug;
-        $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? 'Book an appointment online.';
+        $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? __('app.book_an_appointment_online');
         $canonicalUrl = route('public.booking.show', $tenant->slug);
         $jsonLd = [
             '@context' => 'https://schema.org',
@@ -40,14 +40,14 @@
         if ($services->isNotEmpty()) {
             $jsonLd['hasOfferCatalog'] = [
                 '@type' => 'OfferCatalog',
-                'name' => 'Services',
+                'name' => __('app.services'),
                 'itemListElement' => $services->map(fn ($service) => [
                     '@type' => 'Offer',
                     'price' => number_format($service->price_minor / 100, 2, '.', ''),
                     'priceCurrency' => $service->currency,
                     'itemOffered' => [
                         '@type' => 'Service',
-                        'name' => $service->name[$locale] ?? $service->name['en'] ?? 'Service',
+                        'name' => $service->name[$locale] ?? $service->name['en'] ?? __('app.service'),
                     ],
                 ])->values()->all(),
             ];
@@ -102,7 +102,7 @@
                     <option value="">{{ __('app.select_service') }}</option>
                     @foreach ($services as $service)
                         <option value="{{ $service->id }}">
-                            {{ $service->name[$locale] ?? $service->name['en'] ?? __('app.service') }} — {{ number_format($service->price_minor / 100, 2) }} {{ $service->currency }} — {{ $service->duration_minutes }} min
+                            {{ $service->name[$locale] ?? $service->name['en'] ?? __('app.service') }} — {{ number_format($service->price_minor / 100, 2) }} {{ $service->currency }} — {{ $service->duration_minutes }} {{ __('app.minutes_short') }}
                         </option>
                     @endforeach
                 </select>
