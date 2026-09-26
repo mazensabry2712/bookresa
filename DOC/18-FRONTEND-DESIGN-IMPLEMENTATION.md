@@ -1021,118 +1021,300 @@ A component should become shared when:
 
 ## 30. Frontend implementation sequence
 
-### Phase F1 — Design foundation
+The frontend rollout follows the same product dependency graph used by the backend. The exact screen order below is the execution contract.
 
-Build first:
-
-- color tokens
-- typography
-- spacing
-- borders
-- radii
-- shadows
-- focus states
-- buttons
-- inputs
-- badges
-- alerts
-- table primitives
-- empty/loading/error states
-- theme support
-- RTL-safe layout rules
-
-Exit condition:
-The same visual rules can be reused across tenant, public, and admin screens.
-
-### Phase F2 — Global shells
-
+### F0 — Design foundation + shared shell
 Build:
-
-- tenant dashboard shell
-- admin shell
+- BookResa design tokens
+- typography and spacing
+- buttons, inputs, badges, alerts
+- tables, pagination, cards
+- loading/empty/error/success states
+- light/dark mode
+- RTL/LTR-safe primitives
+- tenant application shell
+- Platform Admin shell
 - public booking shell
-- responsive navigation
-- page header
-- flash/toast handling
+- mobile navigation
 
 Exit condition:
-All major screens can share the same structure without duplicated shell markup.
+All future screens can use shared components and shells without duplicated visual foundations.
 
-### Phase F3 — Auth and onboarding
+### F1 — Authentication
+Screens:
+- Login
+- Register
+- Email verification
+- Forgot password
+- Reset password
 
+Exit condition:
+The complete authentication flow is usable in Arabic/English, RTL/LTR and light/dark.
+
+### F2 — Business onboarding
+Screens:
+- Create Business
+- Business Type
+- Workspace
+- Modules
+- Services setup
+- Working Hours setup
+- Staff setup
+- Workspace Ready
+
+Exit condition:
+A verified user can create a Business, configure required workspace data and finish onboarding.
+
+### F3 — Dashboard
+Screens:
+- Main Dashboard
+- Upcoming Bookings
+- Attention/Alerts
+- Subscription/Usage summary
+
+Exit condition:
+The business owner can understand today's workload and the next useful action immediately.
+
+### F4 — Business and settings
+Screens:
+- Business Profile
+- Logo/Cover
+- Booking Settings
+- Appearance
+- Language
+- Theme
+- Team/roles where exposed
+
+Exit condition:
+The owner can configure the business behavior supported by the current backend.
+
+### F5 — Services
+Screens:
+- Services List
+- Create Service
+- Edit Service
+- Delete Confirmation
+- Empty State
+
+Exit condition:
+Services can be fully managed without leaving the business workspace.
+
+### F6 — Staff
+Screens:
+- Staff List
+- Add Staff
+- Edit Staff
+- Staff Status
+- Staff Details
+
+Exit condition:
+Staff, service assignments and staff availability setup are understandable.
+
+### F7 — Scheduling and availability
+Screens:
+- Scheduling Overview
+- Business Hours
+- Breaks
+- Holidays
+- Special Hours
+- Staff Hours
+- Days Off
+- Staff Availability
+
+Exit condition:
+A business can configure recurring and exceptional availability without needing to understand internal slot-calculation logic.
+
+### F8 — Bookings
+Screens:
+- Booking List
+- Create Booking
+- Booking Details
+- Status Actions
+- Reschedule
+- Cancel Confirmation
+
+Exit condition:
+Daily booking operations, lifecycle actions and validation states are complete.
+
+### F9 — Calendar
+Screens:
+- Day
+- Week
+- Month
+
+Interactions:
+- navigate dates
+- filter staff where supported
+- open booking details
+- start a valid create flow from an available slot where supported
+
+Exit condition:
+Calendar is operational, readable and consistent with booking status/payment status.
+
+### F10 — Customers
+Screens:
+- Customers List
+- Add Customer
+- Customer Details
+- Booking History
+- Payment History where permitted
+- Usage/limit state
+
+Exit condition:
+Customer records and usage information are understandable and actionable.
+
+### F11 — Payments
+Screens:
+- Payments History
+- Booking Payment State
+- Checkout/Pending/Failure/Success states
+- Retry path where supported
+
+Exit condition:
+The UI clearly separates booking status from payment status and trusts server-side payment state.
+
+### F12 — Public booking
+Canonical routes:
+- `/{tenant:slug}/book`
+- `/{tenant:slug}/book/availability`
+- `POST /{tenant:slug}/book`
+- signed confirmation route
+
+Screens/steps:
+1. Business identity
+2. Service
+3. Staff when relevant
+4. Date
+5. Available time
+6. Customer information
+7. Payment according to booking policy
+8. Confirmation
+
+Rules:
+- phone is required by the current booking contract;
+- email follows Business settings;
+- customer account creation is not required;
+- Full Payment, Deposit and Pay Later are supported by the current booking payment model;
+- the canonical public booking route is the only new frontend link target; legacy public routes remain compatibility routes.
+
+Exit condition:
+A first-time customer can complete a booking comfortably from a mobile device.
+
+### F13 — Billing and subscriptions
+Screens:
+- Plans
+- Current Subscription
+- Usage
+- Billing/Payment History
+- Upgrade/Downgrade
+- Cancel
+- Reactivate
+- Renew
+
+Exit condition:
+The owner can understand plan, period, payment state, usage and lifecycle actions.
+
+### F14 — Notifications
 Build:
-
-- login
-- registration
-- password flow
-- verification when required
-- business creation
-- onboarding steps
-- onboarding completion
+- global notification trigger/list where exposed;
+- unread/read presentation;
+- booking notifications;
+- payment notifications;
+- subscription expiry;
+- usage threshold/limit/over-limit states.
 
 Exit condition:
-A new user can create a workspace and reach a usable dashboard.
+Important backend notifications have an understandable UI destination.
 
-### Phase F4 — Core operations
+### F15 — Reports
+Screens:
+- Business Reports
+- Platform Reports
 
-Build in this order:
-
-1. Dashboard
-2. Bookings list/detail
-3. Calendar
-4. Services
-5. Staff
-6. Customers
-7. Payments
+Priority:
+- useful summary data first;
+- tables before decorative charts;
+- clear date/range filters when supported.
 
 Exit condition:
-A business can perform its main daily operations without dead-end screens.
+Business and platform operators can read the current report data without spreadsheet-style overload.
 
-### Phase F5 — Public booking experience
-
-Build and polish:
-
-- public business page
-- service selection
-- staff selection when needed
-- date/time selection
-- customer form
-- payment
-- confirmation
-
-Exit condition:
-A first-time customer can complete a booking comfortably on a phone.
-
-### Phase F6 — Billing and settings
-
-Build:
-
-- subscription
-- plan information
-- usage
-- billing history
-- business settings
-- booking settings
-- appearance
-- language/theme
-- team/roles where exposed in UI
+### F16 — Platform Admin
+Screens:
+- Admin Dashboard
+- Businesses
+- Business Modules
+- Users
+- Subscriptions
+- Payments
+- Usage
+- Reports
+- Plans
+- Support
+- Settings
 
 Exit condition:
-The owner can understand and manage the account without support.
+Platform operations are possible without using tenant-facing screens.
 
-### Phase F7 — Admin
-
-Build:
-
-- platform dashboard
-- tenants
-- plans/modules
-- subscription/payment operations
-- audit/activity views
-- support-oriented actions
+### F17 — System states + final QA
+Build/review:
+- 403
+- 404
+- 419
+- 429
+- 500
+- maintenance/unavailable state where needed
+- final responsive review
+- Arabic/English review
+- RTL/LTR review
+- light/dark review
+- keyboard/accessibility review
+- performance review
 
 Exit condition:
-Platform operations are possible without touching tenant-facing screens.
+All MVP screens meet the Definition of Done in this document.
+
+### Route contract
+
+The browser frontend uses the existing named web routes in `routes/web.php`.
+
+Tenant areas:
+- `dashboard`
+- `onboarding.*`
+- `business.profile.*`
+- `services.*`
+- `staff.*`
+- `scheduling.*`
+- `booking.management.*`
+- `calendar.index`
+- `customers.*`
+- `payments.index`
+- `billing.*`
+- `reports.business`
+
+Public booking:
+- `public.booking.canonical.*`
+
+Platform Admin:
+- `admin.*`
+
+Future API work is documented by the architecture/API-readiness sections of the existing technical documents. The current browser frontend must remain Blade-first and must not be reimplemented around a client-side API.
+
+### Backend contract rule
+
+The frontend must reflect the server contract for:
+- tenant isolation;
+- roles and permissions;
+- module availability;
+- subscription usability;
+- customer usage policy;
+- booking lifecycle;
+- availability;
+- payment state;
+- subscription lifecycle;
+- notifications.
+
+When backend behavior changes, update the relevant existing DOC first, then update this frontend document if the screen flow is affected.
 
 ## 31. Screen-by-screen implementation checklist
 
