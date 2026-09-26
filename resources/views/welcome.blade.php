@@ -1,6 +1,11 @@
 @extends('layouts.public')
 
 @section('content')
+    @php
+    $weekdayLabels = app()->getLocale() === 'ar'
+        ? ['إ', 'ث', 'أ', 'خ', 'ج', 'س', 'ح']
+        : ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+@endphp
     <main>
         <section class="border-b border-slate-200 dark:border-slate-800">
             <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -43,7 +48,7 @@
                                         <p class="truncate text-xs text-slate-400">{{ __('app.home_ui.preview_label') }}</p>
                                     </div>
                                 </div>
-                                <span class="hidden text-xs font-semibold text-slate-400 min-[420px]:block">{{ __('app.home_ui.preview_timezone') }}</span>
+                                <span class="hidden max-w-[8rem] truncate text-xs font-semibold text-slate-400 min-[420px]:block">{{ __('app.home_ui.preview_timezone') }}</span>
                             </div>
 
                             <div class="p-4 sm:p-6">
@@ -58,7 +63,9 @@
 
                                 <div class="mt-6 border-y border-slate-100 py-5 dark:border-slate-800">
                                     <div class="grid grid-cols-7 gap-0.5 min-[380px]:gap-1 text-center text-[8px] min-[380px]:text-[9px] font-bold uppercase text-slate-400">
-                                        <span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span>
+                                        @foreach ($weekdayLabels as $weekday)
+                                            <span>{{ $weekday }}</span>
+                                        @endforeach
                                     </div>
                                     <div class="mt-2 grid grid-cols-7 gap-0.5 min-[380px]:gap-1">
                                         @foreach (['21','22','23','24','25','26','27','28','29','30','01','02','03','04','05','06','07','08','09','10','11'] as $day)
@@ -111,7 +118,7 @@
                         [__('app.home_ui.feature_customers_title'), __('app.home_ui.feature_customers_text')],
                         [__('app.home_ui.feature_billing_title'), __('app.home_ui.feature_billing_text')],
                     ] as $feature)
-                        <article class="border-b border-slate-200 px-0 py-6 sm:px-5 sm:[&:nth-child(odd)]:border-e lg:[&:nth-child(3n)]:border-e-0 dark:border-slate-800">
+                        <article class="border-b border-slate-200 px-0 py-6 sm:px-5 sm:[&:nth-child(odd)]:border-e xl:border-e-0 xl:[&:nth-child(3n+1)]:border-e xl:[&:nth-child(3n+2)]:border-e dark:border-slate-800">
                             <h3 class="text-sm font-bold text-slate-900 dark:text-white">{{ $feature[0] }}</h3>
                             <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ $feature[1] }}</p>
                         </article>
