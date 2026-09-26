@@ -12,8 +12,8 @@ use App\Domain\Scheduling\Models\StaffDayOff;
 use App\Domain\Scheduling\Models\StaffAvailability;
 use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Service\Models\Service;
-use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -268,6 +268,7 @@ final class AvailabilityService
         }
 
         $intersection = $this->intersectWindows($businessWindows, $staffWindows);
+
         return $this->generateSlots($service, $intersection, $date, $staff, null, $minBookableAt);
     }
 
@@ -420,6 +421,7 @@ final class AvailabilityService
                     $cursor = $cursor->addMinutes((int) config('bookresa.booking.slot_interval_minutes', self::SLOT_INTERVAL_MINUTES));
                     continue;
                 }
+
                 $slotEnd = $cursor->addMinutes($duration);
                 $blockEnd = $slotEnd->addMinutes($buffer);
 
