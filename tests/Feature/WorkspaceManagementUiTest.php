@@ -50,7 +50,9 @@ test('owner can view and update business profile', function (): void {
         ->get(route('business.profile.edit'))
         ->assertOk()
         ->assertSee('Business Profile')
-        ->assertSee('Owner Clinic');
+        ->assertSee('Owner Clinic')
+        ->assertSee('Minimum notice')
+        ->assertSee('Maximum advance');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
         ->put(route('business.profile.update'), [
@@ -67,6 +69,11 @@ test('owner can view and update business profile', function (): void {
             'instagram' => '',
             'timezone' => 'Africa/Cairo',
             'locale' => 'ar',
+            'payment_mode' => 'pay_later',
+            'customer_email_required' => true,
+            'customer_limit_policy' => 'allow_overage',
+            'minimum_notice_minutes' => 60,
+            'maximum_advance_days' => 90,
         ])
         ->assertRedirect()
         ->assertSessionHas('status');
@@ -75,7 +82,10 @@ test('owner can view and update business profile', function (): void {
 
     expect($tenant->fresh('profile')->profile->name['en'])->toBe('Updated Clinic')
         ->and($tenant->fresh('profile')->profile->locale)->toBe('ar')
-        ->and($tenant->fresh('profile')->profile->phone)->toBe('01012345678');
+        ->and($tenant->fresh('profile')->profile->phone)->toBe('01012345678')
+        ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'minimum_notice_minutes'))->toBe(60)
+        ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'maximum_advance_days'))->toBe(90)
+        ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'customer_email_required'))->toBeTrue();
 });
 
 test('owner can create and update a service through workspace ui', function (): void {

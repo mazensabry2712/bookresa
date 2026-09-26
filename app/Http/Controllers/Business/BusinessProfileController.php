@@ -18,7 +18,7 @@ final class BusinessProfileController
         $profile = BusinessProfile::query()->firstOrFail();
 
         return view('business.profile', [
-            'tenant' => $currentTenant->get()->loadMissing('businessType'),
+            'tenant' => $currentTenant->get()->loadMissing(['businessType', 'modules']),
             'profile' => $profile,
         ]);
     }
@@ -29,6 +29,6 @@ final class BusinessProfileController
     ): RedirectResponse {
         $updateBusinessProfile->handle($request->validated());
 
-        return back()->with('status', __('Business profile updated successfully.'));
+        return back()->with('status', __('business_ui.profile_updated'));
     }
 }
