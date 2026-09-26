@@ -13,8 +13,8 @@
     <div class="min-h-screen lg:flex">
         <aside class="border-b border-slate-200 bg-white lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-e dark:border-slate-800 dark:bg-slate-900">
             <div class="flex h-16 items-center justify-between px-5">
-                <a href="{{ route('booking.management.index') }}" class="text-lg font-bold tracking-tight">
-                    BookResa
+                <a href="{{ route('dashboard') }}" class="text-lg font-bold tracking-tight">
+                    {{ config('bookresa.name', 'Velto') }}
                 </a>
                 <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {{ $tenant->profile?->name[app()->getLocale()] ?? $tenant->profile?->name['en'] ?? $tenant->slug }}
@@ -22,6 +22,9 @@
             </div>
 
             <nav class="space-y-1 p-3">
+                <a href="{{ route('dashboard') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                    {{ __('app.dashboard') }}
+                </a>
                 <a href="{{ route('booking.management.index') }}"
                    class="block rounded-xl bg-slate-100 px-3 py-2.5 text-sm font-semibold text-slate-900 dark:bg-slate-800 dark:text-slate-100">
                     {{ __('app.bookings') }}
@@ -41,6 +44,14 @@
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
                         {{ __('app.reports') }}
                     </a>
+                @endcan
+                @can('billing.view')
+                    @if (app(\App\Domain\Tenant\Services\CurrentTenant::class)->get()?->modules->contains('key', 'payments'))
+                        <a href="{{ route('payments.index') }}"
+                           class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                            {{ __('app.payments') }}
+                        </a>
+                    @endif
                 @endcan
                 @can('billing.view')
                     <a href="{{ route('billing.subscription') }}"
@@ -83,7 +94,7 @@
             <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex min-h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
                     <div>
-                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">BookResa</p>
+                        <p class="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">{{ config('bookresa.name', 'Velto') }}</p>
                         <h1 class="text-lg font-semibold">@yield('heading', __('Bookings'))</h1>
                     </div>
 
