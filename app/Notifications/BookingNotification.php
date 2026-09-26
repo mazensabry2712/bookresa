@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Tenant\Models\Tenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -92,7 +93,9 @@ final class BookingNotification extends Notification implements ShouldQueue
 
     private function timezone(): string
     {
-        return $this->booking->getRelationValue('service')?->tenant?->profile?->timezone
+        return Tenant::query()
+            ->with('profile')
+            ->find($this->booking->tenant_id)?->profile?->timezone
             ?? config('app.timezone', 'UTC');
     }
 }
