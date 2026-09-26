@@ -63,6 +63,10 @@ final class StartBookingPayment
                         PaymentStatus::Processing,
                     ], true)
                     && $latestPayment->checkout_url !== null
+                    && (
+                        $latestPayment->expires_at === null
+                        || $latestPayment->expires_at->isFuture()
+                    )
                 )
             ) {
                 return $latestPayment;
