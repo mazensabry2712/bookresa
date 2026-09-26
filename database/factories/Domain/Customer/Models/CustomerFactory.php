@@ -11,6 +11,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class CustomerFactory extends Factory
 {
     /**
+     * The model that this factory creates.
+     *
+     * @var class-string<Customer>
+     */
+    protected $model = Customer::class;
+
+    /**
      * Define the model's default state.
      *
      * The Customer model is tenant-scoped, so tenant_id is intentionally
