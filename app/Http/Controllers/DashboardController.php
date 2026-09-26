@@ -139,7 +139,7 @@ final class DashboardController
         return view('dashboard', [
             'tenant' => $tenant,
             'timezone' => $timezone,
-            'todayLabel' => $todayStart->isoFormat('dddd, D MMMM YYYY'),
+            'todayLabel' => $todayStart->locale(app()->getLocale())->isoFormat('dddd, D MMMM YYYY'),
             'metrics' => [
                 'todayBookings' => (int) $todayBookings,
                 'todayRevenueMinor' => (int) $todayRevenueMinor,

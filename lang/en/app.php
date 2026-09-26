@@ -164,6 +164,8 @@ return [
         'additional_customers' => ':count additional customers are currently billed according to your plan.',
         'workspace' => 'Workspace',
         'active_staff_count' => '{1} :count active staff member|[2,*] :count active staff members',
+        'status_trial' => 'Trial',
+        'status_active' => 'Active',
         'status_pending' => 'Pending',
         'status_confirmed' => 'Confirmed',
         'status_rescheduled' => 'Rescheduled',

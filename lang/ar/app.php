@@ -164,6 +164,8 @@ return [
         'additional_customers' => 'يوجد :count عميل إضافي يتم احتسابه وفقًا لخطتك.',
         'workspace' => 'مساحة العمل',
         'active_staff_count' => '{1} موظف نشط واحد|[2,10] :count موظفين نشطين|[11,*] :count موظفًا نشطًا',
+        'status_trial' => 'تجريبي',
+        'status_active' => 'نشط',
         'status_pending' => 'قيد الانتظار',
         'status_confirmed' => 'مؤكد',
         'status_rescheduled' => 'أُعيدت جدولته',

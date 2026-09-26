@@ -48,6 +48,11 @@
             'refunded' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
         ];
 
+        $subscriptionStatusLabels = [
+            'trial' => __('dashboard_ui.status_trial'),
+            'active' => __('dashboard_ui.status_active'),
+        ];
+
         $usageLimit = max((int) ($usageSummary?->includedCustomerLimit ?? 0), 1);
         $usagePercent = $attention['usagePercent'] ?? 0;
     @endphp
@@ -125,6 +130,13 @@
             </article>
         </section>
 
+        @if (
+            $attention['pendingBookings'] > 0
+            || $attention['unpaidBookings'] > 0
+            || $attention['subscriptionNeedsAction']
+            || $attention['usageOverLimit']
+            || (($attention['usagePercent'] ?? 0) >= 80)
+        )
         <section class="br-panel overflow-hidden" aria-labelledby="attention-title">
             <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
                 <div>
@@ -164,6 +176,7 @@
                     </a>
                 @endif
 
+                @can('billing.view')
                 @if ($attention['subscriptionNeedsAction'])
                     <a href="{{ route('billing.subscription') }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex min-w-0 items-start gap-3">
@@ -214,25 +227,10 @@
                     </a>
                 @endif
 
-                @if (
-                    $attention['pendingBookings'] === 0
-                    && $attention['unpaidBookings'] === 0
-                    && ! $attention['subscriptionNeedsAction']
-                    && ! $attention['usageOverLimit']
-                    && (($attention['usagePercent'] ?? 0) < 80)
-                )
-                    <div class="px-5 py-6">
-                        <div class="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/70 dark:bg-emerald-950/25">
-                            <span class="mt-0.5 text-emerald-700 dark:text-emerald-300" aria-hidden="true">✓</span>
-                            <div>
-                                <p class="font-semibold text-emerald-800 dark:text-emerald-200">{{ __('dashboard_ui.no_attention_items') }}</p>
-                                <p class="mt-0.5 text-sm text-emerald-700 dark:text-emerald-300">{{ __('dashboard_ui.no_attention_help') }}</p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
+                @endcan
             </div>
         </section>
+        @endif
 
         <div class="grid gap-6 xl:grid-cols-[1.6fr_0.9fr]">
             <section class="br-panel overflow-hidden" aria-labelledby="upcoming-title">
@@ -287,7 +285,6 @@
                                     <p class="text-sm font-bold text-slate-900 dark:text-white">
                                         {{ $money((int) $booking->service?->price_minor, (string) ($booking->service?->currency ?? 'EGP')) }}
                                     </p>
-                                    <p class="mt-1 text-xs text-slate-400">{{ $localized($booking->service?->name) }}</p>
                                 </div>
                             </div>
                         </a>
@@ -315,14 +312,16 @@
                             <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('dashboard_ui.subscription') }}</p>
                             <h3 id="subscription-title" class="mt-2 text-xl font-bold text-slate-950 dark:text-white">{{ $planName }}</h3>
                         </div>
-                        <a href="{{ route('billing.subscription') }}" class="text-sm font-bold text-brand-indigo hover:underline">{{ __('dashboard_ui.manage') }}</a>
+                        @can('billing.view')
+                            <a href="{{ route('billing.subscription') }}" class="text-sm font-bold text-brand-indigo hover:underline">{{ __('dashboard_ui.manage') }}</a>
+                        @endcan
                     </div>
 
                     @if ($subscription)
                         <div class="mt-4 grid grid-cols-2 gap-3">
                             <div class="rounded-xl br-surface-soft p-3">
                                 <p class="text-xs font-semibold text-slate-500">{{ __('dashboard_ui.subscription_status') }}</p>
-                                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ str($subscription->status->value)->headline() }}</p>
+                                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ $subscriptionStatusLabels[$subscription->status->value] ?? $subscription->status->value }}</p>
                             </div>
                             <div class="rounded-xl br-surface-soft p-3">
                                 <p class="text-xs font-semibold text-slate-500">{{ __('dashboard_ui.renews') }}</p>
@@ -336,6 +335,7 @@
                     @endif
                 </section>
 
+                @can('billing.view')
                 @if ($usageSummary)
                     <section class="br-panel p-5" aria-labelledby="usage-title">
                         <div class="flex items-center justify-between gap-4">
@@ -363,6 +363,7 @@
                         @endif
                     </section>
                 @endif
+                @endcan
 
                 <section class="br-panel p-5" aria-labelledby="workspace-title">
                     <div class="flex items-center justify-between gap-4">
@@ -375,12 +376,16 @@
                         </span>
                     </div>
                     <div class="mt-4 grid grid-cols-2 gap-2">
-                        <a href="{{ route('scheduling.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
-                            {{ __('app.scheduling') }}
-                        </a>
-                        <a href="{{ route('business.profile.edit') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
-                            {{ __('app.business') }}
-                        </a>
+                        @can('calendar.view')
+                            <a href="{{ route('scheduling.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                                {{ __('app.scheduling') }}
+                            </a>
+                        @endcan
+                        @can('business.view')
+                            <a href="{{ route('business.profile.edit') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                                {{ __('app.business') }}
+                            </a>
+                        @endcan
                     </div>
                 </section>
             </aside>
