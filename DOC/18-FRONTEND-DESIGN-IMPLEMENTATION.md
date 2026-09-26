@@ -1425,7 +1425,7 @@ These references are inspiration for interaction and product patterns only. Book
 
 Latest verified frontend/application gate on 2026-09-26:
 
-- PHP test suite: 240 passed, 1 skipped, 885 assertions
+- PHP test suite: 241 passed, 1 skipped, 890 assertions
 - Calendar feature tests: 4 passed, 13 assertions
 - Vite production build: passed
 - Blade view cache: passed
