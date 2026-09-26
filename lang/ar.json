@@ -191,5 +191,26 @@
     "Bookings, customers and revenue for the selected period.": "الحجوزات والعملاء والإيرادات للفترة المحددة.",
     "Most booked services in this period.": "أكثر الخدمات حجزًا خلال هذه الفترة.",
     "Platform-level businesses, bookings, subscriptions, usage and revenue.": "إحصائيات المنصة للمنشآت والحجوزات والاشتراكات والاستخدام والإيرادات.",
-    "No Show": "لم يحضر"
+    "No Show": "لم يحضر",
+    "Support": "الدعم",
+    "Platform operations": "عمليات المنصة",
+    "Review support requests and update their status, priority and internal notes.": "راجع طلبات الدعم وحدّث حالتها وأولويتها والملاحظات الداخلية.",
+    "Search subject or business email": "ابحث في الموضوع أو بريد المنشأة",
+    "All priorities": "كل الأولويات",
+    "Ticket": "التذكرة",
+    "Priority": "الأولوية",
+    "Update": "التحديث",
+    "Internal notes": "ملاحظات داخلية",
+    "Save": "حفظ",
+    "No support tickets found.": "لا توجد تذاكر دعم.",
+    "Open": "مفتوحة",
+    "In progress": "قيد التنفيذ",
+    "Resolved": "تم الحل",
+    "Closed": "مغلقة",
+    "Low": "منخفضة",
+    "Normal": "عادية",
+    "High": "مرتفعة",
+    "Urgent": "عاجلة",
+    "Support ticket updated successfully.": "تم تحديث تذكرة الدعم بنجاح."
+
 }
