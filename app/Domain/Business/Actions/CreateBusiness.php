@@ -75,6 +75,7 @@ final class CreateBusiness
                         'payment_mode' => 'pay_later',
                         'deposit_percent' => 50,
                         'customer_email_required' => false,
+                        'customer_limit_policy' => 'allow_overage',
                     ],
                 ]);
 
