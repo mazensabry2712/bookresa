@@ -198,8 +198,7 @@ final class KashierGateway implements PaymentGateway
 
         $status = match (strtoupper((string) ($response->json('status') ?? 'PENDING'))) {
             'SUCCESS' => PaymentStatus::Refunded,
-            'FAILURE' => PaymentStatus::Failed,
-            default => PaymentStatus::Processing,
+            default => PaymentStatus::Paid,
         };
 
         return new PaymentGatewayResult(
