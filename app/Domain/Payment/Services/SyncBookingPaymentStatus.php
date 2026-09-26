@@ -5,10 +5,11 @@ namespace App\Domain\Payment\Services;
 use App\Domain\Booking\Enums\PaymentStatus as BookingPaymentStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 
 final class SyncBookingPaymentStatus
 {
-    public function handle(\App\Domain\Payment\Models\Payment $payment, PaymentStatus $status): void
+    public function handle(Payment $payment, PaymentStatus $status): void
     {
         if ($payment->payable_type !== (new Booking)->getMorphClass()) {
             return;
@@ -16,7 +17,7 @@ final class SyncBookingPaymentStatus
 
         $booking = $payment->payable;
 
-        if ($booking === null) {
+        if (! $booking instanceof Booking) {
             return;
         }
 
