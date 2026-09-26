@@ -49,7 +49,13 @@ final class KashierReturnController
             return response()->json(['message' => 'Payment was not found.'], 404);
         }
 
-        if ($this->amountToMinor($query['amount'] ?? null) !== (int) $payment->amount_minor) {
+        try {
+            $amountMinor = $this->amountToMinor($query['amount'] ?? null);
+        } catch (RuntimeException) {
+            return response()->json(['message' => 'Payment amount is invalid.'], 422);
+        }
+
+        if ($amountMinor !== (int) $payment->amount_minor) {
             return response()->json(['message' => 'Payment amount does not match.'], 422);
         }
 
