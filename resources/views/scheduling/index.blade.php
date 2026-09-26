@@ -5,14 +5,16 @@
 
 @section('content')
     @php
+        use App\Domain\Scheduling\Enums\DayOfWeek;
+
         $days = [
-            AppDomainSchedulingEnumsDayOfWeek::Monday,
-            AppDomainSchedulingEnumsDayOfWeek::Tuesday,
-            AppDomainSchedulingEnumsDayOfWeek::Wednesday,
-            AppDomainSchedulingEnumsDayOfWeek::Thursday,
-            AppDomainSchedulingEnumsDayOfWeek::Friday,
-            AppDomainSchedulingEnumsDayOfWeek::Saturday,
-            AppDomainSchedulingEnumsDayOfWeek::Sunday,
+            DayOfWeek::Monday,
+            DayOfWeek::Tuesday,
+            DayOfWeek::Wednesday,
+            DayOfWeek::Thursday,
+            DayOfWeek::Friday,
+            DayOfWeek::Saturday,
+            DayOfWeek::Sunday,
         ];
 
         $configuredBusinessHours = $businessHours->filter(fn ($hour) => ! $hour->is_closed)->count();
