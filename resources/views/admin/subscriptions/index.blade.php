@@ -32,6 +32,7 @@
                             <th class="px-5 py-3 text-start">{{ __('Period') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Status') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Ends') }}</th>
+                            <th class="px-5 py-3 text-end">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -48,9 +49,24 @@
                                     <span class="rounded-full px-2.5 py-1 text-xs font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{ str($subscription->status->value)->headline() }}</span>
                                 </td>
                                 <td class="px-5 py-4 text-slate-500">{{ $subscription->end_at?->format('Y-m-d H:i') ?? '—' }}</td>
+                                <td class="px-5 py-4 text-end">
+                                    @if (in_array($subscription->status, [
+                                        \App\Domain\Billing\Enums\SubscriptionStatus::Trial,
+                                        \App\Domain\Billing\Enums\SubscriptionStatus::Active,
+                                        \App\Domain\Billing\Enums\SubscriptionStatus::Suspended,
+                                    ], true))
+                                        <form method="POST" action="{{ route('admin.subscriptions.toggle-status', $subscription) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">
+                                                {{ $subscription->status === \App\Domain\Billing\Enums\SubscriptionStatus::Suspended ? __('Activate') : __('Suspend') }}
+                                            </button>
+                                        </form>
+                                    @endif
+                                </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="px-5 py-10 text-center text-sm text-slate-500">{{ __('No subscriptions found.') }}</td></tr>
+                            <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">{{ __('No subscriptions found.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
