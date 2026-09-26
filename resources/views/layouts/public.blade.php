@@ -35,13 +35,13 @@
 </head>
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
     <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div class="mx-auto flex min-h-[5.5rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" class="relative flex h-12 w-[250px] shrink-0 items-center overflow-hidden rounded-lg sm:h-14 sm:w-[350px]" aria-label="BookResa">
+        <div class="mx-auto flex min-h-[4.5rem] max-w-7xl items-center gap-3 px-4 py-2 sm:min-h-[5rem] sm:gap-5 sm:px-6 sm:py-2 lg:min-h-[5.25rem] lg:gap-6 lg:px-8">
+            <a href="{{ route('home') }}" class="relative flex h-10 w-[165px] shrink-0 items-center overflow-hidden rounded-lg sm:h-12 sm:w-[220px] lg:h-14 lg:w-[275px]" aria-label="BookResa">
                 <img src="{{ asset('logo.png') }}" alt="BookResa" width="707" height="353" decoding="async" fetchpriority="high" class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
                 <img src="{{ asset('logodark.png') }}" alt="BookResa" width="707" height="353" decoding="async" class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
             </a>
 
-            <nav class="hidden flex-1 items-center justify-center gap-7 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+            <nav class="hidden min-w-0 flex-1 items-center justify-center gap-6 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
                 <a href="#features" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.features') }}
                 </a>
@@ -50,7 +50,7 @@
                 </a>
             </nav>
 
-            <div class="hidden shrink-0 items-center gap-2 lg:flex">
+            <div class="hidden shrink-0 items-center gap-1.5 lg:flex">
                 <div class="relative">
                     <button type="button"
                             class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
@@ -119,7 +119,7 @@
                 <div class="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
                     <x-locale-switcher />
                     <x-theme-toggle />
-                    <div class="ms-auto flex gap-2">
+                    <div class="ms-auto flex flex-wrap gap-2">
                         <a href="{{ route('login') }}" class="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-bold dark:border-slate-700">
                             {{ __('app.home_ui.login') }}
                         </a>
