@@ -206,9 +206,10 @@ test('customer limit policy can allow overage or block new customer creation', f
         'email' => null,
     ]))->toThrow(RuntimeException::class);
 
-    app(\App\Domain\Business\Models\BusinessProfile::class)->firstOrFail()->update([
-        'booking_settings->customer_limit_policy' => 'allow_overage',
-    ]);
+    $profile = app(\App\Domain\Business\Models\BusinessProfile::class)->firstOrFail();
+    $settings = $profile->booking_settings ?? [];
+    data_set($settings, 'customer_limit_policy', 'allow_overage');
+    $profile->forceFill(['booking_settings' => $settings])->save();
 
     $created = app(\App\Domain\Customer\Actions\CreateCustomer::class)->handle([
         'name' => 'Customer 3',
