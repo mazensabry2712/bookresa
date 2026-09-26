@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CreateSubscription;
@@ -409,6 +410,49 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
         ->and($subscription->isUsable())->toBeTrue();
 });
 
+
+test('stale subscription payment does not unlock the current billing cycle', function (): void {
+    subscriptionPaymentTenant('subscription-stale-payment');
+    $subscription = app(CreateSubscription::class)->handle(
+        subscriptionPaymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill([
+        'status' => SubscriptionStatus::Active,
+        'payment_status' => PaymentStatus::Pending,
+        'start_at' => CarbonImmutable::parse('2026-11-01 00:00:00', 'UTC'),
+    ])->save();
+
+    $payment = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-STALE-001',
+        'provider' => 'kashier',
+        'provider_reference' => 'session-stale',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+        'metadata' => [
+            'subscription_start' => '2026-10-01T00:00:00+00:00',
+            'subscription_id' => $subscription->id,
+            'plan_id' => $subscription->plan_id,
+        ],
+    ]);
+
+    app(\App\Domain\Payment\Services\PaymentService::class)->applyResult(
+        $payment,
+        new PaymentGatewayResult(
+            status: PaymentStatus::Paid,
+            providerReference: 'session-stale',
+        ),
+    );
+
+    app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)
+        ->handle($payment->fresh(), PaymentStatus::Paid);
+
+    expect($subscription->fresh()->payment_status)->toBe(PaymentStatus::Pending);
+});
 
 test('renewed subscription does not reuse a paid payment from the previous cycle', function (): void {
     subscriptionPaymentTenant('subscription-cycle-isolation');
