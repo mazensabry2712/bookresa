@@ -9,6 +9,7 @@ use App\Domain\Billing\Services\CancelSubscription;
 use App\Domain\Billing\Services\ClearPlanChange;
 use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Billing\Services\ReactivateSubscription;
+use App\Domain\Billing\Services\RenewSubscription;
 use App\Domain\Billing\Services\SchedulePlanChange;
 use App\Domain\Payment\Services\StartSubscriptionPayment;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -74,6 +75,19 @@ final class SubscriptionBillingController
             }
 
             return redirect()->away($payment->checkout_url);
+        } catch (RuntimeException $exception) {
+            return back()->withErrors(['billing' => $exception->getMessage()]);
+        }
+    }
+
+    public function renew(
+        Subscription $subscription,
+        RenewSubscription $renewSubscription,
+    ): RedirectResponse {
+        try {
+            $renewSubscription->handle($subscription);
+
+            return to_route('billing.subscription')->with('status', 'Subscription renewed successfully. Continue to payment to activate the new period.');
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
