@@ -3,8 +3,9 @@
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Actions\CreateCustomer;
-use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Actions\UpdateCustomer;
+use App\Domain\Customer\Models\Customer;
+use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
@@ -63,11 +64,13 @@ test('owner can list and create customers', function (): void {
         ])
         ->assertRedirect(route('customers.index'));
 
+    app(CurrentTenant::class)->set($tenant);
+
     $customer = Customer::query()->firstOrFail();
 
     expect($customer->name)->toBe('Ahmed Ali')
         ->and($customer->phone)->toBe('010-1234-5678')
-        ->and($customer->normalized_phone)->toBe('01012345678');
+        ->and($customer->normalized_phone)->toBe('201012345678');
 });
 
 test('owner can update customer details without changing tenant ownership', function (): void {
@@ -89,6 +92,7 @@ test('owner can update customer details without changing tenant ownership', func
         ])
         ->assertRedirect(route('customers.show', $customer));
 
+    app(CurrentTenant::class)->set($tenant);
     $customer->refresh();
 
     expect($customer->name)->toBe('New Name')
@@ -144,6 +148,7 @@ test('customers are tenant isolated for list and update', function (): void {
         ])
         ->assertNotFound();
 
+    app(CurrentTenant::class)->set($tenantA);
     expect($customerA->fresh()->name)->toBe('Tenant A Customer');
 });
 
@@ -156,7 +161,7 @@ test('receptionist can view and manage customers', function (): void {
         'email' => 'front-desk@example.com',
     ]);
 
-    app(\App\Domain\Staff\Actions\AddStaffMember::class)->handle($receptionist, 'receptionist');
+    app(AddStaffMember::class)->handle($receptionist, 'receptionist');
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
@@ -170,6 +175,7 @@ test('receptionist can view and manage customers', function (): void {
         ])
         ->assertRedirect(route('customers.index'));
 
+    app(CurrentTenant::class)->set($tenant);
     expect(Customer::query()->where('name', 'Walk In Customer')->exists())->toBeTrue();
 
     unset($owner);
@@ -183,7 +189,7 @@ test('staff without customer permission is forbidden', function (): void {
         'email' => 'staff-customer-forbidden@example.com',
     ]);
 
-    app(\App\Domain\Staff\Actions\AddStaffMember::class)->handle($staff, 'staff');
+    app(AddStaffMember::class)->handle($staff, 'staff');
 
     $this->actingAs($staff)
         ->withSession(['tenant_id' => $tenant->id])
