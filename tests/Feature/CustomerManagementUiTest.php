@@ -3,7 +3,6 @@
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Actions\CreateCustomer;
-use App\Domain\Customer\Actions\UpdateCustomer;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
