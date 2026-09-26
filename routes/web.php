@@ -200,6 +200,10 @@ Route::middleware(['auth', 'verified', 'tenant'])->prefix('dashboard/billing')->
         ->middleware('permission:billing.view')
         ->name('billing.subscription');
 
+    Route::post('/plans/{plan}/subscribe', [SubscriptionBillingController::class, 'subscribe'])
+        ->middleware('permission:subscription.manage')
+        ->name('billing.subscribe');
+
     Route::post('/subscription/{subscription}/checkout', [SubscriptionBillingController::class, 'checkout'])
         ->middleware('permission:subscription.manage')
         ->name('billing.subscription.checkout');
