@@ -85,6 +85,20 @@
             @if (filled($businessDescription))
                 <p class="mt-3 text-gray-600 dark:text-gray-400">{{ $businessDescription }}</p>
             @endif
+            <div class="mt-4 grid gap-2 text-sm text-gray-600 dark:text-gray-400 sm:grid-cols-3">
+                @if ($profile?->location)
+                    <div><span class="font-semibold text-gray-900 dark:text-gray-100">{{ __('Location') }}:</span> {{ $profile->location }}</div>
+                @endif
+                @if ($profile?->address)
+                    <div><span class="font-semibold text-gray-900 dark:text-gray-100">{{ __('Address') }}:</span> {{ $profile->address }}</div>
+                @endif
+                @if ($profile?->phone)
+                    <div><span class="font-semibold text-gray-900 dark:text-gray-100">{{ __('Phone') }}:</span> {{ $profile->phone }}</div>
+                @endif
+                @if ($profile?->email)
+                    <div><span class="font-semibold text-gray-900 dark:text-gray-100">{{ __('Email') }}:</span> {{ $profile->email }}</div>
+                @endif
+            </div>
         </header>
 
         @php
