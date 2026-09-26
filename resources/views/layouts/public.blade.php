@@ -35,13 +35,27 @@
 </head>
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
     <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div class="mx-auto flex min-h-[4.5rem] max-w-7xl items-center gap-3 px-4 py-2 sm:min-h-[5rem] sm:gap-5 sm:px-6 sm:py-2 lg:min-h-[5.25rem] lg:gap-6 lg:px-8">
-            <a href="{{ route('home') }}" class="relative flex h-10 w-[165px] shrink-0 items-center overflow-hidden rounded-lg sm:h-12 sm:w-[220px] lg:h-14 lg:w-[275px]" aria-label="BookResa">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" width="707" height="353" decoding="async" fetchpriority="high" class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
-                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="707" height="353" decoding="async" class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
+        <div class="mx-auto flex min-h-[4.25rem] max-w-7xl items-center gap-3 px-4 py-2 sm:min-h-[4.75rem] sm:gap-4 sm:px-6 lg:min-h-[5rem] lg:gap-5 lg:px-8">
+            <a href="{{ route('home') }}"
+               class="relative flex h-9 w-[140px] shrink-0 items-center overflow-hidden rounded-lg sm:h-10 sm:w-[170px] md:h-11 md:w-[195px] lg:h-12 lg:w-[220px] xl:h-14 xl:w-[250px]"
+               aria-label="BookResa">
+                <img src="{{ asset('logo.png') }}"
+                     alt="BookResa"
+                     width="707"
+                     height="353"
+                     decoding="async"
+                     fetchpriority="high"
+                     class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
+                <img src="{{ asset('logodark.png') }}"
+                     alt="BookResa"
+                     width="707"
+                     height="353"
+                     decoding="async"
+                     class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
             </a>
 
-            <nav class="hidden min-w-0 flex-1 items-center justify-center gap-6 xl:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+            <nav class="hidden min-w-0 flex-1 items-center justify-center gap-5 lg:flex xl:gap-7"
+                 aria-label="{{ __('app.home_ui.primary_navigation') }}">
                 <a href="#features" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.features') }}
                 </a>
@@ -50,7 +64,7 @@
                 </a>
             </nav>
 
-            <div class="hidden shrink-0 items-center gap-1.5 xl:flex">
+            <div class="hidden shrink-0 items-center gap-1 lg:flex">
                 <div class="relative">
                     <button type="button"
                             class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
@@ -91,7 +105,7 @@
             </div>
 
             <button type="button"
-                    class="ms-auto rounded-lg border border-slate-200 p-2.5 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 xl:hidden"
+                    class="ms-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 lg:hidden"
                     data-bookresa-public-menu
                     aria-expanded="false"
                     aria-controls="bookresa-public-menu"
@@ -103,10 +117,10 @@
         </div>
 
         <div id="bookresa-public-menu"
-             class="hidden border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 xl:hidden"
+             class="hidden border-t border-slate-200 bg-white lg:hidden dark:border-slate-800 dark:bg-slate-950"
              data-bookresa-public-menu-panel
              aria-hidden="true">
-            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
+            <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                 <nav class="grid gap-1" aria-label="{{ __('app.home_ui.primary_navigation') }}">
                     <a href="#features" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
                         {{ __('app.home_ui.features') }}
@@ -144,10 +158,12 @@
 
     <footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div class="flex items-center gap-4">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" width="160" height="36" loading="lazy" decoding="async" class="h-9 w-auto max-w-[160px] object-contain dark:hidden">
-                <img src="{{ asset('logodark.png') }}" alt="BookResa" width="160" height="36" loading="lazy" decoding="async" class="hidden h-9 w-auto max-w-[160px] object-contain dark:block">
-                <span class="text-xs text-slate-400">© {{ now()->year }} BookResa</span>
+            <div class="flex min-w-0 items-center gap-4">
+                <div class="relative flex h-9 w-[125px] shrink-0 items-center overflow-hidden rounded-md sm:w-[145px]">
+                    <img src="{{ asset('logo.png') }}" alt="BookResa" width="707" height="353" loading="lazy" decoding="async" class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
+                    <img src="{{ asset('logodark.png') }}" alt="BookResa" width="707" height="353" loading="lazy" decoding="async" class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
+                </div>
+                <span class="shrink-0 text-xs text-slate-400">© {{ now()->year }} BookResa</span>
             </div>
             <div class="flex items-center gap-4 text-xs font-semibold text-slate-500">
                 <a href="{{ route('login') }}" class="hover:text-brand-navy dark:hover:text-white">{{ __('app.home_ui.login') }}</a>
@@ -161,7 +177,7 @@
             const navButton = document.querySelector('[data-bookresa-public-menu]');
             const navPanel = document.querySelector('[data-bookresa-public-menu-panel]');
             const firstNavLink = navPanel?.querySelector('a');
-            const desktopQuery = window.matchMedia('(min-width: 1280px)');
+            const desktopQuery = window.matchMedia('(min-width: 1024px)');
 
             if (navButton && navPanel) {
                 const setNavOpen = (open, restoreFocus = true) => {
