@@ -50,6 +50,7 @@
 
 ## Booking
 - [x] customers
+- [x] customer management list/create/update/history
 - [x] public booking
 - [x] availability engine
 - [x] booking lifecycle
@@ -120,7 +121,7 @@
 - [x] production build
 
 ## Release gate
-- [x] full test suite (165 passed / 559 assertions locally)
+- [ ] full test suite (refresh after latest backend additions)
 - [ ] static analysis
 - [x] Pint
 - [x] production build
