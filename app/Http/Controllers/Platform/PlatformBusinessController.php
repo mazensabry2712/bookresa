@@ -62,14 +62,4 @@ final class PlatformBusinessController
         );
     }
 
-    /** @return array{trial:int,active:int,expired:int,cancelled:int} */
-    public function subscriptionCounts(Tenant $tenant): array
-    {
-        return [
-            'trial' => $tenant->subscriptions()->withoutGlobalScopes()->where('status', SubscriptionStatus::Trial)->count(),
-            'active' => $tenant->subscriptions()->withoutGlobalScopes()->where('status', SubscriptionStatus::Active)->count(),
-            'expired' => $tenant->subscriptions()->withoutGlobalScopes()->where('status', SubscriptionStatus::Expired)->count(),
-            'cancelled' => $tenant->subscriptions()->withoutGlobalScopes()->where('status', SubscriptionStatus::Cancelled)->count(),
-        ];
-    }
 }
