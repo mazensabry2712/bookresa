@@ -10,7 +10,7 @@
     <main class="mx-auto max-w-2xl px-6 py-12">
         <h1 class="text-3xl font-semibold">Create your business</h1>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Create an isolated BookResa workspace and choose your business type.
+            Create an isolated Velto workspace and choose your business type.
         </p>
 
         <form method="POST" action="{{ route('onboarding.business.store') }}" class="mt-8 space-y-6">
