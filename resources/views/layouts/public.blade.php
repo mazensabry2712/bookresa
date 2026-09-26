@@ -54,8 +54,8 @@
 
             <div class="hidden shrink-0 items-center gap-2 lg:flex">
                 <div class="flex items-center gap-1">
-                    <x-locale-switcher />
-                    <x-theme-toggle />
+                    <x-locale-switcher compact />
+                    <x-theme-toggle compact />
                 </div>
                 <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-indigo dark:text-slate-200">
                     {{ __('app.home_ui.login') }}
