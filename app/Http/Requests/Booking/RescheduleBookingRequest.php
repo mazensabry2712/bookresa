@@ -1,9 +1,9 @@
 <?php
 
-namespace AppHttpRequestsBooking;
+namespace App\Http\Requests\Booking;
 
-use IlluminateFoundationHttpFormRequest;
-use IlluminateValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 final class RescheduleBookingRequest extends FormRequest
 {
@@ -14,6 +14,8 @@ final class RescheduleBookingRequest extends FormRequest
 
     public function rules(): array
     {
+        $booking = $this->route('booking');
+
         return [
             'date' => ['required', 'date_format:Y-m-d'],
             'time' => ['required', 'date_format:H:i'],
@@ -21,7 +23,7 @@ final class RescheduleBookingRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('staff_profiles', 'id')->where(
-                    fn ($query) => $query->where('tenant_id', optional($this->route('booking'))->tenant_id),
+                    fn ($query) => $query->where('tenant_id', data_get($booking, 'tenant_id')),
                 ),
             ],
         ];
