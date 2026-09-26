@@ -225,5 +225,15 @@
     "High": "High",
     "Urgent": "Urgent",
     "Support ticket updated successfully.": "Support ticket updated successfully."
+,
+    "Platform settings": "Platform settings",
+    "Manage global defaults and operational contact details for BookResa.": "Manage global defaults and operational contact details for BookResa.",
+    "Platform name": "Platform name",
+    "Support email": "Support email",
+    "Default locale": "Default locale",
+    "Default timezone": "Default timezone",
+    "Booking slot interval (minutes)": "Booking slot interval (minutes)",
+    "Save settings": "Save settings",
+    "Platform settings updated successfully.": "Platform settings updated successfully."
 
 }
