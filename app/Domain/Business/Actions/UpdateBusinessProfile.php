@@ -21,7 +21,9 @@ final class UpdateBusinessProfile
     {
         $tenantId = $this->currentTenant->idOrFail();
 
-        if (in_array($data['payment_mode'], ['full', 'deposit'], true) && ! $this->moduleAccess->allows('payments')) {
+        $paymentMode = (string) ($data['payment_mode'] ?? data_get($this->currentTenant->get()?->profile, 'booking_settings.payment_mode', 'pay_later'));
+
+        if (in_array($paymentMode, ['full', 'deposit'], true) && ! $this->moduleAccess->allows('payments')) {
             throw new LogicException('Customer payments are not enabled for this workspace.');
         }
 
@@ -86,11 +88,11 @@ final class UpdateBusinessProfile
                 'timezone' => $data['timezone'],
                 'locale' => $data['locale'],
                 'booking_settings' => array_merge($profile->booking_settings ?? [], [
-                    'payment_mode' => $data['payment_mode'],
-                    'payment_required' => in_array($data['payment_mode'], ['full', 'deposit'], true),
-                    'deposit_percent' => $data['payment_mode'] === 'deposit' ? (int) $data['deposit_percent'] : null,
+                    'payment_mode' => $paymentMode,
+                    'payment_required' => in_array($paymentMode, ['full', 'deposit'], true),
+                    'deposit_percent' => $paymentMode === 'deposit' ? (int) ($data['deposit_percent'] ?? data_get($profile->booking_settings, 'deposit_percent', 50)) : null,
                     'customer_email_required' => (bool) ($data['customer_email_required'] ?? false),
-                    'customer_limit_policy' => $data['customer_limit_policy'],
+                    'customer_limit_policy' => $data['customer_limit_policy'] ?? data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'),
                 ]),
             ])->save();
 
