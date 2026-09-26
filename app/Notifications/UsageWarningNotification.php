@@ -71,11 +71,38 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
+        [$titleEn, , $messageEn, ] = $this->content();
+
         return (new MailMessage)
-            ->subject('Customer usage warning')
-            ->greeting('BookResa')
-            ->line("Customer usage reached {$this->thresholdPercent}% of your included limit.")
+            ->subject($titleEn)
+            ->greeting('Velto')
+            ->line($messageEn)
             ->line("Current customers: {$this->customerCount}")
             ->line("Included customers: {$this->includedLimit}");
+    }
+
+    /** @return array{0:string,1:string,2:string,3:string} */
+    private function content(): array
+    {
+        return match (true) {
+            $this->includedLimit > 0 && $this->customerCount > $this->includedLimit => [
+                'Customer usage over limit',
+                'تم تجاوز حد العملاء',
+                "You have {$this->customerCount} customers. {$this->customerCount - $this->includedLimit} additional customers are currently billed according to your plan.",
+                "لديك {$this->customerCount} عميلًا. يتم احتساب ".($this->customerCount - $this->includedLimit)." عميل إضافي حاليًا وفقًا لخطتك.",
+            ],
+            $this->includedLimit > 0 && $this->customerCount >= $this->includedLimit => [
+                'Customer limit reached',
+                'تم الوصول إلى حد العملاء',
+                "You have reached {$this->includedLimit} included customers.",
+                "لقد وصلت إلى حد {$this->includedLimit} عميلًا المضمن في خطتك.",
+            ],
+            default => [
+                'Customer usage warning',
+                'تنبيه استهلاك العملاء',
+                "Customer usage reached {$this->thresholdPercent}% of the included limit.",
+                "وصل استخدام العملاء إلى {$this->thresholdPercent}% من الحد المضمن.",
+            ],
+        };
     }
 }
