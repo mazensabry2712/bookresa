@@ -63,7 +63,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
         ->name('staff.store');
 
     Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
-        ->middleware('permission:staff.manage')
+        ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.update');
 });
 
