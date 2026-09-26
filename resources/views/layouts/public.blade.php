@@ -36,9 +36,8 @@
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
     <header class="sticky top-0 z-50 border-b border-slate-200/90 bg-white/95 backdrop-blur dark:border-slate-800/90 dark:bg-slate-950/95">
         <div class="mx-auto flex min-h-[4.5rem] max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" class="flex min-w-0 shrink-0 items-center gap-2.5 rounded-xl" aria-label="BookResa">
-                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-navy text-sm font-extrabold text-white shadow-sm">B</span>
-                <span class="truncate text-base font-extrabold tracking-tight text-brand-navy dark:text-white">BookResa</span>
+            <a href="{{ route('home') }}" class="flex min-w-0 shrink-0 items-center rounded-xl" aria-label="BookResa">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-9 w-auto max-w-[150px] object-contain">
             </a>
 
             <nav class="hidden flex-1 items-center justify-center gap-4 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
@@ -54,7 +53,7 @@
             </nav>
 
             <div class="hidden shrink-0 items-center gap-2 lg:flex">
-                <div class="flex items-center gap-1 border-s border-slate-200 ps-2 dark:border-slate-800">
+                <div class="flex items-center gap-1">
                     <x-locale-switcher />
                     <x-theme-toggle />
                 </div>
