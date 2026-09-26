@@ -66,10 +66,16 @@
 <body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
     <main class="mx-auto max-w-3xl px-5 py-10" x-data="bookingPage()">
         <header class="mb-8">
-            <p class="text-sm text-gray-500">BookResa</p>
-            <h1 class="mt-2 text-4xl font-bold">{{ $tenant->profile?->name['en'] ?? $tenant->slug }}</h1>
-            @if ($tenant->profile?->description['en'])
-                <p class="mt-3 text-gray-600 dark:text-gray-400">{{ $tenant->profile->description['en'] }}</p>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="text-sm text-gray-500">BookResa</p>
+                <div class="flex items-center gap-2">
+                    <x-locale-switcher />
+                    <x-theme-toggle />
+                </div>
+            </div>
+            <h1 class="mt-2 text-4xl font-bold">{{ $businessName }}</h1>
+            @if (filled($businessDescription))
+                <p class="mt-3 text-gray-600 dark:text-gray-400">{{ $businessDescription }}</p>
             @endif
         </header>
 
@@ -90,13 +96,13 @@
             @enderror
 
             <div>
-                <label for="service_id" class="block text-sm font-medium">Service</label>
+                <label for="service_id" class="block text-sm font-medium">{{ __('app.service') }}</label>
                 <select id="service_id" name="service_id" x-model="serviceId" @change="loadAvailability"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
-                    <option value="">Select a service</option>
+                    <option value="">{{ __('app.select_service') }}</option>
                     @foreach ($services as $service)
                         <option value="{{ $service->id }}">
-                            {{ $service->name['en'] ?? 'Service' }} — {{ number_format($service->price_minor / 100, 2) }} {{ $service->currency }} — {{ $service->duration_minutes }} min
+                            {{ $service->name[$locale] ?? $service->name['en'] ?? __('app.service') }} — {{ number_format($service->price_minor / 100, 2) }} {{ $service->currency }} — {{ $service->duration_minutes }} min
                         </option>
                     @endforeach
                 </select>
@@ -104,17 +110,17 @@
             </div>
 
             <div>
-                <label for="date" class="block text-sm font-medium">Date</label>
+                <label for="date" class="block text-sm font-medium">{{ __('app.date') }}</label>
                 <input id="date" type="date" name="date" x-model="date" @change="loadAvailability" min="{{ $today }}"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
                 @error('date') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div x-show="staffs.length" x-cloak>
-                <label for="staff_id" class="block text-sm font-medium">Staff</label>
+                <label for="staff_id" class="block text-sm font-medium">{{ __('app.staff_label') }}</label>
                 <select id="staff_id" name="staff_id" x-model="staffId" @change="loadAvailability"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
-                    <option value="">Choose automatically</option>
+                    <option value="">{{ __('app.choose_automatically') }}</option>
                     <template x-for="staff in staffs" :key="staff.id">
                         <option :value="staff.id" x-text="staff.display_name"></option>
                     </template>
@@ -122,7 +128,7 @@
             </div>
 
             <div>
-                <p class="text-sm font-medium">Available times</p>
+                <p class="text-sm font-medium">{{ __('app.available_times') }}</p>
                 <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                     <template x-for="slot in slots" :key="slot.time + '-' + (slot.staff_id ?? 'auto')">
                         <button type="button" @click="selectedTime = slot.time"
@@ -132,27 +138,27 @@
                         </button>
                     </template>
                 </div>
-                <p x-show="loading" class="mt-3 text-sm text-gray-500">Loading availability…</p>
-                <p x-show="!loading && serviceId && date && !slots.length" class="mt-3 text-sm text-gray-500">No available times.</p>
+                <p x-show="loading" class="mt-3 text-sm text-gray-500">{{ __('app.loading_availability') }}</p>
+                <p x-show="!loading && serviceId && date && !slots.length" class="mt-3 text-sm text-gray-500">{{ __('app.no_available_times') }}</p>
                 <input type="hidden" name="time" x-model="selectedTime">
                 @error('time') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <div>
-                    <label for="name" class="block text-sm font-medium">Name</label>
+                    <label for="name" class="block text-sm font-medium">{{ __('app.name') }}</label>
                     <input id="name" name="name" value="{{ old('name') }}" required
                         class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
                 </div>
                 <div>
-                    <label for="phone" class="block text-sm font-medium">Phone</label>
+                    <label for="phone" class="block text-sm font-medium">{{ __('app.phone') }}</label>
                     <input id="phone" name="phone" value="{{ old('phone') }}"
                         class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
                 </div>
             </div>
 
             <div>
-                <label for="email" class="block text-sm font-medium">Email</label>
+                <label for="email" class="block text-sm font-medium">{{ __('app.email') }}</label>
                 <input id="email" type="email" name="email" value="{{ old('email') }}"
                     class="mt-2 block w-full rounded-lg border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-950">
             </div>
