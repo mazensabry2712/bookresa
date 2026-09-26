@@ -98,6 +98,7 @@ Route::prefix('book/{tenant:slug}')->group(function (): void {
         ->name('public.booking.availability');
 
     Route::post('/bookings', [PublicBookingController::class, 'store'])
+        ->middleware('throttle:10,1')
         ->name('public.booking.store');
 
     Route::get('/confirmation/{booking}', [PublicBookingController::class, 'confirmation'])
