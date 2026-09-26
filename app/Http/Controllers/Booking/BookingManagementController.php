@@ -9,6 +9,9 @@ use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Booking\UpdateBookingStatusRequest;
+use App\Http\Requests\Booking\RescheduleBookingRequest;
+use App\Domain\Booking\Services\RescheduleBooking;
+use App\Domain\Staff\Models\StaffProfile;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -106,6 +109,39 @@ class BookingManagementController
             'booking' => $booking,
             'timezone' => (string) data_get($currentTenant->get()->profile, 'timezone', config('app.timezone', 'UTC')),
         ]);
+    }
+
+    public function reschedule(
+        RescheduleBookingRequest $request,
+        Booking $booking,
+        RescheduleBooking $rescheduleBooking,
+    ): RedirectResponse {
+        try {
+            $timezone = (string) data_get(
+                $this->tenantFromRequest($currentTenant ?? null)?->profile,
+                'timezone',
+                config('app.timezone', 'UTC'),
+            );
+        } catch (\Throwable) {
+            $timezone = (string) config('app.timezone', 'UTC');
+        }
+
+        try {
+            $tenant = app(CurrentTenant::class)->get();
+            $timezone = (string) data_get($tenant?->profile, 'timezone', config('app.timezone', 'UTC'));
+            $staff = $request->filled('staff_id') ? StaffProfile::query()->findOrFail($request->integer('staff_id')) : null;
+            $startsAt = CarbonImmutable::createFromFormat(
+                'Y-m-d H:i',
+                $request->validated('date').' '.$request->validated('time'),
+                $timezone,
+            );
+
+            $rescheduleBooking->handle($booking, $startsAt, $staff);
+
+            return to_route('booking.management.show', $booking)->with('status', __('Booking rescheduled successfully.'));
+        } catch (RuntimeException|\LogicException $exception) {
+            return back()->withErrors(['reschedule' => $exception->getMessage()])->withInput();
+        }
     }
 
     public function status(
