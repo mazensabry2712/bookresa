@@ -9,6 +9,7 @@ use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Models\PaymentWebhookEvent;
 use App\Domain\Tenant\Enums\TenantStatus;
+use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
@@ -43,7 +44,7 @@ function webhookBooking(Tenant $tenant): Booking
 {
     app(CurrentTenant::class)->set($tenant);
 
-    $service = app(\App\Domain\Service\Actions\CreateService::class)->handle([
+    $service = app(CreateService::class)->handle([
         'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
         'price_minor' => 25000,
         'duration_minutes' => 30,
