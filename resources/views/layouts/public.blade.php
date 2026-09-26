@@ -41,19 +41,23 @@
                 <span class="truncate text-base font-extrabold tracking-tight text-brand-navy dark:text-white">BookResa</span>
             </a>
 
-            <nav class="hidden flex-1 items-center justify-center gap-5 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
-                <a href="#features" class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-300 dark:hover:bg-slate-900">
+            <nav class="hidden flex-1 items-center justify-center gap-4 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+                <a href="#features" class="px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-brand-indigo dark:text-slate-300">
                     {{ __('app.home_ui.features') }}
                 </a>
-                <a href="#how-it-works" class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-300 dark:hover:bg-slate-900">
+                <a href="#how-it-works" class="px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-brand-indigo dark:text-slate-300">
                     {{ __('app.home_ui.how_it_works') }}
                 </a>
-                <a href="#for-businesses" class="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-300 dark:hover:bg-slate-900">
+                <a href="#for-businesses" class="px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-brand-indigo dark:text-slate-300">
                     {{ __('app.home_ui.for_businesses') }}
                 </a>
             </nav>
 
-            <div class="hidden shrink-0 items-center gap-1 lg:flex">
+            <div class="hidden shrink-0 items-center gap-2 lg:flex">
+                <div class="flex items-center gap-1 border-s border-slate-200 ps-2 dark:border-slate-800">
+                    <x-locale-switcher />
+                    <x-theme-toggle />
+                </div>
                 <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-indigo dark:text-slate-200">
                     {{ __('app.home_ui.login') }}
                 </a>
