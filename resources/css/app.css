@@ -139,6 +139,15 @@
         justify-content: center;
     }
 
+    .br-direction-arrow {
+        display: inline-block;
+        line-height: 1;
+    }
+
+    [dir='rtl'] .br-direction-arrow {
+        transform: scaleX(-1);
+    }
+
     .br-drawer {
         position: fixed;
         z-index: 50;
