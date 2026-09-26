@@ -34,9 +34,9 @@ class PublicBookingController
                     ->with('staff:id,display_name,status')
                     ->orderBy('id')
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
-                'today' => CarbonImmutable::now($tenant->profile?->timezone ?? config('app.timezone', 'UTC'))->toDateString(),
+                'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
                 'paymentRequired' => (bool) data_get(
-                    $tenant->profile?->booking_settings ?? [],
+                    data_get($tenant->profile, 'booking_settings', []),
                     'payment_required',
                     false,
                 ),
@@ -61,7 +61,7 @@ class PublicBookingController
             $date = CarbonImmutable::createFromFormat(
                 'Y-m-d',
                 $request->string('date')->toString(),
-                $tenant->profile?->timezone ?? config('app.timezone', 'UTC'),
+                (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')),
             );
 
             try {
