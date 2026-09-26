@@ -10,6 +10,7 @@ use App\Domain\Payment\Models\Payment;
 use App\Domain\Booking\Models\Booking;
 use App\Notifications\PaymentNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use LogicException;
@@ -19,6 +20,7 @@ final class PaymentService
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -153,6 +155,19 @@ final class PaymentService
             'metadata' => $metadata,
             'paid_at' => $result->paidAt ?? ($result->status === PaymentStatus::Paid ? $payment->paid_at ?? now() : $payment->paid_at),
         ])->save();
+
+        if ($currentStatus !== $result->status) {
+            $this->audit->log(
+                'payment.status_changed',
+                $payment,
+                [
+                    'tenant_id' => (int) $payment->tenant_id,
+                    'payment_id' => (int) $payment->getKey(),
+                    'from_status' => $currentStatus->value,
+                    'to_status' => $result->status->value,
+                ],
+            );
+        }
 
         if (
             $currentStatus !== $result->status
