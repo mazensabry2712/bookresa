@@ -4,7 +4,7 @@
 - [ ] Confirm Herd PHP 8.4
 - [x] Align Composer PHP constraint to target
 - [ ] Configure MySQL
-- [ ] Define timezone policy
+- [x] Define timezone policy
 - [ ] Arabic/English locale
 - [ ] RTL/LTR foundation
 - [ ] Light/Dark foundation
