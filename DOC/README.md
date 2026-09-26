@@ -7,7 +7,6 @@ BookResa is a multi-tenant SaaS platform for small and medium-sized service busi
 - PHP 8.4 target
 - MySQL 8.x
 - Blade
-- Alpine.js
 - Tailwind CSS
 - Vite
 - Redis-ready cache/queue/lock layer
@@ -35,24 +34,31 @@ One platform → many Businesses → one isolated Workspace/Tenant per Business 
 14. 13-TESTING-QA.md
 15. 14-DEPLOYMENT.md
 16. 15-IMPLEMENTATION-CHECKLIST.md
+17. 16-NOTIFICATIONS.md — notification architecture and delivery rules.
+18. 17-PRODUCTION-READINESS.md — production verification and release gate.
+19. 18-FRONTEND-DESIGN-IMPLEMENTATION.md — frontend visual direction, UX rules, reference products, implementation order and quality bar.
+
+## Frontend direction
+
+The frontend is intentionally Blade-first with Tailwind CSS and a small amount of JavaScript.
+
+The visual direction is based on the BookResa brand reference:
+- Navy #1E2A44
+- Indigo #6366F1
+- Coral #FF7A66
+- Soft neutral #EDEFF6
+- Slate #4B5563
+- Plus Jakarta Sans
+- Calendar + B icon concept
+
+Reference products are used for UX study, not visual cloning. The goal is a calm, fast and practical booking product with strong mobile behavior, real Arabic RTL support, light/dark themes and minimal frontend dependencies.
 
 ## Package policy
-Runtime dependencies are intentionally minimal. Planned focused packages:
-- laravel/fortify
-- spatie/laravel-permission
-- spatie/laravel-activitylog
-- spatie/laravel-sitemap
-- intervention/image
 
-Development tooling:
-- pestphp/pest
-- pestphp/pest-plugin-laravel
-- larastan/larastan
-- laravel/pint
-- barryvdh/laravel-debugbar (development only)
+Runtime dependencies are intentionally minimal.
 
-## Repository baseline
-The repository is already Laravel 13 and currently declares PHP ^8.3 in Composer. The project target is PHP 8.4, so the local Herd runtime and Composer PHP constraint must be aligned before feature implementation.
+Development should avoid adding frontend frameworks or UI kits unless there is a concrete repeated need that cannot be handled cleanly with the current Blade/Tailwind approach.
 
 ## Source of truth
-This DOC folder is the source of truth for the intended BookResa product and technical architecture.
+
+This DOC folder is the source of truth for the intended BookResa product, architecture and frontend direction.
