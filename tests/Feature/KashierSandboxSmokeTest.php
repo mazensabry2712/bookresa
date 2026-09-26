@@ -6,7 +6,7 @@ use App\Infrastructure\Payments\Kashier\KashierGateway;
 use Illuminate\Support\Str;
 
 test('Kashier sandbox API can create and read a real payment session', function (): void {
-    if (! filter_var(env('KASHIER_E2E', false), FILTER_VALIDATE_BOOL)) {
+    if (!filter_var(env('KASHIER_E2E', false), FILTER_VALIDATE_BOOL)) {
         $this->markTestSkipped('Set KASHIER_E2E=true to run the live Kashier sandbox smoke test.');
     }
 
