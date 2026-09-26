@@ -119,7 +119,7 @@ final class BookingNotification extends Notification implements ShouldQueue
     /** @return array<string, string> */
     private function resolveServiceName(): array
     {
-        $service = $bookingService = $this->booking->relationLoaded('service')
+        $service = $this->booking->relationLoaded('service')
             ? $this->booking->service
             : Service::withoutGlobalScopes()->find($this->booking->service_id);
 
