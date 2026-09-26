@@ -111,7 +111,7 @@
 - [x] no N+1
 - [x] pagination
 - [ ] stable-data cache
-- [ ] queue heavy work
+- [x] queue heavy work
 - [ ] Redis production
 - [ ] OPcache
 - [x] rate limits
@@ -120,7 +120,7 @@
 - [x] production build
 
 ## Release gate
-- [x] full test suite (164 passed / 556 assertions locally)
+- [x] full test suite (165 passed / 559 assertions locally)
 - [ ] static analysis
 - [x] Pint
 - [x] production build
