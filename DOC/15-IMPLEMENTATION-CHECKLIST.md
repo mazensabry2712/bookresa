@@ -18,15 +18,15 @@
 - [ ] memberships
 - [ ] TenantResolver/context
 - [ ] tenant-aware policies
-- [ ] cross-tenant tests
+- [x] cross-tenant tests
 
 ## RBAC
 - [ ] Spatie Permission
 - [x] Platform Admin
-- [ ] Owner/Manager/Receptionist/Staff
-- [ ] Permissions
+- [x] Owner/Manager/Receptionist/Staff
+- [x] Permissions
 - [ ] Module-aware access
-- [ ] Negative authorization tests
+- [x] Negative authorization tests
 
 ## Business
 - [ ] business types
