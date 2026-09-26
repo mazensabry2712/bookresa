@@ -246,13 +246,15 @@ Strict tenant isolation, secure authentication, RBAC, server-side authorization,
 Desktop, laptop, tablet and mobile. Public booking is mobile-first.
 
 ## 31. MVP
-Must have:
-Authentication, Business Creation, Workspace, Business Profile, Services, Staff, Working Hours, Calendar, Availability, Bookings, Customers, Public Booking Page, Booking Notifications, Subscription, Customer Usage Tracking, Platform Admin Dashboard.
+The current MVP scope includes:
+Authentication, Business Creation, Workspace, Business Profile, Services, Staff, Working Hours, Calendar, Availability, Bookings, Customers, Public Booking Page, Booking Notifications, Subscription, Customer Usage Tracking, Payments, basic Reports and Platform Admin.
 
-Later:
-Online Payments/Deposits, Invoices, advanced Reports, WhatsApp, SMS, Multiple Branches, Inventory, Recurring Bookings, CRM, Mobile App, Advanced Analytics.
+Payments are provider-neutral at the domain level and use Kashier as the current MVP provider. Booking payments support Full Payment, Deposit and Pay Later. Subscription payments use the same provider-neutral Payment Core but remain a separate financial context from customer booking payments.
 
-Note: The architecture already includes the payment abstraction and Kashier integration boundary so online payments can be implemented without redesigning the core.
+Later / Post-MVP:
+Invoices, additional payment providers, WhatsApp, SMS, Multiple Branches, Inventory, Recurring Bookings, CRM, Mobile App, Advanced Analytics and complex tax/invoicing capabilities.
+
+The current backend implementation may be ahead of some originally planned roadmap wording; this requirements document describes the agreed current MVP target, while `DOC/15-IMPLEMENTATION-CHECKLIST.md` records what is actually implemented and what remains.
 
 ## 32. Technical architecture principle
 Core Platform + Tenant + Configurable Modules.
