@@ -17,6 +17,7 @@ final readonly class PaymentGatewayResult
         public ?string $method = null,
         public array $metadata = [],
         public ?CarbonImmutable $paidAt = null,
+        public ?CarbonImmutable $expiresAt = null,
     ) {
     }
 }
