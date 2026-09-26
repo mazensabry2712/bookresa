@@ -54,7 +54,7 @@ final class StaffManagementController
 
             $syncServiceAssignments->handle($staff, $data['services'] ?? []);
 
-            return to_route('staff.index')->with('status', __('Staff member added successfully.'));
+            return to_route('staff.index')->with('status', __('app.staff_ui.added'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['staff' => $exception->getMessage()])->withInput();
         }
@@ -77,7 +77,7 @@ final class StaffManagementController
                 'status' => $status,
             ]);
 
-            return back()->with('status', __('Staff status updated successfully.'));
+            return back()->with('status', __('app.staff_ui.status_updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['staff' => $exception->getMessage()]);
         }
@@ -93,7 +93,7 @@ final class StaffManagementController
             $staff = $updateStaffMember->handle($staff, $request->validated());
             $syncServiceAssignments->handle($staff, $request->validated('services') ?? []);
 
-            return to_route('staff.index')->with('status', __('Staff member updated successfully.'));
+            return to_route('staff.index')->with('status', __('app.staff_ui.updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['staff' => $exception->getMessage()])->withInput();
         }
