@@ -4,7 +4,7 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 
 return [
-    'name' => env('VELTO_NAME', env('BOOKRESA_NAME', 'Velto')),
+    'name' => env('VELTO_NAME', env('BOOKRESA_NAME', 'BookResa')),
 
     'locales' => [
         'en',
