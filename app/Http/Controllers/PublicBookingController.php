@@ -35,11 +35,8 @@ class PublicBookingController
                     ->orderBy('id')
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
                 'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
-                'paymentRequired' => (bool) data_get(
-                    data_get($tenant->profile, 'booking_settings', []),
-                    'payment_required',
-                    false,
-                ),
+                'paymentMode' => (string) data_get(data_get($tenant->profile, 'booking_settings', []), 'payment_mode', 'pay_later'),
+                'depositPercent' => (int) data_get(data_get($tenant->profile, 'booking_settings', []), 'deposit_percent', 50),
             ]);
         });
     }
