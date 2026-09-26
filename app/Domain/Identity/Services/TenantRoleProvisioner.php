@@ -44,7 +44,12 @@ final class TenantRoleProvisioner
 
         try {
             $permissionModels = collect($permissions)
-                ->map(fn (string $permission): Permission => Permission::findOrCreate($permission, 'web'))
+                ->map(function (string $permission): Permission {
+                    return Permission::query()->firstOrCreate([
+                        'name' => $permission,
+                        'guard_name' => 'web',
+                    ]);
+                })
                 ->all();
 
             $role = Role::firstOrCreate([
