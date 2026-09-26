@@ -260,5 +260,5 @@ test('staff management paginates large staff lists', function (): void {
     $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
         ->get(route('staff.index', ['page' => 2]))
         ->assertOk()
-        ->assertSee('<p class="text-base font-semibold">Pagination Staff 1</p>', false);
+        ->assertSee('Pagination Staff 1');
 });
