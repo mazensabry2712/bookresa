@@ -2,6 +2,7 @@
 
 namespace App\Domain\Billing\Services;
 
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ final class CancelSubscription
                         'cancel_at_period_end' => true,
                     ]),
                 ])->save();
-            } elseif ($subscription->status !== App\Domain\Billing\Enums\SubscriptionStatus::Cancelled) {
+            } elseif ($subscription->status !== SubscriptionStatus::Cancelled) {
                 throw new RuntimeException('Only an active or trial subscription can be cancelled.');
             }
 
