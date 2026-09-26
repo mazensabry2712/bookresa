@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Domain\Module\Models\Module;
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -72,6 +74,24 @@ final class EnsureTenantModuleEnabled
             $tenantModule?->enabled === true,
             Response::HTTP_FORBIDDEN,
             'This feature is not enabled for the current workspace.',
+        );
+
+        $subscription = Subscription::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->getKey())
+            ->whereIn('status', [
+                SubscriptionStatus::Trial->value,
+                SubscriptionStatus::Active->value,
+            ])
+            ->latest('start_at')
+            ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
+
+        $entitled = collect(data_get($subscription?->pricing_snapshot, 'modules', []))
+            ->contains(fn (array $item): bool => ($item['key'] ?? null) === $moduleKey);
+
+        abort_unless(
+            $entitled,
+            Response::HTTP_FORBIDDEN,
+            'This feature is not included in the current subscription plan.',
         );
 
         return $next($request);
