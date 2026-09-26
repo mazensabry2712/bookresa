@@ -79,10 +79,11 @@ final class PaymentService
                     throw new RuntimeException('Idempotency key is already used for a different payment.');
                 }
 
-                if (
-                    $existing->status !== PaymentStatus::Pending
-                    || $existing->provider_reference !== null
-                ) {
+                if ($existing->status !== PaymentStatus::Pending || $existing->provider_reference !== null) {
+                    return $existing;
+                }
+
+                if (! isset($existing->metadata['provider_creation_failed_at'])) {
                     return $existing;
                 }
 
@@ -90,20 +91,55 @@ final class PaymentService
             }
         }
 
-        $payment ??= Payment::query()->create([
-            'tenant_id' => $tenantId,
-            'payable_type' => $payable->getMorphClass(),
-            'payable_id' => $payable->getKey(),
-            'reference' => $this->reference(),
-            'provider' => $provider,
-            'amount_minor' => $amountMinor,
-            'currency' => $currency,
-            'status' => PaymentStatus::Pending,
-            'idempotency_key' => $idempotencyKey,
-            'metadata' => $metadata,
-        ]);
+        if (! isset($payment)) {
+            try {
+                $payment = Payment::query()->create([
+                    'tenant_id' => $tenantId,
+                    'payable_type' => $payable->getMorphClass(),
+                    'payable_id' => $payable->getKey(),
+                    'reference' => $this->reference(),
+                    'provider' => $provider,
+                    'amount_minor' => $amountMinor,
+                    'currency' => $currency,
+                    'status' => PaymentStatus::Pending,
+                    'idempotency_key' => $idempotencyKey,
+                    'metadata' => $metadata,
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($idempotencyKey === null || ! in_array((string) $e->getCode(), ['23000', '1062'], true)) {
+                    throw $e;
+                }
 
-        $result = $gateway->createPayment(new PaymentRequest(
+                $payment = Payment::query()
+                    ->where('provider', $provider)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($payment === null) {
+                    throw $e;
+                }
+
+                if (
+                    $payment->payable_type !== $payable->getMorphClass()
+                    || (int) $payment->payable_id !== (int) $payable->getKey()
+                    || (int) $payment->amount_minor !== $amountMinor
+                    || $payment->currency !== $currency
+                ) {
+                    throw new RuntimeException('Idempotency key is already used for a different payment.');
+                }
+
+                if ($payment->status !== PaymentStatus::Pending || $payment->provider_reference !== null) {
+                    return $payment;
+                }
+
+                if (! isset($payment->metadata['provider_creation_failed_at'])) {
+                    return $payment;
+                }
+            }
+        }
+
+        try {
+            $result = $gateway->createPayment(new PaymentRequest(
             merchantReference: $payment->reference,
             amountMinor: $amountMinor,
             currency: $currency,
@@ -112,7 +148,18 @@ final class PaymentService
             idempotencyKey: $idempotencyKey,
         ));
 
-        return $this->applyResult($payment, $result);
+            ));
+
+            return $this->applyResult($payment, $result);
+        } catch (\Throwable $e) {
+            $payment->forceFill([
+                'metadata' => array_merge($payment->metadata ?? [], [
+                    'provider_creation_failed_at' => now()->toIso8601String(),
+                ]),
+            ])->save();
+
+            throw $e;
+        }
     }
 
     public function applyResult(Payment $payment, PaymentGatewayResult $result): Payment
@@ -154,6 +201,7 @@ final class PaymentService
             'checkout_url' => $result->checkoutUrl ?? $payment->checkout_url,
             'metadata' => $metadata,
             'paid_at' => $result->paidAt ?? ($result->status === PaymentStatus::Paid ? $payment->paid_at ?? now() : $payment->paid_at),
+            'expires_at' => $result->expiresAt ?? $payment->expires_at,
         ])->save();
 
         if ($currentStatus !== $result->status) {
