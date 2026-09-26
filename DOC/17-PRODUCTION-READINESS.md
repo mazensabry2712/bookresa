@@ -3,13 +3,13 @@
 ## Current verified local gate
 
 The latest local verification reported on 2026-09-26:
-- full test suite: 237 passed, 1 skipped, 876 assertions
+- full test suite: 240 passed, 1 skipped, 883 assertions
 - `php artisan view:cache`: passed
 - Vite production build: passed
 - `composer install` and optimized autoload generation: passed
 - `php artisan optimize:clear`: passed
 
-The latest GitHub Actions CI run for `ef94bc0` completed successfully and covered PHPStan, PHP syntax, changed-file Pint, frontend build and the full test suite.
+The latest locally verified application commit is `7b68bbb`; GitHub Actions status for the subsequent verification commits should be checked before release.
 
 Pint: touched files pass; the full repository currently has 104 existing style issues across 290 files
 - SEO regression tests: previously verified
