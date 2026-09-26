@@ -255,10 +255,10 @@ test('staff management paginates large staff lists', function (): void {
         ->get(route('staff.index'))
         ->assertOk()
         ->assertSee('Pagination Staff 21')
-        ->assertDontSee('Pagination Staff 1</p>');
+        ->assertDontSee('<p class="text-base font-semibold">Pagination Staff 1</p>', false);
 
     $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
         ->get(route('staff.index', ['page' => 2]))
         ->assertOk()
-        ->assertSee('Pagination Staff 1</p>');
+        ->assertSee('<p class="text-base font-semibold">Pagination Staff 1</p>', false);
 });
