@@ -4,7 +4,7 @@
     <main>
         <section class="border-b border-slate-200 dark:border-slate-800">
             <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
-                <div class="grid items-center gap-10 md:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
+                <div class="grid items-center gap-10 md:gap-12 xl:grid-cols-2 xl:gap-16 2xl:gap-20">
                     <div class="max-w-xl">
                         <p class="text-sm font-semibold text-brand-indigo">{{ __('app.home_ui.eyebrow') }}</p>
                         <h1 class="mt-5 text-4xl font-extrabold leading-[1.05] tracking-[-0.045em] text-brand-navy dark:text-white sm:text-5xl lg:text-[3.5rem] xl:text-6xl">
@@ -102,7 +102,7 @@
                     </p>
                 </div>
 
-                <div class="mt-10 grid border-y border-slate-200 sm:grid-cols-2 lg:grid-cols-3 dark:border-slate-800">
+                <div class="mt-10 grid border-y border-slate-200 sm:grid-cols-2 xl:grid-cols-3 dark:border-slate-800">
                     @foreach ([
                         [__('app.home_ui.feature_bookings_title'), __('app.home_ui.feature_bookings_text')],
                         [__('app.home_ui.feature_calendar_title'), __('app.home_ui.feature_calendar_text')],
