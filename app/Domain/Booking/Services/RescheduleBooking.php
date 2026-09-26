@@ -5,11 +5,13 @@ namespace App\Domain\Booking\Services;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Scheduling\Services\AvailabilityService;
+use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Notifications\BookingNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Collection;
 use LogicException;
 use RuntimeException;
 
@@ -24,7 +26,7 @@ final class RescheduleBooking
     public function handle(
         Booking $booking,
         CarbonImmutable $startsAt,
-        ?StaffProfile $staff = null,
+        ?StaffProfile $requestedStaff = null,
     ): Booking {
         $tenantId = $this->currentTenant->idOrFail();
 
@@ -58,41 +60,88 @@ final class RescheduleBooking
             throw new RuntimeException('Bookings must be scheduled in the future.');
         }
 
-        $targetStaff = $staff ?? $booking->staff;
+        if ($requestedStaff !== null) {
+            if ((int) $requestedStaff->tenant_id !== $tenantId) {
+                throw new LogicException('Staff must belong to the current tenant.');
+            }
 
-        if ($targetStaff !== null && (int) $targetStaff->tenant_id !== $tenantId) {
-            throw new LogicException('Staff must belong to the current tenant.');
+            if ($requestedStaff->status !== StaffStatus::Active) {
+                throw new RuntimeException('Selected staff member is inactive.');
+            }
+
+            $assigned = $booking->service->staff()
+                ->whereKey($requestedStaff->getKey())
+                ->exists();
+
+            if (! $assigned) {
+                throw new RuntimeException('Selected staff member is not assigned to this service.');
+            }
         }
 
-        return DB::transaction(function () use ($booking, $localStart, $targetStaff, $tenantId): Booking {
+        return DB::transaction(function () use ($booking, $localStart, $requestedStaff, $tenantId): Booking {
             $locked = Booking::query()
+                ->with('service')
                 ->whereKey($booking->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
 
             $from = $locked->status;
+            $assignedStaff = $locked->service->staff()
+                ->where('status', StaffStatus::Active->value)
+                ->orderBy('staff_profiles.id')
+                ->get();
 
-            $scope = $targetStaff === null
-                ? sprintf('%d:business:%s', $tenantId, $localStart->toDateString())
-                : sprintf('%d:staff:%d:%s', $tenantId, $targetStaff->getKey(), $localStart->toDateString());
-
-            DB::table('booking_locks')->insertOrIgnore([
-                'tenant_id' => $tenantId,
-                'scope_key' => $scope,
-                'lock_date' => $localStart->toDateString(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            DB::table('booking_locks')
-                ->where('scope_key', $scope)
-                ->lockForUpdate()
-                ->first();
+            /** @var Collection<int, StaffProfile|null> $candidates */
+            if ($requestedStaff !== null) {
+                $candidates = collect([$requestedStaff]);
+            } elseif ($locked->staff !== null && $locked->staff->status === StaffStatus::Active) {
+                $candidates = collect([$locked->staff]);
+            } elseif ($assignedStaff->isNotEmpty()) {
+                $candidates = $assignedStaff;
+            } else {
+                $candidates = collect([null]);
+            }
 
             $originalStatus = $locked->status;
             $locked->forceFill(['status' => BookingStatus::Cancelled])->save();
 
-            if (! $this->availability->isAvailable($locked->service, $localStart, $targetStaff)) {
+            $selectedStaff = null;
+
+            foreach ($candidates as $candidate) {
+                $scope = $candidate === null
+                    ? sprintf('%d:business:%s', $tenantId, $localStart->toDateString())
+                    : sprintf('%d:staff:%d:%s', $tenantId, $candidate->getKey(), $localStart->toDateString());
+
+                DB::table('booking_locks')->insertOrIgnore([
+                    'tenant_id' => $tenantId,
+                    'scope_key' => $scope,
+                    'lock_date' => $localStart->toDateString(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('booking_locks')
+                    ->where('scope_key', $scope)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($this->availability->isAvailable($locked->service, $localStart, $candidate)) {
+                    $selectedStaff = $candidate;
+                    break;
+                }
+            }
+
+            if ($selectedStaff === null && $assignedStaff->isNotEmpty()) {
+                $locked->forceFill(['status' => $originalStatus])->save();
+
+                throw new RuntimeException('No staff member is available at the selected time.');
+            }
+
+            if (
+                $selectedStaff === null
+                && $assignedStaff->isEmpty()
+                && ! $this->availability->isAvailable($locked->service, $localStart, null)
+            ) {
                 $locked->forceFill(['status' => $originalStatus])->save();
 
                 throw new RuntimeException('The selected time is no longer available.');
@@ -103,7 +152,7 @@ final class RescheduleBooking
             $localEnd = $localStart->addMinutes($duration);
 
             $locked->forceFill([
-                'staff_id' => $targetStaff?->getKey(),
+                'staff_id' => $selectedStaff?->getKey(),
                 'starts_at' => $localStart->utc(),
                 'ends_at' => $localEnd->utc(),
                 'block_ends_at' => $localEnd->addMinutes($buffer)->utc(),
