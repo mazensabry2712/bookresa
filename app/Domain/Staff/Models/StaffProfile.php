@@ -16,6 +16,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $user_id
+ * @property string $display_name
+ * @property string|null $phone
+ * @property string|null $job_title
+ * @property string|null $avatar_path
+ * @property StaffStatus $status
+ * @property array<string, mixed>|null $settings
+ * @property-read User $user
+ */
+
 class StaffProfile extends Model
 {
     use HasFactory, BelongsToTenant;
