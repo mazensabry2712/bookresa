@@ -137,7 +137,7 @@
 - [x] platform reports
 
 ## Release gate
-- [ ] full test suite (refresh after latest backend additions)
+- [x] full test suite (213 passed / 773 assertions on 2026-09-26)
 - [ ] static analysis
 - [x] Pint
 - [x] production build
