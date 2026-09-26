@@ -97,6 +97,8 @@ class BookingManagementController
     {
         abort_unless($currentTenant->get() !== null, 404);
 
+        $this->authorizeStaffBooking($booking);
+
         $booking->load([
             'customer',
             'service',
@@ -118,6 +120,8 @@ class BookingManagementController
         RescheduleBooking $rescheduleBooking,
         CurrentTenant $currentTenant,
     ): RedirectResponse {
+        $this->authorizeStaffBooking($booking);
+
         try {
             $tenant = $currentTenant->get();
             $timezone = (string) data_get($tenant?->profile, 'timezone', config('app.timezone', 'UTC'));
@@ -138,11 +142,25 @@ class BookingManagementController
         }
     }
 
+    private function authorizeStaffBooking(Booking $booking): void
+    {
+        $user = auth()->user();
+
+        if ($user?->hasRole('staff')) {
+            abort_unless(
+                (int) $booking->staff?->user_id === (int) $user->getKey(),
+                403,
+            );
+        }
+    }
+
     public function status(
         UpdateBookingStatusRequest $request,
         Booking $booking,
         UpdateBookingStatus $updateBookingStatus,
     ): RedirectResponse {
+        $this->authorizeStaffBooking($booking);
+
         $status = BookingStatus::from($request->validated('status'));
 
         $permission = match ($status) {
