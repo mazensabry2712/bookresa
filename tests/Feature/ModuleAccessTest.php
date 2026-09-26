@@ -64,6 +64,17 @@ test('enabled modules allow authorized tenant routes', function (): void {
         ->assertOk();
 });
 
+test('core service route remains available when the module catalog is not seeded', function (): void {
+    [$owner, $tenant] = moduleWorkspace();
+
+    Module::query()->where('key', 'services')->delete();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index'))
+        ->assertOk();
+});
+
 test('disabled service module blocks service routes even with the permission', function (): void {
     [$owner, $tenant] = moduleWorkspace();
 
