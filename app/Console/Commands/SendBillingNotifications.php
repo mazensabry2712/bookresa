@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 
 final class SendBillingNotifications extends Command
 {
-    protected $signature = 'bookresa:send-billing-notifications {--expiry-hours=24 : Hours before subscription expiry to warn} {--usage-threshold=80 : Customer usage percentage that triggers a warning}';
+    protected $signature = 'bookresa:send-billing-notifications {--expiry-hours=24 : Hours before subscription expiry to warn} {--usage-threshold=75 : Customer usage percentage that triggers a warning}';
 
     protected $description = 'Queue subscription expiry and customer usage warning notifications.';
 
