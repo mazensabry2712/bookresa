@@ -96,7 +96,7 @@ class BookingManagementController
         return view('booking.management.show', [
             'tenant' => $currentTenant->get(),
             'booking' => $booking,
-            'timezone' => (string) data_get($currentTenant->get()?->profile, 'timezone', config('app.timezone', 'UTC')),
+            'timezone' => (string) data_get($currentTenant->get()->profile, 'timezone', config('app.timezone', 'UTC')),
         ]);
     }
 
