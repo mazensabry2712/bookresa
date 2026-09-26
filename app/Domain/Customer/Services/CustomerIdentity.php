@@ -12,6 +12,18 @@ final class CustomerIdentity
 
         $normalized = preg_replace('/\D+/', '', $phone);
 
-        return $normalized !== '' ? $normalized : null;
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (str_starts_with($normalized, '00')) {
+            $normalized = substr($normalized, 2);
+        }
+
+        if (str_starts_with($normalized, '0') && strlen($normalized) === 11) {
+            return '20'.substr($normalized, 1);
+        }
+
+        return $normalized;
     }
 }
