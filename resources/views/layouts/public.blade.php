@@ -126,8 +126,8 @@
     <footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
             <div>
-                <p class="text-sm font-extrabold">BookResa</p>
-                <p class="mt-1 text-xs text-slate-500">{{ __('app.home_ui.footer_text') }}</p>
+                <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-8 w-auto max-w-[140px] object-contain">
+                <p class="mt-2 text-xs text-slate-500">{{ __('app.home_ui.footer_text') }}</p>
             </div>
             <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
                 <a href="{{ route('login') }}" class="hover:text-brand-indigo">{{ __('app.home_ui.login') }}</a>
