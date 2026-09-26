@@ -196,3 +196,26 @@ test('Kashier webhook amount mismatch is rejected', function (): void {
     expect($payment->fresh()->status)->toBe(PaymentStatus::Processing)
         ->and(PaymentWebhookEvent::query()->count())->toBe(0);
 });
+
+test('failed Kashier refund does not regress a paid payment', function (): void {
+    $tenant = webhookTenant('webhook-refund-failure');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+    $payment->forceFill(['status' => PaymentStatus::Paid])->save();
+
+    $payload = webhookPayload($payment->reference, 'TX-REFUND-FAILURE', 'FAILURE');
+    $payload['event'] = 'refund';
+
+    $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertNoContent();
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
+        ->and($payment->fresh()->metadata)->toMatchArray([
+            'kashier_refund_status' => 'FAILURE',
+        ]);
+});
+\n
