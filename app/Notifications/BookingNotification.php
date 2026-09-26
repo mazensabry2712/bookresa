@@ -22,7 +22,9 @@ final class BookingNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return filled($notifiable->routeNotificationFor('mail'))
+            ? ['database', 'mail']
+            : ['database'];
     }
 
     public function toArray(object $notifiable): array
@@ -80,6 +82,12 @@ final class BookingNotification extends Notification implements ShouldQueue
                 'title_ar' => 'تم إعادة جدولة الحجز',
                 'message_en' => 'Your booking time has been changed.',
                 'message_ar' => 'تم تغيير موعد حجزك.',
+            ],
+            'created' => [
+                'title_en' => 'Booking received',
+                'title_ar' => 'تم استلام الحجز',
+                'message_en' => 'Your booking request was received and is pending confirmation.',
+                'message_ar' => 'تم استلام طلب حجزك وهو في انتظار التأكيد.',
             ],
             'reminder' => [
                 'title_en' => 'Booking reminder',
