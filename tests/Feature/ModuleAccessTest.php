@@ -275,6 +275,46 @@ test('completed workspace requires a usable subscription for core operations', f
         ->assertOk();
 });
 
+test('expired subscription blocks core operations after onboarding completion', function (): void {
+    [$owner, $tenant] = moduleWorkspace('Expired Subscription');
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', true);
+    $tenant->forceFill(['settings' => $settings])->save();
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Expired Plan'],
+        'description' => ['en' => 'Expired plan'],
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    Subscription::query()->create([
+        'tenant_id' => $tenant->id,
+        'plan_id' => $plan->id,
+        'start_at' => now()->subMonth(),
+        'end_at' => now()->subDay(),
+        'status' => SubscriptionStatus::Expired,
+        'payment_status' => PaymentStatus::Paid,
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 1000,
+        'pricing_snapshot' => ['modules' => []],
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index'))
+        ->assertForbidden();
+});
+
 test('inactive global module blocks tenant access even when tenant module is enabled', function (): void {
     [$owner, $tenant] = moduleWorkspace();
 
