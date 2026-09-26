@@ -2,6 +2,7 @@
 
 namespace App\Domain\Customer\Actions;
 
+use App\Domain\Billing\Services\CustomerUsagePolicy;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Services\CustomerIdentity;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -10,7 +11,11 @@ use RuntimeException;
 
 final class CreateCustomer
 {
-    public function __construct(private readonly CurrentTenant $currentTenant, private readonly CustomerIdentity $identity) {}
+    public function __construct(
+        private readonly CurrentTenant $currentTenant,
+        private readonly CustomerIdentity $identity,
+        private readonly CustomerUsagePolicy $usagePolicy,
+    ) {}
 
     public function handle(array $data): Customer
     {
@@ -23,6 +28,10 @@ final class CreateCustomer
             && Customer::query()->where('normalized_phone', $normalizedPhone)->exists()
         ) {
             throw new RuntimeException('A customer with this phone number already exists.');
+        }
+
+        if (! $this->usagePolicy->allowsCreation()) {
+            throw new RuntimeException('The included customer limit has been reached.');
         }
 
         $now = CarbonImmutable::now('UTC');
