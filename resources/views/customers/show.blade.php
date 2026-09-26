@@ -34,7 +34,7 @@
 
     <div class="space-y-6">
         <section>
-            <a href="{{ route('customers.index') }}" class="text-sm font-bold text-slate-500 hover:text-brand-indigo">← {{ __('app.customer_ui.back_to_customers') }}</a>
+            <a href="{{ route('customers.index') }}" class="text-sm font-bold text-slate-500 hover:text-brand-indigo"><span class="br-direction-arrow" aria-hidden="true">←</span> {{ __('app.customer_ui.back_to_customers') }}</a>
             <div class="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                 <div class="flex min-w-0 items-center gap-4">
                     <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-lg font-extrabold text-brand-navy dark:bg-slate-800 dark:text-indigo-300">
