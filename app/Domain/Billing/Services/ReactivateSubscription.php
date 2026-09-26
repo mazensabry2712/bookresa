@@ -4,6 +4,7 @@ namespace App\Domain\Billing\Services;
 
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use RuntimeException;
@@ -12,6 +13,7 @@ final class ReactivateSubscription
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
+        private readonly AuditLogger $audit,
     ) {
     }
 
@@ -40,7 +42,15 @@ final class ReactivateSubscription
                 ]),
             ])->save();
 
-            return $subscription->fresh();
+            $fresh = $subscription->fresh();
+
+            $this->audit->log(
+                'subscription.reactivated',
+                $fresh,
+                ['tenant_id' => (int) $fresh->tenant_id, 'subscription_id' => (int) $fresh->getKey()],
+            );
+
+            return $fresh;
         });
     }
 }
