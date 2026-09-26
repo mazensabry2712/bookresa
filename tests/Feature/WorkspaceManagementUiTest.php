@@ -49,7 +49,7 @@ test('owner can view and update business profile', function (): void {
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
         ->get(route('business.profile.edit'))
         ->assertOk()
-        ->assertSee('Business Profile')
+        ->assertSee('Business profile')
         ->assertSee('Owner Clinic')
         ->assertSee('Minimum notice')
         ->assertSee('Maximum advance');
