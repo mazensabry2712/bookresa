@@ -15,19 +15,19 @@
         <aside id="bookresa-sidebar"
                class="br-drawer lg:static lg:z-auto lg:flex lg:w-64 lg:flex-col lg:shrink-0 lg:transform-none"
                data-bookresa-sidebar
-               aria-label="{{ __('Admin') }}">
+               aria-label="{{ __('app.admin') }}">
             <div class="flex min-h-16 items-center justify-between gap-3 border-b border-slate-200 px-4 dark:border-slate-800 lg:px-5">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 rounded-lg" aria-label="BookResa Admin">
                     <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-navy text-sm font-extrabold text-white">B</span>
                     <span>
                         <span class="block text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">BookResa</span>
-                        <span class="block text-[11px] font-semibold text-brand-indigo">Admin</span>
+                        <span class="block text-[11px] font-semibold text-brand-indigo">{{ __('app.admin') }}</span>
                     </span>
                 </a>
                 <button type="button"
                         class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
                         data-bookresa-sidebar-close
-                        aria-label="{{ __('Close') }}">
+                        aria-label="{{ __('app.close') }}">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
                     </svg>
@@ -35,12 +35,12 @@
             </div>
 
             <div class="flex-1 overflow-y-auto px-3 py-4">
-                <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('Platform') }}</p>
+                <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('app.platform') }}</p>
                 <nav class="space-y-1" aria-label="{{ __('Admin') }}">
                     @php
                         $adminLinks = [
                             ['route' => 'admin.dashboard', 'label' => __('app.dashboard')],
-                            ['route' => 'admin.businesses.index', 'label' => __('Businesses')],
+                            ['route' => 'admin.businesses.index', 'label' => __('app.businesses')],
                             ['route' => 'admin.users.index', 'label' => __('app.users')],
                             ['route' => 'admin.subscriptions.index', 'label' => __('app.subscriptions')],
                             ['route' => 'admin.payments.index', 'label' => __('app.payments')],
@@ -73,7 +73,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="mt-3">
                         @csrf
                         <button type="submit" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-start text-xs font-semibold text-slate-600 transition hover:bg-white dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                            {{ __('Log out') }}
+                            {{ __('app.logout') }}
                         </button>
                     </form>
                 </div>
@@ -89,14 +89,14 @@
                                 data-bookresa-sidebar-toggle
                                 aria-expanded="false"
                                 aria-controls="bookresa-sidebar"
-                                aria-label="{{ __('Open menu') }}">
+                                aria-label="{{ __('app.open_menu') }}">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
                             </svg>
                         </button>
                         <div class="min-w-0">
                             <p class="hidden text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 sm:block">BookResa Admin</p>
-                            <h1 class="truncate text-base font-bold tracking-tight text-slate-950 dark:text-white sm:text-lg">@yield('heading', __('Admin'))</h1>
+                            <h1 class="truncate text-base font-bold tracking-tight text-slate-950 dark:text-white sm:text-lg">@yield('heading', __('app.admin'))</h1>
                         </div>
                     </div>
 
