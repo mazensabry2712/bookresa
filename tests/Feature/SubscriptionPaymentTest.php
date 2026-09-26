@@ -409,6 +409,40 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
 });
 
 
+test('expired subscription payment session creates a fresh attempt', function (): void {
+    subscriptionPaymentTenant('subscription-expired-session');
+    $subscription = app(CreateSubscription::class)->handle(
+        subscriptionPaymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $expired = Payment::query()->create([
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->id,
+        'reference' => 'PAY-SUB-EXPIRED-001',
+        'provider' => 'kashier',
+        'provider_reference' => 'expired-session',
+        'amount_minor' => 19900,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Processing,
+        'checkout_url' => 'https://payments.example.test/expired',
+        'expires_at' => CarbonImmutable::now('UTC')->subMinute(),
+        'idempotency_key' => 'subscription-'.$subscription->id.'-kashier-attempt-1',
+    ]);
+
+    $gateway = new FakeSubscriptionGateway();
+    $this->app->instance(PaymentGateway::class, $gateway);
+
+    $fresh = app(StartSubscriptionPayment::class)->handle($subscription->fresh());
+
+    expect($fresh->id)->not->toBe($expired->id)
+        ->and($fresh->status)->toBe(PaymentStatus::Processing)
+        ->and($fresh->idempotency_key)->toBe('subscription-'.$subscription->id.'-kashier-attempt-2')
+        ->and($fresh->checkout_url)->toBe('https://payments.example.test/session/001')
+        ->and($gateway->createCalls)->toBe(1)
+        ->and(Payment::query()->count())->toBe(2);
+});
+
 test('failed subscription payment can start a fresh payment attempt', function (): void {
     subscriptionPaymentTenant('subscription-retry');
     $subscription = app(CreateSubscription::class)->handle(
