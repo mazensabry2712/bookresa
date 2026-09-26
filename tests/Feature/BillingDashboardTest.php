@@ -64,7 +64,7 @@ function billingDashboardPlan(array $overrides = []): Plan
         'currency' => 'EGP',
         'billing_period' => PlanBillingPeriod::Monthly,
         'included_customer_limit' => 2,
-        'additional_customer_price_minor' => 500,
+        'additional_customer_price_minor' => 50000,
         'trial_days' => 0,
         'is_active' => true,
     ], $overrides));
