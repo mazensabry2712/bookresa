@@ -26,7 +26,7 @@ final class SendBillingNotificationsForSubscription implements ShouldQueue
     public function __construct(
         private readonly int $subscriptionId,
         private readonly int $expiryHours = 24,
-        private readonly int $usageThreshold = 80,
+        private readonly int $usageThreshold = 75,
     ) {
     }
 
