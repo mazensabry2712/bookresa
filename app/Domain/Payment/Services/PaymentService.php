@@ -75,11 +75,18 @@ final class PaymentService
                     throw new RuntimeException('Idempotency key is already used for a different payment.');
                 }
 
-                return $existing;
+                if (
+                    $existing->status !== PaymentStatus::Pending
+                    || $existing->provider_reference !== null
+                ) {
+                    return $existing;
+                }
+
+                $payment = $existing;
             }
         }
 
-        $payment = Payment::query()->create([
+        $payment ??= Payment::query()->create([
             'tenant_id' => $tenantId,
             'payable_type' => $payable->getMorphClass(),
             'payable_id' => $payable->getKey(),
