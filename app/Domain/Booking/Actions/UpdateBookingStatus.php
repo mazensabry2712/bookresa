@@ -21,6 +21,7 @@ final class UpdateBookingStatus
 
     public function __construct(
         private readonly CurrentTenant $currentTenant,
+        private readonly AuditLogger $audit,
     ) {
     }
 
