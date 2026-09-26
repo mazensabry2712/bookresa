@@ -19,6 +19,8 @@ function supportTenant(string $slug): Tenant
         'status' => TenantStatus::Active,
     ]);
 
+    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
+
     BusinessProfile::query()->create([
         'tenant_id' => $tenant->id,
         'name' => ['en' => ucfirst($slug), 'ar' => ucfirst($slug)],
