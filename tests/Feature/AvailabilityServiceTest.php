@@ -258,9 +258,15 @@ test('assigned staff availability uses batched scheduling queries', function ():
 
     $slots = app(AvailabilityService::class)->slots($service, mondayInCairo());
 
+    $fromTableCount = static function (array $queries, string $table): int {
+        return collect($queries)
+            ->filter(fn (string $sql): bool => preg_match('/\\bfrom\\s+[\\\`"]?'.preg_quote($table, '/').'[\\\`"]?/i', $sql) === 1)
+            ->count();
+    };
+
     expect($slots)->not->toBeEmpty()
-        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`bookings\`'))->count())->toBe(1)
-        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`staff_day_offs\`'))->count())->toBe(1)
-        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`staff_availability\`'))->count())->toBe(1)
-        ->and(collect($queries)->filter(fn (string $sql): bool => str_contains($sql, 'from \`staff_working_hours\`'))->count())->toBe(1);
+        ->and($fromTableCount($queries, 'bookings'))->toBe(1)
+        ->and($fromTableCount($queries, 'staff_day_offs'))->toBe(1)
+        ->and($fromTableCount($queries, 'staff_availability'))->toBe(1)
+        ->and($fromTableCount($queries, 'staff_working_hours'))->toBe(1);
 });
