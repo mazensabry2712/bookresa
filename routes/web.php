@@ -12,6 +12,7 @@ use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformFinanceController;
+use App\Http\Controllers\Platform\PlatformModuleController;
 use App\Http\Controllers\Platform\PlatformUserController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Scheduling\SchedulingManagementController;
@@ -194,6 +195,8 @@ Route::middleware(['auth', 'platform'])
     ->group(function (): void {
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
+        Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
+        Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
         Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
         Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
             ->name('users.membership-toggle');
