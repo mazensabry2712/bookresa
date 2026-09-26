@@ -16,6 +16,7 @@ class BusinessTypeSeeder extends Seeder
             'beauty-salon' => ['Beauty Salon', 'صالون تجميل'],
             'barber' => ['Barber', 'حلاق'],
             'gym' => ['Gym', 'جيم'],
+            'fitness-studio' => ['Fitness Studio', 'استوديو لياقة'],
             'training-center' => ['Training Center', 'مركز تدريب'],
             'tutor' => ['Tutor', 'مدرس'],
             'consultant' => ['Consultant', 'استشاري'],
