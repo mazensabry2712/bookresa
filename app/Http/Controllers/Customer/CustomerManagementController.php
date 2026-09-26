@@ -6,6 +6,9 @@ use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
+use App\Domain\Billing\Services\CalculateSubscriptionUsage;
 use App\Domain\Customer\Actions\CreateCustomer;
 use App\Domain\Customer\Actions\UpdateCustomer;
 use App\Domain\Customer\Models\Customer;
@@ -66,7 +69,7 @@ final class CustomerManagementController
         try {
             $createCustomer->handle($request->validated());
 
-            return to_route('customers.index')->with('status', __('Customer created successfully.'));
+            return to_route('customers.index')->with('status', __('app.customer_ui.created'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['customer' => $exception->getMessage()])->withInput();
         }
@@ -92,6 +95,16 @@ final class CustomerManagementController
                 ->sum('amount_minor'),
         ];
 
+        $subscription = Subscription::query()
+            ->whereIn('status', [SubscriptionStatus::Trial->value, SubscriptionStatus::Active->value])
+            ->latest('start_at')
+            ->first();
+
+        $usageSummary = $subscription ? $usageCalculator->handle($subscription) : null;
+        $usagePercent = $usageSummary !== null && $usageSummary->includedCustomerLimit > 0
+            ? min(100, (int) round(($usageSummary->uniqueCustomerCount / $usageSummary->includedCustomerLimit) * 100))
+            : ($usageSummary?->uniqueCustomerCount > 0 ? 100 : 0);
+
         $upcomingBooking = $customer->bookings()
             ->with(['service', 'staff'])
             ->where('starts_at', '>=', now('UTC'))
@@ -99,11 +112,26 @@ final class CustomerManagementController
             ->orderBy('starts_at')
             ->first();
 
+        $paymentHistory = null;
+
+        if ($request = request() and request()->user()?->can('billing.view')) {
+            $paymentHistory = Payment::query()
+                ->where('payable_type', (new Booking)->getMorphClass())
+                ->whereIn('payable_id', $customerBookingIds)
+                ->whereIn('status', [PaymentStatus::Paid->value, PaymentStatus::Refunded->value])
+                ->orderByDesc('created_at')
+                ->paginate(10, ['*'], 'payments_page')
+                ->withQueryString();
+        }
+
         return view('customers.show', [
             'tenant' => $currentTenant->get(),
             'customer' => $customer,
             'metrics' => $metrics,
             'upcomingBooking' => $upcomingBooking,
+            'usageSummary' => $usageSummary,
+            'usagePercent' => $usagePercent,
+            'paymentHistory' => $paymentHistory,
             'bookings' => $customer->bookings()
                 ->with(['service', 'staff'])
                 ->latest('starts_at')
@@ -120,7 +148,7 @@ final class CustomerManagementController
         try {
             $updateCustomer->handle($customer, $request->validated());
 
-            return to_route('customers.show', $customer)->with('status', __('Customer updated successfully.'));
+            return to_route('customers.show', $customer)->with('status', __('app.customer_ui.updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['customer' => $exception->getMessage()])->withInput();
         }
