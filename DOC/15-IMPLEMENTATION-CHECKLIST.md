@@ -133,8 +133,8 @@
 - [ ] platform settings
 
 ## Reports
-- [ ] business reports
-- [ ] platform reports
+- [x] business reports
+- [x] platform reports
 
 ## Release gate
 - [ ] full test suite (refresh after latest backend additions)

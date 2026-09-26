@@ -8,6 +8,7 @@ use App\Http\Controllers\Customer\CustomerManagementController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\KashierWebhookController;
+use App\Http\Controllers\Report\ReportController;
 use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
@@ -39,6 +40,10 @@ Route::middleware('auth')->group(function (): void {
 Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
         ->name('onboarding.workspace');
+
+    Route::get('/dashboard/reports', [ReportController::class, 'business'])
+        ->middleware('permission:reports.view')
+        ->name('reports.business');
 
     Route::get('/dashboard/business', [BusinessProfileController::class, 'edit'])
         ->middleware('permission:business.view')
@@ -205,6 +210,7 @@ Route::middleware(['auth', 'platform'])
         Route::get('/subscriptions', [PlatformFinanceController::class, 'subscriptions'])->name('subscriptions.index');
         Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
         Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
+        Route::get('/reports', [ReportController::class, 'platform'])->name('reports.index');
         Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
             ->name('businesses.toggle-status');
         Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');

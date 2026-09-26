@@ -36,6 +36,12 @@
                         {{ __('Scheduling') }}
                     </a>
                 @endcan
+                @can('reports.view')
+                    <a href="{{ route('reports.business') }}"
+                       class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
+                        {{ __('Reports') }}
+                    </a>
+                @endcan
                 @can('billing.view')
                     <a href="{{ route('billing.subscription') }}"
                        class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">

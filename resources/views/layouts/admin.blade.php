@@ -20,6 +20,7 @@
                 <a href="{{ route('admin.subscriptions.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Subscriptions') }}</a>
                 <a href="{{ route('admin.payments.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Payments') }}</a>
                 <a href="{{ route('admin.usage.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Usage') }}</a>
+                <a href="{{ route('admin.reports.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Reports') }}</a>
                 <a href="{{ route('admin.plans.index') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Plans') }}</a>
                 <a href="{{ route('home') }}" class="block rounded-xl px-3 py-2.5 text-sm text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">{{ __('Public site') }}</a>
             </nav>
