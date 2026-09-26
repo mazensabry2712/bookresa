@@ -1,19 +1,19 @@
 <?php
 
-use App\Http\Controllers\Business\BusinessProfileController;
-use App\Http\Controllers\Onboarding\BusinessOnboardingController;
-use App\Http\Controllers\Service\ServiceManagementController;
-use App\Http\Controllers\Customer\CustomerManagementController;
-use App\Http\Controllers\Staff\StaffManagementController;
-use App\Http\Controllers\Scheduling\SchedulingManagementController;
-use App\Http\Controllers\PublicBookingController;
-use App\Http\Controllers\Booking\BookingManagementController;
-use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Billing\SubscriptionBillingController;
+use App\Http\Controllers\Booking\BookingManagementController;
+use App\Http\Controllers\Business\BusinessProfileController;
+use App\Http\Controllers\Calendar\CalendarController;
+use App\Http\Controllers\Customer\CustomerManagementController;
+use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use App\Http\Controllers\Platform\PlanAdminController;
+use App\Http\Controllers\PublicBookingController;
+use App\Http\Controllers\Scheduling\SchedulingManagementController;
 use App\Http\Controllers\SeoController;
+use App\Http\Controllers\Service\ServiceManagementController;
+use App\Http\Controllers\Staff\StaffManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
