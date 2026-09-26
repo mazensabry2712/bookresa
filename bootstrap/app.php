@@ -9,6 +9,7 @@ use App\Console\Commands\SendBookingReminders;
 use App\Console\Commands\SendBillingNotifications;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\EnsurePlatformAdmin;
+use App\Http\Middleware\EnsureTenantModuleEnabled;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -43,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => ResolveTenant::class,
             'platform' => EnsurePlatformAdmin::class,
             'permission' => PermissionMiddleware::class,
+            'module' => EnsureTenantModuleEnabled::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
