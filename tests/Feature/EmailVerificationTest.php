@@ -7,6 +7,19 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Auth\Events\Verified;
 
+test('registration redirects to a valid post-registration location', function (): void {
+    Notification::fake();
+
+    $this->post('/register', [
+        'name' => 'Verified Candidate',
+        'email' => 'verified-candidate@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertRedirect('/');
+
+    expect(auth()->check())->toBeTrue();
+});
+
 test('unverified users are redirected to the verification notice before onboarding', function (): void {
     $user = User::factory()->unverified()->create();
 
