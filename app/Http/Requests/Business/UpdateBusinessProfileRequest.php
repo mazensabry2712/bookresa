@@ -47,6 +47,7 @@ class UpdateBusinessProfileRequest extends FormRequest
             'locale' => ['required', Rule::in(config('bookresa.locales', ['en', 'ar']))],
             'payment_mode' => ['required', Rule::in(['full', 'deposit', 'pay_later'])],
             'deposit_percent' => ['required_if:payment_mode,deposit', 'nullable', 'integer', 'min:1', 'max:99'],
+            'customer_email_required' => ['boolean'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             'remove_logo' => ['boolean'],
