@@ -117,7 +117,8 @@ test('authorized user can open the monthly calendar', function (): void {
         ->assertSee('BR-CAL-OPEN')
         ->assertSee('Calendar Customer')
         ->assertSee('10:00')
-        ->assertSee('Consultation');
+        ->assertSee('Consultation')
+        ->assertSee('br-direction-arrow');
 });
 
 test('calendar filters by service and status', function (): void {
