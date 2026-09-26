@@ -72,6 +72,8 @@ final class CreateBusiness
                     'booking_settings' => [
                         'customer_account_required' => false,
                         'payment_required' => false,
+                        'payment_mode' => 'pay_later',
+                        'deposit_percent' => 50,
                     ],
                 ]);
 
