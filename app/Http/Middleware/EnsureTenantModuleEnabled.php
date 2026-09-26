@@ -16,8 +16,7 @@ final class EnsureTenantModuleEnabled
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    ) {}
 
     public function handle(Request $request, Closure $next, string $moduleKey): Response
     {
@@ -62,7 +61,7 @@ final class EnsureTenantModuleEnabled
 
         if ($module->is_core || $isCore) {
             abort_if(
-                $tenantModule !== null && ! $tenantModule->enabled,
+                $tenantModule !== null && $tenantModule->enabled === false,
                 Response::HTTP_FORBIDDEN,
                 'This feature is not enabled for the current workspace.',
             );
