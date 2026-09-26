@@ -4,6 +4,7 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
