@@ -9,7 +9,16 @@
         $locale = app()->getLocale();
         $businessName = $profile?->name[$locale] ?? $profile?->name['en'] ?? $tenant->slug;
         $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? __('app.book_an_appointment_online');
-        $canonicalUrl = route('public.booking.canonical.show', $tenant->slug);
+        $baseBookingUrl = route('public.booking.canonical.show', $tenant->slug);
+        $canonicalUrl = $baseBookingUrl.'?locale='.urlencode($locale);
+        $alternates = collect(config('bookresa.locales', ['en', 'ar']))
+            ->map(fn (string $alternateLocale): array => [
+                'locale' => $alternateLocale,
+                'url' => $baseBookingUrl.'?locale='.urlencode($alternateLocale),
+            ])
+            ->values()
+            ->all();
+
         $jsonLd = [
             '@context' => 'https://schema.org',
             '@type' => 'LocalBusiness',
@@ -58,6 +67,7 @@
         :title="$businessName.' — '.config('bookresa.name', 'BookResa')"
         :description="$businessDescription"
         :canonical="$canonicalUrl"
+        :alternates="$alternates"
         :json-ld="$jsonLd"
     />
 
