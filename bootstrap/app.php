@@ -10,6 +10,7 @@ use App\Console\Commands\SendBillingNotifications;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureTenantModuleEnabled;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
@@ -40,11 +41,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [SecurityHeaders::class]);
+
         $middleware->alias([
             'tenant' => ResolveTenant::class,
             'platform' => EnsurePlatformAdmin::class,
             'permission' => PermissionMiddleware::class,
             'module' => EnsureTenantModuleEnabled::class,
+            'security' => SecurityHeaders::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
