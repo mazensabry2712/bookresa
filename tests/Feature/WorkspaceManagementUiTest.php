@@ -139,9 +139,11 @@ test('workspace service management stays tenant isolated', function (): void {
 
     $serviceA = Service::query()->firstOrFail();
 
-    $this->actingAs($user)->withSession(['tenant_id' => $tenantB->id])
+    $this->actingAs($otherUser)->withSession(['tenant_id' => $tenantB->id])
         ->get(route('services.index', ['edit' => $serviceA->id]))
         ->assertNotFound();
+
+    app(CurrentTenant::class)->set($tenantB);
 
     expect(Service::query()->count())->toBe(0);
     expect($otherUser->tenantMemberships()->where('tenant_id', $tenantB->id)->exists())->toBeTrue();
