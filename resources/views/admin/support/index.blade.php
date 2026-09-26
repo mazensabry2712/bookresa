@@ -17,13 +17,13 @@
             <select name="status" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                 <option value="">{{ __('All statuses') }}</option>
                 @foreach ($statuses as $status)
-                    <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ __(str($status->value)->headline()) }}</option>
+                    <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ __(str((string) $status->value)->headline()->toString()) }}</option>
                 @endforeach
             </select>
             <select name="priority" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                 <option value="">{{ __('All priorities') }}</option>
                 @foreach ($priorities as $priority)
-                    <option value="{{ $priority->value }}" @selected(request('priority') === $priority->value)>{{ __(str($priority->value)->headline()) }}</option>
+                    <option value="{{ $priority->value }}" @selected(request('priority') === $priority->value)>{{ __(str((string) $priority->value)->headline()->toString()) }}</option>
                 @endforeach
             </select>
             <button class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('Filter') }}</button>
@@ -75,12 +75,12 @@
                                         @method('PATCH')
                                         <select name="status" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">
                                             @foreach ($statuses as $status)
-                                                <option value="{{ $status->value }}" @selected($ticket->status === $status)>{{ __(str($status->value)->headline()) }}</option>
+                                                <option value="{{ $status->value }}" @selected($ticket->status === $status)>{{ __(str((string) $status->value)->headline()->toString()) }}</option>
                                             @endforeach
                                         </select>
                                         <select name="priority" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">
                                             @foreach ($priorities as $priority)
-                                                <option value="{{ $priority->value }}" @selected($ticket->priority === $priority)>{{ __(str($priority->value)->headline()) }}</option>
+                                                <option value="{{ $priority->value }}" @selected($ticket->priority === $priority)>{{ __(str((string) $priority->value)->headline()->toString()) }}</option>
                                             @endforeach
                                         </select>
                                         <textarea name="admin_notes" rows="2" placeholder="{{ __('Internal notes') }}" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">{{ old('admin_notes', $ticket->admin_notes) }}</textarea>
