@@ -52,7 +52,7 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        [$titleEn, $titleAr, $messageEn, $messageAr] = $this->content();
+        [$titleEn, , $messageEn] = $this->content();
 
         return (new MailMessage)
             ->subject($titleEn)
@@ -65,25 +65,31 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
     /** @return array{0:string,1:string,2:string,3:string} */
     private function content(): array
     {
-        return match (true) {
-            $this->includedLimit > 0 && $this->customerCount > $this->includedLimit => [
+        if ($this->includedLimit > 0 && $this->customerCount > $this->includedLimit) {
+            $additional = $this->customerCount - $this->includedLimit;
+
+            return [
                 'Customer usage over limit',
                 'تم تجاوز حد العملاء',
-                "You have {$this->customerCount} customers. {$this->customerCount - $this->includedLimit} additional customers are currently billed according to your plan.",
-                "لديك {$this->customerCount} عميلًا. يتم احتساب ".($this->customerCount - $this->includedLimit)." عميل إضافي حاليًا وفقًا لخطتك.",
-            ],
-            $this->includedLimit > 0 && $this->customerCount >= $this->includedLimit => [
+                "You have {$this->customerCount} customers. {$additional} additional customers are currently billed according to your plan.",
+                'لديك '.$this->customerCount.' عميلًا. يتم احتساب '.$additional.' عميل إضافي حاليًا وفقًا لخطتك.',
+            ];
+        }
+
+        if ($this->includedLimit > 0 && $this->customerCount >= $this->includedLimit) {
+            return [
                 'Customer limit reached',
                 'تم الوصول إلى حد العملاء',
                 "You have reached {$this->includedLimit} included customers.",
                 "لقد وصلت إلى حد {$this->includedLimit} عميلًا المضمن في خطتك.",
-            ],
-            default => [
-                'Customer usage warning',
-                'تنبيه استهلاك العملاء',
-                "Customer usage reached {$this->thresholdPercent}% of the included limit.",
-                "وصل استخدام العملاء إلى {$this->thresholdPercent}% من الحد المضمن.",
-            ],
-        };
+            ];
+        }
+
+        return [
+            'Customer usage warning',
+            'تنبيه استهلاك العملاء',
+            "Customer usage reached {$this->thresholdPercent}% of the included limit.",
+            "وصل استخدام العملاء إلى {$this->thresholdPercent}% من الحد المضمن.",
+        ];
     }
 }
