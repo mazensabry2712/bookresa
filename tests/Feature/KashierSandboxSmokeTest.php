@@ -49,4 +49,4 @@ test('Kashier sandbox API can create and read a real payment session', function 
             PaymentStatus::Failed,
             PaymentStatus::Refunded,
         ]);
-}),
+});
