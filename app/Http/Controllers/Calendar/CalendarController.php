@@ -30,19 +30,23 @@ class CalendarController
         ]);
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
-        $month = $validated['month'] ?? CarbonImmutable::now($timezone)->format('Y-m');
+        $viewMode = $validated['view'] ?? 'month';
+        $baseDate = $validated['date'] ?? CarbonImmutable::now($timezone)->format('Y-m-d');
 
         try {
-            $monthStart = CarbonImmutable::createFromFormat('Y-m', $month, $timezone)->startOfMonth();
+            $reference = CarbonImmutable::createFromFormat('Y-m-d', $baseDate, $timezone)->startOfDay();
         } catch (\Throwable) {
-            throw ValidationException::withMessages([
-                'month' => 'Invalid calendar month.',
-            ]);
+            throw ValidationException::withMessages(['date' => 'Invalid calendar date.']);
         }
 
-        $monthEnd = $monthStart->endOfMonth();
-        $gridStart = $monthStart->startOfWeek(CarbonImmutable::MONDAY);
-        $gridEnd = $monthEnd->endOfWeek(CarbonImmutable::SUNDAY);
+        [$gridStart, $gridEnd] = match ($viewMode) {
+            'day' => [$reference, $reference],
+            'week' => [$reference->startOfWeek(CarbonImmutable::MONDAY), $reference->endOfWeek(CarbonImmutable::SUNDAY)],
+            default => [$reference->startOfMonth()->startOfWeek(CarbonImmutable::MONDAY), $reference->endOfMonth()->endOfWeek(CarbonImmutable::SUNDAY)],
+        };
+
+        $periodStart = $viewMode === 'month' ? $reference->startOfMonth() : $gridStart;
+        $periodEnd = $viewMode === 'month' ? $reference->endOfMonth() : $gridEnd;
 
         $rangeStartUtc = $gridStart->utc();
         $rangeEndUtc = $gridEnd->addSecond()->utc();
@@ -74,10 +78,16 @@ class CalendarController
         return view('calendar.index', [
             'tenant' => $tenant,
             'timezone' => $timezone,
-            'month' => $monthStart,
-            'previousMonth' => $monthStart->subMonth()->format('Y-m'),
-            'nextMonth' => $monthStart->addMonth()->format('Y-m'),
+            'month' => $reference->startOfMonth(),
+            'previousMonth' => $reference->startOfMonth()->subMonth()->format('Y-m'),
+            'nextMonth' => $reference->startOfMonth()->addMonth()->format('Y-m'),
             'today' => CarbonImmutable::now($timezone)->toDateString(),
+            'viewMode' => $viewMode,
+            'reference' => $reference,
+            'periodStart' => $periodStart,
+            'periodEnd' => $periodEnd,
+            'previousDate' => match ($viewMode) { 'day' => $reference->subDay(), 'week' => $reference->subWeek(), default => $reference->subMonth() },
+            'nextDate' => match ($viewMode) { 'day' => $reference->addDay(), 'week' => $reference->addWeek(), default => $reference->addMonth() },
             'calendarDays' => $calendarDays,
             'bookingsByDate' => $bookingsByDate,
             'statuses' => BookingStatus::cases(),
