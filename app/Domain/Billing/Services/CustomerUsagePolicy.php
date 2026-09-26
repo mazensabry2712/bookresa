@@ -4,6 +4,7 @@ namespace App\Domain\Billing\Services;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 
 final class CustomerUsagePolicy
@@ -22,7 +23,7 @@ final class CustomerUsagePolicy
         }
 
         $policy = (string) data_get(
-            $tenant->profile?->booking_settings,
+            BusinessProfile::query()->where('tenant_id', $tenant->getKey())->first()?->booking_settings,
             'customer_limit_policy',
             'allow_overage',
         );
