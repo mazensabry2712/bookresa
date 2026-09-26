@@ -17,6 +17,7 @@
         <aside id="bookresa-sidebar"
                class="br-drawer lg:static lg:z-auto lg:flex lg:w-64 lg:flex-col lg:shrink-0 lg:transform-none"
                data-bookresa-sidebar
+               aria-hidden="false"
                aria-label="{{ __('app.workspace') }}">
             <div class="flex min-h-16 items-center justify-between gap-3 border-b border-slate-200 px-4 dark:border-slate-800 lg:px-5">
                 <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-3 rounded-lg" aria-label="BookResa">
