@@ -10,6 +10,7 @@ use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
 
@@ -143,19 +144,15 @@ test('disabled appointments module blocks booking management and public booking'
         ->assertForbidden();
 });
 
-test('missing tenant module row does not grant access', function (): void {
+test('missing optional tenant module row does not grant access', function (): void {
     [$owner, $tenant] = moduleWorkspace();
 
-    app(CurrentTenant::class)->set($tenant);
-
-    $module = Module::query()->where('key', 'services')->firstOrFail();
-    TenantModule::query()
-        ->where('module_id', $module->id)
-        ->delete();
+    Route::middleware(['web', 'auth', 'tenant', 'module:payments'])
+        ->get('/__test/optional-payments-module', fn () => 'ok');
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get('/__test/optional-payments-module')
         ->assertForbidden();
 });
 
