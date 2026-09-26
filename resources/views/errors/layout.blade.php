@@ -1,3 +1,12 @@
+@php
+    $supportedLocales = array_values(config('bookresa.locales', ['en']));
+    $requestedLocale = request()->query('locale');
+
+    if (is_string($requestedLocale) && in_array($requestedLocale, $supportedLocales, true)) {
+        app()->setLocale($requestedLocale);
+    }
+@endphp
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
