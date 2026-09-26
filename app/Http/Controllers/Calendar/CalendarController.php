@@ -21,6 +21,8 @@ class CalendarController
         abort_unless($tenant !== null, 404);
 
         $validated = $request->validate([
+            'view' => ['nullable', 'in:day,week,month'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
             'month' => ['nullable', 'date_format:Y-m'],
             'service_id' => ['nullable', 'integer', 'exists:services,id'],
             'staff_id' => ['nullable', 'integer', 'exists:staff_profiles,id'],
