@@ -140,14 +140,12 @@ final class PaymentService
 
         try {
             $result = $gateway->createPayment(new PaymentRequest(
-            merchantReference: $payment->reference,
-            amountMinor: $amountMinor,
-            currency: $currency,
-            description: $description,
-            metadata: $metadata,
-            idempotencyKey: $idempotencyKey,
-        ));
-
+                merchantReference: $payment->reference,
+                amountMinor: $amountMinor,
+                currency: $currency,
+                description: $description,
+                metadata: $metadata,
+                idempotencyKey: $idempotencyKey,
             ));
 
             return $this->applyResult($payment, $result);
