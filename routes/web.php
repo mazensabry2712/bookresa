@@ -65,10 +65,7 @@ Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
         ->middleware('permission:staff.manage')
         ->name('staff.update');
-
-
-
-
+});
 
 Route::middleware(['auth', 'tenant', 'permission:bookings.view'])
     ->prefix('dashboard/bookings')
