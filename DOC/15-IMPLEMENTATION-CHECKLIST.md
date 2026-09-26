@@ -25,7 +25,7 @@
 - [x] Platform Admin
 - [x] Owner/Manager/Receptionist/Staff
 - [x] Permissions
-- [ ] Module-aware access
+- [x] Module-aware access
 - [x] Negative authorization tests
 
 ## Business
