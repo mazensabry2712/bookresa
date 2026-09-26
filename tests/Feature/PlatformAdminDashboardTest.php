@@ -101,7 +101,8 @@ test('platform admin can list and search businesses', function (): void {
         ->get(route('admin.businesses.index'))
         ->assertOk()
         ->assertSee('Alpha Dental')
-        ->assertSee('Beta Salon');
+        ->assertSee('Beta Salon')
+        ->assertSee('1');
 
     $this->actingAs($admin)
         ->get(route('admin.businesses.index', ['search' => 'Alpha']))
