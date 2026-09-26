@@ -1,5 +1,7 @@
 # BookResa — Implementation Checklist
 
+**Current implementation progress: 107/121 (88.4%).**
+
 ## Foundation
 - [ ] Confirm Herd PHP 8.4
 - [x] Align Composer PHP constraint to target
@@ -9,7 +11,7 @@
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
 - [x] Light/Dark foundation (dark class + system preference + persisted theme API)
 - [x] Blade design tokens (central brand + semantic CSS variables)
-- [x] Testing baseline (213 tests / 773 assertions on 2026-09-26)
+- [x] Testing baseline (219 passed / 1 skipped / 794 assertions on 2026-09-26)
 
 ## Identity/Tenancy
 - [x] Fortify
@@ -137,9 +139,9 @@
 - [x] platform reports
 
 ## Release gate
-- [x] full test suite (213 passed / 773 assertions on 2026-09-26)
+- [x] full test suite (219 passed / 1 skipped / 794 assertions on 2026-09-26)
 - [x] static analysis (PHPStan 0 errors on 2026-09-26)
-- [ ] Pint (full repository: 96 existing style issues across 267 files; touched files pass)
+- [ ] Pint (full repository: 96 existing style issues across 267 files; changed-file CI checks pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)
 - [ ] payment sandbox green
