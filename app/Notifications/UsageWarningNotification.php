@@ -52,7 +52,7 @@ final class UsageWarningNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        [$titleEn, , $messageEn] = $this->content();
+        [$titleEn, $titleAr, $messageEn, $messageAr] = $this->content();
 
         return (new MailMessage)
             ->subject($titleEn)
