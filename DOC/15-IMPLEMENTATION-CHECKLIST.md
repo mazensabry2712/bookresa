@@ -5,7 +5,7 @@
 - [x] Align Composer PHP constraint to target
 - [ ] Configure MySQL
 - [x] Define timezone policy
-- [ ] Arabic/English locale
+- [x] Arabic/English locale (middleware + browser/session resolution + EN/AR dictionaries)
 - [ ] RTL/LTR foundation
 - [ ] Light/Dark foundation
 - [ ] Blade design tokens
