@@ -91,8 +91,8 @@ final class RescheduleBooking
                 ->orderBy('staff_profiles.id')
                 ->get();
 
-            /** @var Collection<int, StaffProfile|null> $candidates */
             if ($requestedStaff !== null) {
+                /** @var Collection<int, StaffProfile|null> $candidates */
                 $candidates = collect([$requestedStaff]);
             } elseif ($locked->staff !== null && $locked->staff->status === StaffStatus::Active) {
                 $candidates = collect([$locked->staff]);
