@@ -14,6 +14,7 @@ use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
@@ -126,10 +127,10 @@ test('signed Kashier return verifies the payment server-side and redirects to co
     $payment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
     $booking = Booking::withoutGlobalScopes()->findOrFail($booking->id);
 
-    $response->assertRedirectToRoute('public.booking.confirmation', [
+    $response->assertRedirect(URL::signedRoute('public.booking.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
-    ]);
+    ]));
 
     expect($payment->status)->toBe(PaymentStatus::Paid)
         ->and($booking->payment_status)->toBe(BookingPaymentStatus::Paid);
