@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ __('app.verify_email_title') }} — {{ config('app.name', 'Velto') }}</title>
+    <title>{{ __('app.verify_email_title') }} — {{ config('app.name', 'BookResa') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
     <main class="mx-auto flex min-h-screen max-w-xl items-center px-6 py-12">
         <section class="w-full rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">
-                {{ config('app.name', 'Velto') }}
+                {{ config('app.name', 'BookResa') }}
             </p>
 
             <h1 class="mt-2 text-2xl font-bold tracking-tight">
