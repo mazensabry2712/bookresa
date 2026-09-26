@@ -12,6 +12,7 @@ use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformFinanceController;
+use App\Http\Controllers\Platform\PlatformUserController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Scheduling\SchedulingManagementController;
 use App\Http\Controllers\SeoController;
@@ -193,6 +194,11 @@ Route::middleware(['auth', 'platform'])
     ->group(function (): void {
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
+        Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
+        Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
+            ->name('users.membership-toggle');
+        Route::patch('/users/{user}/platform-admin/toggle', [PlatformUserController::class, 'togglePlatformAdmin'])
+            ->name('users.platform-admin-toggle');
         Route::get('/subscriptions', [PlatformFinanceController::class, 'subscriptions'])->name('subscriptions.index');
         Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
         Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
