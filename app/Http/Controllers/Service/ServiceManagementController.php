@@ -52,7 +52,7 @@ final class ServiceManagementController
             'is_active' => (bool) ($data['is_active'] ?? false),
         ]);
 
-        return to_route('services.index')->with('status', __('Service created successfully.'));
+        return to_route('services.index')->with('status', __('service_ui.created'));
     }
 
     public function update(
@@ -63,7 +63,7 @@ final class ServiceManagementController
         try {
             $updateService->handle($service, $request->validated());
 
-            return to_route('services.index')->with('status', __('Service updated successfully.'));
+            return to_route('services.index')->with('status', __('service_ui.updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['service' => $exception->getMessage()]);
         }
@@ -79,7 +79,7 @@ final class ServiceManagementController
         try {
             $deleteService->handle($service);
 
-            return to_route('services.index')->with('status', __('Service deleted successfully.'));
+            return to_route('services.index')->with('status', __('service_ui.deleted'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['service' => $exception->getMessage()]);
         }
