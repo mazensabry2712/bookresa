@@ -111,10 +111,32 @@ test('owner can manage business scheduling rules', function (): void {
 
     app(CurrentTenant::class)->set($tenant);
 
+    $break = BusinessBreak::query()->firstOrFail();
+    $holiday = BusinessHoliday::query()->firstOrFail();
+    $special = SpecialWorkingHour::query()->firstOrFail();
+
     expect(BusinessWorkingHour::query()->count())->toBe(7)
         ->and(BusinessBreak::query()->count())->toBe(1)
         ->and(BusinessHoliday::query()->count())->toBe(1)
         ->and(SpecialWorkingHour::query()->count())->toBe(1);
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->delete(route('scheduling.breaks.destroy', $break))
+        ->assertRedirect();
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->delete(route('scheduling.holidays.destroy', $holiday))
+        ->assertRedirect();
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->delete(route('scheduling.special-hours.destroy', $special))
+        ->assertRedirect();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(BusinessBreak::query()->count())->toBe(0)
+        ->and(BusinessHoliday::query()->count())->toBe(0)
+        ->and(SpecialWorkingHour::query()->count())->toBe(0);
 });
 
 test('owner can manage staff schedule, day off and explicit availability', function (): void {
