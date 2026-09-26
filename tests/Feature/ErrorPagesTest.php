@@ -34,7 +34,7 @@ test('branded 500 error page renders as a server error', function (): void {
 
     $this->get('/__test/500')
         ->assertInternalServerError()
-        ->assertSee('Server error');
+        ->assertSee('Something went wrong');
 });
 
 test('branded 503 error page renders as service unavailable', function (): void {
@@ -42,7 +42,7 @@ test('branded 503 error page renders as service unavailable', function (): void 
 
     $this->get('/__test/503')
         ->assertServiceUnavailable()
-        ->assertSee('Service unavailable');
+        ->assertSee('Temporarily unavailable');
 });
 
 test('error pages follow the selected Arabic locale', function (): void {
