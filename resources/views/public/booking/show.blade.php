@@ -9,7 +9,7 @@
         $locale = app()->getLocale();
         $businessName = $profile?->name[$locale] ?? $profile?->name['en'] ?? $tenant->slug;
         $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? __('app.book_an_appointment_online');
-        $baseBookingUrl = route('public.booking.canonical.show', $tenant->slug);
+        $baseBookingUrl = route('public.booking.show', $tenant->slug);
         $canonicalUrl = $baseBookingUrl.'?locale='.urlencode($locale);
         $alternates = collect(config('bookresa.locales', ['en', 'ar']))
             ->map(fn (string $alternateLocale): array => [
@@ -120,7 +120,7 @@
             ])->all();
         @endphp
 
-        <form method="POST" action="{{ route('public.booking.canonical.store', $tenant->slug) }}" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <form method="POST" action="{{ route('public.booking.store', $tenant->slug) }}" class="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             @csrf
 
             @error('booking')
@@ -238,7 +238,7 @@
                             date: this.date,
                         });
                         if (this.staffId) params.set('staff_id', this.staffId);
-                        const response = await fetch(@js(route('public.booking.canonical.availability', $tenant->slug)) + '?' + params.toString());
+                        const response = await fetch(@js(route('public.booking.availability', $tenant->slug)) + '?' + params.toString());
                         const payload = await response.json();
                         this.slots = payload.data ?? [];
                         this.loading = false;
