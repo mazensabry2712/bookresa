@@ -8,6 +8,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
 
 class BusinessOnboardingController
@@ -15,10 +16,14 @@ class BusinessOnboardingController
     public function create(): View
     {
         return view('onboarding.business.create', [
-            'businessTypes' => BusinessType::query()
-                ->where('is_active', true)
-                ->orderBy('id')
-                ->get(['id', 'slug', 'name']),
+            'businessTypes' => Cache::remember(
+                'bookresa:business-types:active',
+                now()->addMinutes(10),
+                fn () => BusinessType::query()
+                    ->where('is_active', true)
+                    ->orderBy('id')
+                    ->get(['id', 'slug', 'name']),
+            ),
         ]);
     }
 
