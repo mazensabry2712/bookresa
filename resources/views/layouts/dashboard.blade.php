@@ -32,7 +32,7 @@
                 <button type="button"
                         class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
                         data-bookresa-sidebar-close
-                        aria-label="{{ __('Close') }}">
+                        aria-label="{{ __('app.close') }}">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
                     </svg>
@@ -61,7 +61,7 @@
                             <span>{{ __('app.calendar') }}</span>
                         </a>
                         <a href="{{ route('scheduling.index') }}" data-active="{{ request()->routeIs('scheduling.*') ? 'true' : 'false' }}" class="br-nav-link">
-                            <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06-1.7 1.7-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.08 1.65V20h-2.4v-.03a1.8 1.8 0 0 0-1.08-1.65 1.8 1.8 0 0 0-1.98.36l-.06.06-1.7-1.7.06-.06A1.8 1.8 0 0 0 8.2 15a1.8 1.8 0 0 0-1.65-1.08H6v-2.4h.55A1.8 1.8 0 0 0 8.2 10a1.8 1.8 0 0 0-.36-1.98l-.06-.06 1.7-1.7.06.06a1.8 1.8 0 0 0 1.98.36 1.8 1.8 0 0 0 1.08-1.65V5h2.4v.03a1.8 1.8 0 0 0 1.08 1.65 1.8 1.8 0 0 0 1.98-.36l.06-.06 1.7 1.7-.06.06A1.8 1.8 0 0 0 19.4 10c.24.55.72.92 1.32.92H21v2.4h-.28c-.6 0-1.08.36-1.32.92Z"/></svg></span>
+                            <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06-1.7 1.7-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.08 1.65V20h-2.4v-.03a1.8 1.8 0 0 0-1.08-1.65 1.8 1.8 0 0 0-1.98.36l-.06.06-1.7-1.7.06-.06A1.8 1.8 0 0 0 8.2 15a1.8 1.8 0 0 0-1.65-1.08H6v-2.4h.55A1.8 1.8 0 0 0 8.2 10a1.8 1.8 0 0 0-.36-1.98l-.06-.06 1.7-1.7.06.06a1.8 1.8 0 0 0 1.08 1.65V5h2.4v.03a1.8 1.8 0 0 0 1.08 1.65 1.8 1.8 0 0 0 1.98-.36l.06-.06 1.7 1.7-.06.06A1.8 1.8 0 0 0 19.4 10c.24.55.72.92 1.32.92H21v2.4h-.28c-.6 0-1.08.36-1.32.92Z"/></svg></span>
                             <span>{{ __('app.scheduling') }}</span>
                         </a>
                     @endcan
@@ -128,7 +128,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="mt-3">
                         @csrf
                         <button type="submit" class="w-full rounded-lg border border-slate-200 px-3 py-2 text-start text-xs font-semibold text-slate-600 transition hover:bg-white dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
-                            {{ __('Log out') }}
+                            {{ __('app.logout') }}
                         </button>
                     </form>
                 </div>
@@ -144,14 +144,14 @@
                                 data-bookresa-sidebar-toggle
                                 aria-expanded="false"
                                 aria-controls="bookresa-sidebar"
-                                aria-label="{{ __('Open menu') }}">
+                                aria-label="{{ __('app.open_menu') }}">
                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                                 <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
                             </svg>
                         </button>
                         <div class="min-w-0">
                             <p class="hidden text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 sm:block">{{ config('bookresa.name', 'BookResa') }}</p>
-                            <h1 class="truncate text-base font-bold tracking-tight text-slate-950 dark:text-white sm:text-lg">@yield('heading', __('Bookings'))</h1>
+                            <h1 class="truncate text-base font-bold tracking-tight text-slate-950 dark:text-white sm:text-lg">@yield('heading', __('app.dashboard'))</h1>
                         </div>
                     </div>
 
