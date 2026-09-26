@@ -55,7 +55,7 @@
     @endphp
 
     <x-seo
-        :title="$businessName.' — '.config('bookresa.name', 'Velto')"
+        :title="$businessName.' — '.config('bookresa.name', 'BookResa')"
         :description="$businessDescription"
         :canonical="$canonicalUrl"
         :json-ld="$jsonLd"
@@ -74,7 +74,7 @@
                     @if ($profile?->logo_path)
                         <img src="{{ Storage::disk('public')->url($profile->logo_path) }}" alt="{{ $businessName }}" class="h-12 w-12 rounded-xl object-cover">
                     @endif
-                    <p class="text-sm font-semibold text-gray-500">{{ config('bookresa.name', 'Velto') }}</p>
+                    <p class="text-sm font-semibold text-gray-500">{{ config('bookresa.name', 'BookResa') }}</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <x-locale-switcher />
