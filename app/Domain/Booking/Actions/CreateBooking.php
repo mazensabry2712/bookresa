@@ -5,6 +5,7 @@ namespace App\Domain\Booking\Actions;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Enums\PaymentStatus;
 use App\Domain\Booking\Models\Booking;
+use App\Notifications\BookingNotification;
 use App\Domain\Customer\Actions\FindOrCreateCustomer;
 use App\Domain\Service\Models\Service;
 use App\Domain\Scheduling\Services\AvailabilityService;
@@ -67,7 +68,7 @@ final class CreateBooking
             }
         }
 
-        return DB::transaction(function () use (
+        $booking = DB::transaction(function () use (
             $service,
             $customerName,
             $phone,
@@ -119,6 +120,10 @@ final class CreateBooking
 
             throw new RuntimeException('No staff member is available at the selected time.');
         }, 3);
+
+        $booking->customer?->notify(new BookingNotification($booking, 'created'));
+
+        return $booking;
     }
 
     private function persistBooking(
