@@ -34,6 +34,11 @@ jobs:
       - name: Install PHP dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
 
+      - name: Prepare application environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
       - name: PHP syntax scan
         run: find app -type f -name '*.php' -print0 | xargs -0 -n1 php -l
 
