@@ -195,10 +195,37 @@
                 </div>
             </div>
         @else
-            <div class="rounded-2xl bg-white p-8 text-center shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-                <h3 class="text-lg font-semibold">{{ __('No subscription found') }}</h3>
-                <p class="mt-2 text-sm text-slate-500">{{ __('A subscription will appear here after a plan is selected.') }}</p>
-            </div>
+            <section class="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                <div>
+                    <h3 class="text-xl font-semibold">{{ __('Choose your plan') }}</h3>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('Select a subscription plan for this workspace. Trial plans activate immediately; paid plans continue to secure checkout.') }}</p>
+                </div>
+
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    @forelse ($plans as $plan)
+                        <div class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
+                            <p class="text-lg font-bold">{{ data_get($plan->name, app()->getLocale()) ?? data_get($plan->name, 'en') ?? '—' }}</p>
+                            <p class="mt-2 text-2xl font-bold">{{ number_format($plan->price_minor / 100, 2) }} {{ $plan->currency }}</p>
+                            <p class="mt-1 text-sm text-slate-500">{{ str($plan->billing_period->value)->replace('_', ' ')->title() }}</p>
+                            @if ((int) $plan->trial_days > 0)
+                                <p class="mt-3 text-sm font-semibold text-emerald-600 dark:text-emerald-400">{{ $plan->trial_days }} {{ __('trial days') }}</p>
+                            @endif
+                            <form method="POST" action="{{ route('billing.subscribe', $plan) }}" class="mt-5">
+                                @csrf
+                                @can('subscription.manage')
+                                    <button type="submit" class="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">
+                                        {{ __('Select plan') }}
+                                    </button>
+                                @endcan
+                            </form>
+                        </div>
+                    @empty
+                        <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">
+                            {{ __('No active plans are available right now.') }}
+                        </div>
+                    @endforelse
+                </div>
+            </section>
         @endif
     </div>
 @endsection
