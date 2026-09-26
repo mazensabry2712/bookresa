@@ -3,6 +3,7 @@
 namespace App\Domain\Business\Actions;
 
 use App\Domain\Business\Models\BusinessProfile;
+use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,12 +13,17 @@ final class UpdateBusinessProfile
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
+        private readonly TenantModuleAccess $moduleAccess,
     ) {
     }
 
     public function handle(array $data): BusinessProfile
     {
         $tenantId = $this->currentTenant->idOrFail();
+
+        if (in_array($data['payment_mode'], ['full', 'deposit'], true) && ! $this->moduleAccess->allows('payments')) {
+            throw new LogicException('Customer payments are not enabled for this workspace.');
+        }
 
         return DB::transaction(function () use ($data, $tenantId): BusinessProfile {
             $profile = BusinessProfile::query()->first();
