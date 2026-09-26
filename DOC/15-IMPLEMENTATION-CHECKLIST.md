@@ -85,14 +85,14 @@
 - [x] subscription checkout/payment flow
 
 ## Notifications
-- [ ] confirmations
-- [ ] cancellations
-- [ ] reschedules
-- [ ] reminders
-- [ ] payment alerts
-- [ ] subscription expiry
-- [ ] usage warnings
-- [ ] queue delivery
+- [x] confirmations
+- [x] cancellations
+- [x] reschedules
+- [x] reminders
+- [x] payment alerts
+- [x] subscription expiry
+- [x] usage warnings
+- [x] queue delivery
 
 ## SEO
 - [ ] SEO helper/component
