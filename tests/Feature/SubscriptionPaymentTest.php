@@ -23,6 +23,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
 use App\Models\User;
+use Tests\Fakes\FakeSubscriptionGateway;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
@@ -99,39 +100,6 @@ function subscriptionPaymentPlan(array $overrides = []): Plan
         'trial_days' => 0,
         'is_active' => true,
     ], $overrides));
-}
-
-final class FakeSubscriptionGateway implements PaymentGateway
-{
-    public int $createCalls = 0;
-
-    public function createPayment(PaymentRequest $request): PaymentGatewayResult
-    {
-        $this->createCalls++;
-
-        return new PaymentGatewayResult(
-            status: PaymentStatus::Processing,
-            providerReference: 'KASHIER-SESSION-'.str_pad((string) $this->createCalls, 3, '0', STR_PAD_LEFT),
-            checkoutUrl: 'https://payments.example.test/session/'.str_pad((string) $this->createCalls, 3, '0', STR_PAD_LEFT),
-            metadata: ['test_context' => 'subscription'],
-        );
-    }
-
-    public function verifyPayment(string $providerReference): PaymentGatewayResult
-    {
-        return new PaymentGatewayResult(
-            status: PaymentStatus::Paid,
-            providerReference: $providerReference,
-        );
-    }
-
-    public function refundPayment(string $providerReference, int $amountMinor): PaymentGatewayResult
-    {
-        return new PaymentGatewayResult(
-            status: PaymentStatus::Refunded,
-            providerReference: $providerReference,
-        );
-    }
 }
 
 test('subscription checkout creates a tenant-owned payment and returns checkout url', function (): void {
