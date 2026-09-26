@@ -1,4 +1,4 @@
-# Velto — Backend API Structure
+# BookResa — Backend API Structure
 
 This document defines the future API boundary required by the product specification. The current web application is Blade-first; these endpoints are the planned API contract for mobile apps and third-party integrations and are not required by the current browser UI.
 
