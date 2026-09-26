@@ -83,6 +83,10 @@ class Subscription extends Model
             return false;
         }
 
+        if ($this->end_at !== null && ! $this->end_at->isFuture()) {
+            return false;
+        }
+
         return $this->status === SubscriptionStatus::Trial
             || $this->payment_status === PaymentStatus::Paid;
     }
