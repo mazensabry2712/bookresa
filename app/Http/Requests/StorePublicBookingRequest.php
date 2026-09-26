@@ -36,8 +36,8 @@ class StorePublicBookingRequest extends FormRequest
             'date' => ['required', 'date_format:Y-m-d'],
             'time' => ['required', 'date_format:H:i'],
             'name' => ['required', 'string', 'min:2', 'max:160'],
-            'phone' => ['nullable', 'string', 'max:40'],
-            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'max:40'],
+            'email' => [data_get($tenant->profile?->booking_settings, 'customer_email_required', false) ? 'required' : 'nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
