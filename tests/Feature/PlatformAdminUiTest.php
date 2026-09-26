@@ -79,3 +79,15 @@ test('non platform admin cannot render the admin interface', function (): void {
         ->get(route('admin.dashboard'))
         ->assertForbidden();
 });
+
+test('platform admin shell renders Arabic navigation labels', function (): void {
+    $admin = platformUiAdmin();
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard').'?locale=ar')
+        ->assertOk()
+        ->assertSee('المنصة')
+        ->assertSee('الأنشطة')
+        ->assertSee('فتح القائمة')
+        ->assertSee('<html lang="ar" dir="rtl">', false);
+});
