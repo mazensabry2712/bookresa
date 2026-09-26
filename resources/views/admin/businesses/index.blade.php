@@ -40,7 +40,7 @@
                                 </td>
                                 <td class="px-5 py-4 text-slate-500">{{ data_get($business->businessType?->name, app()->getLocale()) ?? $business->businessType?->slug ?? '—' }}</td>
                                 <td class="px-5 py-4">
-                                    <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $business->status === AppDomainTenantEnumsTenantStatus::Active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200' }}">
+                                    <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $business->status === \App\Domain\Tenant\Enums\TenantStatus::Active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-200' }}">
                                         {{ str($business->status->value)->headline() }}
                                     </span>
                                 </td>
@@ -52,7 +52,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">
-                                            {{ $business->status === AppDomainTenantEnumsTenantStatus::Suspended ? __('Activate') : __('Suspend') }}
+                                            {{ $business->status === \App\Domain\Tenant\Enums\TenantStatus::Suspended ? __('Activate') : __('Suspend') }}
                                         </button>
                                     </form>
                                 </td>
