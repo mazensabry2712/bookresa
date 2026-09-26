@@ -303,6 +303,50 @@ test('assigned staff are allocated independently at the same time', function ():
     ))->toThrow(RuntimeException::class);
 });
 
+test('staff cannot be double booked across different services', function (): void {
+    $tenant = bookingTenant('cross-service-overlap');
+    $serviceOne = bookingService();
+    $serviceTwo = app(CreateService::class)->handle([
+        'name' => ['en' => 'Follow-up', 'ar' => 'متابعة'],
+        'price_minor' => 15000,
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    $user = bookingUser($tenant, 'cross-service-staff@example.com');
+    $staff = StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'display_name' => 'Shared Staff',
+        'status' => StaffStatus::Active,
+    ]);
+
+    app(SetStaffWorkingHours::class)->handle($staff, [
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+    app(AssignServiceToStaff::class)->handle($serviceOne, $staff);
+    app(AssignServiceToStaff::class)->handle($serviceTwo, $staff);
+
+    app(CreateBooking::class)->handle(
+        $serviceOne,
+        'Customer One',
+        '01000000101',
+        null,
+        CarbonImmutable::parse('2026-09-28 10:00', 'Africa/Cairo'),
+        $staff,
+    );
+
+    expect(collect(app(AvailabilityService::class)->slots(
+        $serviceTwo,
+        CarbonImmutable::parse('2026-09-28', 'Africa/Cairo'),
+        $staff,
+    ))->contains(fn (array $slot): bool => $slot['start']->format('H:i') === '10:00'))->toBeFalse();
+});
+
 test('booking status lifecycle is validated and historized', function (): void {
     $tenant = bookingTenant('lifecycle');
     $service = bookingService();
