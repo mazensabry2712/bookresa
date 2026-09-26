@@ -31,7 +31,7 @@ class BookingManagementController
             'date' => ['nullable', 'date_format:Y-m-d'],
         ]);
 
-        $timezone = $tenant->profile?->timezone ?? config('app.timezone', 'UTC');
+        $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
 
         $bookings = Booking::query()
             ->with([
@@ -96,7 +96,7 @@ class BookingManagementController
         return view('booking.management.show', [
             'tenant' => $currentTenant->get(),
             'booking' => $booking,
-            'timezone' => $currentTenant->get()?->profile?->timezone ?? config('app.timezone', 'UTC'),
+            'timezone' => (string) data_get($currentTenant->get()?->profile, 'timezone', config('app.timezone', 'UTC')),
         ]);
     }
 
