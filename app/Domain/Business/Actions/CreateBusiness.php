@@ -76,6 +76,8 @@ final class CreateBusiness
                         'deposit_percent' => 50,
                         'customer_email_required' => false,
                         'customer_limit_policy' => 'allow_overage',
+                        'minimum_notice_minutes' => 0,
+                        'maximum_advance_days' => null,
                     ],
                 ]);
 
