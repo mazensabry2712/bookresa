@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
+use App\Http\Controllers\Service\ServiceManagementController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Calendar\CalendarController;
@@ -25,6 +27,30 @@ Route::middleware('auth')->group(function (): void {
 Route::middleware(['auth', 'tenant'])->group(function (): void {
     Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
         ->name('onboarding.workspace');
+
+    Route::get('/dashboard/business', [BusinessProfileController::class, 'edit'])
+        ->middleware('permission:business.view')
+        ->name('business.profile.edit');
+
+    Route::put('/dashboard/business', [BusinessProfileController::class, 'update'])
+        ->middleware('permission:business.update')
+        ->name('business.profile.update');
+
+    Route::get('/dashboard/services', [ServiceManagementController::class, 'index'])
+        ->middleware('permission:services.view')
+        ->name('services.index');
+
+    Route::post('/dashboard/services', [ServiceManagementController::class, 'store'])
+        ->middleware('permission:services.create')
+        ->name('services.store');
+
+    Route::put('/dashboard/services/{service}', [ServiceManagementController::class, 'update'])
+        ->middleware('permission:services.update')
+        ->name('services.update');
+
+    Route::delete('/dashboard/services/{service}', [ServiceManagementController::class, 'destroy'])
+        ->middleware('permission:services.delete')
+        ->name('services.destroy');
 });
 
 
