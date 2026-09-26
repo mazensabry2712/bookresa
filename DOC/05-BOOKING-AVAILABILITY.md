@@ -41,7 +41,9 @@ Normal: Pending → Confirmed → Completed.
 Controlled alternatives: Cancelled, Rescheduled and No-show.
 
 ## Rescheduling
-Secure the new available slot before releasing the old slot.
+Rescheduling must be atomic from the user's perspective: the new slot must be validated and protected against concurrent conflicts before the final rescheduled booking is committed.
+
+An implementation may temporarily neutralize the existing booking inside the same database transaction so availability can evaluate the new slot, but failure must roll back the original booking state. A successful operation commits the new time/staff and marks the booking Rescheduled.
 
 ## Public booking
 Mobile-first, Blade SSR, minimal JS, minimal DB queries, optimized images and cached stable business data.
