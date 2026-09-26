@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Billing;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CalculateSubscriptionUsage;
+use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Billing\Services\CancelSubscription;
 use App\Domain\Billing\Services\ClearPlanChange;
 use App\Domain\Billing\Services\PlanCatalog;
@@ -16,6 +17,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use LogicException;
 use RuntimeException;
 
 final class SubscriptionBillingController
@@ -56,6 +58,31 @@ final class SubscriptionBillingController
             'usagePeriods' => $usagePeriods,
             'plans' => $plans,
         ]);
+    }
+
+    public function subscribe(
+        Plan $plan,
+        CreateSubscription $createSubscription,
+        StartSubscriptionPayment $startPayment,
+    ): RedirectResponse {
+        try {
+            $subscription = $createSubscription->handle($plan);
+
+            if ($subscription->status->value === 'trial') {
+                return to_route('billing.subscription')
+                    ->with('status', 'Your trial subscription is active.');
+            }
+
+            $payment = $startPayment->handle($subscription);
+
+            if (blank($payment->checkout_url)) {
+                throw new RuntimeException('Payment checkout could not be started.');
+            }
+
+            return redirect()->away($payment->checkout_url);
+        } catch (RuntimeException|LogicException $exception) {
+            return back()->withErrors(['billing' => $exception->getMessage()]);
+        }
     }
 
     public function checkout(
