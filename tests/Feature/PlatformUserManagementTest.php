@@ -33,7 +33,7 @@ function platformUsersAdmin(bool $active = true): User
     return $user;
 }
 
-function platformUsersBusiness(User $owner, string $name): \App\Domain\Tenant\Models\Tenant
+function platformUsersBusiness(User $owner, string $name): Tenant
 {
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
