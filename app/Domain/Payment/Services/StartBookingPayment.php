@@ -3,6 +3,8 @@
 namespace App\Domain\Payment\Services;
 
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use LogicException;
@@ -46,15 +48,58 @@ final class StartBookingPayment
             'merchant_redirect' => route('payments.kashier.return'),
         ];
 
+        $provider = (string) config('bookresa.payments.default_provider', 'kashier');
+
+        $latestPayment = $booking->payments()
+            ->where('provider', $provider)
+            ->latest('id')
+            ->first();
+
+        if ($latestPayment !== null) {
+            if (
+                $latestPayment->status === PaymentStatus::Paid
+                || (
+                    in_array($latestPayment->status, [
+                        PaymentStatus::Pending,
+                        PaymentStatus::Processing,
+                    ], true)
+                    && $latestPayment->checkout_url !== null
+                )
+            ) {
+                return $latestPayment;
+            }
+
+            if (
+                $latestPayment->status === PaymentStatus::Pending
+                && $latestPayment->provider_reference === null
+                && $latestPayment->idempotency_key !== null
+            ) {
+                return $this->payments->start(
+                    gateway: $this->gateway,
+                    payable: $booking,
+                    amountMinor: (int) $service->price_minor,
+                    currency: (string) $service->currency,
+                    provider: $provider,
+                    description: 'Booking '.$booking->booking_reference,
+                    metadata: $metadata,
+                    idempotencyKey: $latestPayment->idempotency_key,
+                );
+            }
+        }
+
+        $attempt = $booking->payments()
+            ->where('provider', $provider)
+            ->count() + 1;
+
         return $this->payments->start(
             gateway: $this->gateway,
             payable: $booking,
             amountMinor: (int) $service->price_minor,
             currency: (string) $service->currency,
-            provider: (string) config('bookresa.payments.default_provider', 'kashier'),
+            provider: $provider,
             description: 'Booking '.$booking->booking_reference,
             metadata: $metadata,
-            idempotencyKey: 'booking-'.$booking->id.'-kashier',
+            idempotencyKey: 'booking-'.$booking->id.'-'.$provider.'-attempt-'.$attempt,
         );
     }
 }
