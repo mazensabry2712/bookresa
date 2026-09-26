@@ -7,6 +7,8 @@ use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Booking\Models\Booking;
+use App\Notifications\PaymentNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -151,6 +153,21 @@ final class PaymentService
             'metadata' => $metadata,
             'paid_at' => $result->paidAt ?? ($result->status === PaymentStatus::Paid ? $payment->paid_at ?? now() : $payment->paid_at),
         ])->save();
+
+        if (
+            $currentStatus !== $result->status
+            && in_array($result->status, [PaymentStatus::Paid, PaymentStatus::Failed], true)
+        ) {
+            $payable = $payment->payable;
+
+            if ($payable instanceof Booking) {
+                $payable->load('customer');
+                $payable->customer?->notify(new PaymentNotification(
+                    $payment->fresh(),
+                    $result->status === PaymentStatus::Paid ? 'paid' : 'failed',
+                ));
+            }
+        }
 
         return $payment->fresh();
     }
