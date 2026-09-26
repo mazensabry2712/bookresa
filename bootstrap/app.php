@@ -6,6 +6,7 @@ use App\Console\Commands\SendBookingReminders;
 use App\Console\Commands\SetPlatformAdminCommand;
 use App\Http\Middleware\EnsurePlatformAdmin;
 use App\Http\Middleware\EnsureTenantModuleEnabled;
+use App\Http\Middleware\EnsureTenantSubscriptionUsable;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'platform' => EnsurePlatformAdmin::class,
             'permission' => PermissionMiddleware::class,
             'module' => EnsureTenantModuleEnabled::class,
+            'subscription.usable' => EnsureTenantSubscriptionUsable::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [
