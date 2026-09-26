@@ -31,7 +31,8 @@ class CalendarController
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
         $viewMode = $validated['view'] ?? 'month';
-        $baseDate = $validated['date'] ?? CarbonImmutable::now($timezone)->format('Y-m-d');
+        $baseDate = $validated['date']
+            ?? (isset($validated['month']) ? $validated['month'].'-01' : CarbonImmutable::now($timezone)->format('Y-m-d'));
 
         try {
             $reference = CarbonImmutable::createFromFormat('Y-m-d', $baseDate, $timezone)->startOfDay();
