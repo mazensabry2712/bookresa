@@ -51,4 +51,9 @@ return [
     'minutes_short' => 'د',
     'book_an_appointment_online' => 'احجز موعدًا عبر الإنترنت.',
     'booking_confirmation' => 'تأكيد الحجز :reference.',
+    'verify_email_title' => 'تحقق من بريدك الإلكتروني',
+    'verify_email_message' => 'يرجى التحقق من بريدك الإلكتروني باستخدام الرابط الذي أرسلناه إليك قبل المتابعة إلى مساحة العمل.',
+    'verification_link_sent' => 'تم إرسال رابط تحقق جديد إلى بريدك الإلكتروني.',
+    'resend_verification' => 'إعادة إرسال رسالة التحقق',
+    'logout' => 'تسجيل الخروج',
 ];
