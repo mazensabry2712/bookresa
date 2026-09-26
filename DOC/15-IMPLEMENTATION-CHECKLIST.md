@@ -7,8 +7,8 @@
 - [x] Define timezone policy
 - [x] Arabic/English locale (middleware + browser/session resolution + EN/AR dictionaries)
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
-- [ ] Light/Dark foundation
-- [ ] Blade design tokens
+- [x] Light/Dark foundation (dark class + system preference + persisted theme API)
+- [x] Blade design tokens (central brand + semantic CSS variables)
 - [x] Testing baseline (213 tests / 773 assertions on 2026-09-26)
 
 ## Identity/Tenancy
