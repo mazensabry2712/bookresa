@@ -234,7 +234,6 @@ test('workspace owner cannot be added as staff', function (): void {
         ->toThrow(RuntimeException::class);
 });
 
-
 test('staff management paginates large staff lists', function (): void {
     [$owner, $tenant] = staffWorkspaceOwner('Pagination Owner');
 
