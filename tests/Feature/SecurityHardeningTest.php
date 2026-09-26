@@ -70,6 +70,7 @@ test('staff role changes are audited', function (): void {
         'name_ar' => 'عيادة التدقيق',
     ]);
 
+    $this->actingAs($owner);
     app(CurrentTenant::class)->set($tenant);
     app(AddStaffMember::class)->handle($staffUser, 'staff');
 
