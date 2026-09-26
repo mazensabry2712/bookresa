@@ -27,7 +27,7 @@ final class SeoController
                     ->get(['slug', 'updated_at'])
                     ->each(function (Tenant $tenant) use ($urls): void {
                         $urls->push([
-                            'loc' => route('public.booking.show', ['tenant' => $tenant->slug]),
+                            'loc' => route('public.booking.canonical.show', ['tenant' => $tenant->slug]),
                             'lastmod' => $tenant->updated_at?->toAtomString(),
                         ]);
                     });
