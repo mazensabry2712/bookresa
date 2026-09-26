@@ -1,13 +1,13 @@
 <?php
 
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Domain\Business\Models\BusinessProfile;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
@@ -176,7 +176,6 @@ test('public booking cannot use a service from another tenant', function (): voi
     expect(Booking::withoutGlobalScopes()->count())->toBe(0);
 });
 
-
 test('public booking page renders localized Arabic content', function (): void {
     $tenant = publicTenant('arabic-clinic');
 
@@ -198,7 +197,6 @@ test('public booking page renders localized Arabic content', function (): void {
 
     expect(app()->getLocale())->toBe('ar');
 });
-
 
 test('booking confirmation renders localized Arabic content', function (): void {
     $tenant = publicTenant('arabic-confirmation');
