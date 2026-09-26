@@ -105,7 +105,7 @@
                                     <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.customer_ui.bookings') }}</p>
                                     <p class="mt-1 text-lg font-extrabold text-slate-950 dark:text-white">{{ number_format($customer->bookings_count) }}</p>
                                 </div>
-                                <span class="text-xl text-slate-300 dark:text-slate-600">→</span>
+                                <span class="br-direction-arrow text-xl text-slate-300 dark:text-slate-600" aria-hidden="true">→</span>
                             </div>
                         </div>
                     </a>
