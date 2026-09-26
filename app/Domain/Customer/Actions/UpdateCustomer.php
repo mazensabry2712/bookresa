@@ -17,7 +17,7 @@ final class UpdateCustomer
     }
 
     /**
-     * @param array{name: string, phone?: string|null, email?: string|null} $data
+     * @param array<string, mixed> $data
      */
     public function handle(Customer $customer, array $data): Customer
     {
