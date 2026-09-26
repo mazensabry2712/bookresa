@@ -11,6 +11,7 @@ use App\Http\Controllers\Billing\SubscriptionBillingController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use App\Http\Controllers\Platform\PlanAdminController;
+use App\Http\Controllers\SeoController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
