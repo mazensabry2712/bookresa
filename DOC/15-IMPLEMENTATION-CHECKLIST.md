@@ -2,7 +2,7 @@
 
 ## Foundation
 - [ ] Confirm Herd PHP 8.4
-- [ ] Align Composer PHP constraint to target
+- [x] Align Composer PHP constraint to target
 - [ ] Configure MySQL
 - [ ] Define timezone policy
 - [ ] Arabic/English locale
@@ -106,9 +106,9 @@
 - [ ] noindex private areas
 
 ## Performance/Security
-- [ ] query/index review
-- [ ] no N+1
-- [ ] pagination
+- [x] query/index review
+- [x] no N+1
+- [x] pagination
 - [ ] stable-data cache
 - [ ] queue heavy work
 - [ ] Redis production
