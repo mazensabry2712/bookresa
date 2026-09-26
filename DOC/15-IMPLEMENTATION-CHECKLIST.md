@@ -1,6 +1,8 @@
 # BookResa — Implementation Checklist
 
-**Current implementation progress: 111/122 (91.0%).**
+**Backend implementation progress: 111/122 (91.0%).**
+
+This checklist measures the current backend/product implementation scope, not the frontend rollout. Frontend execution is governed by DOC/18. Production readiness is governed by DOC/17.
 
 ## Foundation
 - [x] Confirm Herd PHP 8.4
@@ -11,7 +13,7 @@
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
 - [x] Light/Dark foundation (dark class + system preference + persisted theme API)
 - [x] Blade design tokens (central brand + semantic CSS variables)
-- [x] Testing baseline (219 passed / 1 skipped / 794 assertions on 2026-09-26)
+- [x] Previously verified test baseline (221 passed / 1 skipped / 806 assertions on 2026-09-26; rerun required after later hardening)
 
 ## Identity/Tenancy
 - [x] Fortify
@@ -140,8 +142,10 @@
 - [x] platform reports
 
 ## Release gate
-- [x] full test suite (221 passed / 1 skipped / 806 assertions on 2026-09-26; rerun required after email verification hardening)
-- [x] static analysis (PHPStan 0 errors on 2026-09-26 before email verification hardening; CI rerun pending)
+
+The items below are release verification tasks. A previously green baseline does not stay green automatically after code changes.
+- [ ] full test suite (previously 221 passed / 1 skipped / 806 assertions; rerun required after current hardening)
+- [ ] static analysis (PHPStan previously 0 errors; rerun required after current hardening)
 - [ ] Pint (full repository: 96 existing style issues across 267 files; changed-file CI checks pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)
