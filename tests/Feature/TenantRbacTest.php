@@ -62,6 +62,25 @@ test('roles are isolated by tenant team context', function (): void {
     expect($user->hasRole('manager'))->toBeFalse();
 });
 
+test('tenant middleware resolves the primary membership when no tenant is selected', function (): void {
+    Route::middleware(['web', 'auth', 'tenant'])->get('/__test/tenant-primary', function () {
+        return response()->json([
+            'tenant_id' => app(CurrentTenant::class)->id(),
+        ]);
+    });
+
+    $user = User::factory()->create();
+    $tenantA = makeTenantForUser($user, 'tenant-a', false);
+    $tenantB = makeTenantForUser($user, 'tenant-b', true);
+
+    $this->actingAs($user)
+        ->get('/__test/tenant-primary')
+        ->assertOk()
+        ->assertJson([
+            'tenant_id' => $tenantB->id,
+        ]);
+});
+
 test('tenant middleware resolves the selected membership and permission team', function (): void {
     Route::middleware(['web', 'auth', 'tenant'])->get('/__test/tenant-context', function () {
         return response()->json([
