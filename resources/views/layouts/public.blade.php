@@ -103,7 +103,7 @@
         </div>
 
         <div id="bookresa-public-menu"
-             class="hidden border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 lg:hidden"
+             class="hidden border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 xl:hidden"
              data-bookresa-public-menu-panel
              aria-hidden="true">
             <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
@@ -161,6 +161,7 @@
             const navButton = document.querySelector('[data-bookresa-public-menu]');
             const navPanel = document.querySelector('[data-bookresa-public-menu-panel]');
             const firstNavLink = navPanel?.querySelector('a');
+            const desktopQuery = window.matchMedia('(min-width: 1280px)');
 
             if (navButton && navPanel) {
                 const setNavOpen = (open, restoreFocus = true) => {
@@ -187,6 +188,12 @@
 
                 navPanel.querySelectorAll('a').forEach((link) => {
                     link.addEventListener('click', () => setNavOpen(false, false));
+                });
+
+                desktopQuery.addEventListener('change', (event) => {
+                    if (event.matches) {
+                        setNavOpen(false, false);
+                    }
                 });
 
                 document.addEventListener('keydown', (event) => {
