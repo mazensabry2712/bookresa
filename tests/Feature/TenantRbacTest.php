@@ -125,6 +125,28 @@ test('tenant middleware falls back to primary membership when the selected tenan
     ]);
 });
 
+test('tenant middleware falls back when the selected tenant is inactive', function (): void {
+    Route::middleware(['web', 'auth', 'tenant'])->get('/__test/tenant-inactive-fallback', function () {
+        return response()->json([
+            'tenant_id' => app(CurrentTenant::class)->id(),
+        ]);
+    });
+
+    $user = User::factory()->create();
+    makeTenantForUser($user, 'tenant-inactive', true)->update([
+        'status' => TenantStatus::Suspended,
+    ]);
+    $activeTenant = makeTenantForUser($user, 'tenant-active');
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => Tenant::query()->where('slug', 'tenant-inactive')->value('id')])
+        ->get('/__test/tenant-inactive-fallback')
+        ->assertOk()
+        ->assertJson([
+            'tenant_id' => $activeTenant->id,
+        ]);
+});
+
 test('tenant middleware rejects authenticated users without an active membership', function (): void {
     Route::middleware(['web', 'auth', 'tenant'])->get('/__test/tenant-forbidden', fn () => 'ok');
 
