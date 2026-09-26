@@ -60,9 +60,6 @@ jobs:
 
           vendor/bin/pint --test --format agent "${php_files[@]}"
 
-      - name: Feature and unit tests
-        run: php artisan test --compact
-
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
@@ -74,3 +71,6 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Feature and unit tests
+        run: php artisan test --compact
