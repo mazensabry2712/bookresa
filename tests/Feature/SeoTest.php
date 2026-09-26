@@ -21,6 +21,8 @@ test('public booking page renders reusable seo metadata and structured data', fu
         'status' => TenantStatus::Active,
     ]);
 
+    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
+
     $tenant->profile()->create([
         'name' => ['en' => 'SEO Clinic', 'ar' => 'عيادة SEO'],
         'description' => ['en' => 'A searchable clinic landing page.', 'ar' => 'صفحة عيادة قابلة للبحث.'],
