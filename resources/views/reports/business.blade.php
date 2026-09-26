@@ -53,7 +53,7 @@
                 <div class="divide-y divide-slate-200 dark:divide-slate-800">
                     @foreach ($statuses as $status)
                         <div class="flex items-center justify-between px-5 py-3">
-                            <span class="text-sm">{{ __(str($status->value)->headline()) }}</span>
+                            <span class="text-sm">{{ __(str((string) $status->value)->headline()->toString()) }}</span>
                             <span class="font-semibold">{{ number_format((int) $statusCounts->get($status->value, 0)) }}</span>
                         </div>
                     @endforeach
