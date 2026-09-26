@@ -189,11 +189,7 @@ test('forged tenant session falls back to an authorized tenant instead of switch
 });
 
 test('platform admin access stays separate from tenant roles', function (): void {
-    [, $tenant] = rbacWorkspace();
-
-    $owner = User::query()
-        ->whereHas('tenantMemberships', fn ($query) => $query->where('tenant_id', $tenant->id))
-        ->firstOrFail();
+    [$owner, $tenant] = rbacWorkspace();
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
