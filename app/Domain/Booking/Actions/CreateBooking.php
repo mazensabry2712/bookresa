@@ -197,7 +197,10 @@ final class CreateBooking
 
     private function timezone(): string
     {
-        return $this->currentTenant->get()?->profile?->timezone
-            ?? config('app.timezone', 'UTC');
+        return (string) data_get(
+            $this->currentTenant->get()?->profile,
+            'timezone',
+            config('app.timezone', 'UTC'),
+        );
     }
 }
