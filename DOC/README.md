@@ -37,6 +37,9 @@ One platform → many Businesses → one isolated Workspace/Tenant per Business 
 17. 16-NOTIFICATIONS.md — notification architecture and delivery rules.
 18. 17-PRODUCTION-READINESS.md — production verification and release gate.
 19. 18-FRONTEND-DESIGN-IMPLEMENTATION.md — frontend visual direction, UX rules, reference products, implementation order and quality bar.
+20. 19-KASHIER-SANDBOX-RUNBOOK.md — Kashier sandbox verification runbook.
+21. 20-API-STRUCTURE.md — future API boundary and conventions.
+22. 21-FRONTEND-SCREEN-BY-SCREEN-PLAN.md — executable frontend screen inventory, routes, phases, components, states, responsive/i18n/theme/accessibility rules, and completion criteria.
 
 ## Frontend direction
 
