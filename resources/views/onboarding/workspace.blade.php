@@ -3,7 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $tenant->profile->name['en'] ?? $tenant->slug }} — {{ config('bookresa.name') }}</title>
+    <x-seo
+        :title="($tenant->profile?->name[app()->getLocale()] ?? $tenant->profile?->name['en'] ?? $tenant->slug).' — '.config('bookresa.name', 'BookResa')"
+        :description="'Workspace for '.$tenant->slug.'.'"
+        robots="noindex,nofollow,noarchive"
+    />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
