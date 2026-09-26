@@ -28,3 +28,27 @@ test('branded error pages are available for the core HTTP error states', functio
         expect(View::exists('errors.'.$status))->toBeTrue();
     }
 });
+
+test('branded 500 error page renders as a server error', function (): void {
+    Route::get('/__test/500', fn () => abort(500));
+
+    $this->get('/__test/500')
+        ->assertInternalServerError()
+        ->assertSee('Server error');
+});
+
+test('branded 503 error page renders as service unavailable', function (): void {
+    Route::get('/__test/503', fn () => abort(503));
+
+    $this->get('/__test/503')
+        ->assertServiceUnavailable()
+        ->assertSee('Service unavailable');
+});
+
+test('error pages follow the selected Arabic locale', function (): void {
+    $this->get('/__test/page-that-does-not-exist?locale=ar')
+        ->assertNotFound()
+        ->assertSee('<html lang="ar" dir="rtl">', false)
+        ->assertSee('الصفحة غير موجودة');
+});
+
