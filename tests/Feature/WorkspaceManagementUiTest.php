@@ -2,13 +2,17 @@
 
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
+use App\Domain\Customer\Models\Customer;
+use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -163,8 +167,8 @@ test('receptionist cannot manage services', function (): void {
     [$owner, $tenant] = workspaceOwner();
     $staffUser = User::factory()->create();
 
-    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
-    app(\App\Domain\Staff\Actions\AddStaffMember::class)->handle($staffUser, 'receptionist');
+    app(CurrentTenant::class)->set($tenant);
+    app(AddStaffMember::class)->handle($staffUser, 'receptionist');
 
     $this->actingAs($staffUser)->withSession(['tenant_id' => $tenant->id])
         ->post(route('services.store'), [
@@ -184,9 +188,9 @@ test('receptionist cannot manage services', function (): void {
 
 test('service delete is blocked when booking history exists', function (): void {
     [$user, $tenant] = workspaceOwner();
-    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
+    app(CurrentTenant::class)->set($tenant);
 
-    $service = app(\App\Domain\Service\Actions\CreateService::class)->handle([
+    $service = app(CreateService::class)->handle([
         'name' => ['en' => 'Booked Service', 'ar' => 'خدمة محجوزة'],
         'price_minor' => 10000,
         'duration_minutes' => 30,
@@ -196,9 +200,9 @@ test('service delete is blocked when booking history exists', function (): void 
     // The actual booking domain test suite owns booking creation; this test
     // verifies the management UI can never delete a referenced service once
     // a booking record exists.
-    \Illuminate\Support\Facades\DB::table('bookings')->insert([
+    DB::table('bookings')->insert([
         'tenant_id' => $tenant->id,
-        'customer_id' => \App\Domain\Customer\Models\Customer::factory()->create()->id,
+        'customer_id' => Customer::factory()->create()->id,
         'service_id' => $service->id,
         'staff_id' => null,
         'starts_at' => '2026-10-05 10:00:00',
