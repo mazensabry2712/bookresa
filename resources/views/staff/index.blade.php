@@ -46,7 +46,7 @@
                             class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none ring-offset-2 focus:border-slate-500 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-950">
                         @foreach ($roles as $role)
                             <option value="{{ $role }}" @selected(old('role', 'staff') === $role)>
-                                {{ IlluminateSupportStr::headline($role) }}
+                                {{ str($role)->headline() }}
                             </option>
                         @endforeach
                     </select>
@@ -58,7 +58,7 @@
                         @forelse ($services as $service)
                             <label class="flex items-start gap-2 text-sm">
                                 <input type="checkbox" name="services[]" value="{{ $service->id }}"
-                                       @checked(in_array($service->id, old('services', []), true))
+                                       @checked(collect(old('services', []))->map(fn ($id) => (int) $id)->contains($service->id))
                                        class="mt-0.5 rounded border-slate-300">
                                 <span>
                                     <span class="block font-medium">{{ $service->name[app()->getLocale()] ?? $service->name['en'] ?? '—' }}</span>
@@ -114,7 +114,7 @@
                                 {{ $staffMember->status->value === 'active'
                                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200'
                                     : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300' }}">
-                                {{ IlluminateSupportStr::headline($staffMember->status->value) }}
+                                {{ str($staffMember->status->value)->headline() }}
                             </span>
                         </div>
 
@@ -144,7 +144,7 @@
                                             class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                         @foreach ($roles as $role)
                                             <option value="{{ $role }}" @selected($currentRole === $role)>
-                                                {{ IlluminateSupportStr::headline($role) }}
+                                                {{ str($role)->headline() }}
                                             </option>
                                         @endforeach
                                     </select>
