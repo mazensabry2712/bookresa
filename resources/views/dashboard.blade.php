@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', __('Dashboard').' — '.config('bookresa.name', 'Velto'))
+@section('title', __('Dashboard').' — '.config('bookresa.name', 'BookResa'))
 @section('heading', __('Dashboard'))
 
 @section('content')
