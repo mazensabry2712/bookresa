@@ -121,7 +121,7 @@ return [
     'save_modules_continue' => 'Save modules & continue',
     'workspace_configuration_complete' => 'Your workspace configuration is complete. Finish onboarding after services, working hours and staff are ready.',
     'finish_onboarding' => 'Finish onboarding',
-    'dashboard' => [
+    'dashboard_ui' => [
         'welcome' => 'Good day, :name',
         'workspace_summary' => 'See today’s workload, what needs attention, and the next useful action.',
         'summary' => 'Dashboard summary',

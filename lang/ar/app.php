@@ -121,7 +121,7 @@ return [
     'save_modules_continue' => 'حفظ الوحدات والمتابعة',
     'workspace_configuration_complete' => 'اكتمل إعداد مساحة العمل. أنهِ الإعداد بعد تجهيز الخدمات وساعات العمل والموظفين.',
     'finish_onboarding' => 'إنهاء الإعداد',
-    'dashboard' => [
+    'dashboard_ui' => [
         'welcome' => 'مرحبًا، :name',
         'workspace_summary' => 'راجع عمل اليوم، وما يحتاج إلى متابعة، والخطوة المفيدة التالية.',
         'summary' => 'ملخص لوحة التحكم',
