@@ -8,11 +8,11 @@ use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Billing\Services\UpsertPlan;
 use App\Domain\Module\Models\Module;
+use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
-use App\Support\AuditLogger;
 
 final class PlanAdminController
 {
@@ -85,7 +85,7 @@ final class PlanAdminController
 
     public function toggle(Plan $plan, PlanCatalog $planCatalog): RedirectResponse
     {
-        $plan->forceFill(['is_active' => ! $plan->is_active])->save();
+        $plan->forceFill(['is_active' => !$plan->is_active])->save();
         $planCatalog->forget();
 
         app(AuditLogger::class)->log(
