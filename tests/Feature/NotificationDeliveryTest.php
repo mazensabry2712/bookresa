@@ -226,7 +226,10 @@ test('booking reminder command is idempotent for the same booking', function ():
         '--window' => 60,
     ]))->toBe(0);
 
-    Notification::assertSentTo($booking->customer, BookingNotification::class, function (BookingNotification $notification) use ($booking): bool {
+    app(CurrentTenant::class)->set($tenant);
+    $booking->load('customer');
+
+    Notification::assertSentTo($booking->customer, BookingNotification::class, function (BookingNotification $notification): bool {
         return $notification->toArray($booking->customer)['type'] === 'booking_reminder';
     });
 });
