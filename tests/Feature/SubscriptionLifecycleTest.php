@@ -90,12 +90,12 @@ test('subscription is not usable after its end time before expiry command runs',
 
     $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
         lifecyclePlan(),
-        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+        CarbonImmutable::now('UTC')->subHour(),
     );
 
     $subscription->forceFill([
         'payment_status' => PaymentStatus::Paid,
-        'end_at' => CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC')->subSecond(),
+        'end_at' => CarbonImmutable::now('UTC')->subSecond(),
     ])->save();
 
     expect($subscription->fresh()->isUsable())->toBeFalse();
