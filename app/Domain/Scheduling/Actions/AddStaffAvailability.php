@@ -17,6 +17,12 @@ final class AddStaffAvailability
     public function handle(StaffProfile $staff, array $data): StaffAvailability
     {
         $tenantId = $this->currentTenant->idOrFail();
+        $startsAt = (string) $data['starts_at'];
+        $endsAt = (string) $data['ends_at'];
+
+        if ($endsAt <= $startsAt) {
+            throw new \InvalidArgumentException('Staff availability must end after it starts.');
+        }
 
         if ((int) $staff->tenant_id !== $tenantId) {
             throw new LogicException('Staff must belong to the current tenant.');
