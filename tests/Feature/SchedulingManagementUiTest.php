@@ -228,6 +228,49 @@ test('scheduling management is tenant isolated', function (): void {
     unset($ownerA, $ownerB, $staffA);
 });
 
+test('staff schedule deletes cannot target another staff member', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace('Staff Schedule Isolation Workspace');
+    app(CurrentTenant::class)->set($tenant);
+
+    $staffAUser = User::factory()->create(['email' => 'schedule-delete-a@example.com']);
+    $staffBUser = User::factory()->create(['email' => 'schedule-delete-b@example.com']);
+
+    $staffA = app(AddStaffMember::class)->handle($staffAUser, 'staff');
+    $staffB = app(AddStaffMember::class)->handle($staffBUser, 'staff');
+
+    $dayOff = StaffDayOff::query()->create([
+        'tenant_id' => $tenant->id,
+        'staff_id' => $staffB->id,
+        'starts_on' => '2026-11-10',
+        'ends_on' => '2026-11-10',
+    ]);
+
+    $availability = StaffAvailability::query()->create([
+        'tenant_id' => $tenant->id,
+        'staff_id' => $staffB->id,
+        'available_date' => '2026-11-11',
+        'starts_at' => '10:00',
+        'ends_at' => '12:00',
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->delete(route('scheduling.staff-days-off.destroy', [$staffA, $dayOff]))
+        ->assertNotFound();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->delete(route('scheduling.staff-availability.destroy', [$staffA, $availability]))
+        ->assertNotFound();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(StaffDayOff::query()->whereKey($dayOff->id)->exists())->toBeTrue()
+        ->and(StaffAvailability::query()->whereKey($availability->id)->exists())->toBeTrue();
+
+    unset($staffA, $staffB);
+});
+
 test('scheduling requests reject invalid time windows', function (): void {
     [$owner, $tenant] = schedulingUiWorkspace('Scheduling Validation Workspace');
     app(CurrentTenant::class)->set($tenant);
