@@ -17,7 +17,7 @@
 - [x] tenants
 - [x] memberships
 - [x] TenantResolver/context
-- [ ] tenant-aware policies
+- [x] tenant-aware authorization (middleware/context/scopes/services/tests)
 - [x] cross-tenant tests
 
 ## RBAC
