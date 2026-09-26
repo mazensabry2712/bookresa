@@ -83,6 +83,7 @@ final class EnsureTenantModuleEnabled
                 SubscriptionStatus::Active->value,
             ])
             ->latest('start_at')
+            ->get()
             ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
 
         $entitled = collect(data_get($subscription?->pricing_snapshot, 'modules', []))
