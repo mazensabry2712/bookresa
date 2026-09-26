@@ -172,7 +172,6 @@ test('billing payment history is bounded to the latest 20 records', function ():
         ->assertDontSee('SUB-PAY-01');
 });
 
-
 test('active plan catalog is invalidated when a plan changes', function (): void {
     $tenant = billingDashboardTenant('plan-catalog-cache');
     $current = billingDashboardPlan();
