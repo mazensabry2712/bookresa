@@ -3,6 +3,8 @@
 namespace App\Domain\Billing\Services;
 
 use App\Domain\Billing\Models\Plan;
+use App\Domain\Module\Models\Module;
+use Illuminate\Database\Eloquent\Collection;
 
 final class PlanPricingSnapshot
 {
@@ -12,6 +14,9 @@ final class PlanPricingSnapshot
     public function make(Plan $plan): array
     {
         $plan->loadMissing('modules');
+
+        /** @var Collection<int, Module> $modules */
+        $modules = $plan->modules;
 
         return [
             'plan_id' => $plan->getKey(),
@@ -23,10 +28,12 @@ final class PlanPricingSnapshot
             'included_customer_limit' => (int) $plan->included_customer_limit,
             'additional_customer_price_minor' => (int) $plan->additional_customer_price_minor,
             'trial_days' => (int) $plan->trial_days,
-            'modules' => $plan->modules->map(fn ($module): array => [
-                'key' => $module->key,
-                'settings' => $module->pivot->settings,
-            ])->values()->all(),
+            'modules' => $modules->map(function (Module $module): array {
+                return [
+                    'key' => $module->key,
+                    'settings' => data_get($module->getRelationValue('pivot'), 'settings', []),
+                ];
+            })->values()->all(),
         ];
     }
 }
