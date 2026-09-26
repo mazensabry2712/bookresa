@@ -25,7 +25,7 @@ final class SubscriptionBillingController
         abort_unless($tenant !== null, 404);
 
         $subscription = Subscription::query()
-            ->with(['plan', 'nextPlan', 'payments' => fn ($query) => $query->latest('id')])
+            ->with(['plan', 'nextPlan'])
             ->latest('start_at')
             ->first();
 
@@ -34,6 +34,16 @@ final class SubscriptionBillingController
             ->latest('period_end')
             ->limit(12)
             ->get() ?? collect();
+        $payments = $subscription?->payments()
+            ->latest('id')
+            ->limit(20)
+            ->get([
+                'id',
+                'reference',
+                'provider',
+                'status',
+                'created_at',
+            ]) ?? collect();
         $plans = Plan::query()->active()->orderBy('price_minor')->get();
 
         return view('billing.subscription', [
