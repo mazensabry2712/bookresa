@@ -199,3 +199,45 @@ test('public booking page renders localized Arabic content', function (): void {
 
     expect(app()->getLocale())->toBe('ar');
 });
+
+
+test('booking confirmation renders localized Arabic content', function (): void {
+    $tenant = publicTenant('arabic-confirmation');
+
+    app(CurrentTenant::class)->set($tenant);
+    $tenant->profile()->update([
+        'name' => ['en' => 'Arabic Clinic', 'ar' => 'عيادة عربية'],
+        'description' => ['en' => 'English description', 'ar' => 'وصف عربي'],
+    ]);
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'price_minor' => 20000,
+        'duration_minutes' => 30,
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->post(route('public.booking.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ])->assertRedirect();
+
+    $booking = Booking::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    $this->get(URL::signedRoute('public.booking.confirmation', [
+        'tenant' => $tenant->slug,
+        'booking' => $booking->booking_reference,
+    ]). '&locale=ar')
+        ->assertOk()
+        ->assertSee('تم استلام الحجز')
+        ->assertSee('استشارة')
+        ->assertSee('حالة الدفع')
+        ->assertSee('احجز موعدًا آخر');
+});
