@@ -31,21 +31,25 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
 
+    /** @return HasMany<StaffProfile, $this> */
     public function staffProfiles(): HasMany
     {
         return $this->hasMany(StaffProfile::class);
     }
 
+    /** @return HasOne<\App\Domain\Platform\Models\PlatformAdmin, $this> */
     public function platformAdmin(): HasOne
     {
         return $this->hasOne(\App\Domain\Platform\Models\PlatformAdmin::class);
     }
 
+    /** @return HasMany<TenantMembership, $this> */
     public function tenantMemberships(): HasMany
     {
         return $this->hasMany(TenantMembership::class);
     }
 
+    /** @return BelongsToMany<Tenant, $this> */
     public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(
