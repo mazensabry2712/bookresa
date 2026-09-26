@@ -49,6 +49,7 @@ test('error pages follow the selected Arabic locale', function (): void {
     $this->get('/__test/page-that-does-not-exist?locale=ar')
         ->assertNotFound()
         ->assertSee('<html lang="ar" dir="rtl">', false)
-        ->assertSee('الصفحة غير موجودة');
+        ->assertSee('الصفحة غير موجودة')
+        ->assertSee('الصفحة التي تبحث عنها غير موجودة أو ربما تم نقلها.');
 });
 
