@@ -243,6 +243,8 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::patch('/users/{user}/platform-admin/toggle', [PlatformUserController::class, 'togglePlatformAdmin'])
             ->name('users.platform-admin-toggle');
         Route::get('/subscriptions', [PlatformFinanceController::class, 'subscriptions'])->name('subscriptions.index');
+        Route::patch('/subscriptions/{subscription}/toggle-status', [PlatformFinanceController::class, 'toggleSubscriptionStatus'])
+            ->name('subscriptions.toggle-status');
         Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
         Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
         Route::get('/reports', [ReportController::class, 'platform'])->name('reports.index');
