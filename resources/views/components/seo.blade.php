@@ -1,5 +1,5 @@
 @props([
-    'title' => config('app.name', 'Velto'),
+    'title' => config('app.name', 'BookResa'),
     'description' => null,
     'canonical' => url()->current(),
     'robots' => 'index,follow',
@@ -31,7 +31,7 @@
     <meta property="og:description" content="{{ $description }}">
 @endif
 <meta property="og:url" content="{{ $canonical }}">
-<meta property="og:site_name" content="{{ config('app.name', 'Velto') }}">
+<meta property="og:site_name" content="{{ config('app.name', 'BookResa') }}">
 <meta property="og:locale" content="{{ $ogLocale }}">
 
 @if (filled($ogImage))
