@@ -51,6 +51,8 @@ class CalendarController
 
         $rangeStartUtc = $gridStart->utc();
         $rangeEndUtc = $gridEnd->addSecond()->utc();
+        $staffUserId = $request->user()?->hasRole('staff') ? $request->user()->getKey() : null;
+        $ownStaffId = $staffUserId === null ? null : StaffProfile::query()->where('user_id', $staffUserId)->value('id');
 
         $bookings = Booking::query()
             ->with([
@@ -59,7 +61,13 @@ class CalendarController
                 'staff:id,display_name',
             ])
             ->when($validated['service_id'] ?? null, fn ($query, int $serviceId) => $query->where('service_id', $serviceId))
-            ->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId))
+            ->when($ownStaffId !== null, fn ($query) => $query->where('staff_id', $ownStaffId))
+            ->when($ownStaffId === null, function ($query) use ($staffUserId): void {
+                if ($staffUserId !== null) {
+                    $query->whereRaw('1 = 0');
+                }
+            })
+            ->when($ownStaffId === null, fn ($query) => $query->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId)))
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
             ->where('starts_at', '<', $rangeEndUtc)
             ->where('ends_at', '>', $rangeStartUtc)
