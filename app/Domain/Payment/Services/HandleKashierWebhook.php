@@ -116,11 +116,10 @@ final class HandleKashierWebhook
         array $data,
     ): PaymentGatewayResult {
         $mappedStatus = match ($event) {
-            'refund', 'partial_refund' => match ($status) {
-                'SUCCESS' => PaymentStatus::Refunded,
-                'FAILURE' => PaymentStatus::Failed,
-                default => PaymentStatus::Processing,
-            },
+            'refund' => $status === 'SUCCESS'
+                ? PaymentStatus::Refunded
+                : PaymentStatus::Paid,
+            'partial_refund' => PaymentStatus::Paid,
             default => match ($status) {
                 'SUCCESS' => PaymentStatus::Paid,
                 'FAILURE' => PaymentStatus::Failed,
@@ -139,6 +138,7 @@ final class HandleKashierWebhook
                 'kashier_merchant_order_id' => $data['merchantOrderId'] ?? null,
                 'kashier_status' => $status,
                 'transaction_response_code' => $data['transactionResponseCode'] ?? null,
+                'kashier_refund_status' => in_array($event, ['refund', 'partial_refund'], true) ? $status : null,
             ],
             paidAt: $mappedStatus === PaymentStatus::Paid
                 ? $this->parseDate($data['creationDate'] ?? null) ?? CarbonImmutable::now('UTC')
