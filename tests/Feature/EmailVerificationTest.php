@@ -4,6 +4,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Auth\Events\Verified;
 
 test('unverified users are redirected to the verification notice before onboarding', function (): void {
@@ -54,5 +55,5 @@ test('unverified users can request another verification email', function (): voi
         ->assertRedirect(route('verification.notice'))
         ->assertSessionHas('status', 'verification-link-sent');
 
-    Notification::assertSentTo($user);
+    Notification::assertSentTo($user, VerifyEmail::class);
 });
