@@ -34,39 +34,34 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
-    <header class="sticky top-0 z-50 border-b border-slate-200/90 bg-white/95 backdrop-blur dark:border-slate-800/90 dark:bg-slate-950/95">
-        <div class="mx-auto flex min-h-[4.5rem] max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-            <a href="{{ route('home') }}" class="flex min-w-0 shrink-0 items-center rounded-xl" aria-label="BookResa">
-                <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-9 w-auto max-w-[150px] object-contain">
+    <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+        <div class="mx-auto flex min-h-[4.75rem] max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
+            <a href="{{ route('home') }}" class="flex shrink-0 items-center rounded-lg" aria-label="BookResa">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-9 w-auto max-w-[155px] object-contain">
             </a>
 
-            <nav class="hidden flex-1 items-center justify-center gap-4 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
-                <a href="#features" class="px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-brand-indigo dark:text-slate-300">
+            <nav class="hidden flex-1 items-center justify-center gap-7 lg:flex" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+                <a href="#features" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.features') }}
                 </a>
-                <a href="#how-it-works" class="px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-brand-indigo dark:text-slate-300">
-                    {{ __('app.home_ui.how_it_works') }}
-                </a>
-                <a href="#for-businesses" class="px-2 py-2 text-sm font-semibold text-slate-600 transition hover:text-brand-indigo dark:text-slate-300">
+                <a href="#for-businesses" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.for_businesses') }}
                 </a>
             </nav>
 
             <div class="hidden shrink-0 items-center gap-2 lg:flex">
-                <div class="flex items-center gap-1">
-                    <x-locale-switcher compact />
-                    <x-theme-toggle compact />
-                </div>
-                <a href="{{ route('login') }}" class="rounded-lg px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-indigo dark:text-slate-200">
+                <x-locale-switcher compact />
+                <x-theme-toggle compact />
+                <a href="{{ route('login') }}" class="px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-navy dark:text-slate-200 dark:hover:text-white">
                     {{ __('app.home_ui.login') }}
                 </a>
-                <a href="{{ route('register') }}" class="rounded-lg bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
+                <a href="{{ route('register') }}" class="rounded-lg bg-brand-navy px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 dark:bg-indigo-500 dark:hover:bg-indigo-400">
                     {{ __('app.home_ui.get_started') }}
                 </a>
             </div>
 
             <button type="button"
-                    class="ms-auto rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 lg:hidden"
+                    class="ms-auto rounded-lg border border-slate-200 p-2.5 text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 lg:hidden"
                     data-bookresa-public-menu
                     aria-expanded="false"
                     aria-controls="bookresa-public-menu"
@@ -78,33 +73,27 @@
         </div>
 
         <div id="bookresa-public-menu"
-             class="hidden border-t border-slate-200 bg-white shadow-lg shadow-slate-900/5 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/20 lg:hidden"
+             class="hidden border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950 lg:hidden"
              data-bookresa-public-menu-panel
              aria-hidden="true">
             <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6">
                 <nav class="grid gap-1" aria-label="{{ __('app.home_ui.primary_navigation') }}">
-                    <a href="#features" class="rounded-xl px-3.5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-200 dark:hover:bg-slate-900">
+                    <a href="#features" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
                         {{ __('app.home_ui.features') }}
                     </a>
-                    <a href="#how-it-works" class="rounded-xl px-3.5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-200 dark:hover:bg-slate-900">
-                        {{ __('app.home_ui.how_it_works') }}
-                    </a>
-                    <a href="#for-businesses" class="rounded-xl px-3.5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-brand-indigo dark:text-slate-200 dark:hover:bg-slate-900">
+                    <a href="#for-businesses" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
                         {{ __('app.home_ui.for_businesses') }}
                     </a>
                 </nav>
 
-                <div class="mt-3 grid gap-2 border-t border-slate-100 pt-3 sm:flex sm:flex-wrap sm:items-center dark:border-slate-800">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <x-locale-switcher />
-                        <x-theme-toggle />
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2 sm:ms-auto sm:flex">
-                        <a href="{{ route('login') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">
+                <div class="mt-3 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
+                    <x-locale-switcher />
+                    <x-theme-toggle />
+                    <div class="ms-auto flex gap-2">
+                        <a href="{{ route('login') }}" class="rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-bold dark:border-slate-700">
                             {{ __('app.home_ui.login') }}
                         </a>
-                        <a href="{{ route('register') }}" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-600">
+                        <a href="{{ route('register') }}" class="rounded-lg bg-brand-navy px-4 py-2.5 text-sm font-bold text-white dark:bg-indigo-500">
                             {{ __('app.home_ui.get_started') }}
                         </a>
                     </div>
@@ -124,15 +113,14 @@
     @yield('content')
 
     <footer class="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <div>
-                <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-8 w-auto max-w-[140px] object-contain">
-                <p class="mt-2 text-xs text-slate-500">{{ __('app.home_ui.footer_text') }}</p>
+        <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-7 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+            <div class="flex items-center gap-4">
+                <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-7 w-auto max-w-[120px] object-contain">
+                <span class="text-xs text-slate-400">© {{ now()->year }} BookResa</span>
             </div>
-            <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-500">
-                <a href="{{ route('login') }}" class="hover:text-brand-indigo">{{ __('app.home_ui.login') }}</a>
-                <a href="{{ route('register') }}" class="hover:text-brand-indigo">{{ __('app.home_ui.get_started') }}</a>
-                <span>© {{ now()->year }} BookResa</span>
+            <div class="flex items-center gap-4 text-xs font-semibold text-slate-500">
+                <a href="{{ route('login') }}" class="hover:text-brand-navy dark:hover:text-white">{{ __('app.home_ui.login') }}</a>
+                <a href="{{ route('register') }}" class="hover:text-brand-navy dark:hover:text-white">{{ __('app.home_ui.get_started') }}</a>
             </div>
         </div>
     </footer>
@@ -184,5 +172,6 @@
                 }
             });
         });
-    </script></body>
+    </script>
+</body>
 </html>
