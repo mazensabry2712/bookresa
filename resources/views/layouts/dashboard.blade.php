@@ -58,7 +58,7 @@
             </div>
 
             <div class="br-sidebar-workspace px-2 pt-3 sm:px-3">
-                <x-workspace-switcher />
+                <x-workspace-switcher :tenant="$tenant" />
             </div>
 
             <div class="flex-1 overflow-y-auto px-2 py-4 sm:px-3">
