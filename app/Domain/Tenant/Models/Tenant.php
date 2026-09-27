@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Multitenancy\Contracts\IsTenant;
 use Spatie\Multitenancy\Models\Concerns\ImplementsTenant;
+use Spatie\Multitenancy\Concerns\UsesMultitenancyConfig;
 
 /**
  * @property int $id
@@ -35,6 +36,7 @@ class Tenant extends Model implements IsTenant
 {
     use HasFactory;
     use ImplementsTenant;
+    use UsesMultitenancyConfig;
 
     protected $fillable = [
         'slug',
