@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Models\User;
+
 uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
 test('verified user can sign in with valid credentials', function (): void {
