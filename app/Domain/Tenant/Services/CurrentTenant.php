@@ -7,26 +7,24 @@ use Closure;
 
 final class CurrentTenant
 {
-    private ?Tenant $tenant = null;
-
     public function set(Tenant $tenant): void
     {
-        $this->tenant = $tenant;
+        $tenant->makeCurrent();
     }
 
     public function clear(): void
     {
-        $this->tenant = null;
+        Tenant::forgetCurrent();
     }
 
     public function get(): ?Tenant
     {
-        return $this->tenant;
+        return Tenant::current();
     }
 
     public function id(): ?int
     {
-        return $this->tenant?->getKey();
+        return $this->get()?->getKey();
     }
 
     public function idOrFail(): int
@@ -48,13 +46,20 @@ final class CurrentTenant
      */
     public function run(Tenant $tenant, Closure $callback): mixed
     {
-        $previousTenant = $this->tenant;
-        $this->tenant = $tenant;
+        $previousTenant = $this->get();
+
+        if ($previousTenant?->getKey() !== $tenant->getKey()) {
+            $tenant->makeCurrent();
+        }
 
         try {
             return $callback();
         } finally {
-            $this->tenant = $previousTenant;
+            if ($previousTenant !== null && $previousTenant->getKey() !== $tenant->getKey()) {
+                $previousTenant->makeCurrent();
+            } elseif ($previousTenant === null) {
+                Tenant::forgetCurrent();
+            }
         }
     }
 }
