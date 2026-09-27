@@ -676,8 +676,6 @@ return [
         'payment_refunded' => 'مسترد',
         'appointment' => 'الموعد',
         'duration' => 'المدة',
-        'minutes' => 'د',
-        'notes' => 'الملاحظات',
         'status_history' => 'سجل الحالة',
         'no_status_history' => 'لا يوجد سجل للحالة.',
         'manage_booking' => 'إدارة الحجز',
