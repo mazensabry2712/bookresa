@@ -2,8 +2,6 @@
 
 namespace App\Http\Responses;
 
-use App\Domain\Billing\Enums\SubscriptionStatus;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
@@ -46,38 +44,9 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
         if ($membership?->tenant !== null) {
             $tenant = $membership->tenant;
 
-            if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-                return $this->onboardingRedirect($tenant);
-            }
-
-            $subscription = Subscription::withoutGlobalScopes()
-                ->where('tenant_id', $tenant->getKey())
-                ->whereIn('status', [
-                    SubscriptionStatus::Trial->value,
-                    SubscriptionStatus::Active->value,
-                ])
-                ->latest('start_at')
-                ->get()
-                ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
-
-            $workspaceRouteParameters = ['tenant' => $tenant->slug];
-
-            return redirect()->intended(
-                $subscription !== null
-                    ? route('dashboard', $workspaceRouteParameters)
-                    : route('billing.subscription', $workspaceRouteParameters)
-            );
+                return to_route('dashboard', ['tenant' => $tenant->slug]);
         }
 
         return to_route('onboarding.business.create');
     }
-    private function onboardingRedirect(\App\Domain\Tenant\Models\Tenant $tenant): RedirectResponse
-    {
-        return match ((string) data_get($tenant->settings, 'onboarding.step', 'services')) {
-            'hours' => to_route('scheduling.index', ['tenant' => $tenant->slug]),
-            'staff' => to_route('staff.index', ['tenant' => $tenant->slug]),
-            default => to_route('services.index', ['tenant' => $tenant->slug]),
-        };
-    }
-
 }
