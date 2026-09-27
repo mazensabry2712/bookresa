@@ -9,7 +9,7 @@ test('public home page renders the BookResa product home', function (): void {
         ->assertSee('Customer booking')
         ->assertSee('/logo.png')
         ->assertSee('/logodark.png')
-        ->assertSee('xl:hidden')
+        ->assertSee('lg:hidden')
         ->assertDontSee('The PHP Framework for Web Artisans');
 });
 
