@@ -165,7 +165,7 @@
                         </div>
                     </div>
 
-                    <div class="flex shrink-0 items-center gap-2">
+                    <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                         @can('notifications.view')
                             <a href="{{ route('notifications.index', ['tenant' => $tenant->slug]) }}"
                                class="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
