@@ -132,7 +132,7 @@
             </section>
         @endif
 
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('app.dashboard_ui.summary') }}">
+        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="{{ __('app.dashboard_ui.summary') }}">
             <article class="br-panel min-h-[148px] p-5 transition-shadow duration-150 hover:shadow-md">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-brand-indigo dark:bg-indigo-950/40 dark:text-indigo-300" aria-hidden="true">
@@ -144,7 +144,7 @@
                 <p data-dashboard-metric="today-bookings" data-metric-value="{{ $metrics['todayBookings'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['todayBookings']) }}</p>
             </article>
 
-            <article class="br-panel p-5">
+            <article class="br-panel min-h-[148px] p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" aria-hidden="true">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path stroke-linecap="round" d="M12 7v5l3.5 2"/><path stroke-linecap="round" d="M8.5 3.9 7 2.5M15.5 3.9 17 2.5"/></svg>
@@ -155,7 +155,7 @@
                 <p data-dashboard-metric="today-revenue" data-metric-value="{{ $metrics['todayRevenueMinor'] ?? '—' }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ $money($metrics['todayRevenueMinor']) }}</p>
             </article>
 
-            <article class="br-panel p-5">
+            <article class="br-panel min-h-[148px] p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand-navy dark:bg-slate-800 dark:text-indigo-300" aria-hidden="true">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 5.5h11A1.5 1.5 0 0 1 19 7v11.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5V7a1.5 1.5 0 0 1 1.5-1.5ZM9 3v5M15 3v5M5 10h14"/><path stroke-linecap="round" d="M9 14h6M9 17h3"/></svg>
@@ -166,7 +166,7 @@
                 <p data-dashboard-metric="upcoming-bookings" data-metric-value="{{ $metrics['upcomingBookings'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['upcomingBookings']) }}</p>
             </article>
 
-            <article class="br-panel p-5">
+            <article class="br-panel min-h-[148px] p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300" aria-hidden="true">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"/><circle cx="10" cy="7.5" r="3.25"/><path stroke-linecap="round" d="M16 11h4M18 9v4"/></svg>
@@ -180,6 +180,17 @@
                         +{{ number_format($metrics['newCustomersToday']) }} {{ __('app.dashboard_ui.today') }}
                     </span>
                 </div>
+            </article>
+
+            <article class="br-panel min-h-[148px] p-5">
+                <div class="flex items-center justify-between gap-4">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300" aria-hidden="true">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.25"/><path stroke-linecap="round" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 12.5a4.5 4.5 0 0 1 4.5 4.5"/></svg>
+                    </span>
+                    <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.active_staff') }}</span>
+                </div>
+                <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.active_staff') }}</p>
+                <p data-dashboard-metric="active-staff" data-metric-value="{{ $metrics['activeStaff'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['activeStaff']) }}</p>
             </article>
         </section>
 
