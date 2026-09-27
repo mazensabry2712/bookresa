@@ -136,7 +136,7 @@
             <article class="br-panel min-h-[148px] p-5 transition-shadow duration-150 hover:shadow-md">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-brand-indigo dark:bg-indigo-950/40 dark:text-indigo-300" aria-hidden="true">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M3.5 10h17M8 14h3M8 18h6"/></svg>
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path stroke-linecap="round" d="M8 2.75v3.5M16 2.75v3.5M3.5 9h17"/><path stroke-linecap="round" d="M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01M16 17h.01"/></svg>
                     </span>
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.today') }}</span>
                 </div>
@@ -147,7 +147,7 @@
             <article class="br-panel p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" aria-hidden="true">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 7h16M6.5 4.5h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2Z"/><path stroke-linecap="round" d="M8 12h2M8 16h5"/></svg>
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path stroke-linecap="round" d="M12 7v5l3.5 2"/><path stroke-linecap="round" d="M8.5 3.9 7 2.5M15.5 3.9 17 2.5"/></svg>
                     </span>
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.paid') }}</span>
                 </div>
@@ -158,7 +158,7 @@
             <article class="br-panel p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand-navy dark:bg-slate-800 dark:text-indigo-300" aria-hidden="true">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M4 10h16M8 14h2M14 14h2M8 17h2"/></svg>
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.5 5.5h11A1.5 1.5 0 0 1 19 7v11.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 18.5V7a1.5 1.5 0 0 1 1.5-1.5ZM9 3v5M15 3v5M5 10h14"/><path stroke-linecap="round" d="M9 14h6M9 17h3"/></svg>
                     </span>
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.upcoming') }}</span>
                 </div>
@@ -169,7 +169,7 @@
             <article class="br-panel p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300" aria-hidden="true">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path stroke-linecap="round" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 9a3 3 0 0 1 0 5.7M15.5 16a5 5 0 0 1 4.5 4"/></svg>
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" d="M16 20v-1.5a4.5 4.5 0 0 0-4.5-4.5h-3A4.5 4.5 0 0 0 4 18.5V20"/><circle cx="10" cy="7.5" r="3.25"/><path stroke-linecap="round" d="M16 11h4M18 9v4"/></svg>
                     </span>
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.customers') }}</span>
                 </div>
@@ -203,7 +203,7 @@
                     <a href="{{ route('booking.management.index') }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" aria-hidden="true">
-                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8.5"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
+                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path stroke-linecap="round" d="M12 7v5l3 2"/><path stroke-linecap="round" d="M8.5 3.9 7 2.5M15.5 3.9 17 2.5"/></svg>
                             </span>
                             <div class="min-w-0">
                                 <p class="font-semibold text-slate-900 dark:text-white">{{ trans_choice('app.dashboard_ui.pending_bookings_count', $attention['pendingBookings']) }}</p>
@@ -218,7 +218,7 @@
                     <a href="{{ route('booking.management.index') }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300" aria-hidden="true">
-                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M6 4.5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2ZM8 9.5h8M8 13.5h4"/></svg>
+                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path stroke-linecap="round" d="M4 9h16M8 14h4M8 16.5h2"/></svg>
                             </span>
                             <div class="min-w-0">
                                 <p class="font-semibold text-slate-900 dark:text-white">{{ trans_choice('app.dashboard_ui.unpaid_bookings_count', $attention['unpaidBookings']) }}</p>
@@ -234,7 +234,7 @@
                     <a href="{{ route('billing.subscription') }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-navy dark:bg-slate-800 dark:text-indigo-300" aria-hidden="true">
-                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M7 12h10M8 16h6"/></svg>
+                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path stroke-linecap="round" d="M4 9h16M8 13h8M8 16h5"/></svg>
                             </span>
                             <div class="min-w-0">
                                 <p class="font-semibold text-slate-900 dark:text-white">
@@ -261,7 +261,7 @@
                     <a href="{{ route('billing.subscription') }}" class="flex items-center justify-between gap-4 px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" aria-hidden="true">
-                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M12 3.5 20 19H4l8-15.5Z"/><path stroke-linecap="round" d="M12 9v4.5M12 16.5v.2"/></svg>
+                                <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3.5 20 19H4L12 3.5Z"/><path stroke-linecap="round" d="M12 9v4M12 16.5v.01"/></svg>
                             </span>
                             <div class="min-w-0">
                                 <p class="font-semibold text-slate-900 dark:text-white">
@@ -345,7 +345,7 @@
                         <div class="px-5 py-12">
                             <div class="mx-auto max-w-md text-center">
                                 <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-brand-navy dark:bg-slate-800 dark:text-indigo-300" aria-hidden="true">
-                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M4 10h16M8 14h8M8 17h5"/></svg>
+                                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path stroke-linecap="round" d="M8 3v4M16 3v4M4 10h16"/><path stroke-linecap="round" d="M8 14h2M12 14h4M8 17h6"/></svg>
                                 </div>
                                 <p class="mt-4 font-semibold text-slate-900 dark:text-white">{{ __('app.dashboard_ui.no_upcoming_bookings') }}</p>
                                 <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.dashboard_ui.no_upcoming_help') }}</p>
