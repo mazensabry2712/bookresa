@@ -102,13 +102,13 @@ test('owner can schedule a plan change and clear it', function (): void {
     $subscription = app(CreateSubscription::class)->handle($current, CarbonImmutable::parse('2026-10-01', 'UTC'));
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('billing.subscription.plan', $subscription), ['plan_id' => $next->id])
+        ->post(route('billing.subscription.plan', ['tenant' => $tenant->slug, 'subscription' => $subscription]), ['plan_id' => $next->id])
         ->assertSessionHas('status');
 
     expect($subscription->fresh()->next_plan_id)->toBe($next->id);
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('billing.subscription.plan.clear', $subscription))
+        ->post(route('billing.subscription.plan.clear', ['tenant' => $tenant->slug, 'subscription' => $subscription]))
         ->assertSessionHas('status');
 
     expect($subscription->fresh()->next_plan_id)->toBeNull();
@@ -120,12 +120,12 @@ test('owner can schedule cancellation and reactivate it', function (): void {
     $subscription = app(CreateSubscription::class)->handle(billingDashboardPlan(), CarbonImmutable::parse('2026-10-01', 'UTC'));
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('billing.subscription.cancel', $subscription))->assertSessionHas('status');
+        ->post(route('billing.subscription.cancel', ['tenant' => $tenant->slug, 'subscription' => $subscription]))->assertSessionHas('status');
 
     expect($subscription->fresh()->cancelled_at)->not->toBeNull();
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('billing.subscription.reactivate', $subscription))->assertSessionHas('status');
+        ->post(route('billing.subscription.reactivate', ['tenant' => $tenant->slug, 'subscription' => $subscription]))->assertSessionHas('status');
 
     expect($subscription->fresh()->cancelled_at)->toBeNull();
 });
