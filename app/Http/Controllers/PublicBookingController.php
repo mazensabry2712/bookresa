@@ -133,7 +133,7 @@ class PublicBookingController
                     return redirect()->away($payment->checkout_url);
                 }
 
-                return redirect()->to(URL::signedRoute('public.booking.confirmation', [
+                return redirect()->to(URL::signedRoute('public.booking.canonical.confirmation', [
                     'tenant' => $tenant->slug,
                     'booking' => $booking->booking_reference,
                 ]));
@@ -158,7 +158,7 @@ class PublicBookingController
                 ->with(['customer', 'service', 'staff', 'payments'])
                 ->firstOrFail();
 
-            return view('public.booking.confirmation', [
+            return view('public.booking.canonical.confirmation', [
                 'booking' => $model,
                 'tenant' => $tenant,
             ]);
