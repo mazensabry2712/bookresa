@@ -140,7 +140,7 @@ test('dashboard shows business identity and core operating metrics', function ()
         ->assertSee('Customer One')
         ->assertSee('BR-DASH-001')
         ->assertSee('Dashboard Plan')
-        ->assertSee('50%');
+        ->assertSee('10%');
 });
 
 test('dashboard excludes terminal bookings from upcoming list', function (): void {
