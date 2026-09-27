@@ -33,7 +33,7 @@
             </div>
         </section>
 
-        <form method="POST" action="{{ route('business.modules.update') }}" class="space-y-6">
+        <form method="POST" action="{{ route('business.modules.update', ['tenant' => $tenant->slug]) }}" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -111,7 +111,7 @@
                                     <p class="font-bold text-slate-950 dark:text-white">{{ __('app.module_ui.no_subscription') }}</p>
                                     <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">{{ __('app.module_ui.unlock_message') }}</p>
                                 </div>
-                                <a href="{{ route('billing.subscription') }}"
+                                <a href="{{ route('billing.subscription', ['tenant' => $tenant->slug]) }}"
                                    class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:-translate-y-px hover:shadow-md dark:bg-brand-indigo">
                                     {{ __('app.explore_plans') }}
                                 </a>
