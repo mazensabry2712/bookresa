@@ -300,3 +300,13 @@ test('workspace dashboard rejects a tenant the authenticated user does not belon
         ->get(route('dashboard', ['tenant' => $otherTenant->slug]))
         ->assertForbidden();
 });
+
+
+test('legacy dashboard subpaths redirect to the tenant canonical workspace path', function (): void {
+    [$user, $tenant] = dashboardWorkspace();
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get('/dashboard/bookings')
+        ->assertRedirect(route('booking.management.index', ['tenant' => $tenant->slug]));
+});
