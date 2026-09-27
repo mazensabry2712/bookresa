@@ -165,7 +165,7 @@ test('workspace modules are managed outside onboarding', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('business.modules.index'))
+        ->get(route('business.modules.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSeeText(__('app.module_ui.modules'))
         ->assertSeeText(__('app.module_ui.core'))
@@ -177,7 +177,7 @@ test('workspace modules are managed outside onboarding', function (): void {
         ->put(route('business.modules.update'), [
             'module_ids' => [],
         ])
-        ->assertRedirect(route('business.modules.index'))
+        ->assertRedirect(route('business.modules.index', ['tenant' => $tenant->slug]))
         ->assertSessionHasNoErrors();
 
     $coreModuleIds = Module::query()->where('is_core', true)->pluck('id');
