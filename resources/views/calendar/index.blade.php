@@ -70,7 +70,7 @@
 
             <div class="flex flex-wrap items-center gap-2">
                 @foreach ($viewLabels as $key => $label)
-                    <a href="{{ route('calendar.index', ['view' => $key, 'date' => $reference->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
+                    <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $key, 'date' => $reference->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border px-3.5 py-2 text-sm font-bold {{ $viewMode === $key ? 'border-brand-indigo bg-indigo-50 text-brand-indigo dark:border-indigo-800 dark:bg-indigo-950/30 dark:text-indigo-300' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800' }}">
                         {{ $label }}
                     </a>
@@ -81,16 +81,16 @@
         <section class="br-panel p-4 sm:p-5">
             <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('calendar.index', ['view' => $viewMode, 'date' => $previousDate->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
+                    <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $viewMode, 'date' => $previousDate->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                         <span class="br-direction-arrow" aria-hidden="true">←</span>
                         {{ __('app.calendar_ui.previous') }}
                     </a>
-                    <a href="{{ route('calendar.index', ['view' => $viewMode, 'date' => $today]) }}"
+                    <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $viewMode, 'date' => $today]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-navy px-3.5 py-2 text-sm font-bold text-white hover:bg-slate-800">
                         {{ __('app.calendar_ui.today') }}
                     </a>
-                    <a href="{{ route('calendar.index', ['view' => $viewMode, 'date' => $nextDate->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
+                    <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $viewMode, 'date' => $nextDate->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                         {{ __('app.calendar_ui.next') }}
                         <span class="br-direction-arrow" aria-hidden="true">→</span>
@@ -157,7 +157,7 @@
                                 @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $day->toDateString()); @endphp
                                 <div class="min-h-40 border-b border-slate-200 p-2.5 dark:border-slate-800 {{ $day->toDateString() === $today ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : '' }}">
                                     <div class="flex items-center justify-between gap-2">
-                                        <a href="{{ route('calendar.index', ['view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
+                                        <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
                                            class="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold {{ $day->toDateString() === $today ? 'bg-brand-indigo text-white' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800' }}">
                                             {{ $day->day }}
                                         </a>
@@ -185,7 +185,7 @@
                                         @endforeach
 
                                         @if ($dayBookings->count() > 4)
-                                            <a href="{{ route('calendar.index', ['view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
+                                            <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
                                                class="block px-1 text-[11px] font-bold text-brand-indigo hover:underline">
                                                 +{{ $dayBookings->count() - 4 }} {{ __('app.calendar_ui.more') }}
                                             </a>
