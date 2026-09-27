@@ -20,7 +20,7 @@
                aria-hidden="false"
                aria-label="{{ __('app.workspace') }}">
             <div class="flex min-h-16 items-center justify-between gap-3 border-b border-slate-200 px-4 dark:border-slate-800 lg:px-5">
-                <a href="{{ route('dashboard') }}" class="flex min-w-0 items-center gap-3 rounded-lg" aria-label="BookResa">
+                <a href="{{ route('dashboard', ['tenant' => $tenant->slug]) }}" class="flex min-w-0 items-center gap-3 rounded-lg" aria-label="BookResa">
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-navy text-sm font-extrabold text-white">B</span>
                     <span class="min-w-0">
                         <span class="block truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">BookResa</span>
@@ -44,45 +44,45 @@
                 <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('app.workspace') }}</p>
 
                 <nav class="relative z-10 space-y-1 pointer-events-auto" aria-label="{{ __('app.workspace') }}">
-                    <a href="{{ route('dashboard') }}" data-active="{{ request()->routeIs('dashboard') ? 'true' : 'false' }}" class="br-nav-link">
+                    <a href="{{ route('dashboard', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('dashboard') ? 'true' : 'false' }}" class="br-nav-link">
                         <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 13h6V4H4v9Zm10 7h6v-9h-6v9ZM4 20h6v-3H4v3Zm10-12h6V4h-6v4Z"/></svg></span>
                         <span>{{ __('app.dashboard') }}</span>
                     </a>
 
                     @can('bookings.view')
-                        <a href="{{ route('booking.management.index') }}" data-active="{{ request()->routeIs('booking.management.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('booking.management.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('booking.management.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
                             <span>{{ __('app.bookings') }}</span>
                         </a>
                     @endcan
 
                     @can('calendar.view')
-                        <a href="{{ route('calendar.index') }}" data-active="{{ request()->routeIs('calendar.index') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('calendar.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('calendar.index') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M3.5 10h17M8 14h2M14 14h2M8 18h2M14 18h2"/></svg></span>
                             <span>{{ __('app.calendar') }}</span>
                         </a>
-                        <a href="{{ route('scheduling.index') }}" data-active="{{ request()->routeIs('scheduling.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('scheduling.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.06.06-1.7 1.7-.06-.06a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.08 1.65V20h-2.4v-.03a1.8 1.8 0 0 0-1.08-1.65 1.8 1.8 0 0 0-1.98.36l-.06.06-1.7-1.7.06-.06A1.8 1.8 0 0 0 8.2 15a1.8 1.8 0 0 0-1.65-1.08H6v-2.4h.55A1.8 1.8 0 0 0 8.2 10a1.8 1.8 0 0 0-.36-1.98l-.06-.06 1.7-1.7.06.06a1.8 1.8 0 0 0 1.98.36 1.8 1.8 0 0 0 1.08-1.65V5h2.4v.03a1.8 1.8 0 0 0 1.08 1.65 1.8 1.8 0 0 0 1.98-.36l.06-.06 1.7 1.7-.06.06A1.8 1.8 0 0 0 19.4 10c.24.55.72.92 1.32.92H21v2.4h-.28c-.6 0-1.08.36-1.32.92Z"/></svg></span>
                             <span>{{ __('app.scheduling') }}</span>
                         </a>
                     @endcan
 
                     @can('services.view')
-                        <a href="{{ route('services.index') }}" data-active="{{ request()->routeIs('services.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('services.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M6 4.5h12M6 9h12M6 13.5h8M6 18h6"/></svg></span>
                             <span>{{ __('app.services') }}</span>
                         </a>
                     @endcan
 
                     @can('staff.view')
-                        <a href="{{ route('staff.index') }}" data-active="{{ request()->routeIs('staff.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('staff.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('staff.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3"/><path stroke-linecap="round" d="M6 20a6 6 0 0 1 12 0"/><path stroke-linecap="round" d="M4 11a3 3 0 0 1 2.5-2.95M20 11a3 3 0 0 0-2.5-2.95"/></svg></span>
                             <span>{{ __('app.staff') }}</span>
                         </a>
                     @endcan
 
                     @can('customers.view')
-                        <a href="{{ route('customers.index') }}" data-active="{{ request()->routeIs('customers.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('customers.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('customers.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path stroke-linecap="round" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 7.5a3 3 0 0 1 0 5.8M16 15.5a4.5 4.5 0 0 1 4.5 4.5"/></svg></span>
                             <span>{{ __('app.customers') }}</span>
                         </a>
@@ -90,40 +90,40 @@
 
                     @can('billing.view')
                         @if (app(\App\Domain\Tenant\Services\CurrentTenant::class)->get()?->modules->contains('key', 'payments'))
-                            <a href="{{ route('payments.index') }}" data-active="{{ request()->routeIs('payments.index') ? 'true' : 'false' }}" class="br-nav-link">
+                            <a href="{{ route('payments.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('payments.index') ? 'true' : 'false' }}" class="br-nav-link">
                                 <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path stroke-linecap="round" d="M3 10h18M7 15h4"/></svg></span>
                                 <span>{{ __('app.payments') }}</span>
                             </a>
                         @endif
-                        <a href="{{ route('billing.subscription') }}" data-active="{{ request()->routeIs('billing.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('billing.subscription', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('billing.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path stroke-linecap="round" d="M7 15h5M7 9h10"/></svg></span>
                             <span>{{ __('app.billing') }}</span>
                         </a>
                     @endcan
 
                     @can('notifications.view')
-                        <a href="{{ route('notifications.index') }}" data-active="{{ request()->routeIs('notifications.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('notifications.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('notifications.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
                             <span>{{ __('app.notification_ui.notifications') }}</span>
                         </a>
                     @endcan
 
                     @can('reports.view')
-                        <a href="{{ route('reports.business') }}" data-active="{{ request()->routeIs('reports.business') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('reports.business', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('reports.business') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M5 19V9M12 19V5M19 19v-7M3 19h18"/></svg></span>
                             <span>{{ __('app.reports') }}</span>
                         </a>
                     @endcan
 
                     @can('business.view')
-                        <a href="{{ route('business.profile.edit') }}" data-active="{{ request()->routeIs('business.profile.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('business.profile.edit', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('business.profile.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" d="M19 13.2a1.8 1.8 0 0 0 .3 1.95l.05.05-1.7 1.7-.05-.05a1.8 1.8 0 0 0-1.95-.3 1.8 1.8 0 0 0-1.25 1.7V20h-2.4v-.05a1.8 1.8 0 0 0-1.25-1.7 1.8 1.8 0 0 0-1.95.3l-.05.05-1.7-1.7.05-.05A1.8 1.8 0 0 0 6 13.2a1.8 1.8 0 0 0-1.7-1.25H4v-2.4h.3A1.8 1.8 0 0 0 6 8.3a1.8 1.8 0 0 0-.3-1.95l-.05-.05 1.7-1.7.05.05A1.8 1.8 0 0 0 9.35 5a1.8 1.8 0 0 0 1.25-1.7V3h2.4v.3A1.8 1.8 0 0 0 14.25 5a1.8 1.8 0 0 0 1.95-.3l.05-.05 1.7 1.7-.05.05A1.8 1.8 0 0 0 17.7 8.3c.2.47.63.8 1.15.8H20v2.4h-.3c-.5 0-.95.32-1.15.8Z"/></svg></span>
                             <span>{{ __('app.business') }}</span>
                         </a>
                     @endcan
 
                     @can('settings.manage')
-                        <a href="{{ route('business.modules.index') }}" data-active="{{ request()->routeIs('business.modules.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <a href="{{ route('business.modules.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('business.modules.*') ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 5h16M4 9h16M4 13h10M4 17h7"/></svg></span>
                             <span>{{ __('app.modules') }}</span>
                         </a>
@@ -167,7 +167,7 @@
 
                     <div class="flex shrink-0 items-center gap-2">
                         @can('notifications.view')
-                            <a href="{{ route('notifications.index') }}"
+                            <a href="{{ route('notifications.index', ['tenant' => $tenant->slug]) }}"
                                class="relative rounded-xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                                aria-label="{{ __('app.notification_ui.notifications') }}">
                                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
