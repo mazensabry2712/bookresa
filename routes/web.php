@@ -62,6 +62,27 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function (Request $re
     return redirect()->route('dashboard', ['tenant' => $membership->tenant->slug]);
 })->name('dashboard.legacy');
 
+Route::middleware(['auth', 'verified'])->get('/dashboard/{legacyPath}', function (Request $request, string $legacyPath): RedirectResponse {
+    $membership = $request->user()
+        ->tenantMemberships()
+        ->where('status', MembershipStatus::Active->value)
+        ->whereHas('tenant', fn ($query) => $query->where('status', TenantStatus::Active->value))
+        ->with('tenant')
+        ->orderByDesc('is_primary')
+        ->orderBy('id')
+        ->first();
+
+    abort_unless($membership?->tenant !== null, 403, 'No active workspace is available for this account.');
+
+    $url = route('dashboard', ['tenant' => $membership->tenant->slug]).'/'.ltrim($legacyPath, '/');
+
+    if ($request->getQueryString() !== null) {
+        $url .= '?'.$request->getQueryString();
+    }
+
+    return redirect()->to($url);
+})->where('legacyPath', '.*')->name('dashboard.legacy.path');
+
 Route::middleware(['auth', 'verified', 'tenant'])
     ->prefix('workspace/{tenant:slug?}/dashboard')
     ->group(function (): void {
