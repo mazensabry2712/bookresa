@@ -26,13 +26,18 @@ final class DashboardController
         $tenant->loadMissing('profile');
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
+        $isStaff = auth()->user()?->hasRole('staff') ?? false;
         $staffId = null;
 
-        if (auth()->user()?->hasRole('staff')) {
+        if ($isStaff) {
             $staffId = StaffProfile::query()
                 ->where('user_id', auth()->id())
                 ->value('id');
+
+            abort_unless($staffId !== null, 403, 'A staff profile is required for this workspace.');
         }
+
+        $canViewBilling = auth()->user()?->can('billing.view') ?? false;
 
         $todayStart = CarbonImmutable::now($timezone)->startOfDay();
         $todayEnd = $todayStart->endOfDay();
@@ -80,9 +85,17 @@ final class DashboardController
             ->limit(8)
             ->get();
 
-        $newCustomersToday = Customer::query()
-            ->whereBetween('created_at', [$todayStart->utc(), $todayEnd->utc()])
-            ->count();
+        $newCustomersTodayQuery = Customer::query()
+            ->whereBetween('created_at', [$todayStart->utc(), $todayEnd->utc()]);
+
+        if ($isStaff) {
+            $newCustomersTodayQuery->whereHas(
+                'bookings',
+                fn ($query) => $query->where('staff_id', $staffId),
+            );
+        }
+
+        $newCustomersToday = $newCustomersTodayQuery->count();
 
         $pendingBookings = Booking::query()
             ->where('starts_at', '>=', $nowUtc)
@@ -104,25 +117,38 @@ final class DashboardController
             ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
             ->count();
 
-        $subscription = Subscription::query()
-            ->with(['plan'])
-            ->whereIn('status', [
-                SubscriptionStatus::Trial->value,
-                SubscriptionStatus::Active->value,
-            ])
-            ->where('end_at', '>', $nowUtc)
-            ->where(function ($query): void {
-                $query->where('status', SubscriptionStatus::Trial->value)
-                    ->orWhere(function ($query): void {
-                        $query->where('status', SubscriptionStatus::Active->value)
-                            ->where('payment_status', PaymentStatus::Paid->value);
-                    });
-            })
-            ->latest('start_at')
-            ->first();
+        $subscription = $canViewBilling
+            ? Subscription::query()
+                ->with(['plan'])
+                ->whereIn('status', [
+                    SubscriptionStatus::Trial->value,
+                    SubscriptionStatus::Active->value,
+                ])
+                ->where('end_at', '>', $nowUtc)
+                ->where(function ($query): void {
+                    $query->where('status', SubscriptionStatus::Trial->value)
+                        ->orWhere(function ($query): void {
+                            $query->where('status', SubscriptionStatus::Active->value)
+                                ->where('payment_status', PaymentStatus::Paid->value);
+                        });
+                })
+                ->latest('start_at')
+                ->first()
+            : null;
 
         $usageSummary = $subscription ? $usageCalculator->handle($subscription) : null;
-        $totalCustomers = $usageSummary?->uniqueCustomerCount ?? Customer::query()->count();
+
+        $customerCountQuery = Customer::query();
+
+        if ($isStaff) {
+            $customerCountQuery->whereHas(
+                'bookings',
+                fn ($query) => $query->where('staff_id', $staffId),
+            );
+        }
+
+        $totalCustomers = $usageSummary?->uniqueCustomerCount
+            ?? $customerCountQuery->count();
 
         $onboardingCompleted = (bool) data_get($tenant->settings, 'onboarding.completed', false);
         $onboardingStep = (string) data_get($tenant->settings, 'onboarding.step', 'services');
@@ -192,7 +218,8 @@ final class DashboardController
                 'unpaidBookings' => (int) $unpaidBookings,
                 'usagePercent' => $usagePercent,
                 'usageOverLimit' => (bool) ($usageSummary?->additionalCustomerCount > 0),
-                'subscriptionNeedsAction' => $subscription === null || ($subscriptionDaysRemaining !== null && $subscriptionDaysRemaining <= 7),
+                'subscriptionNeedsAction' => $canViewBilling
+                    && ($subscription === null || ($subscriptionDaysRemaining !== null && $subscriptionDaysRemaining <= 7)),
             ],
             'subscription' => $subscription,
             'subscriptionDaysRemaining' => $subscriptionDaysRemaining,
