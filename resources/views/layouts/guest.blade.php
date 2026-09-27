@@ -36,9 +36,36 @@
             <section class="mx-auto w-full max-w-md lg:mx-0 lg:ms-auto">
                 <div class="mb-5 flex items-center justify-between gap-3">
                     <a href="{{ route('home') }}" class="text-lg font-extrabold tracking-tight text-slate-950 dark:text-white">BookResa</a>
-                    <div class="flex items-center gap-2">
-                        <x-locale-switcher />
-                        <x-theme-toggle />
+
+                    <div class="relative">
+                        <button type="button"
+                                class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
+                                data-bookresa-guest-utility
+                                aria-expanded="false"
+                                aria-controls="bookresa-guest-utility-panel"
+                                aria-haspopup="true"
+                                aria-label="{{ __('app.language') }} & {{ __('app.theme') }}">
+                            <span class="text-lg font-bold leading-none" aria-hidden="true">•••</span>
+                        </button>
+
+                        <div id="bookresa-guest-utility-panel"
+                             class="invisible absolute end-0 top-[calc(100%+0.6rem)] z-50 w-60 translate-y-1 rounded-xl border border-slate-200 bg-white p-3 opacity-0 shadow-xl shadow-slate-900/10 transition duration-150 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/25"
+                             data-bookresa-guest-utility-panel
+                             aria-hidden="true">
+                            <div>
+                                <p class="px-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.language') }}</p>
+                                <div class="mt-1">
+                                    <x-locale-switcher compact />
+                                </div>
+                            </div>
+
+                            <div class="mt-2 border-t border-slate-100 pt-2 dark:border-slate-800">
+                                <p class="px-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.theme') }}</p>
+                                <div class="mt-1">
+                                    <x-theme-toggle compact />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -64,5 +91,50 @@
             </section>
         </div>
     </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.querySelector('[data-bookresa-guest-utility]');
+            const panel = document.querySelector('[data-bookresa-guest-utility-panel]');
+
+            if (!button || !panel) {
+                return;
+            }
+
+            const setOpen = (open, restoreFocus = true) => {
+                panel.classList.toggle('invisible', !open);
+                panel.classList.toggle('opacity-0', !open);
+                panel.classList.toggle('translate-y-1', !open);
+                panel.classList.toggle('visible', open);
+                panel.classList.toggle('translate-y-0', open);
+                panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+                button.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+                if (!open && restoreFocus) {
+                    button.focus();
+                }
+            };
+
+            button.addEventListener('click', () => {
+                setOpen(panel.classList.contains('invisible'));
+            });
+
+            panel.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => setOpen(false, false));
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!panel.contains(event.target) && !button.contains(event.target)) {
+                    setOpen(false, false);
+                }
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && !panel.classList.contains('invisible')) {
+                    setOpen(false);
+                }
+            });
+        });
+    </script>
+
 </body>
 </html>
