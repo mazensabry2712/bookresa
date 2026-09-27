@@ -1,8 +1,8 @@
 @php
     $workspaceMemberships = auth()->user()
         ->tenantMemberships()
-        ->where('status', AppDomainTenantEnumsMembershipStatus::Active->value)
-        ->whereHas('tenant', fn ($query) => $query->where('status', AppDomainTenantEnumsTenantStatus::Active->value))
+        ->where('status', \App\Domain\Tenant\Enums\MembershipStatus::Active->value)
+        ->whereHas('tenant', fn ($query) => $query->where('status', \App\Domain\Tenant\Enums\TenantStatus::Active->value))
         ->with('tenant.profile')
         ->orderByDesc('is_primary')
         ->orderBy('id')
