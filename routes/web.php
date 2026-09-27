@@ -87,7 +87,6 @@ Route::middleware(['auth', 'verified', 'tenant'])
     ->prefix('workspace/{tenant:slug}/dashboard')
     ->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])
-        ->middleware('subscription.usable')
         ->name('dashboard');
     Route::get('/modules', [BusinessModuleController::class, 'index'])
         ->middleware('permission:settings.manage')
