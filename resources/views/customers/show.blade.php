@@ -117,7 +117,7 @@
             </div>
 
             @can('customers.update')
-                <form method="POST" action="{{ route('customers.update', $customer) }}" class="mt-5 grid gap-4 md:grid-cols-3">
+                <form method="POST" action="{{ route('customers.update', ['tenant' => $tenant->slug, 'customer' => $customer]) }}" class="mt-5 grid gap-4 md:grid-cols-3">
                     @csrf
                     @method('PUT')
                     <label class="space-y-1.5 text-sm">
