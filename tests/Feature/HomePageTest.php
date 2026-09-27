@@ -10,6 +10,9 @@ test('public home page renders the BookResa product home', function (): void {
         ->assertSee('Set up the basics. Then get on with the day.')
         ->assertSee('A booking system your team can actually work from.')
         ->assertSee('Made for service businesses')
+        ->assertSee('Make booking simple from the customer side too.')
+        ->assertSee('Common questions about BookResa.')
+        ->assertSee('The important controls stay where your team needs them.')
         ->assertSee('/logo.png')
         ->assertSee('/logodark.png')
         ->assertSee('lg:hidden')
@@ -23,5 +26,7 @@ test('public home page supports Arabic navigation and copy', function (): void {
         ->assertSee('lang="ar"', false)
         ->assertSee('dir="rtl"', false)
         ->assertSee('طريقة أبسط لإدارة حجوزاتك.')
-        ->assertSee('حجز العميل');
+        ->assertSee('حجز العميل')
+        ->assertSee('اجعل الحجز بسيطًا من جهة العميل أيضًا.')
+        ->assertSee('أهم الأسئلة عن BookResa.');
 });
