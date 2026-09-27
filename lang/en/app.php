@@ -62,6 +62,7 @@ return [
     'resend_verification' => 'Resend verification email',
     'login' => 'Log in',
     'welcome_back' => 'Welcome back',
+    'auth_access_eyebrow' => 'Account access',
     'login_message' => 'Sign in to manage your business workspace.',
     'password' => 'Password',
     'show_password' => 'Show password',
