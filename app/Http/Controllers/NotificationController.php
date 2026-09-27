@@ -20,19 +20,23 @@ final class NotificationController
         /** @var User $user */
         $user = request()->user();
 
+        $tenantFilter = $this->tenantFilter($tenant->getKey());
+
         $notifications = $user->notifications()
+            ->whereRaw($tenantFilter[0], $tenantFilter[1])
             ->latest('created_at')
-            ->limit(100)
-            ->get()
-            ->filter(function (DatabaseNotification $notification) use ($tenant): bool {
-                return (int) data_get($notification->data, 'tenant_id', 0) === (int) $tenant->getKey();
-            })
-            ->values();
+            ->paginate(25)
+            ->withQueryString();
+
+        $unreadCount = $user->notifications()
+            ->whereNull('read_at')
+            ->whereRaw($tenantFilter[0], $tenantFilter[1])
+            ->count();
 
         return view('notifications.index', [
             'tenant' => $tenant,
             'notifications' => $notifications,
-            'unreadCount' => $notifications->whereNull('read_at')->count(),
+            'unreadCount' => $unreadCount,
         ]);
     }
 
@@ -90,19 +94,22 @@ final class NotificationController
         /** @var User $user */
         $user = $request->user();
 
-        $notifications = $user->notifications()
-            ->whereNull('read_at')
-            ->latest('created_at')
-            ->limit(100)
-            ->get()
-            ->filter(function (DatabaseNotification $notification) use ($tenant): bool {
-                return (int) data_get($notification->data, 'tenant_id', 0) === (int) $tenant->getKey();
-            });
+        [$tenantWhere, $tenantBindings] = $this->tenantFilter($tenant->getKey());
 
-        foreach ($notifications as $notification) {
-            $notification->markAsRead();
-        }
+        $user->notifications()
+            ->whereNull('read_at')
+            ->whereRaw($tenantWhere, $tenantBindings)
+            ->update(['read_at' => now()]);
 
         return back()->with('status', __('app.notification_ui.all_marked_read'));
+    }
+
+    /** @return array{0:string,1:array<int,int>} */
+    private function tenantFilter(int|string $tenantId): array
+    {
+        return [
+            "JSON_UNQUOTE(JSON_EXTRACT(data, '$.tenant_id')) = ?",
+            [(int) $tenantId],
+        ];
     }
 }
