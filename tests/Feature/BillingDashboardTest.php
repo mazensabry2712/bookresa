@@ -84,7 +84,7 @@ test('owner can see live customer usage and estimated billing total', function (
     Customer::factory()->count(4)->create();
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('4')
         ->assertSee('1,000.00 EGP')
@@ -168,7 +168,7 @@ test('billing payment history is bounded to the latest 20 records', function ():
     }
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('SUB-PAY-21')
         ->assertDontSee('SUB-PAY-01');
