@@ -198,7 +198,7 @@
                         </div>
 
                         @can('staff.manage')
-                            <form method="POST" action="{{ route('staff.update', $staffMember) }}" class="mt-5 space-y-5 border-t border-slate-200 pt-5 dark:border-slate-800">
+                            <form method="POST" action="{{ route('staff.update', ['tenant' => $tenant->slug, 'staff' => $staffMember]) }}" class="mt-5 space-y-5 border-t border-slate-200 pt-5 dark:border-slate-800">
                                 @csrf
                                 @method('PUT')
 
