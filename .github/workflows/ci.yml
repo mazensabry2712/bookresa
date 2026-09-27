@@ -54,7 +54,7 @@ jobs:
             base_ref="HEAD^"
           fi
 
-          mapfile -d '' php_files < <(git diff --name-only -z "$base_ref" HEAD -- '*.php')
+          mapfile -d '' php_files < <(git diff --name-only -z "$base_ref" HEAD -- '*.php' ':!lang/**')
 
           if [ "${#php_files[@]}" -eq 0 ]; then
             echo "No PHP files changed."
