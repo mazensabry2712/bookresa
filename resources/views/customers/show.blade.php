@@ -49,8 +49,15 @@
                     </div>
                 </div>
 
-                <div class="br-panel p-4">
-                    <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.customer_ui.last_seen') }}</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    @can('bookings.create')
+                        <a href="{{ route('booking.management.create', ['tenant' => $tenant->slug, 'customer_id' => $customer->id]) }}"
+                           class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
+                            {{ __('app.booking_ui.new_booking') }}
+                        </a>
+                    @endcan
+                    <div class="br-panel p-4">
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.customer_ui.last_seen') }}</p>
                     <p class="mt-1 text-sm font-bold text-slate-950 dark:text-white">{{ $customer->last_seen_at?->diffForHumans() ?? '—' }}</p>
                 </div>
             </div>
