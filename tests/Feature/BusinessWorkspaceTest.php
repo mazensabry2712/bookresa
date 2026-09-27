@@ -72,6 +72,7 @@ test('authenticated owner can create a business workspace', function (): void {
     app(CurrentTenant::class)->set($tenant);
 
     expect($tenant->profile)->not->toBeNull()
+        ->and(data_get($tenant->settings, 'onboarding.step'))->toBe('services')
         ->and($tenant->business_type_id)->toBe($type->id)
         ->and($user->tenantMemberships()->where('tenant_id', $tenant->id)->where('status', MembershipStatus::Active)->exists())->toBeTrue()
         ->and($tenant->modules()->wherePivot('enabled', true)->count())->toBe(6);
