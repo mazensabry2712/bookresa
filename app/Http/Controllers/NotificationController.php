@@ -64,18 +64,18 @@ final class NotificationController
         $target = data_get($record->data, 'booking_id');
 
         if ($target !== null && $user->can('bookings.view')) {
-            return to_route('booking.management.show', ['booking' => $target]);
+            return to_route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $target]);
         }
 
         if (
             in_array(data_get($record->data, 'type'), ['subscription_expiring', 'usage_warning'], true)
             && $user->can('billing.view')
         ) {
-            return to_route('billing.subscription');
+            return to_route('billing.subscription', ['tenant' => $tenant->slug]);
         }
 
         if ($user->can('notifications.view')) {
-            return to_route('notifications.index');
+            return to_route('notifications.index', ['tenant' => $tenant->slug]);
         }
 
         return back();
