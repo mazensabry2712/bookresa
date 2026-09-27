@@ -45,6 +45,6 @@ class BusinessTypeSeeder extends Seeder
             );
         }
 
-        Cache::forget('bookresa:business-types:active');
+        Cache::forget('bookresa:business-types:active:v2');
     }
 }
