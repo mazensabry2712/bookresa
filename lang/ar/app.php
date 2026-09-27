@@ -117,6 +117,7 @@ return [
     'business_name_placeholder' => 'مثال: عيادة أحمد للأسنان',
     'business_type' => 'نوع النشاط',
     'select_business_type' => 'اختر نوع النشاط',
+    'select_timezone' => 'اختر المنطقة الزمنية',
     'booking_slug' => 'رابط الحجز',
     'booking_slug_placeholder' => 'ahmed-clinic',
     'booking_slug_help' => 'سيصبح هذا الجزء من العنوان العام الذي يستخدمه العملاء للحجز.',
