@@ -67,7 +67,7 @@ test('authenticated owner can create a business workspace', function (): void {
 
     $tenant = Tenant::query()->where('slug', 'ahmed-clinic')->firstOrFail();
 
-    $response->assertRedirectToRoute('onboarding.workspace');
+    $response->assertRedirectToRoute('services.index');
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -147,48 +147,37 @@ test('tenant role names are isolated between workspaces', function (): void {
         ->and($a->id)->not->toBe($b->id);
 });
 
-test('workspace modules page is available for the active tenant', function (): void {
+test('workspace modules are managed outside onboarding', function (): void {
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
     $tenant = app(CreateBusiness::class)->handle(
         $user,
         $type,
-        ['name' => 'Workspace UI Clinic'],
+        ['name' => 'Workspace Modules Clinic'],
     );
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('onboarding.workspace'))
+        ->get(route('business.modules.index'))
         ->assertOk()
-        ->assertSeeText(__('app.choose_modules'))
-        ->assertSeeText(__('app.included_tools'))
-        ->assertSeeText(__('app.workspace_ready_title'))
-        ->assertSeeText(__('app.more_tools'));
-});
-
-test('module onboarding always keeps core modules enabled', function (): void {
-    $user = User::factory()->create();
-    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
-
-    $tenant = app(CreateBusiness::class)->handle(
-        $user,
-        $type,
-        ['name' => 'Core Modules Clinic'],
-    );
+        ->assertSeeText(__('app.module_ui.modules'))
+        ->assertSeeText(__('app.module_ui.core'))
+        ->assertSeeText(__('app.module_ui.add_ons'))
+        ->assertSeeText(__('app.module_ui.no_subscription'));
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('onboarding.workspace.modules'), [
+        ->put(route('business.modules.update'), [
             'module_ids' => [],
         ])
-        ->assertRedirect(route('services.index'))
+        ->assertRedirect(route('business.modules.index'))
         ->assertSessionHasNoErrors();
 
     $coreModuleIds = Module::query()->where('is_core', true)->pluck('id');
 
     expect(
-        $tenant->modules()->whereIn('module_id', $coreModuleIds)->wherePivot('enabled', true)->count()
+        $tenant->fresh()->modules()->whereIn('module_id', $coreModuleIds)->wherePivot('enabled', true)->count()
     )->toBe($coreModuleIds->count());
 });
 
@@ -245,10 +234,11 @@ test('onboarding advances through services working hours and staff stages', func
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('onboarding.complete'))
-        ->assertRedirect(route('dashboard'));
+        ->get(route('dashboard'))
+        ->assertOk();
 
-    expect(data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeTrue();
+    expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready')
+        ->and(data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeTrue();
 });
 
 test('onboarding cannot complete when a core module is disabled', function (): void {
