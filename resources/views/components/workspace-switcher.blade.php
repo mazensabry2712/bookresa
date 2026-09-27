@@ -1,3 +1,5 @@
+@props(['tenant'])
+
 @php
     $workspaceMemberships = auth()->user()
         ->tenantMemberships()
