@@ -114,7 +114,7 @@ test('unfinished onboarding can open the tenant dashboard directly', function ()
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard'))
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee(__('app.dashboard'));
 });
