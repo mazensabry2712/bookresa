@@ -141,6 +141,13 @@ return [
     'optional_modules_help' => 'Add only what this business needs right now.',
     'available' => 'Available',
     'optional_module_locked_help' => 'Choose a plan that includes this module to enable it.',
+    'included' => 'Included',
+    'module_descriptions' => [
+        'payments' => 'Accept payments from customers online.',
+        'invoices' => 'Create and manage invoices in one place.',
+        'inventory' => 'Track products, stock levels and movement.',
+        'branches' => 'Manage multiple business locations.',
+    ],
     'configure_workspace' => 'Configure your workspace',
     'modules_enabled' => 'modules enabled',
     'next_step' => 'Next step',
