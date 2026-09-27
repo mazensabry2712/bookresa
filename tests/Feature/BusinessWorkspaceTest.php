@@ -1,7 +1,14 @@
 <?php
 
+use App\Domain\Business\Actions\CreateBusiness;
+use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
+use App\Domain\Scheduling\Enums\DayOfWeek;
+use App\Domain\Scheduling\Models\BusinessWorkingHour;
+use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
@@ -86,7 +93,7 @@ test('business profile cannot be updated across tenant context', function (): vo
     $tenantB = Tenant::query()->create(['slug' => 'tenant-b']);
 
     $profileA = app(CurrentTenant::class)->run($tenantA, function () use ($tenantA) {
-        return \App\Domain\Business\Models\BusinessProfile::query()->create([
+        return BusinessProfile::query()->create([
             'tenant_id' => $tenantA->id,
             'name' => ['en' => 'A', 'ar' => 'أ'],
         ]);
@@ -105,7 +112,7 @@ test('tenant role names are isolated between workspaces', function (): void {
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $a = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $a = app(CreateBusiness::class)->handle(
         $user,
         $type,
         ['name' => 'Alpha Clinic'],
@@ -236,7 +243,7 @@ test('onboarding cannot complete when a core module is disabled', function (): v
     );
 
     app(CurrentTenant::class)->run($tenant, function () use ($tenant, $staffUser): void {
-        \App\Domain\Service\Models\Service::query()->create([
+        Service::query()->create([
             'tenant_id' => $tenant->id,
             'name' => ['en' => 'Consultation', 'ar' => 'كشف'],
             'description' => ['en' => null, 'ar' => null],
@@ -247,19 +254,19 @@ test('onboarding cannot complete when a core module is disabled', function (): v
             'is_active' => true,
         ]);
 
-        \App\Domain\Scheduling\Models\BusinessWorkingHour::query()->create([
+        BusinessWorkingHour::query()->create([
             'tenant_id' => $tenant->id,
-            'day_of_week' => \App\Domain\Scheduling\Enums\DayOfWeek::Sunday,
+            'day_of_week' => DayOfWeek::Sunday,
             'opens_at' => '09:00',
             'closes_at' => '17:00',
             'is_closed' => false,
         ]);
 
-        \App\Domain\Staff\Models\StaffProfile::query()->create([
+        StaffProfile::query()->create([
             'tenant_id' => $tenant->id,
             'user_id' => $staffUser->id,
             'display_name' => 'Core Guard Staff',
-            'status' => \App\Domain\Staff\Enums\StaffStatus::Active,
+            'status' => StaffStatus::Active,
         ]);
     });
 
@@ -304,7 +311,7 @@ test('onboarding completes when workspace modules services working hours and sta
         ['name' => 'Ready Clinic'],
     );
 
-    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $owner, $staffUser): void {
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $staffUser): void {
         \App\Domain\Service\Models\Service::query()->create([
             'tenant_id' => $tenant->id,
             'name' => ['en' => 'Consultation', 'ar' => 'كشف'],
