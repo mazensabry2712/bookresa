@@ -59,7 +59,7 @@
                 </div>
 
                 <form method="POST"
-                      action="{{ $isEditing ? route('services.update', $editingService) : route('services.store') }}"
+                      action="{{ $isEditing ? route('services.update', ['tenant' => $tenant->slug, 'service' => $editingService]) : route('services.store') }}"
                       class="mt-5 space-y-5">
                     @csrf
 
@@ -208,7 +208,7 @@
 
                                     @can('services.delete')
                                         <form method="POST"
-                                              action="{{ route('services.destroy', $service) }}"
+                                              action="{{ route('services.destroy', ['tenant' => $tenant->slug, 'service' => $service]) }}"
                                               onsubmit="return confirm(@json(__('app.service_ui.delete_confirm', ['name' => $serviceName])))">
                                             @csrf
                                             @method('DELETE')
