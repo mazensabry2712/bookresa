@@ -57,13 +57,24 @@
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
                 <label for="timezone" class="block text-sm font-semibold text-slate-800 dark:text-slate-200">{{ __('app.timezone') }}</label>
-                <input id="timezone" name="timezone" value="{{ old('timezone', config('app.timezone', 'UTC')) }}" required list="bookresa-timezones"
-                       class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 shadow-sm focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
-                <datalist id="bookresa-timezones">
-                    @foreach (['Africa/Cairo', 'Asia/Riyadh', 'Asia/Dubai', 'Europe/London', 'Europe/Paris', 'America/New_York', 'America/Los_Angeles', 'UTC'] as $timezone)
-                        <option value="{{ $timezone }}"></option>
+                <select id="timezone" name="timezone" required
+                        class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 shadow-sm focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                    <option value="">{{ __('app.select_timezone') }}</option>
+                    @foreach ([
+                        'Africa/Cairo',
+                        'Asia/Riyadh',
+                        'Asia/Dubai',
+                        'Europe/London',
+                        'Europe/Paris',
+                        'America/New_York',
+                        'America/Los_Angeles',
+                        'UTC',
+                    ] as $timezone)
+                        <option value="{{ $timezone }}" @selected(old('timezone', config('app.timezone', 'UTC')) === $timezone)>
+                            {{ $timezone }}
+                        </option>
                     @endforeach
-                </datalist>
+                </select>
                 @error('timezone') <p class="mt-2 text-sm text-rose-600 dark:text-rose-400">{{ $message }}</p> @enderror
             </div>
 
