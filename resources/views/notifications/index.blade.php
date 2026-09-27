@@ -124,7 +124,7 @@
 
                             <div class="mt-4">
                                 @can('notifications.view')
-                                    <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
+                                    <form method="POST" action="{{ route('notifications.read', ['tenant' => $tenant->slug, 'notification' => $notification->id]) }}">
                                         @csrf
                                         <button type="submit" class="text-xs font-bold text-brand-indigo hover:underline">
                                             {{ $notification->read_at ? __('app.notification_ui.view_again') : __('app.notification_ui.open_notification') }}
