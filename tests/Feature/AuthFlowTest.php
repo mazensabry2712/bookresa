@@ -87,7 +87,7 @@ test('verified completed tenant member without subscription is redirected to bil
         'email' => $user->email,
         'password' => 'secret-password',
     ])
-        ->assertRedirect(route('billing.subscription'))
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertSessionHasNoErrors();
 });
 
