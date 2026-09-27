@@ -94,12 +94,12 @@ class BusinessOnboardingController
         $isReady = (bool) data_get($tenant->settings, 'onboarding.completed', false);
 
         $steps = [
-            ['key' => 'workspace', 'label' => __('Workspace'), 'route' => 'onboarding.workspace', 'complete' => true],
-            ['key' => 'modules', 'label' => __('Modules'), 'route' => 'onboarding.workspace', 'complete' => $hasModules],
-            ['key' => 'services', 'label' => __('Services'), 'route' => 'services.index', 'complete' => $hasServices],
-            ['key' => 'hours', 'label' => __('Working hours'), 'route' => 'scheduling.index', 'complete' => $hasHours],
-            ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $hasStaff],
-            ['key' => 'ready', 'label' => __('Ready'), 'route' => 'dashboard', 'complete' => $isReady],
+            ['key' => 'workspace', 'label' => __('app.onboarding_steps.workspace'), 'route' => 'onboarding.workspace', 'complete' => true],
+            ['key' => 'modules', 'label' => __('app.onboarding_steps.modules'), 'route' => 'onboarding.workspace', 'complete' => $hasModules],
+            ['key' => 'services', 'label' => __('app.onboarding_steps.services'), 'route' => 'services.index', 'complete' => $hasServices],
+            ['key' => 'hours', 'label' => __('app.onboarding_steps.hours'), 'route' => 'scheduling.index', 'complete' => $hasHours],
+            ['key' => 'staff', 'label' => __('app.onboarding_steps.staff'), 'route' => 'staff.index', 'complete' => $hasStaff],
+            ['key' => 'ready', 'label' => __('app.onboarding_steps.ready'), 'route' => 'dashboard', 'complete' => $isReady],
         ];
 
         $currentStepIndex = collect($steps)->search(
