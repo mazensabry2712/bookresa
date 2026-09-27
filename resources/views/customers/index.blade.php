@@ -85,7 +85,7 @@
 
             <div class="divide-y divide-slate-200 dark:divide-slate-800">
                 @forelse ($customers as $customer)
-                    <a href="{{ route('customers.show', $customer) }}" class="block p-5 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <a href="{{ route('customers.show', ['tenant' => $tenant->slug, 'customer' => $customer]) }}" class="block p-5 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                             <div class="flex min-w-0 items-start gap-3">
                                 <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-sm font-extrabold text-brand-navy dark:bg-slate-800 dark:text-indigo-300">
