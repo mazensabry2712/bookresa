@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Staff;
 use App\Domain\Service\Actions\SyncServiceAssignments;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
+use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Staff\Actions\UpdateStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -58,12 +59,35 @@ final class StaffManagementController
             $tenant = $currentTenant->get();
 
             if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-                $settings = $tenant->settings ?? [];
-                data_set($settings, 'onboarding.step', 'ready');
-                data_set($settings, 'onboarding.completed', true);
-                $tenant->forceFill(['settings' => $settings])->save();
+                $coreModuleKeys = collect(config('bookresa.modules.core', []))
+                    ->filter()
+                    ->values();
 
-                return to_route('dashboard')->with('status', __('app.staff_ui.added'));
+                $coreModulesReady = $coreModuleKeys->isNotEmpty()
+                    && $tenant->modules()
+                        ->wherePivot('enabled', true)
+                        ->whereIn('key', $coreModuleKeys)
+                        ->count() === $coreModuleKeys->count();
+
+                $hasServices = $tenant->services()->exists();
+                $hasHours = BusinessWorkingHour::query()->exists();
+
+                if ($coreModulesReady && $hasServices && $hasHours) {
+                    $settings = $tenant->settings ?? [];
+                    data_set($settings, 'onboarding.step', 'ready');
+                    data_set($settings, 'onboarding.completed', true);
+                    $tenant->forceFill(['settings' => $settings])->save();
+
+                    return to_route('dashboard')->with('status', __('app.staff_ui.added'));
+                }
+
+                $settings = $tenant->settings ?? [];
+                data_set(
+                    $settings,
+                    'onboarding.step',
+                    ! $hasServices ? 'services' : (! $hasHours ? 'hours' : 'staff'),
+                );
+                $tenant->forceFill(['settings' => $settings])->save();
             }
 
             return to_route('staff.index')->with('status', __('app.staff_ui.added'));
