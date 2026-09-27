@@ -56,11 +56,17 @@
 
             <nav class="hidden min-w-0 flex-1 items-center justify-center gap-5 lg:flex xl:gap-7"
                  aria-label="{{ __('app.home_ui.primary_navigation') }}">
+                <a href="#how-it-works" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
+                    {{ __('app.home_ui.how_it_works') }}
+                </a>
                 <a href="#features" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.features') }}
                 </a>
                 <a href="#for-businesses" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
                     {{ __('app.home_ui.for_businesses') }}
+                </a>
+                <a href="#faq" class="text-sm font-semibold text-slate-600 transition hover:text-brand-navy dark:text-slate-300 dark:hover:text-white">
+                    {{ __('app.home_ui.faq') }}
                 </a>
             </nav>
 
@@ -122,11 +128,17 @@
              aria-hidden="true">
             <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
                 <nav class="grid gap-1" aria-label="{{ __('app.home_ui.primary_navigation') }}">
+                    <a href="#how-it-works" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
+                        {{ __('app.home_ui.how_it_works') }}
+                    </a>
                     <a href="#features" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
                         {{ __('app.home_ui.features') }}
                     </a>
                     <a href="#for-businesses" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
                         {{ __('app.home_ui.for_businesses') }}
+                    </a>
+                    <a href="#faq" class="rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-900">
+                        {{ __('app.home_ui.faq') }}
                     </a>
                 </nav>
 
