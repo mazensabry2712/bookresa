@@ -865,6 +865,9 @@ return [
         'status_no_show' => 'No show',
     ],
     'errors_ui' => [
+        'eyebrow' => 'BookResa system',
+        'try_again' => 'Try again',
+
         'home' => 'Back to home',
         'login' => 'Log in',
         'title_403' => 'Access denied',
