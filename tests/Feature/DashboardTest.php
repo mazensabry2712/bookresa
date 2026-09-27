@@ -12,6 +12,10 @@ use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Domain\Identity\Services\TenantRoleProvisioner;
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Models\TenantMembership;
+use App\Domain\Staff\Enums\StaffStatus;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
@@ -173,4 +177,87 @@ test('dashboard remains accessible during incomplete onboarding', function (): v
         ->assertSee(__('app.your_setup'))
         ->assertSee(__('app.onboarding_steps.services'))
         ->assertSee(route('services.index'), false);
+});
+
+
+test('staff dashboard is scoped to assigned operations and hides billing metrics', function (): void {
+    [$owner, $tenant] = dashboardWorkspace();
+
+    $staffUser = User::factory()->create([
+        'name' => 'Dashboard Staff',
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $staffUser->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => false,
+    ]);
+
+    $staffRole = app(TenantRoleProvisioner::class)->provisionRole($tenant, 'staff');
+
+    setPermissionsTeamId($tenant->id);
+    $staffUser->assignRole($staffRole);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $staffProfile = StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $staffUser->id,
+        'display_name' => 'Dashboard Staff',
+        'status' => StaffStatus::Active,
+    ]);
+
+    $assignedCustomer = dashboardCustomer($tenant, 'Assigned Customer', '01000000444');
+    $otherCustomer = dashboardCustomer($tenant, 'Other Customer', '01000000555');
+
+    $assignedBooking = dashboardBooking(
+        $tenant,
+        $assignedCustomer,
+        'BR-DASH-STAFF-001',
+        BookingStatus::Confirmed->value,
+    );
+    $assignedBooking->update(['staff_id' => $staffProfile->id]);
+
+    dashboardBooking(
+        $tenant,
+        $otherCustomer,
+        'BR-DASH-STAFF-002',
+        BookingStatus::Confirmed->value,
+    );
+
+    $this->actingAs($staffUser)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee($assignedBooking->booking_reference)
+        ->assertDontSee('BR-DASH-STAFF-002')
+        ->assertSee('data-dashboard-metric="customers" data-metric-value="1"', false)
+        ->assertSee('data-dashboard-metric="today-revenue" data-metric-value="—"', false)
+        ->assertDontSee(__('app.dashboard_ui.customer_usage'));
+});
+
+test('staff account without a profile cannot open the dashboard', function (): void {
+    [$owner, $tenant] = dashboardWorkspace();
+
+    $staffUser = User::factory()->create([
+        'name' => 'Unprovisioned Staff',
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $staffUser->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => false,
+    ]);
+
+    $staffRole = app(TenantRoleProvisioner::class)->provisionRole($tenant, 'staff');
+
+    setPermissionsTeamId($tenant->id);
+    $staffUser->assignRole($staffRole);
+
+    $this->actingAs($staffUser)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard'))
+        ->assertForbidden();
 });
