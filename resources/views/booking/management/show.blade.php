@@ -170,7 +170,7 @@
                     <div class="mt-5 space-y-3">
                         @if ($status === 'pending')
                             @can('bookings.update')
-                                <form method="POST" action="{{ route('booking.management.status', $booking) }}">
+                                <form method="POST" action="{{ route('booking.management.status', ['tenant' => $tenant->slug, 'booking' => $booking]) }}">
                                     @csrf
                                     <input type="hidden" name="status" value="confirmed">
                                     <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.booking_ui.confirm') }}</button>
@@ -178,12 +178,12 @@
                             @endcan
                         @elseif ($status === 'confirmed')
                             @can('bookings.complete')
-                                <form method="POST" action="{{ route('booking.management.status', $booking) }}">
+                                <form method="POST" action="{{ route('booking.management.status', ['tenant' => $tenant->slug, 'booking' => $booking]) }}">
                                     @csrf
                                     <input type="hidden" name="status" value="completed">
                                     <button type="submit" class="w-full rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700">{{ __('app.booking_ui.mark_completed') }}</button>
                                 </form>
-                                <form method="POST" action="{{ route('booking.management.status', $booking) }}">
+                                <form method="POST" action="{{ route('booking.management.status', ['tenant' => $tenant->slug, 'booking' => $booking]) }}">
                                     @csrf
                                     <input type="hidden" name="status" value="no_show">
                                     <button type="submit" class="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.booking_ui.mark_no_show') }}</button>
@@ -191,7 +191,7 @@
                             @endcan
                         @elseif ($status === 'rescheduled')
                             @can('bookings.update')
-                                <form method="POST" action="{{ route('booking.management.status', $booking) }}">
+                                <form method="POST" action="{{ route('booking.management.status', ['tenant' => $tenant->slug, 'booking' => $booking]) }}">
                                     @csrf
                                     <input type="hidden" name="status" value="confirmed">
                                     <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.booking_ui.confirm') }}</button>
@@ -210,7 +210,7 @@
 
                         @can('bookings.cancel')
                             @if (in_array($status, ['pending', 'confirmed', 'rescheduled'], true))
-                                <form method="POST" action="{{ route('booking.management.status', $booking) }}" onsubmit="return confirm(@json(__('app.booking_ui.cancel_confirm')))">
+                                <form method="POST" action="{{ route('booking.management.status', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" onsubmit="return confirm(@json(__('app.booking_ui.cancel_confirm')))">
                                     @csrf
                                     <input type="hidden" name="status" value="cancelled">
                                     <label class="block">
@@ -238,7 +238,7 @@
                             <h3 class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ __('app.booking_ui.reschedule_title') }}</h3>
                             <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.booking_ui.reschedule_help') }}</p>
 
-                            <form method="POST" action="{{ route('booking.management.reschedule', $booking) }}" class="mt-5 space-y-3">
+                            <form method="POST" action="{{ route('booking.management.reschedule', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="mt-5 space-y-3">
                                 @csrf
                                 <label class="block">
                                     <span class="mb-1.5 block text-xs font-semibold text-slate-500">{{ __('app.booking_ui.date') }}</span>
