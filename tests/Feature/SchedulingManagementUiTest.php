@@ -1,10 +1,10 @@
 <?php
 
-use App\Domain\Business\Actions\CreateBusiness;
-use App\Domain\Business\Models\BusinessType;
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Business\Actions\CreateBusiness;
+use App\Domain\Business\Models\BusinessType;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Models\BusinessBreak;
