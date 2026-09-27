@@ -10,6 +10,14 @@
             ?? $tenant->slug;
         $payment = $booking->payments->sortByDesc('id')->first();
         $paymentStatus = $payment?->status?->value;
+        $paymentLabels = [
+            'pending' => __('app.payment_pending'),
+            'processing' => __('app.payment_processing'),
+            'paid' => __('app.payment_paid'),
+            'failed' => __('app.payment_failed'),
+            'cancelled' => __('app.payment_cancelled'),
+            'refunded' => __('app.payment_refunded'),
+        ];
     @endphp
 
     <x-seo
@@ -47,7 +55,7 @@
             <div class="mt-8 grid gap-3 sm:grid-cols-2">
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.business') }}</p><p class="mt-1 font-bold">{{ $businessName }}</p></div>
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.service') }}</p><p class="mt-1 font-bold">{{ data_get($booking->service->name, app()->getLocale()) ?? data_get($booking->service->name, 'en') }}</p></div>
-                <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.date_time') }}</p><p class="mt-1 font-bold">{{ $booking->starts_at->setTimezone($tenant->profile?->timezone ?? 'UTC')->format('d M Y, H:i') }}</p></div>
+                <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.date_time') }}</p><p class="mt-1 font-bold">{{ $booking->starts_at->setTimezone($tenant->profile?->timezone ?? 'UTC')->locale(app()->getLocale())->translatedFormat('d M Y, H:i') }}</p></div>
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.customer') }}</p><p class="mt-1 font-bold">{{ $booking->customer->name }}</p></div>
             </div>
 
@@ -56,7 +64,7 @@
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.payment_status') }}</p>
-                            <p class="mt-1 font-bold">{{ str($paymentStatus)->replace('_', ' ')->title() }}</p>
+                            <p class="mt-1 font-bold">{{ $paymentLabels[$paymentStatus] ?? $paymentStatus }}</p>
                         </div>
                         <p class="font-extrabold">{{ number_format($payment->amount_minor / 100, 2) }} {{ $payment->currency }}</p>
                     </div>
