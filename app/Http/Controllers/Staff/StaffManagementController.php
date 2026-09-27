@@ -62,7 +62,7 @@ final class StaffManagementController
 
             $tenant = $currentTenant->get() ?? $tenantRoute;
 
-            if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $coreModuleKeys = collect(config('bookresa.modules.core', []))
                     ->filter()
                     ->values();
