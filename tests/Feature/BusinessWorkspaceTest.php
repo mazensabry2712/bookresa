@@ -234,7 +234,7 @@ test('onboarding advances through services working hours and staff stages', func
             'display_name' => 'Onboarding Staff',
             'role' => 'staff',
         ])
-        ->assertRedirect(route('billing.subscription'));
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready');
 
@@ -245,7 +245,7 @@ test('onboarding advances through services working hours and staff stages', func
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready')
