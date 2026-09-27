@@ -100,7 +100,7 @@ test('disabled service module blocks service routes even with the permission', f
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('services.store'), [
+        ->post(route('services.store', ['tenant' => $tenant->slug]), [
             'name_en' => 'Blocked',
             'name_ar' => 'محجوبة',
             'price' => '100.00',
