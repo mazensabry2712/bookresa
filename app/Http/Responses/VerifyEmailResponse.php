@@ -45,7 +45,7 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
             $tenant = $membership->tenant;
 
             if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-                return to_route('onboarding.workspace', ['verified' => 1]);
+                return $this->onboardingRedirect($tenant);
             }
 
             return to_route('dashboard', ['verified' => 1]);
@@ -53,4 +53,13 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
 
         return to_route('onboarding.business.create', ['verified' => 1]);
     }
+    private function onboardingRedirect(\App\Domain\Tenant\Models\Tenant $tenant): RedirectResponse
+    {
+        return match ((string) data_get($tenant->settings, 'onboarding.step', 'services')) {
+            'hours' => to_route('scheduling.index'),
+            'staff' => to_route('staff.index'),
+            default => to_route('services.index'),
+        };
+    }
+
 }
