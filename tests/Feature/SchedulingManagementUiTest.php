@@ -172,7 +172,7 @@ test('owner can manage a selected staff schedule', function (): void {
             'ends_on' => '2026-11-12',
             'reason' => 'Leave',
         ])
-        ->assertRedirect(route('scheduling.index', ['staff' => $staff->id]));
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug, 'staff' => $staff->id]));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
@@ -181,7 +181,7 @@ test('owner can manage a selected staff schedule', function (): void {
             'starts_at' => '11:00',
             'ends_at' => '14:00',
         ])
-        ->assertRedirect(route('scheduling.index', ['staff' => $staff->id]));
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug, 'staff' => $staff->id]));
 
     app(CurrentTenant::class)->set($tenant);
 
