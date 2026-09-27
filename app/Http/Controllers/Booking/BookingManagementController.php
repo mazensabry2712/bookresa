@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Booking;
 use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
+use App\Domain\Booking\Enums\PaymentStatus as BookingPaymentStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Booking\Services\RescheduleBooking;
 use App\Domain\Customer\Models\Customer;
@@ -170,6 +171,7 @@ class BookingManagementController
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', 'string', 'in:pending,confirmed,completed,cancelled,rescheduled,no_show'],
+            'payment_status' => ['nullable', 'string', 'in:unpaid,partially_paid,paid,refunded'],
             'service_id' => ['nullable', 'integer', 'exists:services,id'],
             'staff_id' => ['nullable', 'integer', 'exists:staff_profiles,id'],
             'date' => ['nullable', 'date_format:Y-m-d'],
@@ -198,6 +200,7 @@ class BookingManagementController
                 });
             })
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->when($validated['payment_status'] ?? null, fn ($query, string $paymentStatus) => $query->where('payment_status', $paymentStatus))
             ->when($validated['service_id'] ?? null, fn ($query, int $serviceId) => $query->where('service_id', $serviceId))
             ->when($ownStaffId !== null, fn ($query) => $query->where('staff_id', $ownStaffId))
             ->when($ownStaffId === null, function ($query) use ($staffUserId): void {
