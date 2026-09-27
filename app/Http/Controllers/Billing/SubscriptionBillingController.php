@@ -13,6 +13,7 @@ use App\Domain\Billing\Services\ReactivateSubscription;
 use App\Domain\Billing\Services\RenewSubscription;
 use App\Domain\Billing\Services\SchedulePlanChange;
 use App\Domain\Payment\Services\StartSubscriptionPayment;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,6 +62,7 @@ final class SubscriptionBillingController
     }
 
     public function subscribe(
+        Tenant $tenant,
         Plan $plan,
         CreateSubscription $createSubscription,
         StartSubscriptionPayment $startPayment,
@@ -69,7 +71,7 @@ final class SubscriptionBillingController
             $subscription = $createSubscription->handle($plan);
 
             if ($subscription->status->value === 'trial') {
-                return to_route('billing.subscription')
+                return to_route('billing.subscription', ['tenant' => $tenant->slug])
                     ->with('status', __('app.billing_ui.trial_active'));
             }
 
@@ -86,6 +88,7 @@ final class SubscriptionBillingController
     }
 
     public function checkout(
+        Tenant $tenant,
         Subscription $subscription,
         StartSubscriptionPayment $startPayment,
     ): RedirectResponse {
@@ -93,7 +96,7 @@ final class SubscriptionBillingController
             $payment = $startPayment->handle($subscription);
 
             if ($payment->status->value === 'paid') {
-                return to_route('billing.subscription')
+                return to_route('billing.subscription', ['tenant' => $tenant->slug])
                     ->with('status', __('app.billing_ui.payment_already_completed'));
             }
 
@@ -108,13 +111,14 @@ final class SubscriptionBillingController
     }
 
     public function renew(
+        Tenant $tenant,
         Subscription $subscription,
         RenewSubscription $renewSubscription,
     ): RedirectResponse {
         try {
             $renewSubscription->handle($subscription);
 
-            return to_route('billing.subscription')->with('status', __('app.billing_ui.renewed'));
+            return to_route('billing.subscription', ['tenant' => $tenant->slug])->with('status', __('app.billing_ui.renewed'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
@@ -122,6 +126,7 @@ final class SubscriptionBillingController
 
     public function changePlan(
         Request $request,
+        Tenant $tenant,
         Subscription $subscription,
         SchedulePlanChange $schedulePlanChange,
     ): RedirectResponse {
@@ -140,6 +145,7 @@ final class SubscriptionBillingController
     }
 
     public function cancel(
+        Tenant $tenant,
         Subscription $subscription,
         CancelSubscription $cancelSubscription,
     ): RedirectResponse {
@@ -153,6 +159,7 @@ final class SubscriptionBillingController
     }
 
     public function reactivate(
+        Tenant $tenant,
         Subscription $subscription,
         ReactivateSubscription $reactivateSubscription,
     ): RedirectResponse {
@@ -166,6 +173,7 @@ final class SubscriptionBillingController
     }
 
     public function clearPlanChange(
+        Tenant $tenant,
         Subscription $subscription,
         ClearPlanChange $clearPlanChange,
     ): RedirectResponse {
