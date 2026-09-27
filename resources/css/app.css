@@ -262,6 +262,14 @@
     }
 
     @media (min-width: 1024px) {
+        .br-sidebar {
+            overflow: visible;
+        }
+
+        .br-sidebar-top {
+            position: relative;
+        }
+
         .br-shell.sidebar-collapsed .br-sidebar {
             width: 4.75rem;
         }
