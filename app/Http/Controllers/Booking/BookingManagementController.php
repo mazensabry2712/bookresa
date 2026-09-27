@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Booking;
 use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
-use App\Domain\Booking\Enums\PaymentStatus as BookingPaymentStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Booking\Services\RescheduleBooking;
 use App\Domain\Customer\Models\Customer;
