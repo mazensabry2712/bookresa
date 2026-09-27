@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\Multitenancy\Contracts\IsTenant;
+use Spatie\Multitenancy\Models\Concerns\ImplementsTenant;
 
 /**
  * @property int $id
@@ -29,9 +31,10 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read BusinessType|null $businessType
  * @property-read \Illuminate\Support\Collection<int, TenantMembership> $memberships
  */
-class Tenant extends Model
+class Tenant extends Model implements IsTenant
 {
     use HasFactory;
+    use ImplementsTenant;
 
     protected $fillable = [
         'slug',
@@ -39,6 +42,16 @@ class Tenant extends Model
         'status',
         'settings',
     ];
+
+    /**
+     * BookResa uses a single database for all workspaces.
+     * Spatie requires this method on the IsTenant contract, but no database
+     * switching task is configured for the current single-database strategy.
+     */
+    public function getDatabaseName(): string
+    {
+        return (string) config('database.connections.mysql.database');
+    }
 
     protected function casts(): array
     {
