@@ -32,7 +32,7 @@
             </div>
 
             @can('services.view')
-                <a href="{{ route('services.index') }}"
+                <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}"
                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     {{ __('app.scheduling_ui.review_services') }}
                 </a>
@@ -80,7 +80,7 @@
             </div>
 
             @can('settings.manage')
-                <form method="POST" action="{{ route('scheduling.business-hours.update') }}" class="p-5 sm:p-6">
+                <form method="POST" action="{{ route('scheduling.business-hours.update', ['tenant' => $tenant->slug]) }}" class="p-5 sm:p-6">
                     @csrf
                     @method('PUT')
 
@@ -156,7 +156,7 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.breaks.store') }}" class="mt-5 space-y-3">
+                    <form method="POST" action="{{ route('scheduling.breaks.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
                         <select name="day_of_week" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                             @foreach ($days as $day)
@@ -183,7 +183,7 @@
                                 @endif
                             </div>
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.breaks.destroy', $break) }}">
+                                <form method="POST" action="{{ route('scheduling.breaks.destroy', ['tenant' => $tenant->slug, 'break' => $break]) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="shrink-0 text-xs font-bold text-rose-700 hover:underline dark:text-rose-300">{{ __('app.scheduling_ui.remove') }}</button>
@@ -209,7 +209,7 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.holidays.store') }}" class="mt-5 space-y-3">
+                    <form method="POST" action="{{ route('scheduling.holidays.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
                         <input type="date" name="holiday_date" required value="{{ old('holiday_date', now()->toDateString()) }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
@@ -225,7 +225,7 @@
                                 <p class="mt-1 text-xs text-slate-500">{{ $holiday->reason ?: __('app.scheduling_ui.business_closed') }}</p>
                             </div>
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.holidays.destroy', $holiday) }}">
+                                <form method="POST" action="{{ route('scheduling.holidays.destroy', ['tenant' => $tenant->slug, 'holiday' => $holiday]) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="shrink-0 text-xs font-bold text-rose-700 hover:underline dark:text-rose-300">{{ __('app.scheduling_ui.remove') }}</button>
@@ -251,7 +251,7 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.special-hours.store') }}" class="mt-5 space-y-3">
+                    <form method="POST" action="{{ route('scheduling.special-hours.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
                         <input type="date" name="work_date" required value="{{ old('work_date', now()->toDateString()) }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         <div class="grid grid-cols-2 gap-3">
@@ -278,7 +278,7 @@
                                 </p>
                             </div>
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.special-hours.destroy', $special) }}">
+                                <form method="POST" action="{{ route('scheduling.special-hours.destroy', ['tenant' => $tenant->slug, 'specialWorkingHour' => $special]) }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="shrink-0 text-xs font-bold text-rose-700 hover:underline dark:text-rose-300">{{ __('app.scheduling_ui.remove') }}</button>
@@ -303,7 +303,7 @@
                 </div>
 
                 @if ($staffMembers->isNotEmpty())
-                    <form method="GET" action="{{ route('scheduling.index') }}" class="w-full sm:w-72">
+                    <form method="GET" action="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}" class="w-full sm:w-72">
                         <label class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.staff_member') }}</label>
                         <select name="staff" onchange="this.form.submit()" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                             @foreach ($staffMembers as $staffMember)
@@ -332,7 +332,7 @@
                     </div>
 
                     @can('settings.manage')
-                        <form method="POST" action="{{ route('scheduling.staff-hours.update', $selectedStaff) }}" class="mt-5 space-y-2">
+                        <form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-2">
                             @csrf
                             @method('PUT')
 
@@ -386,7 +386,7 @@
                             </div>
 
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.staff-days-off.store', $selectedStaff) }}" class="mt-5 space-y-3">
+                                <form method="POST" action="{{ route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
                                     <div class="grid grid-cols-2 gap-3">
                                         <input type="date" name="starts_on" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
@@ -405,7 +405,7 @@
                                             <p class="mt-1 text-xs text-slate-500">{{ $dayOff->reason ?: __('app.scheduling_ui.time_off') }}</p>
                                         </div>
                                         @can('settings.manage')
-                                            <form method="POST" action="{{ route('scheduling.staff-days-off.destroy', [$selectedStaff, $dayOff]) }}">
+                                            <form method="POST" action="{{ route('scheduling.staff-days-off.destroy', ['tenant' => $tenant->slug, 'staff' => $selectedStaff, 'dayOff' => $dayOff]) }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-xs font-bold text-rose-700 hover:underline dark:text-rose-300">{{ __('app.scheduling_ui.remove') }}</button>
@@ -428,7 +428,7 @@
                             </div>
 
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.staff-availability.store', $selectedStaff) }}" class="mt-5 space-y-3">
+                                <form method="POST" action="{{ route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
                                     <input type="date" name="available_date" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <div class="grid grid-cols-2 gap-3">
@@ -447,7 +447,7 @@
                                             <p class="mt-1 text-xs text-slate-500">{{ substr((string) $availability->starts_at, 0, 5) }} — {{ substr((string) $availability->ends_at, 0, 5) }}</p>
                                         </div>
                                         @can('settings.manage')
-                                            <form method="POST" action="{{ route('scheduling.staff-availability.destroy', [$selectedStaff, $availability]) }}">
+                                            <form method="POST" action="{{ route('scheduling.staff-availability.destroy', ['tenant' => $tenant->slug, 'staff' => $selectedStaff, 'availability' => $availability]) }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-xs font-bold text-rose-700 hover:underline dark:text-rose-300">{{ __('app.scheduling_ui.remove') }}</button>
@@ -473,7 +473,7 @@
                         <p class="mt-1 text-sm leading-6 text-slate-500">{{ $staffMembers->isEmpty() ? __('app.scheduling_ui.add_staff_first') : __('app.scheduling_ui.choose_staff') }}</p>
                         @can('staff.manage')
                             @if ($staffMembers->isEmpty())
-                                <a href="{{ route('staff.index') }}" class="mt-5 inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.add_staff') }}</a>
+                                <a href="{{ route('staff.index', ['tenant' => $tenant->slug]) }}" class="mt-5 inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.add_staff') }}</a>
                             @endif
                         @endcan
                     </div>
