@@ -6,14 +6,14 @@
     <div>
         <div class="flex items-center justify-between gap-3">
             <div>
-                <p class="text-sm font-semibold text-brand-indigo">{{ __('app.step_progress', ['current' => 1, 'total' => 6]) }}</p>
+                <p class="text-sm font-semibold text-brand-indigo">{{ __('app.step_progress', ['current' => 1, 'total' => 4]) }}</p>
                 <h1 class="mt-2 text-2xl font-extrabold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{{ __('app.create_business') }}</h1>
                 <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ __('app.create_business_message') }}</p>
             </div>
         </div>
 
         <div class="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" aria-hidden="true">
-            <div class="h-full w-1/6 rounded-full bg-brand-indigo"></div>
+            <div class="h-full w-1/4 rounded-full bg-brand-indigo"></div>
         </div>
     </div>
 
@@ -111,7 +111,7 @@
 
         <button type="submit"
                 class="w-full rounded-xl bg-brand-navy px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-px hover:shadow-md dark:bg-brand-indigo">
-            {{ __('app.continue_to_workspace') }}
+            {{ __('app.continue_to_services') }}
         </button>
     </form>
 @endsection
