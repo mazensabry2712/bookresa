@@ -263,6 +263,8 @@ return [
         'payment_partial' => 'Partially paid',
         'payment_paid' => 'Paid',
         'payment_refunded' => 'Refunded',
+    'payment_processing' => 'Processing',
+    'payment_cancelled' => 'Cancelled',
     ],
     'business_ui' => [
         'business_profile' => 'Business profile',
