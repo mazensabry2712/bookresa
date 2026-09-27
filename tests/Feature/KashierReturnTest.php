@@ -5,6 +5,7 @@ use App\Domain\Booking\Enums\PaymentStatus as BookingPaymentStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Service\Actions\CreateService;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Enums\TenantStatus;
@@ -36,7 +37,7 @@ test('signed Kashier return verifies the payment server-side and redirects to co
         'timezone' => 'Africa/Cairo',
     ]);
 
-    $service = \App\Domain\Service\Actions\CreateService::class;
+    $service = CreateService::class;
     $service = app($service)->handle([
         'name' => ['en' => 'Consultation'],
         'price_minor' => 20000,
@@ -156,7 +157,7 @@ test('malformed Kashier return amount is rejected with a validation response', f
             'phone' => '01000000123',
             'normalized_phone' => '201000001123',
         ])->id,
-        'service_id' => app(\App\Domain\Service\Actions\CreateService::class)->handle([
+        'service_id' => app(CreateService::class)->handle([
             'name' => ['en' => 'Consultation'],
             'price_minor' => 20000,
             'currency' => 'EGP',
