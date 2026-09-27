@@ -48,7 +48,7 @@ final class CreateBusiness
                 'status' => TenantStatus::Active,
                 'settings' => [
                     'onboarding' => [
-                        'step' => 'workspace',
+                        'step' => 'services',
                         'completed' => false,
                     ],
                 ],
