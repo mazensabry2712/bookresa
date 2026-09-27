@@ -189,6 +189,14 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permiss
         Route::get('/', [BookingManagementController::class, 'index'])
             ->name('booking.management.index');
 
+        Route::get('/create', [BookingManagementController::class, 'create'])
+            ->middleware('permission:bookings.create')
+            ->name('booking.management.create');
+
+        Route::post('/', [BookingManagementController::class, 'store'])
+            ->middleware('permission:bookings.create')
+            ->name('booking.management.store');
+
         Route::get('/{booking}', [BookingManagementController::class, 'show'])
             ->name('booking.management.show');
 
