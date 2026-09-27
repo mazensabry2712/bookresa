@@ -55,6 +55,7 @@ Track request time, DB query count/time, memory, cache hit rate and frontend met
 - Service management now paginates at 20 records per page.
 - Staff management now paginates at 20 records per page.
 - Subscription billing limits payment history to the latest 20 records instead of loading an unbounded relation.
+- Workspace notifications are tenant-scoped in the database query and paginated at 25 records per page instead of filtering a fixed latest slice in PHP.
 - Scheduled subscription billing notification evaluation is dispatched per subscription through a queued job, so usage calculation and notification eligibility checks do not run inside the scheduler command.
 - Active business types used by onboarding use a short cache with explicit invalidation after the seeder runs.
 - Active subscription plans used by billing use a five-minute cache with invalidation on plan create/update/toggle.
