@@ -51,7 +51,7 @@ test('public business page is available without authentication', function (): vo
 
     app(CurrentTenant::class)->clear();
 
-    $this->get(route('public.booking.show', $tenant->slug))
+    $this->get(route('public.booking.canonical.show', $tenant->slug))
         ->assertOk()
         ->assertSee('Public booking business')
         ->assertSee('Consultation');
@@ -69,7 +69,7 @@ test('public availability is tenant scoped and returns slots', function (): void
 
     app(CurrentTenant::class)->clear();
 
-    $response = $this->get(route('public.booking.availability', $tenant->slug).'?'.http_build_query([
+    $response = $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
         'service_id' => $service->id,
         'date' => '2026-09-28',
     ]));
@@ -91,7 +91,7 @@ test('public customer can book without an account', function (): void {
 
     app(CurrentTenant::class)->clear();
 
-    $response = $this->post(route('public.booking.store', $tenant->slug), [
+    $response = $this->post(route('public.booking.canonical.store', $tenant->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
@@ -127,7 +127,7 @@ test('public booking confirmation requires a signed url', function (): void {
 
     app(CurrentTenant::class)->clear();
 
-    $this->post(route('public.booking.store', $tenant->slug), [
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
@@ -140,7 +140,7 @@ test('public booking confirmation requires a signed url', function (): void {
         ->where('tenant_id', $tenant->id)
         ->firstOrFail();
 
-    $this->get(route('public.booking.confirmation', [
+    $this->get(route('public.booking.canonical.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
     ]))->assertForbidden();
@@ -165,7 +165,7 @@ test('public booking cannot use a service from another tenant', function (): voi
     $tenantB = publicTenant('tenant-b');
     app(CurrentTenant::class)->clear();
 
-    $this->post(route('public.booking.store', $tenantB->slug), [
+    $this->post(route('public.booking.canonical.store', $tenantB->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
@@ -186,7 +186,7 @@ test('public booking page renders localized Arabic content', function (): void {
 
     app(CurrentTenant::class)->clear();
 
-    $this->get(route('public.booking.show', $tenant->slug).'?locale=ar')
+    $this->get(route('public.booking.canonical.show', $tenant->slug).'?locale=ar')
         ->assertOk()
         ->assertSee('<html lang="ar" dir="rtl">', false)
         ->assertSee('عيادة عربية')
@@ -214,7 +214,7 @@ test('booking confirmation renders localized Arabic content', function (): void 
 
     app(CurrentTenant::class)->clear();
 
-    $this->post(route('public.booking.store', $tenant->slug), [
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
