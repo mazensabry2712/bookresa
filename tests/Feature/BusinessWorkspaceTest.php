@@ -165,6 +165,86 @@ test('module onboarding always keeps core modules enabled', function (): void {
     )->toBe($coreModuleIds->count());
 });
 
+test('onboarding blocks skipping required setup steps', function (): void {
+    $owner = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+        $owner,
+        $type,
+        ['name' => 'Sequential Clinic'],
+    );
+
+    $session = ['tenant_id' => $tenant->id];
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('services.index'))
+        ->assertRedirect(route('onboarding.workspace'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('scheduling.index'))
+        ->assertRedirect(route('onboarding.workspace'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('staff.index'))
+        ->assertRedirect(route('onboarding.workspace'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->post(route('onboarding.workspace.modules'), [
+            'module_ids' => [],
+        ])
+        ->assertRedirect(route('services.index'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('scheduling.index'))
+        ->assertRedirect(route('services.index'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('staff.index'))
+        ->assertRedirect(route('services.index'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->post(route('services.store'), [
+            'name_en' => 'Consultation',
+            'name_ar' => 'كشف',
+            'price' => '100.00',
+            'currency' => 'EGP',
+            'duration_minutes' => 30,
+            'buffer_minutes' => 0,
+            'is_active' => true,
+        ])
+        ->assertRedirect(route('scheduling.index'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('staff.index'))
+        ->assertRedirect(route('scheduling.index'));
+
+    $hours = collect(range(1, 7))->map(fn (int $day): array => [
+        'day_of_week' => $day,
+        'opens_at' => '09:00',
+        'closes_at' => '17:00',
+        'is_closed' => false,
+    ])->all();
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->put(route('scheduling.business-hours.update'), ['hours' => $hours])
+        ->assertRedirect(route('staff.index'));
+
+    $this->actingAs($owner)
+        ->withSession($session)
+        ->get(route('staff.index'))
+        ->assertOk();
+});
+
 test('onboarding advances through services working hours and staff stages', function (): void {
     $owner = User::factory()->create();
     $staffUser = User::factory()->create(['email' => 'onboarding-staff@example.com']);
