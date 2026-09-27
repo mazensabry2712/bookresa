@@ -138,7 +138,7 @@ test('dashboard shows business identity and core operating metrics', function ()
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard'))
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Dashboard Clinic')
         ->assertSee(__('app.customers'))
@@ -157,7 +157,7 @@ test('dashboard excludes terminal bookings from upcoming list', function (): voi
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard'))
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee($upcoming->booking_reference)
         ->assertDontSee($completed->booking_reference);
@@ -173,7 +173,7 @@ test('dashboard remains accessible during incomplete onboarding', function (): v
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard'))
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee(__('app.your_setup'))
         ->assertSee(__('app.onboarding_steps.services'))
@@ -228,7 +228,7 @@ test('staff dashboard is scoped to assigned operations and hides billing metrics
 
     $this->actingAs($staffUser)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard'))
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee($assignedBooking->booking_reference)
         ->assertDontSee('BR-DASH-STAFF-002')
@@ -258,7 +258,7 @@ test('staff account without a profile cannot open the dashboard', function (): v
 
     $this->actingAs($staffUser)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard'))
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
