@@ -188,7 +188,7 @@
                                             @if ($module->description)
                                                 {{ data_get($module->description, app()->getLocale()) ?? data_get($module->description, 'en') }}
                                             @else
-                                                {{ __('app.module_optional_help') }}
+                                                {{ __('app.module_descriptions.'.$module->key) }}
                                             @endif
                                         </p>
                                     </div>
@@ -219,7 +219,7 @@
                                 </span>
                                 <div>
                                     <p class="text-xs font-extrabold text-slate-800 dark:text-slate-200">{{ $enabledModuleCount }} {{ __('app.modules_enabled') }}</p>
-                                    <p class="text-[11px] font-semibold text-slate-400">{{ __('app.workspace_tip_text') }}</p>
+                                    <p class="text-[11px] font-semibold text-slate-400">{{ __('app.core_modules_stay_enabled') }}</p>
                                 </div>
                             </div>
 
