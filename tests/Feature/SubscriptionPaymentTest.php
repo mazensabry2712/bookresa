@@ -314,7 +314,7 @@ test('signed Kashier return completes subscription payment and returns to billin
     app(CurrentTenant::class)->clear();
 
     $this->get(route('payments.kashier.return').'?'.http_build_query($query))
-        ->assertRedirect(route('billing.subscription'));
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 
     $subscription = Subscription::withoutGlobalScopes()->findOrFail($subscription->id);
     $payment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
