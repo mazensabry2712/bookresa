@@ -263,6 +263,8 @@ return [
         'payment_partial' => 'مدفوع جزئيًا',
         'payment_paid' => 'مدفوع',
         'payment_refunded' => 'مسترد',
+    'payment_processing' => 'جارٍ المعالجة',
+    'payment_cancelled' => 'ملغي',
     ],
     'business_ui' => [
         'business_profile' => 'ملف النشاط',
