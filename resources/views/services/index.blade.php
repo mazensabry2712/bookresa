@@ -211,6 +211,7 @@
                                     <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
                                         <span class="font-bold text-slate-950 dark:text-white">{{ number_format($service->price_minor / 100, 2) }} {{ $service->currency }}</span>
                                         <span>{{ $service->duration_minutes }} {{ __('app.service_ui.minutes') }}</span>
+                                        <span>{{ trans_choice('app.service_ui.assigned_staff_count', $service->staff_count, ['count' => $service->staff_count]) }}</span>
                                         @if ($service->buffer_minutes > 0)
                                             <span>{{ $service->buffer_minutes }} {{ __('app.service_ui.buffer_short') }}</span>
                                         @endif
