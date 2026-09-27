@@ -18,8 +18,12 @@ test('registration page uses the application registration view', function (): vo
         ->assertSee('Create your account first.');
 });
 
-test('password reset request page uses the application view', function (): void {
-    $this->get(route('password.request'))
-        ->assertOk()
-        ->assertSee('Forgot password?');
+test('guest auth pages are not cached with stale csrf tokens', function (): void {
+    foreach ([route('login'), route('register'), route('password.request')] as $url) {
+        $this->get($url)
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private')
+            ->assertHeader('Pragma', 'no-cache')
+            ->assertHeader('Expires', '0');
+    }
 });
