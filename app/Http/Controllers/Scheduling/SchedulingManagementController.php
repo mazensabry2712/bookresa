@@ -22,6 +22,7 @@ use App\Domain\Scheduling\Models\StaffAvailability;
 use App\Domain\Scheduling\Models\StaffDayOff;
 use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Scheduling\StoreBusinessBreakRequest;
 use App\Http\Requests\Scheduling\StoreBusinessHolidayRequest;
@@ -99,23 +100,24 @@ final class SchedulingManagementController
 
     public function updateBusinessHours(
         UpdateBusinessWorkingHoursRequest $request,
+        Tenant $tenant,
         SetBusinessWorkingHours $action,
         CurrentTenant $currentTenant,
     ): RedirectResponse {
         try {
             $action->handle(array_values($request->validated('hours')));
 
-            $tenant = $currentTenant->get();
+            $tenant = $currentTenant->get() ?? $tenant;
 
             if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $settings = $tenant->settings ?? [];
                 data_set($settings, 'onboarding.step', 'staff');
                 $tenant->forceFill(['settings' => $settings])->save();
 
-                return to_route('staff.index')->with('status', __('app.scheduling_ui.business_hours_updated'));
+                return to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.business_hours_updated'));
             }
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.business_hours_updated'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.business_hours_updated'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -123,25 +125,27 @@ final class SchedulingManagementController
 
     public function storeBreak(
         StoreBusinessBreakRequest $request,
+        Tenant $tenant,
         AddBusinessBreak $action,
     ): RedirectResponse {
         try {
             $action->handle($request->validated());
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.break_added'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.break_added'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
     }
 
     public function destroyBreak(
+        Tenant $tenant,
         BusinessBreak $break,
         RemoveBusinessBreak $action,
     ): RedirectResponse {
         try {
             $action->handle($break);
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.break_removed'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.break_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -149,25 +153,27 @@ final class SchedulingManagementController
 
     public function storeHoliday(
         StoreBusinessHolidayRequest $request,
+        Tenant $tenant,
         UpsertBusinessHoliday $action,
     ): RedirectResponse {
         try {
             $action->handle($request->validated());
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.holiday_saved'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.holiday_saved'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
     }
 
     public function destroyHoliday(
+        Tenant $tenant,
         BusinessHoliday $holiday,
         RemoveBusinessHoliday $action,
     ): RedirectResponse {
         try {
             $action->handle($holiday);
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.holiday_removed'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.holiday_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -175,25 +181,27 @@ final class SchedulingManagementController
 
     public function storeSpecialWorkingHour(
         StoreSpecialWorkingHourRequest $request,
+        Tenant $tenant,
         UpsertSpecialWorkingHour $action,
     ): RedirectResponse {
         try {
             $action->handle($request->validated());
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.special_hours_saved'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.special_hours_saved'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
     }
 
     public function destroySpecialWorkingHour(
+        Tenant $tenant,
         SpecialWorkingHour $specialWorkingHour,
         RemoveSpecialWorkingHour $action,
     ): RedirectResponse {
         try {
             $action->handle($specialWorkingHour);
 
-            return to_route('scheduling.index')->with('status', __('app.scheduling_ui.special_hours_removed'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.special_hours_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -201,13 +209,14 @@ final class SchedulingManagementController
 
     public function updateStaffHours(
         UpdateStaffWorkingHoursRequest $request,
+        Tenant $tenant,
         StaffProfile $staff,
         SetStaffWorkingHours $action,
     ): RedirectResponse {
         try {
             $action->handle($staff, array_values($request->validated('hours')));
 
-            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_hours_updated'));
+            return $this->staffRedirect($tenant, $staff)->with('status', __('app.scheduling_ui.staff_hours_updated'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -215,19 +224,21 @@ final class SchedulingManagementController
 
     public function storeDayOff(
         StoreStaffDayOffRequest $request,
+        Tenant $tenant,
         StaffProfile $staff,
         AddStaffDayOff $action,
     ): RedirectResponse {
         try {
             $action->handle($staff, $request->validated());
 
-            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_day_off_added'));
+            return $this->staffRedirect($tenant, $staff)->with('status', __('app.scheduling_ui.staff_day_off_added'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
     }
 
     public function destroyDayOff(
+        Tenant $tenant,
         StaffProfile $staff,
         StaffDayOff $dayOff,
         RemoveStaffDayOff $action,
@@ -237,7 +248,7 @@ final class SchedulingManagementController
         try {
             $action->handle($dayOff);
 
-            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_day_off_removed'));
+            return $this->staffRedirect($tenant, $staff)->with('status', __('app.scheduling_ui.staff_day_off_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
@@ -245,19 +256,21 @@ final class SchedulingManagementController
 
     public function storeAvailability(
         StoreStaffAvailabilityRequest $request,
+        Tenant $tenant,
         StaffProfile $staff,
         AddStaffAvailability $action,
     ): RedirectResponse {
         try {
             $action->handle($staff, $request->validated());
 
-            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_availability_added'));
+            return $this->staffRedirect($tenant, $staff)->with('status', __('app.scheduling_ui.staff_availability_added'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
     }
 
     public function destroyAvailability(
+        Tenant $tenant,
         StaffProfile $staff,
         StaffAvailability $availability,
         RemoveStaffAvailability $action,
@@ -267,14 +280,17 @@ final class SchedulingManagementController
         try {
             $action->handle($availability);
 
-            return $this->staffRedirect($staff)->with('status', __('app.scheduling_ui.staff_availability_removed'));
+            return $this->staffRedirect($tenant, $staff)->with('status', __('app.scheduling_ui.staff_availability_removed'));
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
     }
 
-    private function staffRedirect(StaffProfile $staff): RedirectResponse
+    private function staffRedirect(Tenant $tenant, StaffProfile $staff): RedirectResponse
     {
-        return to_route('scheduling.index', ['staff' => $staff->getKey()]);
+        return to_route('scheduling.index', [
+            'tenant' => $tenant->slug,
+            'staff' => $staff->getKey(),
+        ]);
     }
 }
