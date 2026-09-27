@@ -26,7 +26,7 @@ test('invalid credentials do not authenticate the user', function (): void {
         'password' => bcrypt('secret-password'),
     ]);
 
-    $this->post(route('login'), [
+    $this->from(route('login'))->post(route('login'), [
         'email' => 'login@example.com',
         'password' => 'wrong-password',
     ])
