@@ -164,16 +164,18 @@ class BusinessOnboardingController
             $entitledKeys = $subscription->plan?->modules->pluck('key') ?? collect();
         }
 
-        $selected = collect($validated['module_ids'] ?? [])
+        $selectedIds = collect($validated['module_ids'] ?? [])
             ->map(static fn ($id): int => (int) $id)
-            ->flip();
-
-        $coreIds = $modules->where('is_core', true)->pluck('id');
-        $selected = $selected->merge($coreIds->mapWithKeys(fn (int $id): array => [$id => true]));
+            ->merge(
+                $modules->where('is_core', true)->pluck('id')
+                    ->map(static fn ($id): int => (int) $id),
+            )
+            ->unique()
+            ->values();
 
         $unavailable = $modules
             ->where('is_core', false)
-            ->filter(fn (Module $module): bool => $selected->has($module->id) && ! $entitledKeys->contains($module->key));
+            ->filter(fn (Module $module): bool => $selectedIds->contains($module->id) && ! $entitledKeys->contains($module->key));
 
         if ($unavailable->isNotEmpty()) {
             throw ValidationException::withMessages([
