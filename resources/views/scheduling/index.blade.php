@@ -4,6 +4,8 @@
 @section('heading', __('app.scheduling_ui.scheduling'))
 
 @section('content')
+    <x-onboarding-progress :current="3" />
+
     @php
         use App\Domain\Scheduling\Enums\DayOfWeek;
 
