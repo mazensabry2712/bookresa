@@ -4,9 +4,12 @@ namespace App\Http\Middleware;
 
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Closure;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveTenant
@@ -27,35 +30,52 @@ class ResolveTenant
             return $next($request);
         }
 
-        $requestedTenantId = $request->session()->get('tenant_id');
+        $routeTenant = $request->route('tenant');
+        $tenant = null;
 
-        $membershipQuery = $user->tenantMemberships()
-            ->where('status', MembershipStatus::Active->value)
-            ->with('tenant');
-
-        if ($requestedTenantId !== null) {
-            $membershipQuery->where('tenant_id', (int) $requestedTenantId);
+        if ($routeTenant instanceof Tenant) {
+            $tenant = $routeTenant;
+        } elseif (is_string($routeTenant) && $routeTenant !== '') {
+            $tenant = Tenant::query()->where('slug', $routeTenant)->first();
         }
 
-        $membership = $membershipQuery
-            ->orderByDesc('is_primary')
-            ->orderBy('id')
-            ->first();
-
-        if (
-            $membership === null
-            || $membership->tenant?->status !== TenantStatus::Active
-        ) {
-            $membership = $user->tenantMemberships()
+        if ($tenant !== null) {
+            $membershipExists = $user->tenantMemberships()
+                ->where('tenant_id', $tenant->getKey())
                 ->where('status', MembershipStatus::Active->value)
-                ->whereHas('tenant', fn ($query) => $query->where('status', TenantStatus::Active->value))
-                ->with('tenant')
+                ->whereHas(
+                    'tenant',
+                    fn ($query) => $query->where('status', TenantStatus::Active->value)
+                )
+                ->exists();
+
+            abort_unless(
+                $membershipExists && $tenant->status === TenantStatus::Active,
+                Response::HTTP_FORBIDDEN,
+                'You do not have access to this workspace.',
+            );
+        } else {
+            $requestedTenantId = $request->session()->get('tenant_id');
+
+            $membershipQuery = $user->tenantMemberships()
+                ->where('status', MembershipStatus::Active->value)
+                ->whereHas(
+                    'tenant',
+                    fn ($query) => $query->where('status', TenantStatus::Active->value)
+                )
+                ->with('tenant');
+
+            if ($requestedTenantId !== null) {
+                $membershipQuery->where('tenant_id', (int) $requestedTenantId);
+            }
+
+            $membership = $membershipQuery
                 ->orderByDesc('is_primary')
                 ->orderBy('id')
                 ->first();
-        }
 
-        $tenant = $membership?->tenant;
+            $tenant = $membership?->tenant;
+        }
 
         abort_unless(
             $tenant !== null && $tenant->status === TenantStatus::Active,
@@ -67,6 +87,10 @@ class ResolveTenant
         $this->currentTenant->set($tenant);
         setPermissionsTeamId($tenant->getKey());
 
+        // Once a tenant is resolved, all named workspace routes generated during
+        // this request automatically receive the current tenant slug.
+        URL::defaults(['tenant' => $tenant->slug]);
+
         $user->unsetRelation('roles')->unsetRelation('permissions');
 
         try {
@@ -74,6 +98,7 @@ class ResolveTenant
         } finally {
             $this->currentTenant->clear();
             setPermissionsTeamId(null);
+            URL::defaults(['tenant' => null]);
             $user->unsetRelation('roles')->unsetRelation('permissions');
         }
     }
