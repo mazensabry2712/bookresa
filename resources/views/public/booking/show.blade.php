@@ -208,7 +208,7 @@
                                 <span class="text-xs font-semibold text-slate-400" data-booking-slot-count aria-live="polite" aria-atomic="true"></span>
                             </div>
 
-                            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-booking-slots role="group" aria-label="{{ __('app.public_booking_ui.available_times') }}"></div>
+                            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-booking-slots role="group" aria-label="{{ __('app.available_times') }}"></div>
 
                             <div class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-300" data-booking-loading role="status" aria-live="polite" aria-atomic="true">{{ __('app.loading_availability') }}</div>
                             <div class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" data-booking-error role="alert" aria-live="assertive">{{ __('app.public_booking_ui.availability_error') }}</div>
