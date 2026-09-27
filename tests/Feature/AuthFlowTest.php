@@ -56,7 +56,7 @@ test('verified tenant member with incomplete onboarding is redirected to service
         'email' => $user->email,
         'password' => 'secret-password',
     ])
-        ->assertRedirect(route('services.index'))
+        ->assertRedirect(route('services.index', ['tenant' => $tenant->slug]))
         ->assertSessionHasNoErrors();
 });
 
