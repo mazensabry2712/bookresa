@@ -141,7 +141,7 @@ test('business report is permission protected and tenant isolated', function ():
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->get(route('reports.business', ['from' => '2026-09-28', 'to' => '2026-09-28']))
+        ->get(route('reports.business', ['tenant' => $tenantA->slug, 'from' => '2026-09-28', 'to' => '2026-09-28']))
         ->assertOk()
         ->assertViewHas('metrics', function (array $metrics): bool {
             return $metrics['bookings'] === 2
