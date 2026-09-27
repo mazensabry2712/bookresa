@@ -27,14 +27,19 @@ use RuntimeException;
 
 class BookingManagementController
 {
-    public function create(CurrentTenant $currentTenant): View
+    public function create(Request $request, CurrentTenant $currentTenant): View
     {
         $tenant = $currentTenant->get();
 
         abort_unless($tenant !== null, 404);
 
+        $selectedCustomer = $request->integer('customer_id') > 0
+            ? Customer::query()->findOrFail($request->integer('customer_id'))
+            : null;
+
         return view('booking.management.create', [
             'tenant' => $tenant,
+            'selectedCustomer' => $selectedCustomer,
             'services' => Service::query()
                 ->where('is_active', true)
                 ->with('staff:id,display_name,status')
