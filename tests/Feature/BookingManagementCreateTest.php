@@ -109,3 +109,49 @@ test('booking management can create a pending booking using the workspace availa
         ->and($booking->customer->name)->toBe('Internal Customer')
         ->and($booking->service_id)->toBe($service->id);
 });
+
+
+test('internal availability endpoint returns available slots for the selected service and date', function (): void {
+    $user = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(CreateBusiness::class)->handle(
+        $user,
+        $type,
+        ['name' => 'Internal Availability Clinic'],
+    );
+
+    $date = now($tenant->profile->timezone ?? 'UTC')->addDay()->startOfDay();
+
+    $service = app(CurrentTenant::class)->run($tenant, function () use ($tenant, $date): Service {
+        Service::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => ['en' => 'Consultation', 'ar' => 'كشف'],
+            'description' => ['en' => null, 'ar' => null],
+            'price_minor' => 10000,
+            'currency' => 'EGP',
+            'duration_minutes' => 30,
+            'buffer_minutes' => 0,
+            'is_active' => true,
+        ]);
+
+        BusinessWorkingHour::query()->create([
+            'tenant_id' => $tenant->id,
+            'day_of_week' => DayOfWeek::from($date->dayOfWeekIso),
+            'opens_at' => '09:00',
+            'closes_at' => '17:00',
+            'is_closed' => false,
+        ]);
+
+        return Service::query()->firstOrFail();
+    });
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.availability', [
+            'service_id' => $service->id,
+            'date' => $date->toDateString(),
+        ]))
+        ->assertOk()
+        ->assertJsonPath('data.0.time', '09:00');
+});
