@@ -50,7 +50,9 @@ class Tenant extends Model implements IsTenant
      */
     public function getDatabaseName(): string
     {
-        return (string) config('database.connections.mysql.database');
+        $connection = (string) config('database.default', 'mysql');
+
+        return (string) config("database.connections.{$connection}.database");
     }
 
     protected function casts(): array
