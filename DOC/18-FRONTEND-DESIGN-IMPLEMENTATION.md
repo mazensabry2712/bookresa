@@ -1054,13 +1054,12 @@ The complete authentication flow is usable in Arabic/English, RTL/LTR and light/
 ### F2 — Business onboarding
 Screens:
 - Create Business
-- Business Type
-- Workspace
-- Modules
 - Services setup
 - Working Hours setup
 - Staff setup
 - Workspace Ready
+
+Module management is a dashboard/settings concern, not an onboarding screen. Core modules are enabled automatically; optional modules are managed later from the workspace modules page.
 
 Exit condition:
 A verified user can create a Business, configure required workspace data and finish onboarding.
