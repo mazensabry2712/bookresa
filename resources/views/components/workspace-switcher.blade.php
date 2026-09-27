@@ -21,7 +21,9 @@
             class="flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-start shadow-sm transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:bg-slate-800"
             data-workspace-switcher-toggle
             aria-expanded="false"
-            aria-haspopup="true">
+            aria-haspopup="true"
+            aria-label="{{ __('app.open_workspace_menu') }}"
+            title="{{ $workspaceName($tenant) }}">
         <span class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-soft dark:bg-slate-800">
             <img src="{{ asset('logo.png') }}"
                  alt=""
@@ -79,6 +81,11 @@
                class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
                 <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-navy dark:bg-slate-800 dark:text-indigo-300" aria-hidden="true">+</span>
                 {{ __('app.create_workspace') }}
+            </a>
+            <a href="{{ route('public.booking.canonical.show', ['tenant' => $tenant->slug]) }}"
+               class="mt-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-soft text-brand-navy dark:bg-slate-800 dark:text-indigo-300" aria-hidden="true">↗</span>
+                {{ __('app.public_site') }}
             </a>
             @can('business.view')
                 <a href="{{ route('business.profile.edit', ['tenant' => $tenant->slug]) }}"
