@@ -17,9 +17,9 @@
                data-bookresa-sidebar
                aria-hidden="false"
                aria-label="{{ __('app.workspace') }}">
-            <div class="br-sidebar-controls flex min-h-10 items-center justify-end px-2 pt-2 sm:px-3" data-sidebar-controls>
+            <div class="br-sidebar-controls" data-sidebar-controls>
                 <button type="button"
-                        class="br-sidebar-collapse shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                        class="br-sidebar-collapse"
                         data-bookresa-sidebar-collapse
                         data-label-collapse="{{ __('app.collapse_sidebar') }}"
                         data-label-expand="{{ __('app.expand_sidebar') }}"
@@ -27,7 +27,7 @@
                         aria-controls="bookresa-sidebar"
                         aria-label="{{ __('app.collapse_sidebar') }}"
                         title="{{ __('app.collapse_sidebar') }}">
-                    <svg class="h-4.5 w-4.5 rtl-flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                    <svg class="h-5 w-5 rtl-flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m15 6-6 6 6 6"/>
                     </svg>
                 </button>
