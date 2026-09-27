@@ -23,6 +23,7 @@ final class DashboardController
     {
         $tenant = $currentTenant->get();
         abort_unless($tenant !== null, 404);
+        $tenant->loadMissing('profile');
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
         $staffId = null;
@@ -109,10 +110,38 @@ final class DashboardController
                 SubscriptionStatus::Trial->value,
                 SubscriptionStatus::Active->value,
             ])
+            ->where('end_at', '>', $nowUtc)
+            ->where(function ($query): void {
+                $query->where('status', SubscriptionStatus::Trial->value)
+                    ->orWhere(function ($query): void {
+                        $query->where('status', SubscriptionStatus::Active->value)
+                            ->where('payment_status', PaymentStatus::Paid->value);
+                    });
+            })
             ->latest('start_at')
             ->first();
 
         $usageSummary = $subscription ? $usageCalculator->handle($subscription) : null;
+        $totalCustomers = $usageSummary?->uniqueCustomerCount ?? Customer::query()->count();
+
+        $onboardingCompleted = (bool) data_get($tenant->settings, 'onboarding.completed', false);
+        $onboardingStep = (string) data_get($tenant->settings, 'onboarding.step', 'services');
+        $onboardingCurrentStage = match ($onboardingStep) {
+            'hours' => 3,
+            'staff' => 4,
+            default => 2,
+        };
+        $onboardingRoute = match ($onboardingStep) {
+            'hours' => 'scheduling.index',
+            'staff' => 'staff.index',
+            default => 'services.index',
+        };
+        $businessName = (string) (
+            data_get($tenant->profile?->name, app()->getLocale())
+            ?? data_get($tenant->profile?->name, 'en')
+            ?? data_get($tenant->profile?->name, 'ar')
+            ?? $tenant->slug
+        );
 
         $usagePercent = null;
 
@@ -139,11 +168,19 @@ final class DashboardController
         return view('dashboard', [
             'tenant' => $tenant,
             'timezone' => $timezone,
+            'businessName' => $businessName,
             'todayLabel' => $todayStart->locale(app()->getLocale())->isoFormat('dddd, D MMMM YYYY'),
+            'onboarding' => [
+                'completed' => $onboardingCompleted,
+                'currentStage' => $onboardingCurrentStage,
+                'step' => $onboardingStep,
+                'route' => $onboardingRoute,
+            ],
             'metrics' => [
                 'todayBookings' => (int) $todayBookings,
                 'todayRevenueMinor' => (int) $todayRevenueMinor,
                 'upcomingBookings' => (int) $upcomingBookingsCount,
+                'customers' => (int) $totalCustomers,
                 'newCustomersToday' => (int) $newCustomersToday,
                 'activeStaff' => auth()->user()?->hasRole('staff')
                     ? 1
