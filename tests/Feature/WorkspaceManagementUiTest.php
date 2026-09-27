@@ -85,7 +85,7 @@ test('owner can view and update business profile', function (): void {
     [$user, $tenant] = workspaceOwner();
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('business.profile.edit'))
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Business profile')
         ->assertSee('Owner Clinic')
@@ -93,7 +93,7 @@ test('owner can view and update business profile', function (): void {
         ->assertSee('Maximum advance');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->put(route('business.profile.update'), [
+        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
             'name_en' => 'Updated Clinic',
             'name_ar' => 'العيادة المحدثة',
             'description_en' => 'Updated description',
@@ -130,7 +130,7 @@ test('owner can create and update a service through workspace ui', function (): 
     [$user, $tenant] = workspaceOwner();
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('services.store'), [
+        ->post(route('services.store', ['tenant' => $tenant->slug]), [
             'name_en' => 'Haircut',
             'name_ar' => 'حلاقة',
             'description_en' => 'Classic haircut',
@@ -174,7 +174,7 @@ test('workspace service management stays tenant isolated', function (): void {
     [$otherUser, $tenantB] = workspaceOwner('Tenant B Owner');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenantA->id])
-        ->post(route('services.store'), [
+        ->post(route('services.store', ['tenant' => $tenantA->slug]), [
             'name_en' => 'Tenant A Service',
             'price' => '100.00',
             'currency' => 'EGP',
@@ -188,7 +188,7 @@ test('workspace service management stays tenant isolated', function (): void {
     $serviceA = Service::query()->firstOrFail();
 
     $this->actingAs($otherUser)->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('services.index', ['edit' => $serviceA->id]))
+        ->get(route('services.index', ['tenant' => $tenantB->slug, 'edit' => $serviceA->id]))
         ->assertNotFound();
 
     app(CurrentTenant::class)->set($tenantB);
@@ -205,7 +205,7 @@ test('receptionist cannot manage services', function (): void {
     app(AddStaffMember::class)->handle($staffUser, 'receptionist');
 
     $this->actingAs($staffUser)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('services.store'), [
+        ->post(route('services.store', ['tenant' => $tenant->slug]), [
             'name_en' => 'Blocked',
             'price' => '100.00',
             'currency' => 'EGP',
@@ -283,7 +283,7 @@ test('service management paginates large service lists', function (): void {
         ->assertDontSee('<p class="font-semibold">Service 1</p>');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index', ['page' => 2]))
+        ->get(route('services.index', ['tenant' => $tenant->slug, 'page' => 2]))
         ->assertOk()
         ->assertSee('Service 1');
 });
