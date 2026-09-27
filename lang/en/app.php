@@ -111,7 +111,7 @@ return [
     'email_placeholder' => 'you@example.com',
     'name_placeholder' => 'Your name',
     'create_business' => 'Create your business',
-    'create_business_message' => 'Set the basics first. Your workspace will be configured in the next steps.',
+    'create_business_message' => 'Set the basics first. Next, add your services, hours and staff.',
     'step_progress' => 'Step :current of :total',
     'business_name' => 'Business name',
     'business_name_placeholder' => 'e.g. Ahmed Dental Clinic',
