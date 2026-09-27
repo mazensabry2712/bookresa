@@ -44,6 +44,11 @@ function schedulingUiWorkspace(string $name = 'Scheduling Workspace'): array
         'locale' => 'en',
     ]);
 
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.step', 'ready');
+    data_set($settings, 'onboarding.completed', true);
+    $tenant->forceFill(['settings' => $settings])->save();
+
     return [$user, $tenant];
 }
 
