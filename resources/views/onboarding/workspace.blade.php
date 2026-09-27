@@ -17,6 +17,12 @@
         $moduleStepIndex = collect($steps)->search(static fn (array $step): bool => $step['key'] === 'modules');
         $coreModules = $modules->filter(static fn ($module): bool => $module->is_core)->values();
         $optionalModules = $modules->filter(static fn ($module): bool => ! $module->is_core)->values();
+        $availableOptionalModules = $optionalModules->filter(
+            fn ($module): bool => $entitledModuleKeys->contains($module->key)
+        )->values();
+        $lockedOptionalModules = $optionalModules->reject(
+            fn ($module): bool => $entitledModuleKeys->contains($module->key)
+        )->values();
         $enabledModuleCount = $tenant->modules->filter(
             static fn ($tenantModule): bool => (bool) data_get($tenantModule->pivot, 'enabled', false)
         )->count();
@@ -98,26 +104,39 @@
                     @csrf
 
                     <section>
-                        <div class="flex items-end justify-between gap-4 px-1">
+                        <div class="flex items-center justify-between gap-4">
                             <div>
-                                <h2 class="text-sm font-black text-slate-950 dark:text-white">{{ __('app.core_modules') }}</h2>
-                                <p class="mt-1 text-xs font-semibold text-slate-400">{{ __('app.always_on_message') }}</p>
+                                <p class="text-[11px] font-black uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-400">
+                                    {{ __('app.included_tools') }}
+                                </p>
+                                <h2 class="mt-1.5 text-lg font-black tracking-tight text-slate-950 dark:text-white">
+                                    {{ __('app.workspace_ready_title') }}
+                                </h2>
+                                <p class="mt-1.5 max-w-xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                                    {{ __('app.workspace_ready_message') }}
+                                </p>
                             </div>
-                            <span class="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black text-emerald-700 sm:inline-flex dark:bg-emerald-950/40 dark:text-emerald-300">
-                                {{ __('app.included') }}
+
+                            <span class="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 sm:flex dark:bg-emerald-950/40 dark:text-emerald-300">
+                                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
                             </span>
                         </div>
 
-                        <div class="mt-4 flex flex-wrap gap-2">
+                        <div class="mt-5 grid gap-2 sm:grid-cols-2">
                             @foreach ($coreModules as $module)
-                                <div class="flex min-h-11 items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 dark:border-slate-800 dark:bg-slate-950">
-                                    <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-300">
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">{!! $moduleIcon($module->key) !!}</svg>
+                                <div class="flex min-h-[68px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-950">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-300">
+                                        <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">{!! $moduleIcon($module->key) !!}</svg>
                                     </span>
-                                    <span class="text-xs font-extrabold text-slate-800 dark:text-slate-200">
-                                        {{ data_get($module->name, app()->getLocale()) ?? data_get($module->name, 'en') ?? $module->key }}
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-extrabold text-slate-900 dark:text-white">
+                                            {{ data_get($module->name, app()->getLocale()) ?? data_get($module->name, 'en') ?? $module->key }}
+                                        </span>
+                                        <span class="mt-0.5 block text-[11px] font-semibold text-slate-400">{{ __('app.included') }}</span>
                                     </span>
-                                    <svg class="ms-1 h-3.5 w-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <svg class="h-4 w-4 shrink-0 text-emerald-500" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                                     </svg>
                                 </div>
@@ -125,83 +144,98 @@
                         </div>
                     </section>
 
-                    <section class="mt-11">
-                        <div class="flex flex-col gap-2 px-1 sm:flex-row sm:items-end sm:justify-between">
-                            <div>
-                                <h2 class="text-sm font-black text-slate-950 dark:text-white">{{ __('app.optional_modules') }}</h2>
-                                <p class="mt-1 text-xs font-semibold text-slate-400">{{ __('app.optional_modules_help') }}</p>
+                    @if ($availableOptionalModules->isNotEmpty())
+                        <section class="mt-10">
+                            <div class="flex items-end justify-between gap-4">
+                                <div>
+                                    <p class="text-[11px] font-black uppercase tracking-[0.16em] text-brand-indigo">
+                                        {{ __('app.available_add_ons') }}
+                                    </p>
+                                    <h2 class="mt-1.5 text-lg font-black tracking-tight text-slate-950 dark:text-white">
+                                        {{ __('app.add_optional_modules') }}
+                                    </h2>
+                                </div>
+                                <span class="text-xs font-bold text-slate-400">
+                                    {{ $availableOptionalModules->count() }}
+                                </span>
                             </div>
-                            @if (! $hasSubscription)
-                                <span class="text-xs font-bold text-slate-400">{{ __('app.no_subscription_yet') }}</span>
-                            @endif
-                        </div>
 
-                        <div class="mt-4 grid gap-3 sm:grid-cols-2">
-                            @foreach ($optionalModules as $module)
-                                @php
-                                    $enabled = $tenant->modules->contains(
-                                        static fn ($tenantModule): bool =>
-                                            $tenantModule->getKey() === $module->getKey()
-                                            && (bool) data_get($tenantModule->pivot, 'enabled', false)
-                                    );
-                                    $entitled = $entitledModuleKeys->contains($module->key);
-                                    $locked = ! $entitled;
-                                @endphp
+                            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                                @foreach ($availableOptionalModules as $module)
+                                    @php
+                                        $enabled = $tenant->modules->contains(
+                                            static fn ($tenantModule): bool =>
+                                                $tenantModule->getKey() === $module->getKey()
+                                                && (bool) data_get($tenantModule->pivot, 'enabled', false)
+                                        );
+                                    @endphp
 
-                                <label class="group relative flex min-h-[148px] flex-col rounded-2xl border p-5 transition
-                                    {{ $locked
-                                        ? 'cursor-not-allowed border-slate-200 bg-white/55 dark:border-slate-800 dark:bg-slate-950/45'
-                                        : 'cursor-pointer border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-indigo/40 hover:shadow-[0_14px_35px_rgba(30,42,68,0.08)] dark:border-slate-800 dark:bg-slate-950 dark:hover:border-indigo-500/40' }}">
+                                    <label class="group flex min-h-[118px] cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-px hover:border-brand-indigo/40 hover:shadow-[0_10px_28px_rgba(30,42,68,0.07)] dark:border-slate-800 dark:bg-slate-950 dark:hover:border-indigo-500/40">
+                                        <input type="checkbox" name="module_ids[]" value="{{ $module->id }}" @checked($enabled) class="peer sr-only">
 
-                                    <input type="checkbox" name="module_ids[]" value="{{ $module->id }}" @checked($enabled) @disabled($locked) class="peer sr-only">
-
-                                    <div class="flex items-start justify-between gap-4">
-                                        <span class="flex h-11 w-11 items-center justify-center rounded-xl
-                                            {{ $locked ? 'bg-slate-100 text-slate-400 dark:bg-slate-900 dark:text-slate-600' : 'bg-indigo-50 text-brand-indigo dark:bg-indigo-950/50 dark:text-indigo-300' }}">
+                                        <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-brand-indigo dark:bg-indigo-950/50 dark:text-indigo-300">
                                             <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">{!! $moduleIcon($module->key) !!}</svg>
                                         </span>
 
-                                        <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors
-                                            {{ $locked ? 'bg-slate-200 dark:bg-slate-800' : 'bg-slate-200 peer-checked:bg-brand-indigo dark:bg-slate-700 dark:peer-checked:bg-brand-indigo' }}"
-                                            aria-hidden="true">
-                                            <span class="absolute start-1 h-5 w-5 rounded-full bg-white shadow-[0_1px_3px_rgba(15,23,42,0.22)] transition-transform duration-150 {{ $locked ? '' : 'peer-checked:translate-x-5 rtl:peer-checked:-translate-x-5' }}"></span>
-                                        </span>
-                                    </div>
-
-                                    <div class="mt-5">
-                                        <div class="flex flex-wrap items-center gap-2">
-                                            <span class="text-sm font-black text-slate-950 dark:text-white">
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block text-sm font-black text-slate-950 dark:text-white">
                                                 {{ data_get($module->name, app()->getLocale()) ?? data_get($module->name, 'en') ?? $module->key }}
                                             </span>
-                                            @if ($locked)
-                                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500 dark:bg-slate-900 dark:text-slate-500">
-                                                    {{ __('app.upgrade') }}
-                                                </span>
-                                            @else
-                                                <span class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-black text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
-                                                    {{ __('app.available') }}
-                                                </span>
-                                            @endif
-                                        </div>
+                                            <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
+                                                {{ $module->description ? (data_get($module->description, app()->getLocale()) ?? data_get($module->description, 'en')) : __('app.module_descriptions.'.$module->key) }}
+                                            </span>
+                                        </span>
 
-                                        <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
-                                            @if ($module->description)
-                                                {{ data_get($module->description, app()->getLocale()) ?? data_get($module->description, 'en') }}
-                                            @else
-                                                {{ __('app.module_descriptions.'.$module->key) }}
-                                            @endif
-                                        </p>
+                                        <span class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full bg-slate-200 transition-colors peer-checked:bg-brand-indigo dark:bg-slate-700 dark:peer-checked:bg-brand-indigo" aria-hidden="true">
+                                            <span class="absolute start-1 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5 rtl:peer-checked:-translate-x-5"></span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </section>
+                    @else
+                        <section class="mt-10">
+                            <div class="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 dark:border-slate-800 dark:bg-slate-950">
+                                <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-navy text-white dark:bg-brand-indigo">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="M7 9V7a5 5 0 0 1 10 0v2M5 9h14v11H5V9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                            <path d="M12 13v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                        </svg>
                                     </div>
 
-                                    @if ($locked)
-                                        <div class="mt-auto pt-4 text-[11px] font-bold text-slate-400">
-                                            {{ __('app.optional_module_locked_help') }}
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-[11px] font-black uppercase tracking-[0.16em] text-brand-indigo">
+                                            {{ __('app.more_tools') }}
+                                        </p>
+                                        <h2 class="mt-1 text-lg font-black tracking-tight text-slate-950 dark:text-white">
+                                            {{ __('app.unlock_more_tools') }}
+                                        </h2>
+                                        <p class="mt-1.5 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                                            {{ __('app.unlock_more_tools_message') }}
+                                        </p>
+
+                                        <div class="mt-4 flex flex-wrap gap-2">
+                                            @foreach ($lockedOptionalModules as $module)
+                                                <span class="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs font-extrabold text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+                                                    <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                        <rect x="6" y="10" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                                        <path d="M9 10V7a3 3 0 0 1 6 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                                    </svg>
+                                                    {{ data_get($module->name, app()->getLocale()) ?? data_get($module->name, 'en') ?? $module->key }}
+                                                </span>
+                                            @endforeach
                                         </div>
-                                    @endif
-                                </label>
-                            @endforeach
-                        </div>
-                    </section>
+                                    </div>
+
+                                    <a href="{{ route('billing.subscription') }}"
+                                       class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-extrabold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">
+                                        {{ __('app.explore_plans') }}
+                                    </a>
+                                </div>
+                            </div>
+                        </section>
+                    @endif
 
                     @error('module_ids')
                         <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-300">
