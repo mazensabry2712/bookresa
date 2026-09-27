@@ -147,7 +147,7 @@ test('tenant role names are isolated between workspaces', function (): void {
         ->and($a->id)->not->toBe($b->id);
 });
 
-test('workspace configuration page is available for the active tenant', function (): void {
+test('workspace modules page is available for the active tenant', function (): void {
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
@@ -161,8 +161,9 @@ test('workspace configuration page is available for the active tenant', function
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('onboarding.workspace'))
         ->assertOk()
-        ->assertSee(__('app.configure_workspace'))
-        ->assertSee(__('app.choose_modules'));
+        ->assertSee(__('app.choose_modules'))
+        ->assertSee(__('app.core_modules'))
+        ->assertSee(__('app.optional_modules'));
 });
 
 test('module onboarding always keeps core modules enabled', function (): void {
