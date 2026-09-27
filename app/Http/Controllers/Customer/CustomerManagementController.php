@@ -13,6 +13,7 @@ use App\Domain\Customer\Actions\CreateCustomer;
 use App\Domain\Customer\Actions\UpdateCustomer;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Services\CustomerIdentity;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Customer\StoreCustomerRequest;
 use App\Http\Requests\Customer\UpdateCustomerRequest;
@@ -76,6 +77,7 @@ final class CustomerManagementController
     }
 
     public function show(
+        Tenant $tenant,
         Customer $customer,
         CurrentTenant $currentTenant,
         CalculateSubscriptionUsage $usageCalculator,
@@ -147,13 +149,14 @@ final class CustomerManagementController
 
     public function update(
         UpdateCustomerRequest $request,
+        Tenant $tenant,
         Customer $customer,
         UpdateCustomer $updateCustomer,
     ): RedirectResponse {
         try {
             $updateCustomer->handle($customer, $request->validated());
 
-            return to_route('customers.show', $customer)->with('status', __('app.customer_ui.updated'));
+            return to_route('customers.show', ['tenant' => $tenant->slug, 'customer' => $customer])->with('status', __('app.customer_ui.updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['customer' => $exception->getMessage()])->withInput();
         }
