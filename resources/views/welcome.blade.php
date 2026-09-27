@@ -24,16 +24,23 @@
                                class="inline-flex min-h-11 w-full min-[420px]:flex-1 min-[420px]:w-auto items-center justify-center rounded-lg bg-brand-navy px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-slate-800 dark:bg-indigo-500 dark:hover:bg-indigo-400">
                                 {{ __('app.home_ui.start_free') }}
                             </a>
-                            <a href="#features"
+                            <a href="#how-it-works"
                                class="inline-flex min-h-11 w-full min-[420px]:w-auto items-center justify-center px-1 py-3 text-sm font-bold text-slate-700 transition-colors hover:text-brand-navy dark:text-slate-200 dark:hover:text-white">
-                                {{ __('app.home_ui.features') }}
+                                {{ __('app.home_ui.explore_features') }}
                             </a>
                         </div>
 
-                        <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-400">
-                            <span>{{ __('app.home_ui.proof_bookings') }}</span>
-                            <span>{{ __('app.home_ui.proof_team') }}</span>
-                            <span>{{ __('app.home_ui.proof_growth') }}</span>
+                        <div class="mt-8 grid gap-3 sm:grid-cols-3">
+                            @foreach ([
+                                [__('app.home_ui.proof_bookings'), __('app.home_ui.proof_bookings_text')],
+                                [__('app.home_ui.proof_team'), __('app.home_ui.proof_team_text')],
+                                [__('app.home_ui.proof_growth'), __('app.home_ui.proof_growth_text')],
+                            ] as $proof)
+                                <div class="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-3 dark:border-slate-800 dark:bg-slate-900/70">
+                                    <p class="text-xs font-extrabold text-slate-900 dark:text-white">{{ $proof[0] }}</p>
+                                    <p class="mt-1 text-[11px] leading-5 text-slate-500 dark:text-slate-400">{{ $proof[1] }}</p>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
 
@@ -99,6 +106,119 @@
             </div>
         </section>
 
+        <section id="how-it-works" class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950">
+            <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+                <div class="max-w-2xl">
+                    <p class="text-sm font-semibold text-brand-indigo">{{ __('app.home_ui.workflow_eyebrow') }}</p>
+                    <h2 class="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-brand-navy dark:text-white sm:text-4xl">
+                        {{ __('app.home_ui.workflow_title') }}
+                    </h2>
+                    <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+                        {{ __('app.home_ui.workflow_description') }}
+                    </p>
+                </div>
+
+                <div class="mt-10 grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 sm:grid-cols-2 lg:grid-cols-4 dark:border-slate-800 dark:bg-slate-800">
+                    @foreach ([
+                        [1, __('app.home_ui.step_1_title'), __('app.home_ui.step_1_text')],
+                        [2, __('app.home_ui.step_2_title'), __('app.home_ui.step_2_text')],
+                        [3, __('app.home_ui.step_3_title'), __('app.home_ui.step_3_text')],
+                        [4, __('app.home_ui.step_4_title'), __('app.home_ui.step_4_text')],
+                    ] as $step)
+                        <article class="bg-white px-5 py-6 dark:bg-slate-900">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-navy text-xs font-extrabold text-white dark:bg-indigo-500">
+                                {{ str_pad((string) $step[0], 2, '0', STR_PAD_LEFT) }}
+                            </span>
+                            <h3 class="mt-5 text-sm font-extrabold text-slate-900 dark:text-white">{{ $step[1] }}</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ $step[2] }}</p>
+                        </article>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section class="border-b border-slate-200 dark:border-slate-800">
+            <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+                <div class="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+                    <div class="min-w-0 max-w-xl">
+                        <p class="text-sm font-semibold text-brand-indigo">{{ __('app.home_ui.product_eyebrow') }}</p>
+                        <h2 class="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-brand-navy dark:text-white sm:text-4xl">
+                            {{ __('app.home_ui.product_title') }}
+                        </h2>
+                        <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">
+                            {{ __('app.home_ui.product_description') }}
+                        </p>
+
+                        <div class="mt-7 space-y-4">
+                            @foreach ([
+                                [__('app.home_ui.feature_bookings_title'), __('app.home_ui.feature_bookings_text')],
+                                [__('app.home_ui.feature_calendar_title'), __('app.home_ui.feature_calendar_text')],
+                                [__('app.home_ui.feature_services_title'), __('app.home_ui.feature_services_text')],
+                                [__('app.home_ui.feature_customers_title'), __('app.home_ui.feature_customers_text')],
+                            ] as $point)
+                                <div class="flex gap-3">
+                                    <span class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-indigo/10 text-[10px] font-extrabold text-brand-indigo dark:bg-indigo-400/10 dark:text-indigo-300">✓</span>
+                                    <div class="min-w-0">
+                                        <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">{{ $point[0] }}</h3>
+                                        <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ $point[1] }}</p>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                            <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-4 sm:px-5 dark:border-slate-800">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-extrabold text-slate-900 dark:text-white">{{ __('app.dashboard_ui.summary') }}</p>
+                                    <p class="mt-1 text-xs text-slate-400">{{ __('app.dashboard_ui.today') }}</p>
+                                </div>
+                                <span class="shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+                                    {{ __('app.home_ui.product_preview') }}
+                                </span>
+                            </div>
+
+                            <div class="p-4 sm:p-5">
+                                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                    @foreach ([
+                                        [__('app.dashboard_ui.today_bookings'), '12'],
+                                        [__('app.dashboard_ui.upcoming_bookings'), '7'],
+                                        [__('app.dashboard_ui.new_customers'), '4'],
+                                        [__('app.dashboard_ui.open_bookings'), '3'],
+                                    ] as $stat)
+                                        <div class="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-950">
+                                            <p class="text-[10px] font-semibold leading-4 text-slate-400">{{ $stat[0] }}</p>
+                                            <p class="mt-2 text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">{{ $stat[1] }}</p>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <div class="mt-4 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+                                    <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+                                        <p class="text-xs font-extrabold text-slate-900 dark:text-white">{{ __('app.dashboard_ui.upcoming') }}</p>
+                                        <span class="text-[10px] font-semibold text-slate-400">{{ __('app.dashboard_ui.view_all') }}</span>
+                                    </div>
+                                    @foreach ([
+                                        ['09:00', __('app.home_ui.preview_service_1'), 'A'],
+                                        ['11:30', __('app.home_ui.preview_service_2'), 'M'],
+                                        ['14:00', __('app.home_ui.preview_service_3'), 'S'],
+                                    ] as $appointment)
+                                        <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 dark:border-slate-800">
+                                            <span class="w-11 shrink-0 text-xs font-extrabold text-brand-indigo">{{ $appointment[0] }}</span>
+                                            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-extrabold text-slate-500 dark:bg-slate-800 dark:text-slate-300">{{ $appointment[2] }}</span>
+                                            <span class="min-w-0 truncate text-xs font-bold text-slate-800 dark:text-slate-200">{{ $appointment[1] }}</span>
+                                            <span class="ms-auto shrink-0 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">{{ __('app.dashboard_ui.status_confirmed') }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="features" class="border-b border-slate-200 dark:border-slate-800">
             <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
                 <div class="max-w-2xl">
@@ -143,14 +263,17 @@
                     </p>
                 </div>
 
-                <div class="mt-8 flex flex-wrap gap-x-8 gap-y-3 border-t border-slate-200 pt-6 dark:border-slate-800">
+                <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([
-                        __('app.home_ui.business_type_clinics'),
-                        __('app.home_ui.business_type_dental'),
-                        __('app.home_ui.business_type_salons'),
-                        __('app.home_ui.business_type_barbers'),
-                    ] as $type)
-                        <span class="text-sm font-bold text-slate-900 dark:text-white">{{ $type }}</span>
+                        [__('app.home_ui.business_type_clinics'), __('app.home_ui.business_clinics_text')],
+                        [__('app.home_ui.business_type_dental'), __('app.home_ui.business_dental_text')],
+                        [__('app.home_ui.business_type_salons'), __('app.home_ui.business_salons_text')],
+                        [__('app.home_ui.business_type_barbers'), __('app.home_ui.business_barbers_text')],
+                    ] as $business)
+                        <article class="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-950">
+                            <h3 class="text-sm font-extrabold text-slate-900 dark:text-white">{{ $business[0] }}</h3>
+                            <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ $business[1] }}</p>
+                        </article>
                     @endforeach
                 </div>
             </div>
