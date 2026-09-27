@@ -65,58 +65,58 @@ Route::middleware(['auth', 'verified'])->get('/dashboard', function (Request $re
 Route::middleware(['auth', 'verified', 'tenant'])
     ->prefix('workspace/{tenant:slug?}/dashboard')
     ->group(function (): void {
-    Route::get('/dashboard', [DashboardController::class, 'index'])
+    Route::get('/', [DashboardController::class, 'index'])
         ->middleware('subscription.usable')
         ->name('dashboard');
-    Route::get('/dashboard/modules', [BusinessModuleController::class, 'index'])
+    Route::get('/modules', [BusinessModuleController::class, 'index'])
         ->middleware('permission:settings.manage')
         ->name('business.modules.index');
 
-    Route::put('/dashboard/modules', [BusinessModuleController::class, 'update'])
+    Route::put('/modules', [BusinessModuleController::class, 'update'])
         ->middleware('permission:settings.manage')
         ->name('business.modules.update');
 
-    Route::get('/dashboard/notifications', [NotificationController::class, 'index'])
+    Route::get('/notifications', [NotificationController::class, 'index'])
         ->middleware('permission:notifications.view')
         ->name('notifications.index');
 
-    Route::post('/dashboard/notifications/read-all', [NotificationController::class, 'readAll'])
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])
         ->middleware('permission:notifications.view')
         ->name('notifications.read-all');
 
-    Route::post('/dashboard/notifications/{notification}/read', [NotificationController::class, 'read'])
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])
         ->middleware('permission:notifications.view')
         ->name('notifications.read');
 
-    Route::get('/dashboard/reports', [ReportController::class, 'business'])
+    Route::get('/reports', [ReportController::class, 'business'])
         ->middleware('permission:reports.view')
         ->name('reports.business');
 
-    Route::get('/dashboard/business', [BusinessProfileController::class, 'edit'])
+    Route::get('/business', [BusinessProfileController::class, 'edit'])
         ->middleware('permission:business.view')
         ->name('business.profile.edit');
 
-    Route::put('/dashboard/business', [BusinessProfileController::class, 'update'])
+    Route::put('/business', [BusinessProfileController::class, 'update'])
         ->middleware('permission:business.update')
         ->name('business.profile.update');
 
-    Route::get('/dashboard/services', [ServiceManagementController::class, 'index'])
+    Route::get('/services', [ServiceManagementController::class, 'index'])
         ->middleware(['module:services', 'permission:services.view'])
         ->name('services.index');
 
-    Route::post('/dashboard/services', [ServiceManagementController::class, 'store'])
+    Route::post('/services', [ServiceManagementController::class, 'store'])
         ->middleware(['module:services', 'permission:services.create'])
         ->name('services.store');
 
-    Route::put('/dashboard/services/{service}', [ServiceManagementController::class, 'update'])
+    Route::put('/services/{service}', [ServiceManagementController::class, 'update'])
         ->middleware(['module:services', 'permission:services.update'])
         ->name('services.update');
 
-    Route::delete('/dashboard/services/{service}', [ServiceManagementController::class, 'destroy'])
+    Route::delete('/services/{service}', [ServiceManagementController::class, 'destroy'])
         ->middleware(['module:services', 'permission:services.delete'])
         ->name('services.destroy');
 
-    Route::middleware(['module:customers'])->prefix('dashboard/customers')->group(function (): void {
+    Route::middleware(['module:customers'])->prefix('customers')->group(function (): void {
         Route::get('/', [CustomerManagementController::class, 'index'])
             ->middleware('permission:customers.view')
             ->name('customers.index');
@@ -131,23 +131,23 @@ Route::middleware(['auth', 'verified', 'tenant'])
             ->name('customers.update');
     });
 
-    Route::get('/dashboard/staff', [StaffManagementController::class, 'index'])
+    Route::get('/staff', [StaffManagementController::class, 'index'])
         ->middleware(['module:staff', 'permission:staff.view'])
         ->name('staff.index');
 
-    Route::post('/dashboard/staff', [StaffManagementController::class, 'store'])
+    Route::post('/staff', [StaffManagementController::class, 'store'])
         ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.store');
 
-    Route::put('/dashboard/staff/{staff}', [StaffManagementController::class, 'update'])
+    Route::put('/staff/{staff}', [StaffManagementController::class, 'update'])
         ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.update');
 
-    Route::patch('/dashboard/staff/{staff}/status', [StaffManagementController::class, 'status'])
+    Route::patch('/staff/{staff}/status', [StaffManagementController::class, 'status'])
         ->middleware(['module:staff', 'permission:staff.manage'])
         ->name('staff.status');
 
-    Route::middleware(['module:calendar'])->prefix('dashboard/scheduling')->group(function (): void {
+    Route::middleware(['module:calendar'])->prefix('scheduling')->group(function (): void {
         Route::get('/', [SchedulingManagementController::class, 'index'])
             ->middleware('permission:calendar.view')
             ->name('scheduling.index');
