@@ -104,7 +104,7 @@
                                 </td>
                                 <td class="px-5 py-4">
                                     @if ($booking)
-                                        <a href="{{ route('booking.management.show', $booking) }}" class="font-bold text-brand-indigo hover:underline">{{ $booking->booking_reference }}</a>
+                                        <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="font-bold text-brand-indigo hover:underline">{{ $booking->booking_reference }}</a>
                                         <p class="mt-0.5 text-xs text-slate-500">{{ $booking?->service?->name[app()->getLocale()] ?? $booking?->service?->name['en'] ?? '—' }}</p>
                                     @else
                                         —
@@ -141,7 +141,7 @@
             <div class="divide-y divide-slate-200 md:hidden dark:divide-slate-800">
                 @forelse ($payments as $payment)
                     @php $booking = $payment->payable; @endphp
-                    <a href="{{ $booking ? route('booking.management.show', $booking) : '#' }}" class="block p-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/30">
+                    <a href="{{ $booking ? route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) : '#' }}" class="block p-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/30">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="font-mono text-xs font-bold text-slate-400">{{ $payment->reference }}</p>
