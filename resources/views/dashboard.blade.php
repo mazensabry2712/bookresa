@@ -444,13 +444,8 @@
                 @endcan
 
                 <section class="br-panel p-5" aria-labelledby="workspace-title">
-                    <div class="flex items-center justify-between gap-4">
-                        <div class="min-w-0">
-                            <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.dashboard_ui.workspace') }}</p>
-                        </div>
-                        <span class="shrink-0 rounded-full border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300">
-                            {{ trans_choice('app.dashboard_ui.active_staff_count', $metrics['activeStaff'], ['count' => $metrics['activeStaff']]) }}
-                        </span>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.dashboard_ui.workspace') }}</p>
                     </div>
 
                     <div class="mt-4 flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl bg-brand-soft p-3 dark:bg-slate-800">
