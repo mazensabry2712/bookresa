@@ -138,8 +138,8 @@ test('owner can add a staff member and assign services through workspace ui', fu
 
 test('staff list can search and filter by status', function (): void {
     [$owner, $tenant] = staffWorkspaceOwner();
-    $activeUser = User::factory()->create(['email' => 'active-staff@example.com', 'name' => 'Active Staff']);
-    $inactiveUser = User::factory()->create(['email' => 'inactive-staff@example.com', 'name' => 'Inactive Staff']);
+    $activeUser = User::factory()->create(['email' => 'active@example.com', 'name' => 'Active Staff']);
+    $inactiveUser = User::factory()->create(['email' => 'inactive@example.com', 'name' => 'Inactive Staff']);
 
     app(CurrentTenant::class)->set($tenant);
     app(AddStaffMember::class)->handle($activeUser, 'staff', ['display_name' => 'Active Staff']);
@@ -147,7 +147,7 @@ test('staff list can search and filter by status', function (): void {
     $inactive->forceFill(['status' => 'inactive'])->save();
 
     $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index', ['tenant' => $tenant->slug, 'search' => 'active-staff@example.com']))
+        ->get(route('staff.index', ['tenant' => $tenant->slug, 'search' => 'active@example.com']))
         ->assertOk()
         ->assertSee('Active Staff')
         ->assertDontSee('Inactive Staff');
