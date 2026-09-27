@@ -13,7 +13,7 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
 - [x] Light/Dark foundation (dark class + system preference + persisted theme API)
 - [x] Blade design tokens (central brand + semantic CSS variables)
-- [x] Verified test baseline (237 passed / 1 skipped / 876 assertions on 2026-09-26)
+- [x] Verified test baseline (270 passed / 1 skipped / 1037 assertions on 2026-09-27)
 
 ## Identity/Tenancy
 - [x] Fortify
@@ -144,9 +144,9 @@ This checklist measures the current backend/product implementation scope, not th
 ## Release gate
 
 The items below are release verification tasks. A previously green baseline does not stay green automatically after code changes.
-- [x] full test suite (241 passed / 1 skipped / 890 assertions on 2026-09-26)
+- [x] full test suite (270 passed / 1 skipped / 1037 assertions on 2026-09-27)
 - [x] static analysis (PHPStan 0 errors in GitHub Actions CI; latest verified baseline remains clean)
-- [ ] Pint (full repository currently has 104 style issues across 290 files; changed-file CI checks pass)
+- [ ] Pint (full repository currently has 101 style issues across 301 files; changed-file CI checks pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)
 - [ ] payment sandbox green
