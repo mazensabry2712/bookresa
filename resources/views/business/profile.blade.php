@@ -63,7 +63,7 @@
             </div>
         </section>
 
-        <form method="POST" action="{{ route('business.profile.update') }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="{{ route('business.profile.update', ['tenant' => $tenant->slug]) }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             @method('PUT')
 
@@ -353,7 +353,7 @@
                         <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.business_ui.team_roles_help') }}</p>
                     </div>
                     @can('staff.view')
-                        <a href="{{ route('staff.index') }}"
+                        <a href="{{ route('staff.index', ['tenant' => $tenant->slug]) }}"
                            class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                             {{ __('app.business_ui.manage_team') }}
                         </a>
