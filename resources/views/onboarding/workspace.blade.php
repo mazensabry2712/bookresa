@@ -12,134 +12,167 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="br-shell min-h-screen antialiased">
+<body class="min-h-screen bg-[#f5f7fb] text-slate-950 antialiased dark:bg-[#080d19] dark:text-white">
     @php
         $moduleStepIndex = collect($steps)->search(static fn (array $step): bool => $step['key'] === 'modules');
+        $current = $currentStepIndex === false ? $moduleStepIndex : $currentStepIndex;
         $enabledModuleCount = $tenant->modules->filter(
             static fn ($tenantModule): bool => (bool) data_get($tenantModule->pivot, 'enabled', false)
         )->count();
+        $businessName = data_get($tenant->profile?->name, app()->getLocale())
+            ?? data_get($tenant->profile?->name, 'en')
+            ?? $tenant->slug;
     @endphp
 
-    <main class="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-5 sm:px-6 lg:px-8">
-        <header class="flex items-center justify-between gap-4">
-            <a href="{{ route('onboarding.workspace') }}" class="shrink-0" aria-label="BookResa">
-                <img src="{{ asset('logo.png') }}"
-                     alt="BookResa"
-                     width="707"
-                     height="353"
-                     decoding="async"
-                     class="h-9 w-auto object-contain sm:h-10 dark:hidden">
+    <div class="min-h-screen lg:flex">
+        <aside class="hidden w-[330px] shrink-0 flex-col bg-[#17233c] px-8 py-8 text-white lg:flex xl:w-[370px]">
+            <div class="flex items-center">
                 <img src="{{ asset('logodark.png') }}"
                      alt="BookResa"
                      width="707"
                      height="353"
                      decoding="async"
-                     class="hidden h-9 w-auto object-contain sm:h-10 dark:block">
-            </a>
-
-            <div class="flex items-center gap-2">
-                <x-locale-switcher compact />
-                <x-theme-toggle compact />
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit"
-                            class="hidden min-h-10 items-center rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 sm:inline-flex dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800">
-                        {{ __('app.logout') }}
-                    </button>
-                </form>
+                     class="h-10 w-auto object-contain">
             </div>
-        </header>
 
-        <section class="mt-8 flex-1 pb-8 lg:mt-10 lg:pb-12">
-            <div class="mx-auto max-w-5xl">
-                <div class="text-center">
-                    <span class="inline-flex items-center rounded-full bg-brand-indigo/10 px-3 py-1 text-xs font-extrabold text-brand-indigo dark:bg-brand-indigo/15 dark:text-indigo-300">
-                        {{ __('app.step_progress', ['current' => $moduleStepIndex + 1, 'total' => count($steps)]) }}
-                    </span>
+            <div class="mt-12">
+                <p class="text-xs font-bold uppercase tracking-[0.16em] text-indigo-200/70">
+                    {{ __('app.step_progress', ['current' => $current + 1, 'total' => count($steps)]) }}
+                </p>
 
-                    <h1 class="mt-4 text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
-                        {{ __('app.configure_workspace') }}
-                    </h1>
+                <h1 class="mt-4 max-w-xs text-3xl font-black leading-tight tracking-tight">
+                    {{ __('app.configure_workspace') }}
+                </h1>
 
-                    <p class="mx-auto mt-3 max-w-2xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
-                        {{ __('app.configure_workspace_message') }}
-                    </p>
+                <p class="mt-4 max-w-xs text-sm leading-7 text-indigo-100/70">
+                    {{ __('app.configure_workspace_message') }}
+                </p>
+            </div>
+
+            <div class="mt-12">
+                <div class="space-y-1">
+                    @foreach ($steps as $step)
+                        @php
+                            $isCurrent = $step['key'] === 'modules';
+                            $isComplete = $step['complete'];
+                        @endphp
+
+                        <div class="relative flex items-center gap-3 rounded-2xl px-3 py-3
+                            {{ $isCurrent ? 'bg-white/10' : '' }}">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-xs font-black
+                                {{ $isComplete
+                                    ? 'border-emerald-400 bg-emerald-400 text-[#17233c]'
+                                    : ($isCurrent
+                                        ? 'border-white bg-white text-[#17233c]'
+                                        : 'border-white/20 text-white/40') }}">
+                                @if ($isComplete)
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                @else
+                                    {{ $loop->iteration }}
+                                @endif
+                            </span>
+
+                            <span class="min-w-0">
+                                <span class="block text-sm font-extrabold {{ $isCurrent ? 'text-white' : 'text-white/65' }}">
+                                    {{ $step['label'] }}
+                                </span>
+                                <span class="mt-0.5 block text-xs {{ $isComplete ? 'text-emerald-300' : 'text-white/35' }}">
+                                    {{ $isComplete ? __('app.complete') : ($isCurrent ? __('app.current_step') : __('app.locked')) }}
+                                </span>
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="mt-auto pt-10">
+                <div class="border-t border-white/10 pt-5">
+                    <p class="text-xs font-semibold text-white/40">{{ __('app.workspace') }}</p>
+                    <p class="mt-1 truncate text-sm font-extrabold text-white/85">{{ $businessName }}</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex min-h-screen min-w-0 flex-1 flex-col">
+            <header class="flex items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-10">
+                <div class="lg:hidden">
+                    <img src="{{ asset('logo.png') }}"
+                         alt="BookResa"
+                         width="707"
+                         height="353"
+                         decoding="async"
+                         class="h-9 w-auto object-contain dark:hidden">
+                    <img src="{{ asset('logodark.png') }}"
+                         alt="BookResa"
+                         width="707"
+                         height="353"
+                         decoding="async"
+                         class="hidden h-9 w-auto object-contain dark:block">
                 </div>
 
-                <div class="mt-8 rounded-3xl border border-slate-200 bg-white/90 p-3 shadow-[0_18px_55px_rgba(15,23,42,0.06)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/85 dark:shadow-black/20 sm:p-4">
-                    <div class="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                <div class="hidden lg:block">
+                    <span class="text-sm font-bold text-slate-500 dark:text-slate-400">{{ $businessName }}</span>
+                </div>
+
+                <div class="ms-auto flex items-center gap-2">
+                    <x-locale-switcher compact />
+                    <x-theme-toggle compact />
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                class="hidden min-h-10 items-center rounded-xl px-3 text-xs font-bold text-slate-500 transition hover:bg-white hover:text-slate-800 sm:inline-flex dark:hover:bg-slate-900 dark:hover:text-white">
+                            {{ __('app.logout') }}
+                        </button>
+                    </form>
+                </div>
+            </header>
+
+            <div class="mx-auto flex w-full max-w-4xl flex-1 flex-col px-5 pb-8 sm:px-8 lg:px-12 lg:pb-12">
+                <div class="mb-7 lg:hidden">
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-xs font-extrabold text-brand-indigo">
+                            {{ __('app.step_progress', ['current' => $current + 1, 'total' => count($steps)]) }}
+                        </span>
+                        <span class="text-xs font-semibold text-slate-400">
+                            {{ $enabledModuleCount }} {{ __('app.modules_enabled') }}
+                        </span>
+                    </div>
+
+                    <div class="mt-3 grid grid-cols-6 gap-1">
                         @foreach ($steps as $step)
-                            @php
-                                $isCurrent = $step['key'] === 'modules';
-                                $isComplete = $step['complete'];
-                            @endphp
-
-                            <div class="relative rounded-2xl px-2 py-2.5 text-center sm:px-3 sm:py-3 {{ $isCurrent ? 'bg-brand-indigo/10 dark:bg-brand-indigo/12' : '' }}">
-                                <div class="mx-auto flex h-8 w-8 items-center justify-center rounded-full text-xs font-black
-                                    {{ $isComplete
-                                        ? 'bg-emerald-500 text-white'
-                                        : ($isCurrent
-                                            ? 'bg-brand-indigo text-white shadow-sm'
-                                            : 'border border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-500') }}">
-                                    @if ($isComplete)
-                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                                        </svg>
-                                    @else
-                                        {{ $loop->iteration }}
-                                    @endif
-                                </div>
-
-                                <p class="mt-2 truncate text-xs font-extrabold {{ $isCurrent ? 'text-brand-indigo dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300' }}">
-                                    {{ $step['label'] }}
-                                </p>
-
-                                <p class="mt-0.5 hidden text-[10px] font-semibold sm:block {{ $isCurrent ? 'text-brand-indigo/70 dark:text-indigo-300/70' : 'text-slate-400 dark:text-slate-500' }}">
-                                    {{ $isComplete ? __('app.complete') : ($isCurrent ? __('app.current_step') : __('app.locked')) }}
-                                </p>
-                            </div>
+                            <span class="h-1.5 rounded-full {{ $step['complete'] ? 'bg-emerald-500' : ($loop->index === $moduleStepIndex ? 'bg-brand-indigo' : 'bg-slate-200 dark:bg-slate-800') }}"></span>
                         @endforeach
                     </div>
                 </div>
 
-                <section class="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_22px_60px_rgba(15,23,42,0.08)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/20">
-                    <div class="border-b border-slate-200 px-5 py-6 sm:px-8 sm:py-7 dark:border-slate-800">
-                        <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                            <div class="max-w-2xl">
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-indigo">
-                                        {{ __('app.workspace_modules') }}
-                                    </span>
-                                    <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-extrabold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                        {{ $enabledModuleCount }} {{ __('app.modules_enabled') }}
-                                    </span>
-                                </div>
-
-                                <h2 class="mt-2 text-2xl font-black tracking-tight text-slate-950 dark:text-white sm:text-3xl">
-                                    {{ __('app.choose_modules') }}
-                                </h2>
-
-                                <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
-                                    {{ __('app.choose_modules_message') }}
-                                </p>
-                            </div>
-
-                            <div class="rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-950/70">
-                                <p class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-slate-400">
-                                    {{ __('app.workspace') }}
-                                </p>
-                                <p class="mt-1 text-sm font-black text-slate-900 dark:text-white">
-                                    {{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}
-                                </p>
-                            </div>
+                <section class="my-auto py-4 lg:py-12">
+                    <div class="max-w-2xl">
+                        <div class="hidden items-center gap-2 lg:flex">
+                            <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-brand-indigo">
+                                {{ __('app.workspace_modules') }}
+                            </span>
+                            <span class="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                            <span class="text-xs font-bold text-slate-400">
+                                {{ $enabledModuleCount }} {{ __('app.modules_enabled') }}
+                            </span>
                         </div>
+
+                        <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950 dark:text-white sm:text-4xl">
+                            {{ __('app.choose_modules') }}
+                        </h2>
+
+                        <p class="mt-3 max-w-xl text-sm leading-7 text-slate-500 dark:text-slate-400 sm:text-base">
+                            {{ __('app.choose_modules_message') }}
+                        </p>
                     </div>
 
-                    <form method="POST" action="{{ route('onboarding.workspace.modules') }}" class="px-5 py-5 sm:px-8 sm:py-8">
+                    <form method="POST" action="{{ route('onboarding.workspace.modules') }}" class="mt-9">
                         @csrf
 
-                        <div class="grid gap-3 sm:grid-cols-2">
-                            @foreach ($modules as $module)
+                        <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                            @foreach ($modules as $index => $module)
                                 @php
                                     $enabled = $tenant->modules->contains(
                                         static fn ($tenantModule): bool =>
@@ -151,10 +184,9 @@
                                     $locked = ! $isCore && ! $entitled;
                                 @endphp
 
-                                <label class="group relative flex min-h-[118px] cursor-pointer gap-4 rounded-2xl border p-4 transition
-                                    {{ $locked
-                                        ? 'cursor-not-allowed border-slate-200 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/50'
-                                        : 'border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-indigo/40 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-brand-indigo/40' }}">
+                                <label class="group flex cursor-pointer items-center gap-4 px-5 py-4 transition
+                                    {{ $index < count($modules) - 1 ? 'border-b border-slate-100 dark:border-slate-800' : '' }}
+                                    {{ $locked ? 'bg-slate-50/70 dark:bg-slate-950/40' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60' }}">
                                     <input
                                         type="checkbox"
                                         name="module_ids[]"
@@ -162,40 +194,72 @@
                                         @checked($enabled)
                                         @disabled($isCore || $locked)
                                         class="peer sr-only"
+                                        data-module-checkbox
                                     >
 
-                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl
-                                        {{ $isCore
-                                            ? 'bg-brand-indigo/10 text-brand-indigo dark:bg-brand-indigo/15 dark:text-indigo-300'
-                                            : ($locked
-                                                ? 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
-                                                : 'bg-brand-coral/10 text-brand-coral') }}">
+                                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl
+                                        {{ $locked
+                                            ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                                            : 'bg-indigo-50 text-brand-indigo dark:bg-indigo-950/50 dark:text-indigo-300' }}">
                                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <rect x="4" y="4" width="6" height="6" rx="1.4" stroke="currentColor" stroke-width="1.8"/>
-                                            <rect x="14" y="4" width="6" height="6" rx="1.4" stroke="currentColor" stroke-width="1.8"/>
-                                            <rect x="4" y="14" width="6" height="6" rx="1.4" stroke="currentColor" stroke-width="1.8"/>
-                                            <rect x="14" y="14" width="6" height="6" rx="1.4" stroke="currentColor" stroke-width="1.8"/>
+                                            @if ($module->key === 'calendar')
+                                                <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M8 3v4M16 3v4M4 9h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'customers')
+                                                <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M3.5 20c.6-3.3 2.4-5 5.5-5s4.9 1.7 5.5 5M17 11a2.5 2.5 0 1 0 0-5M16.5 15c2.5.4 3.8 2 4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'services')
+                                                <path d="M8 4h8l1 4-3.5 12h-5L5 8l1-4h2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                                <path d="M8 8h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'staff')
+                                                <circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M5 20c.7-4 3-6 7-6s6.3 2 7 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'notifications')
+                                                <path d="M18 9a6 6 0 1 0-12 0c0 7-3 7-3 8h18c0-1-3-1-3-8ZM10 21h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                            @elseif ($module->key === 'appointments')
+                                                <rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M8 3v4M16 3v4M4 9h16M8 13h3M8 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'payments')
+                                                <rect x="3.5" y="5" width="17" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                                <path d="M3.5 10h17M7 15h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'invoices')
+                                                <path d="M7 3h10v18l-3-2-2 2-2-2-3 2V3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                                <path d="M9 8h6M9 12h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                            @elseif ($module->key === 'inventory')
+                                                <path d="m4 8 8-4 8 4-8 4-8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                                <path d="M4 8v8l8 4 8-4V8M12 12v8" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                            @elseif ($module->key === 'branches')
+                                                <path d="M4 20V6l8-3 8 3v14M8 20v-4h8v4M8 9h2M14 9h2M8 12h2M14 12h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                            @else
+                                                <rect x="5" y="5" width="14" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                                            @endif
                                         </svg>
                                     </span>
 
-                                    <span class="min-w-0 flex-1 pe-7">
+                                    <span class="min-w-0 flex-1">
                                         <span class="flex flex-wrap items-center gap-2">
-                                            <span class="text-sm font-black text-slate-950 dark:text-white">
+                                            <span class="text-sm font-extrabold text-slate-900 dark:text-white">
                                                 {{ data_get($module->name, app()->getLocale()) ?? data_get($module->name, 'en') ?? $module->key }}
                                             </span>
 
                                             @if ($isCore)
-                                                <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                                                <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-extrabold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
                                                     {{ __('app.core') }}
                                                 </span>
                                             @elseif ($locked)
-                                                <span class="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-extrabold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                                                <span class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-extrabold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
                                                     {{ __('app.upgrade') }}
+                                                </span>
+                                            @endif
+
+                                            @if ($locked)
+                                                <span class="hidden text-xs font-semibold text-slate-400 sm:inline">
+                                                    {{ __('app.no_subscription_yet') }}
                                                 </span>
                                             @endif
                                         </span>
 
-                                        <span class="mt-2 block text-xs leading-5 text-slate-500 dark:text-slate-400">
+                                        <span class="mt-1 block text-xs leading-5 text-slate-500 dark:text-slate-400">
                                             @if ($module->description)
                                                 {{ data_get($module->description, app()->getLocale()) ?? data_get($module->description, 'en') }}
                                             @else
@@ -204,11 +268,10 @@
                                         </span>
                                     </span>
 
-                                    <span class="absolute end-4 top-4 flex h-6 w-6 items-center justify-center rounded-full border-2 border-slate-300 bg-transparent text-transparent transition
-                                        peer-checked:border-brand-indigo peer-checked:bg-brand-indigo peer-checked:text-white
-                                        {{ $locked ? 'dark:border-slate-700' : 'group-hover:border-brand-indigo dark:border-slate-600' }}">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2
+                                        {{ $locked ? 'border-slate-200 text-transparent dark:border-slate-700' : 'border-slate-300 bg-white text-transparent peer-checked:border-brand-indigo peer-checked:bg-brand-indigo peer-checked:text-white dark:border-slate-600 dark:bg-slate-900' }}">
                                         <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                            <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
                                         </svg>
                                     </span>
                                 </label>
@@ -222,33 +285,18 @@
                         @enderror
 
                         @if (! $hasSubscription)
-                            <div class="mt-5 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-4 dark:border-amber-900/70 dark:bg-amber-950/20">
-                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
-                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="M12 8v5m0 3.25h.01M10.3 4.7l-7 12.1A1.5 1.5 0 0 0 4.6 19h14.8a1.5 1.5 0 0 0 1.3-2.2l-7-12.1a1.95 1.95 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-                                    </svg>
-                                </span>
-                                <div class="min-w-0">
-                                    <p class="text-sm font-black text-amber-900 dark:text-amber-200">{{ __('app.no_subscription_yet') }}</p>
-                                    <p class="mt-1 text-xs leading-5 text-amber-800/80 dark:text-amber-200/80">
-                                        {{ __('app.optional_modules_subscription_message') }}
-                                    </p>
-                                </div>
-                            </div>
+                            <p class="mt-4 text-xs leading-5 text-slate-400 dark:text-slate-500">
+                                {{ __('app.optional_modules_subscription_message') }}
+                            </p>
                         @endif
 
-                        <div class="mt-7 flex flex-col gap-4 border-t border-slate-100 pt-6 dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between">
-                            <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
-                                <span class="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-300">
-                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                        <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                                <span>{{ __('app.core_modules_stay_enabled') }}</span>
-                            </div>
+                        <div class="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <span class="text-xs font-semibold text-slate-400 dark:text-slate-500">
+                                {{ __('app.core_modules_stay_enabled') }}
+                            </span>
 
                             <button type="submit"
-                                    class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-navy px-6 py-3 text-sm font-extrabold text-white shadow-sm transition hover:-translate-y-px hover:shadow-lg sm:w-auto dark:bg-brand-indigo">
+                                    class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-navy px-6 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-[#253554] hover:shadow-md sm:w-auto dark:bg-brand-indigo dark:hover:bg-indigo-500">
                                 {{ __('app.save_modules_continue') }}
                                 <svg class="h-4 w-4 br-direction-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                     <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -258,15 +306,25 @@
                     </form>
                 </section>
 
-                <p class="mt-5 text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
-                    {{ __('app.workspace_tip_text') }}
-                </p>
-            </div>
-        </section>
+                <div class="mt-7 flex items-center justify-between gap-4 text-xs">
+                    <span class="font-semibold text-slate-400 dark:text-slate-500">
+                        {{ __('app.workspace_tip_text') }}
+                    </span>
+                    <span class="hidden font-extrabold text-slate-400 sm:inline dark:text-slate-500">
+                        BookResa
+                    </span>
+                </div>
+            </section>
+        </main>
+    </div>
 
-        <footer class="pb-2 text-center text-xs text-slate-400 dark:text-slate-500">
-            © {{ now()->year }} BookResa
-        </footer>
-    </main>
+    <script>
+        document.querySelectorAll('[data-module-checkbox]').forEach((checkbox) => {
+            checkbox.addEventListener('change', () => {
+                checkbox.closest('label')?.classList.toggle('bg-indigo-50/70', checkbox.checked);
+                checkbox.closest('label')?.classList.toggle('dark:bg-indigo-950/20', checkbox.checked);
+            });
+        });
+    </script>
 </body>
 </html>
