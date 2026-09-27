@@ -11,6 +11,7 @@ use App\Domain\Customer\Models\Customer;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Booking\RescheduleBookingRequest;
 use App\Http\Requests\Booking\StoreBookingManagementRequest;
@@ -233,7 +234,7 @@ class BookingManagementController
         ]);
     }
 
-    public function show(Booking $booking, CurrentTenant $currentTenant): View
+    public function show(Tenant $tenant, Booking $booking, CurrentTenant $currentTenant): View
     {
         abort_unless($currentTenant->get() !== null, 404);
 
@@ -256,6 +257,7 @@ class BookingManagementController
 
     public function reschedule(
         RescheduleBookingRequest $request,
+        Tenant $tenant,
         Booking $booking,
         RescheduleBooking $rescheduleBooking,
         CurrentTenant $currentTenant,
@@ -263,7 +265,7 @@ class BookingManagementController
         $this->authorizeStaffBooking($booking);
 
         try {
-            $tenant = $currentTenant->get();
+            $tenant = $currentTenant->get() ?? $tenant;
             $timezone = (string) data_get($tenant?->profile, 'timezone', config('app.timezone', 'UTC'));
             $staff = $request->filled('staff_id')
                 ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
@@ -296,6 +298,7 @@ class BookingManagementController
 
     public function status(
         UpdateBookingStatusRequest $request,
+        Tenant $tenant,
         Booking $booking,
         UpdateBookingStatus $updateBookingStatus,
         CurrentTenant $currentTenant,
