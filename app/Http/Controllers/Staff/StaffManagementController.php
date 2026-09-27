@@ -10,6 +10,7 @@ use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Staff\Actions\UpdateStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Staff\StoreStaffMemberRequest;
 use App\Http\Requests\Staff\UpdateStaffMemberRequest;
