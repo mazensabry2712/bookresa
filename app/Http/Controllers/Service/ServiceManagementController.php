@@ -6,6 +6,7 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Actions\DeleteService;
 use App\Domain\Service\Actions\UpdateService;
 use App\Domain\Service\Models\Service;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Service\StoreServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
@@ -65,18 +66,19 @@ final class ServiceManagementController
             return to_route('scheduling.index')->with('status', __('app.service_ui.created'));
         }
 
-        return to_route('services.index')->with('status', __('app.service_ui.created'));
+        return to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'));
     }
 
     public function update(
         UpdateServiceRequest $request,
+        Tenant $tenant,
         Service $service,
         UpdateService $updateService,
     ): RedirectResponse {
         try {
             $updateService->handle($service, $request->validated());
 
-            return to_route('services.index')->with('status', __('app.service_ui.updated'));
+            return to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['service' => $exception->getMessage()]);
         }
@@ -84,6 +86,7 @@ final class ServiceManagementController
 
     public function destroy(
         Request $request,
+        Tenant $tenant,
         Service $service,
         DeleteService $deleteService,
     ): RedirectResponse {
@@ -92,7 +95,7 @@ final class ServiceManagementController
         try {
             $deleteService->handle($service);
 
-            return to_route('services.index')->with('status', __('app.service_ui.deleted'));
+            return to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.deleted'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['service' => $exception->getMessage()]);
         }
