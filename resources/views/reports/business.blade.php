@@ -43,7 +43,7 @@
                     <input type="date" name="to" value="{{ $toDate }}" class="rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                 </label>
                 <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">{{ __('app.report_ui.apply') }}</button>
-                <a href="{{ route('reports.business') }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.report_ui.reset') }}</a>
+                <a href="{{ route('reports.business', ['tenant' => $tenant->slug]) }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.report_ui.reset') }}</a>
             </form>
         </section>
 
