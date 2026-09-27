@@ -60,8 +60,12 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
                 ->get()
                 ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
 
+            $workspaceRouteParameters = ['tenant' => $tenant->slug];
+
             return redirect()->intended(
-                $subscription !== null ? route('dashboard') : route('billing.subscription')
+                $subscription !== null
+                    ? route('dashboard', $workspaceRouteParameters)
+                    : route('billing.subscription', $workspaceRouteParameters)
             );
         }
 
@@ -70,9 +74,9 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
     private function onboardingRedirect(\App\Domain\Tenant\Models\Tenant $tenant): RedirectResponse
     {
         return match ((string) data_get($tenant->settings, 'onboarding.step', 'services')) {
-            'hours' => to_route('scheduling.index'),
-            'staff' => to_route('staff.index'),
-            default => to_route('services.index'),
+            'hours' => to_route('scheduling.index', ['tenant' => $tenant->slug]),
+            'staff' => to_route('staff.index', ['tenant' => $tenant->slug]),
+            default => to_route('services.index', ['tenant' => $tenant->slug]),
         };
     }
 
