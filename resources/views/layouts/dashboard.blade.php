@@ -122,10 +122,12 @@
                         </a>
                     @endcan
 
-                    <a href="{{ route('onboarding.workspace') }}" data-active="{{ request()->routeIs('onboarding.*') ? 'true' : 'false' }}" class="br-nav-link">
-                        <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 5h16M4 9h16M4 13h10M4 17h7"/></svg></span>
-                        <span>{{ __('app.workspace') }}</span>
-                    </a>
+                    @can('settings.manage')
+                        <a href="{{ route('business.modules.index') }}" data-active="{{ request()->routeIs('business.modules.*') ? 'true' : 'false' }}" class="br-nav-link">
+                            <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 5h16M4 9h16M4 13h10M4 17h7"/></svg></span>
+                            <span>{{ __('app.modules') }}</span>
+                        </a>
+                    @endcan
                 </nav>
             </div>
 
