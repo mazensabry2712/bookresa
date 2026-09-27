@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Staff;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Service\Actions\SyncServiceAssignments;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
-use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Staff\Actions\UpdateStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Models\Tenant;
@@ -62,7 +62,7 @@ final class StaffManagementController
 
             $tenant = $currentTenant->get() ?? $tenantRoute;
 
-            if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            if (!(bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $coreModuleKeys = collect(config('bookresa.modules.core', []))
                     ->filter()
                     ->values();
