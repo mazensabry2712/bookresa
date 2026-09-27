@@ -148,7 +148,7 @@ test('internal availability endpoint returns available slots for the selected se
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('booking.management.availability', [
+        ->get(route('booking.management.availability', ['tenant' => $tenant->slug,
             'service_id' => $service->id,
             'date' => $date->toDateString(),
         ]))
