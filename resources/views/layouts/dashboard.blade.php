@@ -15,7 +15,7 @@
 
     <div class="min-h-screen lg:flex">
         <aside id="bookresa-sidebar"
-               class="br-drawer lg:static lg:z-auto lg:flex lg:w-64 lg:flex-col lg:shrink-0 lg:transform-none"
+               class="br-drawer relative z-50 pointer-events-auto lg:static lg:z-auto lg:flex lg:w-64 lg:flex-col lg:shrink-0 lg:transform-none"
                data-bookresa-sidebar
                aria-hidden="false"
                aria-label="{{ __('app.workspace') }}">
@@ -43,7 +43,7 @@
             <div class="flex-1 overflow-y-auto px-3 py-4">
                 <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('app.workspace') }}</p>
 
-                <nav class="space-y-1" aria-label="{{ __('app.workspace') }}">
+                <nav class="relative z-10 space-y-1 pointer-events-auto" aria-label="{{ __('app.workspace') }}">
                     <a href="{{ route('dashboard') }}" data-active="{{ request()->routeIs('dashboard') ? 'true' : 'false' }}" class="br-nav-link">
                         <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 13h6V4H4v9Zm10 7h6v-9h-6v9ZM4 20h6v-3H4v3Zm10-12h6V4h-6v4Z"/></svg></span>
                         <span>{{ __('app.dashboard') }}</span>
