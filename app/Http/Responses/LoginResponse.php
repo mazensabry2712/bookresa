@@ -50,7 +50,8 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
                 return $this->onboardingRedirect($tenant);
             }
 
-            $subscription = Subscription::query()
+            $subscription = Subscription::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->getKey())
                 ->whereIn('status', [
                     SubscriptionStatus::Trial->value,
                     SubscriptionStatus::Active->value,
