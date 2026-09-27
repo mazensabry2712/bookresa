@@ -162,7 +162,7 @@ final class DashboardController
             );
         }
 
-        $totalCustomers = $usageSummary?->uniqueCustomerCount
+        $totalCustomers = $usageSummary->uniqueCustomerCount
             ?? $customerCountQuery->count();
 
         $onboardingCompleted = (bool) data_get($tenant->settings, 'onboarding.completed', false);
