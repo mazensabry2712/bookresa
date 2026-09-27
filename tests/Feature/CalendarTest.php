@@ -135,6 +135,7 @@ test('calendar filters by service and status', function (): void {
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('calendar.index', [
+            'tenant' => $tenant->slug,
             'month' => '2026-09',
             'service_id' => $service->id,
             'status' => 'confirmed',
