@@ -118,6 +118,76 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
     });
 });
 
+test('public deposit booking charges the configured deposit amount', function (): void {
+    $tenant = paidBookingTenant('deposit-clinic');
+
+    $tenant->profile()->update([
+        'booking_settings' => [
+            'customer_account_required' => false,
+            'payment_required' => true,
+            'payment_mode' => 'deposit',
+            'deposit_percent' => 25,
+            'customer_email_required' => false,
+        ],
+    ]);
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+    ]);
+
+    config([
+        'bookresa.payments.kashier' => [
+            'mode' => 'test',
+            'base_url' => 'https://test-api.kashier.io',
+            'merchant_id' => 'MID-123',
+            'api_key' => 'api-key',
+            'secret_key' => 'secret-key',
+            'merchant_redirect' => null,
+            'server_webhook' => 'https://example.test/webhooks/kashier',
+            'max_failure_attempts' => 3,
+            'allowed_methods' => 'card,wallet',
+            'display' => 'en',
+            'expire_minutes' => 30,
+            'enable_3ds' => true,
+        ],
+    ]);
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions' => Http::response([
+            'status' => 'CREATED',
+            '_id' => 'session-deposit-booking',
+            'sessionUrl' => 'https://payments.kashier.io/session/session-deposit-booking?mode=test',
+        ]),
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $response = $this->post(route('public.booking.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ]);
+
+    $response->assertRedirect('https://payments.kashier.io/session/session-deposit-booking?mode=test');
+
+    $booking = Booking::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $payment = $booking->payments()->firstOrFail();
+
+    expect($payment->amount_minor)->toBe(5000)
+        ->and($payment->status)->toBe(PaymentStatus::Processing);
+});
+
 test('online paid booking requires customer email', function (): void {
     $tenant = paidBookingTenant('paid-email-required');
 
