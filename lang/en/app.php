@@ -158,6 +158,8 @@ return [
     'unlock_more_tools_message' => 'These tools become available with a plan that includes them. You do not need them to get started.',
     'explore_plans' => 'Explore plans',
     'next_step_services' => 'Next step: add your services',
+    'setup_workspace_title' => 'Shape your workspace around your business',
+    'setup_workspace_message' => 'Your essentials are already enabled. Add only the extra tools you need and keep your setup focused.',
     'configure_workspace' => 'Configure your workspace',
     'modules_enabled' => 'modules enabled',
     'next_step' => 'Next step',
