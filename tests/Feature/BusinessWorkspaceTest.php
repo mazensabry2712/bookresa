@@ -40,8 +40,8 @@ test('business onboarding page renders active business types from cached arrays'
     $response->assertOk()
         ->assertSee('Clinic')
         ->assertSee('Dental Clinic')
-        ->assertSee('id="timezone"')
-        ->assertSee('value="Africa/Cairo"');
+        ->assertSee('id="timezone"', false)
+        ->assertSee('value="Africa/Cairo"', false);
 
     $cached = Cache::get('bookresa:business-types:active:v2');
 
