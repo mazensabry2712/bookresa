@@ -580,7 +580,7 @@ return [
         'view' => 'View',
         'auto_assigned' => 'Auto assigned',
         'no_bookings' => 'No bookings found',
-        'no_bookings_help' => 'Try another filter or use the public booking page to create a new appointment.',
+        'no_bookings_help' => 'Try another filter or create a new appointment from this workspace.,
         'status_pending' => 'Pending',
         'status_confirmed' => 'Confirmed',
         'status_rescheduled' => 'Rescheduled',
