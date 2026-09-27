@@ -151,7 +151,7 @@ class BookingManagementController
                 $request->filled('notes') ? $request->string('notes')->toString() : null,
             );
 
-            return to_route('booking.management.show', ['tenant' => $currentTenant->get()?->slug, 'booking' => $booking])
+            return to_route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking])
                 ->with('status', __('app.booking_ui.created_success'));
         } catch (RuntimeException|LogicException $exception) {
             return back()
@@ -298,6 +298,7 @@ class BookingManagementController
         UpdateBookingStatusRequest $request,
         Booking $booking,
         UpdateBookingStatus $updateBookingStatus,
+        CurrentTenant $currentTenant,
     ): RedirectResponse {
         $this->authorizeStaffBooking($booking);
 
