@@ -241,7 +241,8 @@ test('onboarding advances through services working hours and staff stages', func
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard'))
-        ->assertForbidden();
+        ->assertOk()
+        ->assertSee(__('app.dashboard'));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
