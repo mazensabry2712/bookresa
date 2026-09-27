@@ -3,6 +3,7 @@
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Scheduling\Enums\DayOfWeek;
@@ -16,6 +17,7 @@ use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,7 +56,7 @@ function schedulingUiWorkspace(string $name = 'Scheduling Workspace'): array
 
     app(CurrentTenant::class)->set($tenant);
 
-    $plan = \App\Domain\Billing\Models\Plan::query()->create([
+    $plan = Plan::query()->create([
         'name' => ['en' => 'Test Core Plan'],
         'description' => ['en' => 'Test core plan'],
         'price_minor' => 0,
@@ -68,7 +70,7 @@ function schedulingUiWorkspace(string $name = 'Scheduling Workspace'): array
 
     $subscription = app(CreateSubscription::class)->handle(
         $plan,
-        \Carbon\CarbonImmutable::now(),
+        CarbonImmutable::now(),
     );
 
     $subscription->forceFill([
