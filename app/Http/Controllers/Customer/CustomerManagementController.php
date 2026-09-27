@@ -65,12 +65,13 @@ final class CustomerManagementController
 
     public function store(
         StoreCustomerRequest $request,
+        Tenant $tenant,
         CreateCustomer $createCustomer,
     ): RedirectResponse {
         try {
             $createCustomer->handle($request->validated());
 
-            return to_route('customers.index')->with('status', __('app.customer_ui.created'));
+            return to_route('customers.index', ['tenant' => $tenant->slug])->with('status', __('app.customer_ui.created'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['customer' => $exception->getMessage()])->withInput();
         }
