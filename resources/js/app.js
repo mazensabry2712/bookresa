@@ -106,7 +106,10 @@ const setupSidebar = () => {
         collapseButton?.setAttribute('aria-expanded', next ? 'false' : 'true');
 
         if (collapseButton) {
-            const label = next ? 'Expand sidebar' : 'Collapse sidebar';
+            const label = next
+                ? (collapseButton.dataset.labelExpand ?? 'Expand sidebar')
+                : (collapseButton.dataset.labelCollapse ?? 'Collapse sidebar');
+
             collapseButton.setAttribute('aria-label', label);
             collapseButton.setAttribute('title', label);
         }
