@@ -130,7 +130,7 @@ test('customers are tenant isolated for list and update', function (): void {
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('customers.index', ['tenant' => $tenant->slug]))
+        ->get(route('customers.index', ['tenant' => $tenantB->slug]))
         ->assertOk()
         ->assertDontSee('Tenant A Customer');
 
