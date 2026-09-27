@@ -580,7 +580,7 @@ return [
         'view' => 'عرض',
         'auto_assigned' => 'تعيين تلقائي',
         'no_bookings' => 'لا توجد حجوزات',
-        'no_bookings_help' => 'جرّب فلترًا آخر أو أنشئ موعدًا جديدًا من مساحة العمل الحالية.,
+        'no_bookings_help' => 'جرّب فلترًا آخر أو أنشئ موعدًا جديدًا من مساحة العمل الحالية.',
         'status_pending' => 'قيد الانتظار',
         'status_confirmed' => 'مؤكد',
         'status_rescheduled' => 'أُعيدت جدولته',
