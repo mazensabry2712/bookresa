@@ -22,7 +22,6 @@ use App\Domain\Scheduling\Models\StaffAvailability;
 use App\Domain\Scheduling\Models\StaffDayOff;
 use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Models\StaffProfile;
-use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Scheduling\StoreBusinessBreakRequest;
 use App\Http\Requests\Scheduling\StoreBusinessHolidayRequest;
@@ -39,15 +38,11 @@ use LogicException;
 
 final class SchedulingManagementController
 {
-    public function index(Request $request, CurrentTenant $currentTenant): RedirectResponse|View
+    public function index(Request $request, CurrentTenant $currentTenant): View
     {
         $tenant = $currentTenant->get();
 
         abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
 
         $staffMembers = StaffProfile::query()
             ->with('user')
@@ -107,14 +102,6 @@ final class SchedulingManagementController
         SetBusinessWorkingHours $action,
         CurrentTenant $currentTenant,
     ): RedirectResponse {
-        $tenant = $currentTenant->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
-
         try {
             $action->handle(array_values($request->validated('hours')));
 
@@ -138,13 +125,6 @@ final class SchedulingManagementController
         StoreBusinessBreakRequest $request,
         AddBusinessBreak $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($request->validated());
 
@@ -158,13 +138,6 @@ final class SchedulingManagementController
         BusinessBreak $break,
         RemoveBusinessBreak $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($break);
 
@@ -178,13 +151,6 @@ final class SchedulingManagementController
         StoreBusinessHolidayRequest $request,
         UpsertBusinessHoliday $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($request->validated());
 
@@ -198,13 +164,6 @@ final class SchedulingManagementController
         BusinessHoliday $holiday,
         RemoveBusinessHoliday $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($holiday);
 
@@ -218,13 +177,6 @@ final class SchedulingManagementController
         StoreSpecialWorkingHourRequest $request,
         UpsertSpecialWorkingHour $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($request->validated());
 
@@ -238,13 +190,6 @@ final class SchedulingManagementController
         SpecialWorkingHour $specialWorkingHour,
         RemoveSpecialWorkingHour $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($specialWorkingHour);
 
@@ -259,13 +204,6 @@ final class SchedulingManagementController
         StaffProfile $staff,
         SetStaffWorkingHours $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($staff, array_values($request->validated('hours')));
 
@@ -280,13 +218,6 @@ final class SchedulingManagementController
         StaffProfile $staff,
         AddStaffDayOff $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($staff, $request->validated());
 
@@ -301,13 +232,6 @@ final class SchedulingManagementController
         StaffDayOff $dayOff,
         RemoveStaffDayOff $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         abort_unless((int) $dayOff->staff_id === (int) $staff->getKey(), 404);
 
         try {
@@ -324,13 +248,6 @@ final class SchedulingManagementController
         StaffProfile $staff,
         AddStaffAvailability $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         try {
             $action->handle($staff, $request->validated());
 
@@ -345,13 +262,6 @@ final class SchedulingManagementController
         StaffAvailability $availability,
         RemoveStaffAvailability $action,
     ): RedirectResponse {
-        $tenant = app(CurrentTenant::class)->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
         abort_unless((int) $availability->staff_id === (int) $staff->getKey(), 404);
 
         try {
@@ -361,21 +271,6 @@ final class SchedulingManagementController
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
-    }
-
-    private function onboardingRedirect(?Tenant $tenant): ?RedirectResponse
-    {
-        if ($tenant === null || (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-            return null;
-        }
-
-        $step = (string) data_get($tenant->settings, 'onboarding.step', 'workspace');
-
-        return match ($step) {
-            'workspace' => to_route('onboarding.workspace'),
-            'services' => to_route('services.index'),
-            default => null,
-        };
     }
 
     private function staffRedirect(StaffProfile $staff): RedirectResponse
