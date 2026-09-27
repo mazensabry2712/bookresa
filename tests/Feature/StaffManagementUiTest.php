@@ -77,7 +77,7 @@ function staffWorkspaceOwner(string $name = 'Staff Workspace Owner'): array
 
     $subscription->forceFill([
         'payment_status' => PaymentStatus::Paid,
-        'end_at' => \Carbon\CarbonImmutable::now()->addMonth(),
+        'end_at' => CarbonImmutable::now()->addMonth(),
         'pricing_snapshot' => ['modules' => []],
     ])->save();
 
