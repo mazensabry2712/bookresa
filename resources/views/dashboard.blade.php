@@ -304,7 +304,7 @@
                             $bookingPaymentStatus = $booking->payment_status->value;
                         @endphp
 
-                        <a href="{{ route('booking.management.show', $booking) }}" class="block px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                        <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="block px-5 py-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                             <div class="grid gap-4 lg:grid-cols-[auto_1fr_auto_auto] lg:items-center">
                                 <div class="min-w-[96px]">
                                     <p class="text-sm font-bold text-slate-950 dark:text-white">
