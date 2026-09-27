@@ -25,12 +25,18 @@ class BusinessOnboardingController
     {
         return view('onboarding.business.create', [
             'businessTypes' => Cache::remember(
-                'bookresa:business-types:active',
+                'bookresa:business-types:active:v2',
                 now()->addMinutes(10),
-                fn () => BusinessType::query()
+                fn (): array => BusinessType::query()
                     ->where('is_active', true)
                     ->orderBy('id')
-                    ->get(['id', 'slug', 'name']),
+                    ->get(['id', 'slug', 'name'])
+                    ->map(static fn (BusinessType $type): array => [
+                        'id' => $type->getKey(),
+                        'slug' => $type->slug,
+                        'name' => $type->name,
+                    ])
+                    ->all(),
             ),
         ]);
     }
