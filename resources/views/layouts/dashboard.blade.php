@@ -36,6 +36,8 @@
                 <button type="button"
                         class="br-sidebar-collapse hidden shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white lg:inline-flex"
                         data-bookresa-sidebar-collapse
+                        data-label-collapse="{{ __('app.collapse_sidebar') }}"
+                        data-label-expand="{{ __('app.expand_sidebar') }}"
                         aria-expanded="true"
                         aria-controls="bookresa-sidebar"
                         aria-label="{{ __('app.collapse_sidebar') }}"
