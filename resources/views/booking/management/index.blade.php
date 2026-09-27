@@ -54,7 +54,7 @@
             </div>
 
             @can('bookings.create')
-                <a href="{{ route('booking.management.create') }}"
+                <a href="{{ route('booking.management.create', ['tenant' => $tenant->slug]) }}"
                    class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-600">
                     {{ __('app.booking_ui.new_booking') }}
                 </a>
@@ -132,7 +132,7 @@
                     <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">
                         {{ __('app.booking_ui.apply_filters') }}
                     </button>
-                    <a href="{{ route('booking.management.index') }}"
+                    <a href="{{ route('booking.management.index', ['tenant' => $tenant->slug]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                         {{ __('app.booking_ui.reset') }}
                     </a>
