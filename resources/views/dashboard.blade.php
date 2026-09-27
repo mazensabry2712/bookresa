@@ -53,19 +53,19 @@
             'active' => __('app.dashboard_ui.status_active'),
         ];
 
-        $usageLimit = max((int) ($usageSummary?->includedCustomerLimit ?? 0), 1);
         $usagePercent = $attention['usagePercent'] ?? 0;
     @endphp
 
     <div class="space-y-6">
-        <section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <section class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div class="min-w-0">
-                <p class="text-sm font-semibold text-brand-indigo">{{ $todayLabel }}</p>
+                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.business_name') }}</p>
                 <h2 class="mt-1 truncate text-2xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-3xl">
-                    {{ __('app.dashboard_ui.welcome', ['name' => auth()->user()->name]) }}
+                    {{ $businessName }}
                 </h2>
+                <p class="mt-2 text-sm font-semibold text-brand-indigo">{{ $todayLabel }}</p>
                 <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
-                    {{ __('app.dashboard_ui.workspace_summary') }}
+                    {{ __('app.dashboard_ui.welcome', ['name' => auth()->user()->name]) }}. {{ __('app.dashboard_ui.workspace_summary') }}
                 </p>
             </div>
 
@@ -79,17 +79,42 @@
 
                 @can('bookings.view')
                     <a href="{{ route('booking.management.index') }}"
-                       class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
+                       class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                         {{ __('app.dashboard_ui.open_bookings') }}
                     </a>
                 @endcan
 
                 <a href="{{ route('public.booking.canonical.show', ['tenant' => $tenant->slug]) }}"
-                   class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                   class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     {{ __('app.dashboard_ui.view_booking_page') }}
                 </a>
             </div>
         </section>
+
+        @if (! $onboarding['completed'])
+            <section class="br-panel overflow-hidden" aria-labelledby="setup-title">
+                <div class="flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-navy dark:bg-indigo-950/40 dark:text-indigo-300" aria-hidden="true">
+                                <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="3"/></svg>
+                            </span>
+                            <h3 id="setup-title" class="font-semibold text-slate-950 dark:text-white">{{ __('app.your_setup') }}</h3>
+                        </div>
+                        <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+                            {{ __('app.step_progress', ['current' => $onboarding['currentStage'], 'total' => 4]) }}
+                            <span aria-hidden="true">·</span>
+                            {{ __('app.onboarding_steps.'.($onboarding['step'] === 'services' ? 'services' : ($onboarding['step'] === 'hours' ? 'hours' : 'staff'))) }}
+                        </p>
+                    </div>
+
+                    <a href="{{ route($onboarding['route']) }}"
+                       class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
+                        {{ __('app.continue') }}
+                    </a>
+                </div>
+            </section>
+        @endif
 
         <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('app.dashboard_ui.summary') }}">
             <article class="br-panel p-5">
@@ -130,10 +155,15 @@
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300" aria-hidden="true">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path stroke-linecap="round" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 9a3 3 0 0 1 0 5.7M15.5 16a5 5 0 0 1 4.5 4"/></svg>
                     </span>
-                    <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.today') }}</span>
+                    <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.customers') }}</span>
                 </div>
-                <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.new_customers') }}</p>
-                <p class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['newCustomersToday']) }}</p>
+                <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.customers') }}</p>
+                <div class="mt-1 flex items-end justify-between gap-3">
+                    <p class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['customers']) }}</p>
+                    <span class="shrink-0 text-xs font-semibold text-slate-400">
+                        +{{ number_format($metrics['newCustomersToday']) }} {{ __('app.dashboard_ui.today') }}
+                    </span>
+                </div>
             </article>
         </section>
 
@@ -265,7 +295,7 @@
                                         {{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}
                                     </p>
                                     <p class="mt-1 text-xs text-slate-500">
-                                        {{ $booking->starts_at->setTimezone($timezone)->format('d M') }}
+                                        {{ $booking->starts_at->setTimezone($timezone)->locale(app()->getLocale())->isoFormat('D MMM') }}
                                     </p>
                                 </div>
 
@@ -332,7 +362,7 @@
                             </div>
                             <div class="rounded-xl br-surface-soft p-3">
                                 <p class="text-xs font-semibold text-slate-500">{{ __('app.dashboard_ui.renews') }}</p>
-                                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ $subscription->end_at->setTimezone($timezone)->format('d M Y') }}</p>
+                                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ $subscription->end_at->setTimezone($timezone)->locale(app()->getLocale())->isoFormat('D MMM YYYY') }}</p>
                             </div>
                         </div>
                     @else
@@ -376,7 +406,7 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.dashboard_ui.workspace') }}</p>
-                            <h3 id="workspace-title" class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ $tenant->slug }}</h3>
+                            <h3 id="workspace-title" class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $businessName }}</h3>
                         </div>
                         <span class="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300">
                             {{ trans_choice('app.dashboard_ui.active_staff_count', $metrics['activeStaff'], ['count' => $metrics['activeStaff']]) }}
