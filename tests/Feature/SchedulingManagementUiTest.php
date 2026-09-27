@@ -288,7 +288,7 @@ test('staff schedule deletes cannot target another staff member', function (): v
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->delete(route('scheduling.staff-days-off.destroy', ['tenant' => $tenantB->slug, 'staff' => $staffA, 'dayOff' => $dayOff]))
+        ->delete(route('scheduling.staff-days-off.destroy', ['tenant' => $tenant->slug, 'staff' => $staffA, 'dayOff' => $dayOff]))
         ->assertNotFound();
 
     $this->actingAs($owner)
