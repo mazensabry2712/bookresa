@@ -11,7 +11,6 @@ use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\Tenant;
-use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
