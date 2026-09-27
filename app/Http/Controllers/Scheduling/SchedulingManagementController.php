@@ -111,6 +111,8 @@ final class SchedulingManagementController
                 $settings = $tenant->settings ?? [];
                 data_set($settings, 'onboarding.step', 'staff');
                 $tenant->forceFill(['settings' => $settings])->save();
+
+                return to_route('staff.index')->with('status', __('app.scheduling_ui.business_hours_updated'));
             }
 
             return to_route('scheduling.index')->with('status', __('app.scheduling_ui.business_hours_updated'));
