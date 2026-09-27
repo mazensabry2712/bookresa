@@ -141,7 +141,7 @@ test('owner can create and update a service through workspace ui', function (): 
             'buffer_minutes' => 10,
             'is_active' => 1,
         ])
-        ->assertRedirect(route('services.index'));
+        ->assertRedirect(route('services.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -163,7 +163,7 @@ test('owner can create and update a service through workspace ui', function (): 
             'buffer_minutes' => 5,
             'is_active' => 1,
         ])
-        ->assertRedirect(route('services.index'));
+        ->assertRedirect(route('services.index', ['tenant' => $tenant->slug]));
 
     expect($service->fresh()->price_minor)->toBe(17550)
         ->and($service->fresh()->duration_minutes)->toBe(45);
@@ -277,7 +277,7 @@ test('service management paginates large service lists', function (): void {
     }
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Service 21')
         ->assertDontSee('<p class="font-semibold">Service 1</p>');
