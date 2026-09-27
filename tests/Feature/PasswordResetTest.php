@@ -52,7 +52,8 @@ test('unknown password reset email does not reveal account existence', function 
         'email' => 'missing@example.com',
     ])
         ->assertRedirect(route('password.request'))
-        ->assertSessionHas('status', trans('passwords.sent'));
+        ->assertSessionHas('status', trans('app.password_reset_link_sent'))
+        ->assertSessionMissing('errors');
 
     Notification::assertNothingSent();
 });
