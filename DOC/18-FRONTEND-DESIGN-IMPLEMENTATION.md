@@ -1084,13 +1084,20 @@ Screens:
 Main Dashboard rules:
 - show the current Business name prominently; the signed-in user name is secondary context;
 - top metrics should include today's bookings, today's paid revenue, upcoming bookings and total customers;
+- today's revenue must only be exposed to users with billing permission; users without that permission get a neutral placeholder instead of workspace-wide financial data;
+- operational metrics must respect the current user's role and permissions; Staff metrics are limited to bookings/customers associated with that staff profile;
+- a Staff role without a valid tenant staff profile must not receive a workspace-wide dashboard fallback;
 - new customers today may appear as secondary context rather than replacing the total-customer metric;
 - keep a clear primary New booking action, with booking-list and public-booking actions secondary;
+- action links and workspace shortcuts must be permission-aware so the dashboard never advertises actions the current user cannot open;
 - upcoming rows should show customer, service, staff, time/date, booking status and payment status;
 - subscription and customer usage are operational summaries, not separate full billing screens;
+- onboarding progress should be visually clear with one current-step continuation action;
 - when onboarding is incomplete, the Dashboard remains reachable and shows the current setup step with one clear Continue action;
-- dates and month names must follow the active locale in both LTR and RTL;
-- business identity, customer usage and subscription state must stay tenant-scoped.
+- dates, month names and time formatting must follow the active locale in both LTR and RTL;
+- progress indicators must expose meaningful accessibility values instead of relying on color alone;
+- business identity, customer usage and subscription state must stay tenant-scoped;
+- avoid decorative charts or client-side polling on the main Dashboard until there is a measured product need and a stable historical data contract.
 
 Exit condition:
 The business owner can understand today's workload, business identity, customer base and the next useful action immediately.
