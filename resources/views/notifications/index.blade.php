@@ -143,5 +143,11 @@
                 @endforelse
             </div>
         </section>
+
+        @if ($notifications->hasPages())
+            <div>
+                {{ $notifications->links() }}
+            </div>
+        @endif
     </div>
 @endsection
