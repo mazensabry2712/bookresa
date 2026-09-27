@@ -205,13 +205,13 @@
                         <div class="mt-5">
                             <div class="flex items-center justify-between gap-3">
                                 <p class="text-sm font-semibold">{{ __('app.available_times') }}</p>
-                                <span class="text-xs font-semibold text-slate-400" data-booking-slot-count></span>
+                                <span class="text-xs font-semibold text-slate-400" data-booking-slot-count aria-live="polite" aria-atomic="true"></span>
                             </div>
 
-                            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-booking-slots></div>
+                            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-booking-slots role="group" aria-label="{{ __('app.public_booking_ui.available_times') }}"></div>
 
-                            <div class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-300" data-booking-loading>{{ __('app.loading_availability') }}</div>
-                            <div class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" data-booking-error>{{ __('app.public_booking_ui.availability_error') }}</div>
+                            <div class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-300" data-booking-loading role="status" aria-live="polite" aria-atomic="true">{{ __('app.loading_availability') }}</div>
+                            <div class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" data-booking-error role="alert" aria-live="assertive">{{ __('app.public_booking_ui.availability_error') }}</div>
 
                             <input type="hidden" name="time" value="{{ old('time') }}" data-booking-time>
                             @error('time')<p class="mt-1.5 text-sm text-rose-600">{{ $message }}</p>@enderror
@@ -261,7 +261,7 @@
                         </p>
                     </section>
 
-                    <button type="submit" disabled data-booking-submit
+                    <button type="submit" disabled aria-busy="false" data-booking-submit
                             class="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-navy px-5 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                         {{ $paymentMode === 'full' || $paymentMode === 'deposit' ? __('app.public_booking_ui.continue_to_payment') : __('app.public_booking_ui.confirm_booking') }}
                     </button>
