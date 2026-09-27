@@ -127,7 +127,7 @@ test('signed Kashier return verifies the payment server-side and redirects to co
     $payment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
     $booking = Booking::withoutGlobalScopes()->findOrFail($booking->id);
 
-    $response->assertRedirect(URL::signedRoute('public.booking.confirmation', [
+    $response->assertRedirect(URL::signedRoute('public.booking.canonical.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
     ]));
