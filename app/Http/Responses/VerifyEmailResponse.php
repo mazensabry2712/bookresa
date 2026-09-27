@@ -60,9 +60,11 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
                 ->get()
                 ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
 
+            $workspaceRouteParameters = ['tenant' => $tenant->slug, 'verified' => 1];
+
             return $subscription !== null
-                ? to_route('dashboard', ['verified' => 1])
-                : to_route('billing.subscription', ['verified' => 1]);
+                ? to_route('dashboard', $workspaceRouteParameters)
+                : to_route('billing.subscription', $workspaceRouteParameters);
         }
 
         return to_route('onboarding.business.create', ['verified' => 1]);
@@ -70,9 +72,9 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
     private function onboardingRedirect(\App\Domain\Tenant\Models\Tenant $tenant): RedirectResponse
     {
         return match ((string) data_get($tenant->settings, 'onboarding.step', 'services')) {
-            'hours' => to_route('scheduling.index'),
-            'staff' => to_route('staff.index'),
-            default => to_route('services.index'),
+            'hours' => to_route('scheduling.index', ['tenant' => $tenant->slug]),
+            'staff' => to_route('staff.index', ['tenant' => $tenant->slug]),
+            default => to_route('services.index', ['tenant' => $tenant->slug]),
         };
     }
 
