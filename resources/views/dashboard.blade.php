@@ -70,6 +70,13 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                @can('bookings.create')
+                    <a href="{{ route('booking.management.create') }}"
+                       class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
+                        {{ __('app.booking_ui.new_booking') }}
+                    </a>
+                @endcan
+
                 @can('bookings.view')
                     <a href="{{ route('booking.management.index') }}"
                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
