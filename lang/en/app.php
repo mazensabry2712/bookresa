@@ -120,6 +120,7 @@ return [
     'configure_workspace_message' => 'Choose the tools this business needs. Core modules are kept on; optional modules depend on the current subscription plan.',
     'complete' => 'Complete',
     'current_step' => 'Current step',
+    'locked' => 'Locked',
     'choose_modules' => 'Choose modules',
     'choose_modules_message' => 'Keep the workspace focused. Enable only the modules this business needs today.',
     'core' => 'Core',
