@@ -4,9 +4,11 @@ test('login page uses the application login view', function (): void {
     $this->get(route('login'))
         ->assertOk()
         ->assertSee('Welcome back')
+        ->assertSee('Account access')
         ->assertSee('Sign in to manage your business workspace.')
         ->assertSee('data-bookresa-password-toggle', false)
-        ->assertSee('logo.png');
+        ->assertSee('logo.png')
+        ->assertDontSee('Run bookings, customers and your workspace from one place.');
 });
 
 test('registration page uses the application registration view', function (): void {
