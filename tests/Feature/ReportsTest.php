@@ -167,7 +167,7 @@ test('user without reports permission is forbidden', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('reports.business'))
+        ->get(route('reports.business', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
