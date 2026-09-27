@@ -9,7 +9,7 @@
         $locale = app()->getLocale();
         $businessName = $profile?->name[$locale] ?? $profile?->name['en'] ?? $tenant->slug;
         $businessDescription = $profile?->description[$locale] ?? $profile?->description['en'] ?? __('app.book_an_appointment_online');
-        $baseBookingUrl = route('public.booking.show', $tenant->slug);
+        $baseBookingUrl = route('public.booking.canonical.show', $tenant->slug);
         $canonicalUrl = $baseBookingUrl.'?locale='.urlencode($locale);
         $alternates = collect(config('bookresa.locales', ['en', 'ar']))
             ->map(fn (string $alternateLocale): array => [
@@ -43,7 +43,7 @@
         ])->all();
 
         $bookingPayload = [
-            'availabilityUrl' => route('public.booking.availability', $tenant->slug),
+            'availabilityUrl' => route('public.booking.canonical.availability', $tenant->slug),
             'staffByService' => $staffByService,
         ];
     @endphp
@@ -141,7 +141,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('public.booking.store', $tenant->slug) }}" class="mt-5 space-y-5" data-public-booking>
+                <form method="POST" action="{{ route('public.booking.canonical.store', $tenant->slug) }}" class="mt-5 space-y-5" data-public-booking>
                     @csrf
 
                     @error('booking')
