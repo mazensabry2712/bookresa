@@ -20,7 +20,7 @@
         <section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div class="min-w-0">
                 <div class="flex items-center gap-2 text-sm font-semibold text-brand-indigo">
-                    <a href="{{ route('booking.management.index') }}" class="hover:underline">{{ __('app.booking_ui.bookings') }}</a>
+                    <a href="{{ route('booking.management.index', ['tenant' => $tenant->slug]) }}" class="hover:underline">{{ __('app.booking_ui.bookings') }}</a>
                     <span aria-hidden="true">/</span>
                     <span>{{ __('app.booking_ui.new_booking') }}</span>
                 </div>
@@ -32,7 +32,7 @@
                 </p>
             </div>
 
-            <a href="{{ route('booking.management.index') }}"
+            <a href="{{ route('booking.management.index', ['tenant' => $tenant->slug]) }}"
                class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                 <span class="br-direction-arrow" aria-hidden="true">←</span>
                 <span class="ms-2">{{ __('app.booking_ui.back_to_bookings') }}</span>
@@ -40,7 +40,7 @@
         </section>
 
         <form method="POST"
-              action="{{ route('booking.management.store') }}"
+              action="{{ route('booking.management.store', ['tenant' => $tenant->slug]) }}"
               class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]"
               data-internal-booking-form>
             @csrf
@@ -184,7 +184,7 @@
                 </section>
 
                 <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                    <a href="{{ route('booking.management.index') }}"
+                    <a href="{{ route('booking.management.index', ['tenant' => $tenant->slug]) }}"
                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                         {{ __('app.cancel') }}
                     </a>
@@ -398,7 +398,7 @@
                 if (staff.value) params.set('staff_id', staff.value);
 
                 try {
-                    const response = await fetch(@json(route('booking.management.availability')) + '?' + params.toString(), {
+                    const response = await fetch(@json(route('booking.management.availability', ['tenant' => $tenant->slug])) + '?' + params.toString(), {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
                         signal: requestController.signal,
                     });
