@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Onboarding;
 
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Scheduling\Models\BusinessWorkingHour;
-use App\Domain\Billing\Enums\SubscriptionStatus;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
@@ -118,7 +118,7 @@ class BusinessOnboardingController
         $hasHours = BusinessWorkingHour::query()->exists();
         $hasStaff = $tenant->staffProfiles()->exists();
 
-        if (! $hasModules || ! $hasServices || ! $hasHours || ! $hasStaff) {
+        if (!$hasModules || !$hasServices || !$hasHours || !$hasStaff) {
             return back()->withErrors([
                 'onboarding' => __('Complete workspace modules, services, working hours and staff before finishing onboarding.'),
             ]);
@@ -176,7 +176,7 @@ class BusinessOnboardingController
 
         $unavailable = $modules
             ->where('is_core', false)
-            ->filter(fn (Module $module): bool => $selectedIds->contains($module->id) && ! $entitledKeys->contains($module->key));
+            ->filter(fn (Module $module): bool => $selectedIds->contains($module->id) && !$entitledKeys->contains($module->key));
 
         if ($unavailable->isNotEmpty()) {
             throw ValidationException::withMessages([
