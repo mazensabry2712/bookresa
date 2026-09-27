@@ -42,6 +42,7 @@ final class StaffManagementController
 
     public function store(
         StoreStaffMemberRequest $request,
+        Tenant $tenantRoute,
         AddStaffMember $addStaffMember,
         SyncServiceAssignments $syncServiceAssignments,
         CurrentTenant $currentTenant,
@@ -58,7 +59,7 @@ final class StaffManagementController
 
             $syncServiceAssignments->handle($staff, $data['services'] ?? []);
 
-            $tenant = $currentTenant->get();
+            $tenant = $currentTenant->get() ?? $tenantRoute;
 
             if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $coreModuleKeys = collect(config('bookresa.modules.core', []))
