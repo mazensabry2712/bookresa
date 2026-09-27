@@ -1,17 +1,19 @@
 <?php
 
+use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
+use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->seed(BusinessTypeSeeder::class);
+    $this->seed([BusinessTypeSeeder::class, ModuleSeeder::class]);
 });
 
 test('public booking page renders reusable seo metadata and structured data', function (): void {
@@ -41,22 +43,19 @@ test('public booking page renders reusable seo metadata and structured data', fu
         ->assertSee('SEO Clinic', false);
 });
 
-test('private dashboards send noindex metadata', function (): void {
+test('private setup pages send noindex metadata', function (): void {
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
-    $tenant = Tenant::query()->create([
-        'business_type_id' => $type->id,
-        'slug' => 'private-seo-tenant',
-        'status' => TenantStatus::Active,
-    ]);
 
-    $tenant->memberships()->create([
-        'user_id' => $user->id,
-        'status' => 'active',
-    ]);
+    $tenant = app(CreateBusiness::class)->handle(
+        $user,
+        $type,
+        ['name' => 'Private SEO Tenant'],
+    );
 
-    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('onboarding.workspace'))
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index'))
         ->assertOk()
         ->assertSee('name="robots" content="noindex,nofollow,noarchive"', false);
 });
