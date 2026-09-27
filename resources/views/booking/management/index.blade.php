@@ -53,12 +53,12 @@
                 <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{{ __('app.booking_ui.page_help') }}</p>
             </div>
 
-            <a href="{{ route('public.booking.canonical.show', ['tenant' => $tenant->slug]) }}"
-               target="_blank"
-               rel="noreferrer"
-               class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-600">
-                {{ __('app.booking_ui.new_booking') }}
-            </a>
+            @can('bookings.create')
+                <a href="{{ route('booking.management.create') }}"
+                   class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-indigo-600">
+                    {{ __('app.booking_ui.new_booking') }}
+                </a>
+            @endcan
         </section>
 
         <section class="grid gap-3 sm:grid-cols-3" aria-label="{{ __('app.booking_ui.summary') }}">
