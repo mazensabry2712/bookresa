@@ -84,12 +84,12 @@ test('owner can update customer details without changing tenant ownership', func
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->put(route('customers.update', $customer), [
+        ->put(route('customers.update', ['tenant' => $tenant->slug, 'customer' => $customer]), [
             'name' => 'New Name',
             'phone' => '+20 10 1234 5678',
             'email' => 'new@example.com',
         ])
-        ->assertRedirect(route('customers.show', $customer));
+        ->assertRedirect(route('customers.show', ['tenant' => $tenant->slug, 'customer' => $customer]));
 
     app(CurrentTenant::class)->set($tenant);
     $customer->refresh();
@@ -136,12 +136,12 @@ test('customers are tenant isolated for list and update', function (): void {
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('customers.show', $customerA))
+        ->get(route('customers.show', ['tenant' => $tenantB->slug, 'customer' => $customerA]))
         ->assertNotFound();
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->put(route('customers.update', $customerA), [
+        ->put(route('customers.update', ['tenant' => $tenantB->slug, 'customer' => $customerA]), [
             'name' => 'Cross Tenant',
             'phone' => '01000000002',
         ])
