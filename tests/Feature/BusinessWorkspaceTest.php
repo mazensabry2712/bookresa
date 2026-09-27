@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
@@ -13,6 +17,7 @@ use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -236,9 +241,43 @@ test('onboarding advances through services working hours and staff stages', func
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard'))
+        ->assertForbidden();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('billing.subscription'))
         ->assertOk();
 
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready')
         ->and(data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeTrue();
-});
 
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Onboarding Plan', 'ar' => 'خطة الإعداد'],
+        'description' => ['en' => 'Onboarding test plan', 'ar' => 'خطة اختبار الإعداد'],
+        'price_minor' => 0,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 100,
+        'additional_customer_price_minor' => 0,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::now(),
+    );
+
+    $subscription->forceFill([
+        'payment_status' => PaymentStatus::Paid,
+        'end_at' => CarbonImmutable::now()->addMonth(),
+        'pricing_snapshot' => ['modules' => []],
+    ])->save();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard'))
+        ->assertOk();
+});
