@@ -97,7 +97,7 @@ final class KashierReturnController
 
             if ($payable instanceof Subscription) {
                 return redirect()
-                    ->route('billing.subscription')
+                    ->route('billing.subscription', ['tenant' => $tenant->slug])
                     ->with('payment_notice', $notice);
             }
 
