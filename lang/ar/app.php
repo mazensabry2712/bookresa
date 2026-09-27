@@ -658,6 +658,7 @@ return [
         'search_placeholder' => 'المرجع أو اسم العميل أو الهاتف أو البريد',
         'status' => 'الحالة',
         'all_statuses' => 'كل الحالات',
+        'all_payment_statuses' => 'كل حالات الدفع',
         'service' => 'الخدمة',
         'all_services' => 'كل الخدمات',
         'staff' => 'الموظف',
