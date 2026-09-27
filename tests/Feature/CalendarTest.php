@@ -112,7 +112,7 @@ test('authorized user can open the monthly calendar', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('calendar.index', ['month' => '2026-09']))
+        ->get(route('calendar.index', ['tenant' => $tenant->slug, 'month' => '2026-09']))
         ->assertOk()
         ->assertSee('BR-CAL-OPEN')
         ->assertSee('Calendar Customer')
@@ -154,7 +154,7 @@ test('calendar is tenant isolated', function (): void {
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->get(route('calendar.index', ['month' => '2026-09']))
+        ->get(route('calendar.index', ['tenant' => $tenant->slug, 'month' => '2026-09']))
         ->assertOk()
         ->assertSee($bookingA->booking_reference)
         ->assertDontSee($bookingB->booking_reference);
@@ -166,6 +166,6 @@ test('calendar requires calendar permission', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('calendar.index', ['month' => '2026-09']))
+        ->get(route('calendar.index', ['tenant' => $tenant->slug, 'month' => '2026-09']))
         ->assertForbidden();
 });
