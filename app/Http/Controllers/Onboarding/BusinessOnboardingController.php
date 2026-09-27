@@ -184,7 +184,7 @@ class BusinessOnboardingController
         }
 
         $now = now();
-        DB::transaction(function () use ($tenant, $modules, $selected, $now): void {
+        DB::transaction(function () use ($tenant, $modules, $selectedIds, $now): void {
             $rows = $modules->map(fn (Module $module): array => [
                 'tenant_id' => $tenant->getKey(),
                 'module_id' => $module->getKey(),
