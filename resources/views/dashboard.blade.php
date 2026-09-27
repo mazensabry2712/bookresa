@@ -12,7 +12,9 @@
             ?? '—'
         );
 
-        $money = static fn (int $minor, string $currency = 'EGP'): string => number_format($minor / 100, 2).' '.$currency;
+        $money = static fn (?int $minor, string $currency = 'EGP'): string => $minor === null
+            ? '—'
+            : number_format($minor / 100, 2).' '.$currency;
 
         $planName = $localized($subscription?->plan?->name);
 
@@ -51,6 +53,11 @@
         $subscriptionStatusLabels = [
             'trial' => __('app.dashboard_ui.status_trial'),
             'active' => __('app.dashboard_ui.status_active'),
+        ];
+
+        $subscriptionStatusClasses = [
+            'trial' => 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
+            'active' => 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-200',
         ];
 
         $usagePercent = $attention['usagePercent'] ?? 0;
@@ -106,6 +113,15 @@
                             <span aria-hidden="true">·</span>
                             {{ __('app.onboarding_steps.'.($onboarding['step'] === 'services' ? 'services' : ($onboarding['step'] === 'hours' ? 'hours' : 'staff'))) }}
                         </p>
+                        <div class="mt-3 h-1.5 max-w-xl overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
+                             role="progressbar"
+                             aria-valuemin="1"
+                             aria-valuemax="4"
+                             aria-valuenow="{{ $onboarding['currentStage'] }}"
+                             aria-label="{{ __('app.step_progress', ['current' => $onboarding['currentStage'], 'total' => 4]) }}">
+                            <div class="h-full rounded-full bg-brand-indigo transition-[width] duration-300"
+                                 style="width: {{ ($onboarding['currentStage'] / 4) * 100 }}%"></div>
+                        </div>
                     </div>
 
                     <a href="{{ route($onboarding['route']) }}"
@@ -117,7 +133,7 @@
         @endif
 
         <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('app.dashboard_ui.summary') }}">
-            <article class="br-panel p-5">
+            <article class="br-panel min-h-[148px] p-5 transition-shadow duration-150 hover:shadow-md">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-brand-indigo dark:bg-indigo-950/40 dark:text-indigo-300" aria-hidden="true">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path stroke-linecap="round" d="M8 3v4M16 3v4M3.5 10h17M8 14h3M8 18h6"/></svg>
@@ -292,7 +308,7 @@
                             <div class="grid gap-4 lg:grid-cols-[auto_1fr_auto_auto] lg:items-center">
                                 <div class="min-w-[96px]">
                                     <p class="text-sm font-bold text-slate-950 dark:text-white">
-                                        {{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}
+                                        {{ $booking->starts_at->setTimezone($timezone)->locale(app()->getLocale())->isoFormat('LT') }}
                                     </p>
                                     <p class="mt-1 text-xs text-slate-500">
                                         {{ $booking->starts_at->setTimezone($timezone)->locale(app()->getLocale())->isoFormat('D MMM') }}
@@ -358,11 +374,20 @@
                         <div class="mt-4 grid grid-cols-2 gap-3">
                             <div class="rounded-xl br-surface-soft p-3">
                                 <p class="text-xs font-semibold text-slate-500">{{ __('app.dashboard_ui.subscription_status') }}</p>
-                                <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ $subscriptionStatusLabels[$subscription->status->value] ?? $subscription->status->value }}</p>
+                                <p class="mt-1">
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold {{ $subscriptionStatusClasses[$subscription->status->value] ?? 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200' }}">
+                                    {{ $subscriptionStatusLabels[$subscription->status->value] ?? $subscription->status->value }}
+                                </span>
+                            </p>
                             </div>
                             <div class="rounded-xl br-surface-soft p-3">
                                 <p class="text-xs font-semibold text-slate-500">{{ __('app.dashboard_ui.renews') }}</p>
                                 <p class="mt-1 font-bold text-slate-900 dark:text-white">{{ $subscription->end_at->setTimezone($timezone)->locale(app()->getLocale())->isoFormat('D MMM YYYY') }}</p>
+                                @if ($subscriptionDaysRemaining !== null)
+                                    <p class="mt-1 text-xs font-semibold text-slate-400">
+                                        {{ trans_choice('app.dashboard_ui.subscription_days_left', $subscriptionDaysRemaining, ['count' => $subscriptionDaysRemaining]) }}
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     @else
@@ -385,8 +410,13 @@
                             <span class="text-sm font-bold text-slate-600 dark:text-slate-300">{{ $usagePercent }}%</span>
                         </div>
 
-                        <div class="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800" aria-hidden="true">
-                            <div class="h-full rounded-full bg-brand-indigo transition-all" style="width: {{ $usagePercent }}%"></div>
+                        <div class="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
+                             role="progressbar"
+                             aria-valuemin="0"
+                             aria-valuemax="100"
+                             aria-valuenow="{{ $usagePercent }}"
+                             aria-label="{{ __('app.dashboard_ui.usage_help', ['percent' => $usagePercent]) }}">
+                            <div class="h-full rounded-full bg-brand-indigo transition-[width] duration-300" style="width: {{ $usagePercent }}%"></div>
                         </div>
 
                         <p class="mt-3 text-sm text-slate-500">
@@ -413,13 +443,23 @@
                         </span>
                     </div>
                     <div class="mt-4 grid grid-cols-2 gap-2">
+                        @can('bookings.view')
+                            <a href="{{ route('booking.management.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                                {{ __('app.bookings') }}
+                            </a>
+                        @endcan
                         @can('calendar.view')
-                            <a href="{{ route('scheduling.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
-                                {{ __('app.scheduling') }}
+                            <a href="{{ route('calendar.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                                {{ __('app.calendar') }}
+                            </a>
+                        @endcan
+                        @can('customers.view')
+                            <a href="{{ route('customers.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                                {{ __('app.customers') }}
                             </a>
                         @endcan
                         @can('business.view')
-                            <a href="{{ route('business.profile.edit') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
+                            <a href="{{ route('business.profile.edit') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
                                 {{ __('app.business') }}
                             </a>
                         @endcan
