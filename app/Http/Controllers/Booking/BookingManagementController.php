@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Booking;
 
+use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
@@ -10,6 +11,7 @@ use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Booking\RescheduleBookingRequest;
+use App\Http\Requests\Booking\StoreBookingManagementRequest;
 use App\Http\Requests\Booking\UpdateBookingStatusRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +21,77 @@ use RuntimeException;
 
 class BookingManagementController
 {
+    public function create(CurrentTenant $currentTenant): View
+    {
+        $tenant = $currentTenant->get();
+
+        abort_unless($tenant !== null, 404);
+
+        return view('booking.management.create', [
+            'tenant' => $tenant,
+            'services' => Service::query()
+                ->where('is_active', true)
+                ->with('staff:id,display_name,status')
+                ->orderBy('id')
+                ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
+            'staff' => StaffProfile::query()
+                ->where('status', 'active')
+                ->orderBy('display_name')
+                ->get(['id', 'display_name']),
+            'timezone' => (string) data_get(
+                $tenant->profile,
+                'timezone',
+                config('app.timezone', 'UTC'),
+            ),
+        ]);
+    }
+
+    public function store(
+        StoreBookingManagementRequest $request,
+        CurrentTenant $currentTenant,
+        CreateBooking $createBooking,
+    ): RedirectResponse {
+        $tenant = $currentTenant->get();
+
+        abort_unless($tenant !== null, 404);
+
+        try {
+            $service = Service::query()->findOrFail($request->integer('service_id'));
+            $staff = $request->filled('staff_id')
+                ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
+                : null;
+
+            $timezone = (string) data_get(
+                $tenant->profile,
+                'timezone',
+                config('app.timezone', 'UTC'),
+            );
+
+            $startsAt = CarbonImmutable::createFromFormat(
+                'Y-m-d H:i',
+                $request->string('date').' '.$request->string('time'),
+                $timezone,
+            );
+
+            $booking = $createBooking->handle(
+                $service,
+                $request->string('name')->toString(),
+                $request->filled('phone') ? $request->string('phone')->toString() : null,
+                $request->filled('email') ? $request->string('email')->toString() : null,
+                $startsAt,
+                $staff,
+                $request->filled('notes') ? $request->string('notes')->toString() : null,
+            );
+
+            return to_route('booking.management.show', $booking)
+                ->with('status', __('app.booking_ui.created_success'));
+        } catch (RuntimeException|LogicException $exception) {
+            return back()
+                ->withErrors(['booking' => $exception->getMessage()])
+                ->withInput();
+        }
+    }
+
     public function index(Request $request, CurrentTenant $currentTenant): View
     {
         $tenant = $currentTenant->get();
