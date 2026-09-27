@@ -139,7 +139,7 @@ test('owner cannot mutate another tenant subscription through billing actions', 
     $subscriptionB = app(CreateSubscription::class)->handle(billingDashboardPlan(), CarbonImmutable::parse('2026-10-01', 'UTC'));
 
     $this->actingAs($userA)->withSession(['tenant_id' => $tenantA->id])
-        ->post(route('billing.subscription.cancel', $subscriptionB))
+        ->post(route('billing.subscription.cancel', ['tenant' => $tenantA->slug, 'subscription' => $subscriptionB]))
         ->assertNotFound();
 
     expect($subscriptionA->fresh()->cancelled_at)->toBeNull();
