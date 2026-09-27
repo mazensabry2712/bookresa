@@ -266,7 +266,7 @@ class BookingManagementController
 
         try {
             $tenant = $currentTenant->get() ?? $tenant;
-            $timezone = (string) data_get($tenant?->profile, 'timezone', config('app.timezone', 'UTC'));
+            $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
             $staff = $request->filled('staff_id')
                 ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                 : null;
