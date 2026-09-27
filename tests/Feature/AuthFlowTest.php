@@ -91,7 +91,7 @@ test('verified completed tenant member without subscription is redirected to bil
         ->assertSessionHasNoErrors();
 });
 
-test('unfinished onboarding cannot open the tenant dashboard directly and is sent to the current setup step', function (): void {
+test('unfinished onboarding can open the tenant dashboard directly', function (): void {
     $user = User::factory()->create();
 
     $tenant = Tenant::query()->create([
@@ -100,6 +100,7 @@ test('unfinished onboarding cannot open the tenant dashboard directly and is sen
         'settings' => [
             'onboarding' => [
                 'completed' => false,
+                'step' => 'services',
             ],
         ],
     ]);
@@ -114,7 +115,8 @@ test('unfinished onboarding cannot open the tenant dashboard directly and is sen
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard'))
-        ->assertRedirect(route('services.index'));
+        ->assertOk()
+        ->assertSee(__('app.dashboard'));
 });
 
 test('active platform admin is redirected to the platform dashboard after sign in', function (): void {
