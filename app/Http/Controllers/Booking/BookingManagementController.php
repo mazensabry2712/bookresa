@@ -7,6 +7,7 @@ use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Booking\Services\RescheduleBooking;
+use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -14,6 +15,7 @@ use App\Http\Requests\Booking\RescheduleBookingRequest;
 use App\Http\Requests\Booking\StoreBookingManagementRequest;
 use App\Http\Requests\Booking\UpdateBookingStatusRequest;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -44,6 +46,55 @@ class BookingManagementController
                 'timezone',
                 config('app.timezone', 'UTC'),
             ),
+        ]);
+    }
+
+    public function availability(
+        Request $request,
+        CurrentTenant $currentTenant,
+        AvailabilityService $availability,
+    ): JsonResponse {
+        abort_unless($currentTenant->get() !== null, 404);
+
+        $validated = $request->validate([
+            'service_id' => ['required', 'integer', 'exists:services,id'],
+            'staff_id' => ['nullable', 'integer', 'exists:staff_profiles,id'],
+            'date' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        $tenant = $currentTenant->get();
+        $timezone = (string) data_get(
+            $tenant?->profile,
+            'timezone',
+            config('app.timezone', 'UTC'),
+        );
+
+        $service = Service::query()->findOrFail((int) $validated['service_id']);
+        $staff = ! empty($validated['staff_id'])
+            ? StaffProfile::query()->findOrFail((int) $validated['staff_id'])
+            : null;
+        $date = CarbonImmutable::createFromFormat(
+            'Y-m-d',
+            (string) $validated['date'],
+            $timezone,
+        );
+
+        try {
+            $slots = $availability->slots($service, $date, $staff);
+        } catch (LogicException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([
+            'data' => collect($slots)
+                ->map(fn (array $slot): array => [
+                    'date' => $slot['start']->toDateString(),
+                    'time' => $slot['start']->format('H:i'),
+                    'end_time' => $slot['end']->format('H:i'),
+                    'staff_id' => $slot['staff_id'],
+                ])
+                ->unique(fn (array $slot): string => $slot['time'].'|'.($slot['staff_id'] ?? 'auto'))
+                ->values(),
         ]);
     }
 
