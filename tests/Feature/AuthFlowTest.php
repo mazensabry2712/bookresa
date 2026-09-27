@@ -29,7 +29,7 @@ test('verified user can sign in with valid credentials', function (): void {
         ->and(auth()->id())->toBe($user->id);
 });
 
-test('verified tenant member with incomplete onboarding is redirected to workspace after sign in', function (): void {
+test('verified tenant member with incomplete onboarding is redirected to services setup after sign in', function (): void {
     $user = User::factory()->create([
         'email' => 'tenant-login@example.com',
         'password' => bcrypt('secret-password'),
@@ -56,7 +56,7 @@ test('verified tenant member with incomplete onboarding is redirected to workspa
         'email' => $user->email,
         'password' => 'secret-password',
     ])
-        ->assertRedirect(route('onboarding.workspace'))
+        ->assertRedirect(route('services.index'))
         ->assertSessionHasNoErrors();
 });
 
@@ -91,7 +91,7 @@ test('verified completed tenant member is redirected to the tenant dashboard aft
         ->assertSessionHasNoErrors();
 });
 
-test('unfinished onboarding cannot open the tenant dashboard directly', function (): void {
+test('unfinished onboarding cannot open the tenant dashboard directly and is sent to the current setup step', function (): void {
     $user = User::factory()->create();
 
     $tenant = Tenant::query()->create([
@@ -114,7 +114,7 @@ test('unfinished onboarding cannot open the tenant dashboard directly', function
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard'))
-        ->assertRedirect(route('onboarding.workspace'));
+        ->assertRedirect(route('services.index'));
 });
 
 test('active platform admin is redirected to the platform dashboard after sign in', function (): void {
