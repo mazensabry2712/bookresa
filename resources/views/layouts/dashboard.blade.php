@@ -119,7 +119,7 @@
                         <p class="br-sidebar-section-label px-3 pb-2 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">{{ __('app.finance') }}</p>
                         <div class="space-y-1">
                             @can('billing.view')
-                                @if (app(AppDomainTenantServicesCurrentTenant::class)->get()?->modules->contains('key', 'payments'))
+                                @if ($tenant->modules->contains('key', 'payments'))
                                     <a href="{{ route('payments.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('payments.index') ? 'true' : 'false' }}" class="br-nav-link" title="{{ __('app.payments') }}">
                                         <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path stroke-linecap="round" d="M3 10h18M7 15h4"/></svg></span>
                                         <span class="br-sidebar-label">{{ __('app.payments') }}</span>
