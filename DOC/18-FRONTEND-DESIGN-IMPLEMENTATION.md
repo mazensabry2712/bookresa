@@ -388,6 +388,20 @@ Actions:
 
 Avoid action-button soup. Use one visible primary action and a compact secondary menu for uncommon actions.
 
+### New booking
+
+Use a focused two-column desktop layout and a single-column mobile layout.
+
+The creation flow should:
+- select service first and show duration/price in the option and summary
+- load live available time slots from the tenant availability engine instead of asking staff to type a time
+- keep staff optional with automatic assignment as the default
+- allow recent existing customers to prefill contact details
+- show a compact booking summary with service, date, time, staff and customer
+- disable submission until a valid service, date and available time are selected
+- keep server-side availability validation authoritative at save time
+- keep all booking labels localized in both supported workspace languages
+
 ### Booking details
 
 The detail screen should read like a small operational record:
