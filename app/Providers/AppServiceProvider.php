@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
         VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {
             return (new MailMessage)
                 ->subject(__('app.verify_email_subject'))
-                ->view('emails.auth.verify-email', [
+                ->view(['emails.auth.verify-email', 'emails.auth.verify-email-text'], [
                     'user' => $notifiable,
                     'url' => $url,
                 ]);
