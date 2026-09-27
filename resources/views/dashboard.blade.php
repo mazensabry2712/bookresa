@@ -141,7 +141,7 @@
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.today') }}</span>
                 </div>
                 <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.today_bookings') }}</p>
-                <p class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['todayBookings']) }}</p>
+                <p data-dashboard-metric="today-bookings" data-metric-value="{{ $metrics['todayBookings'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['todayBookings']) }}</p>
             </article>
 
             <article class="br-panel p-5">
@@ -152,7 +152,7 @@
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.paid') }}</span>
                 </div>
                 <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.today_revenue') }}</p>
-                <p class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ $money($metrics['todayRevenueMinor']) }}</p>
+                <p data-dashboard-metric="today-revenue" data-metric-value="{{ $metrics['todayRevenueMinor'] ?? '—' }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ $money($metrics['todayRevenueMinor']) }}</p>
             </article>
 
             <article class="br-panel p-5">
@@ -163,7 +163,7 @@
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.upcoming') }}</span>
                 </div>
                 <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.upcoming_bookings') }}</p>
-                <p class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['upcomingBookings']) }}</p>
+                <p data-dashboard-metric="upcoming-bookings" data-metric-value="{{ $metrics['upcomingBookings'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['upcomingBookings']) }}</p>
             </article>
 
             <article class="br-panel p-5">
@@ -175,7 +175,7 @@
                 </div>
                 <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.customers') }}</p>
                 <div class="mt-1 flex items-end justify-between gap-3">
-                    <p class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['customers']) }}</p>
+                    <p data-dashboard-metric="customers" data-metric-value="{{ $metrics['customers'] }}" class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['customers']) }}</p>
                     <span class="shrink-0 text-xs font-semibold text-slate-400">
                         +{{ number_format($metrics['newCustomersToday']) }} {{ __('app.dashboard_ui.today') }}
                     </span>
