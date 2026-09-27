@@ -103,7 +103,7 @@ final class StaffManagementController
                 $tenant->forceFill(['settings' => $settings])->save();
             }
 
-            return to_route('staff.index')->with('status', __('app.staff_ui.added'));
+            return to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['staff' => $exception->getMessage()])->withInput();
         }
@@ -111,6 +111,7 @@ final class StaffManagementController
 
     public function status(
         Request $request,
+        Tenant $tenant,
         StaffProfile $staff,
         UpdateStaffMember $updateStaffMember,
     ): RedirectResponse {
@@ -134,6 +135,7 @@ final class StaffManagementController
 
     public function update(
         UpdateStaffMemberRequest $request,
+        Tenant $tenant,
         StaffProfile $staff,
         UpdateStaffMember $updateStaffMember,
         SyncServiceAssignments $syncServiceAssignments,
