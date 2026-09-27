@@ -55,7 +55,7 @@ test('signed verification link marks the user verified', function (): void {
 
     $this->actingAs($user)
         ->get($url)
-        ->assertRedirect();
+        ->assertRedirect(route('onboarding.business.create').'?verified=1');
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
     Event::assertDispatched(Verified::class);
