@@ -88,7 +88,7 @@
         </section>
 
         <footer class="pb-2 text-center text-xs text-slate-400 dark:text-slate-500">
-            {{ __('app.auth_platform_message') }}
+            © {{ now()->year }} BookResa
         </footer>
     </main>
 
