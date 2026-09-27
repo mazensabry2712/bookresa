@@ -22,18 +22,39 @@ use RuntimeException;
 
 final class StaffManagementController
 {
-    public function index(CurrentTenant $currentTenant): View
+    public function index(Request $request, CurrentTenant $currentTenant): View
     {
         abort_unless($currentTenant->get() !== null, 404);
+
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string', 'in:active,inactive'],
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
 
         return view('staff.index', [
             'tenant' => $currentTenant->get(),
             'staffMembers' => StaffProfile::query()
                 ->with(['user', 'services'])
+                ->when($search !== '', function ($query) use ($search): void {
+                    $query->where(function ($query) use ($search): void {
+                        $like = '%'.$search.'%';
+
+                        $query
+                            ->where('display_name', 'like', $like)
+                            ->orWhere('phone', 'like', $like)
+                            ->orWhere('job_title', 'like', $like)
+                            ->orWhereHas('user', fn ($query) => $query->where('email', 'like', $like));
+                    });
+                })
+                ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
                 ->latest('id')
                 ->paginate(20)
                 ->withQueryString(),
             'services' => Service::query()->orderBy('id')->get(),
+            'search' => $search,
+            'statusFilter' => $validated['status'] ?? '',
             'roles' => array_values(array_filter(
                 array_keys(config('bookresa.rbac.roles', [])),
                 static fn (string $role): bool => $role !== 'owner',
