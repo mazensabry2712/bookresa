@@ -74,76 +74,166 @@ const setupTheme = () => {
     });
 };
 
-const setupMobileNavigation = () => {
-    const drawer = document.querySelector('[data-bookresa-sidebar]');
+const setupSidebar = () => {
+    const shell = document.querySelector('.br-shell');
+    const sidebar = document.querySelector('[data-bookresa-sidebar]');
     const backdrop = document.querySelector('[data-bookresa-sidebar-backdrop]');
-    const closeButtons = document.querySelectorAll('[data-bookresa-sidebar-close]');
-    const toggleButtons = document.querySelectorAll('[data-bookresa-sidebar-toggle]');
-    const desktopQuery = window.matchMedia('(min-width: 1024px)');
-    let isOpen = false;
+    const mobileToggleButtons = document.querySelectorAll('[data-bookresa-sidebar-toggle]');
+    const mobileCloseButtons = document.querySelectorAll('[data-bookresa-sidebar-close]');
+    const collapseButton = document.querySelector('[data-bookresa-sidebar-collapse]');
+    const userMenus = document.querySelectorAll('[data-user-menu]');
+    const workspaceMenus = document.querySelectorAll('[data-workspace-switcher]');
 
-    if (!drawer || !backdrop) {
+    if (!shell || !sidebar) {
         return;
     }
 
-    const syncAccessibility = () => {
-        drawer.setAttribute('aria-hidden', desktopQuery.matches || isOpen ? 'false' : 'true');
+    const desktopQuery = window.matchMedia('(min-width: 1024px)');
+    let mobileOpen = false;
+
+    const getCollapsed = () => {
+        try {
+            return localStorage.getItem('bookresa-sidebar-collapsed') === '1';
+        } catch {
+            return false;
+        }
     };
 
-    const setOpen = (open, restoreFocus = true) => {
-        isOpen = open;
-        drawer.classList.toggle('is-open', open);
-        backdrop.classList.toggle('is-open', open);
-        document.body.classList.toggle('overflow-hidden', open);
+    const setCollapsed = (collapsed) => {
+        const next = Boolean(collapsed);
 
-        toggleButtons.forEach((button) => {
-            button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        shell.classList.toggle('sidebar-collapsed', next);
+        collapseButton?.setAttribute('aria-expanded', next ? 'false' : 'true');
+
+        if (collapseButton) {
+            const label = next ? 'Expand sidebar' : 'Collapse sidebar';
+            collapseButton.setAttribute('aria-label', label);
+            collapseButton.setAttribute('title', label);
+        }
+
+        try {
+            localStorage.setItem('bookresa-sidebar-collapsed', next ? '1' : '0');
+        } catch {
+            // Keep the sidebar usable when storage is unavailable.
+        }
+    };
+
+    const syncAccessibility = () => {
+        const visible = desktopQuery.matches || mobileOpen;
+        sidebar.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    };
+
+    const setMobileOpen = (open, restoreFocus = true) => {
+        mobileOpen = Boolean(open);
+        sidebar.classList.toggle('is-open', mobileOpen);
+        backdrop?.classList.toggle('is-open', mobileOpen);
+        document.body.classList.toggle('overflow-hidden', mobileOpen);
+
+        mobileToggleButtons.forEach((button) => {
+            button.setAttribute('aria-expanded', mobileOpen ? 'true' : 'false');
         });
 
         syncAccessibility();
 
-        if (open) {
-            closeButtons[0]?.focus();
+        if (mobileOpen) {
+            mobileCloseButtons[0]?.focus();
         } else if (restoreFocus) {
-            toggleButtons[0]?.focus();
+            mobileToggleButtons[0]?.focus();
         }
     };
 
+    const closeMenus = (except = null) => {
+        document.querySelectorAll('[data-user-menu-panel].is-open, [data-workspace-switcher-menu].is-open').forEach((panel) => {
+            if (panel !== except) {
+                panel.classList.remove('is-open');
+            }
+        });
+
+        document.querySelectorAll('[data-user-menu-toggle][aria-expanded="true"], [data-workspace-switcher-toggle][aria-expanded="true"]').forEach((button) => {
+            const panel = button.closest('[data-user-menu], [data-workspace-switcher]')?.querySelector('[data-user-menu-panel], [data-workspace-switcher-menu]');
+
+            if (!except || panel !== except) {
+                button.setAttribute('aria-expanded', 'false');
+            }
+        });
+    };
+
+    const setupDropdown = (root, toggleSelector, panelSelector) => {
+        const toggle = root.querySelector(toggleSelector);
+        const panel = root.querySelector(panelSelector);
+
+        if (!toggle || !panel) {
+            return;
+        }
+
+        toggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const open = panel.classList.contains('is-open');
+
+            closeMenus(panel);
+            panel.classList.toggle('is-open', !open);
+            toggle.setAttribute('aria-expanded', !open ? 'true' : 'false');
+        });
+    };
+
+    setCollapsed(desktopQuery.matches ? getCollapsed() : false);
     syncAccessibility();
 
-    toggleButtons.forEach((button) => {
-        button.addEventListener('click', () => setOpen(true));
+    collapseButton?.addEventListener('click', () => {
+        setCollapsed(!shell.classList.contains('sidebar-collapsed'));
     });
 
-    backdrop.addEventListener('click', () => setOpen(false));
-
-    closeButtons.forEach((button) => {
-        button.addEventListener('click', () => setOpen(false));
+    mobileToggleButtons.forEach((button) => {
+        button.addEventListener('click', () => setMobileOpen(true));
     });
 
-    drawer.querySelectorAll('a').forEach((link) => {
-        link.addEventListener('click', () => setOpen(false, false));
+    mobileCloseButtons.forEach((button) => {
+        button.addEventListener('click', () => setMobileOpen(false));
+    });
+
+    backdrop?.addEventListener('click', () => setMobileOpen(false));
+
+    sidebar.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+            if (!desktopQuery.matches) {
+                setMobileOpen(false, false);
+            }
+        });
+    });
+
+    userMenus.forEach((root) => setupDropdown(root, '[data-user-menu-toggle]', '[data-user-menu-panel]'));
+    workspaceMenus.forEach((root) => setupDropdown(root, '[data-workspace-switcher-toggle]', '[data-workspace-switcher-menu]'));
+
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('[data-user-menu], [data-workspace-switcher]')) {
+            closeMenus();
+        }
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && isOpen) {
-            setOpen(false);
+        if (event.key === 'Escape') {
+            closeMenus();
+
+            if (mobileOpen) {
+                setMobileOpen(false);
+            }
         }
     });
 
     desktopQuery.addEventListener('change', (event) => {
         if (event.matches) {
-            setOpen(false, false);
-            return;
+            setMobileOpen(false, false);
+            setCollapsed(getCollapsed());
+        } else {
+            setCollapsed(false);
+            syncAccessibility();
         }
-
-        syncAccessibility();
     });
 };
 
 const setupUtilities = () => {
     setupTheme();
-    setupMobileNavigation();
+    setupSidebar();
 };
 
 if (document.readyState === 'loading') {
