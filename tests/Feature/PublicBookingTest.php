@@ -107,7 +107,7 @@ test('public customer can book without an account', function (): void {
     app(CurrentTenant::class)->set($tenant);
     $booking->load('customer');
 
-    $response->assertRedirect(URL::signedRoute('public.booking.confirmation', [
+    $response->assertRedirect(URL::signedRoute('public.booking.canonical.confirmation', [
         'tenant' => $tenant->slug,
         'booking' => $booking->booking_reference,
     ]));
