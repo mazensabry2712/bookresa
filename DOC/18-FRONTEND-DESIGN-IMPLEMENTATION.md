@@ -1081,8 +1081,19 @@ Screens:
 - Attention/Alerts
 - Subscription/Usage summary
 
+Main Dashboard rules:
+- show the current Business name prominently; the signed-in user name is secondary context;
+- top metrics should include today's bookings, today's paid revenue, upcoming bookings and total customers;
+- new customers today may appear as secondary context rather than replacing the total-customer metric;
+- keep a clear primary New booking action, with booking-list and public-booking actions secondary;
+- upcoming rows should show customer, service, staff, time/date, booking status and payment status;
+- subscription and customer usage are operational summaries, not separate full billing screens;
+- when onboarding is incomplete, the Dashboard remains reachable and shows the current setup step with one clear Continue action;
+- dates and month names must follow the active locale in both LTR and RTL;
+- business identity, customer usage and subscription state must stay tenant-scoped.
+
 Exit condition:
-The business owner can understand today's workload and the next useful action immediately.
+The business owner can understand today's workload, business identity, customer base and the next useful action immediately.
 
 ### F4 — Business and settings
 Screens:
