@@ -66,7 +66,7 @@ Business roles:
 Permissions are enforced server-side. The frontend may hide unavailable actions, but UI visibility is not an authorization boundary.
 
 ## 6. Business Registration Flow
-Register → Verify Account → Create Business → Select Business Type → Configure Workspace → Select Required Modules → Set Services → Set Working Hours → Add Staff → Workspace Ready.
+Register → Verify Account → Create Business → Select Business Type → Set Services → Set Working Hours → Add Staff → Workspace Ready. Core modules are enabled automatically from the business type; optional modules are managed later from workspace settings.
 
 After onboarding is completed, normal tenant operations require a usable subscription. During unfinished onboarding, the tenant may continue the required core setup flow.
 
