@@ -108,7 +108,7 @@ test('owner can add a staff member and assign services through workspace ui', fu
     $serviceB = staffService($tenant, 'Follow up');
 
     $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index', ['tenant' => $tenantB->slug]))
+        ->get(route('staff.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Staff members');
 
@@ -121,7 +121,7 @@ test('owner can add a staff member and assign services through workspace ui', fu
             'role' => 'staff',
             'services' => [$serviceA->id],
         ])
-        ->assertRedirect(route('staff.index', ['tenant' => $tenantB->slug]));
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
     setPermissionsTeamId($tenant->id);
@@ -159,7 +159,7 @@ test('manager can update staff role status and service assignments', function ()
             'status' => 'inactive',
             'services' => [$serviceB->id],
         ])
-        ->assertRedirect(route('staff.index', ['tenant' => $tenantB->slug]));
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
     setPermissionsTeamId($tenant->id);
@@ -214,7 +214,7 @@ test('receptionist cannot access or manage staff', function (): void {
     app(AddStaffMember::class)->handle($receptionist, 'receptionist');
 
     $this->actingAs($receptionist)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index', ['tenant' => $tenantB->slug]))
+        ->get(route('staff.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 
     $this->actingAs($receptionist)->withSession(['tenant_id' => $tenant->id])
@@ -286,7 +286,7 @@ test('staff management paginates large staff lists', function (): void {
     }
 
     $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index', ['tenant' => $tenantB->slug]))
+        ->get(route('staff.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Pagination Staff 21')
         ->assertDontSee('<p class="text-base font-semibold">Pagination Staff 1</p>', false);
