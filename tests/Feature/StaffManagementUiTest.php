@@ -113,7 +113,7 @@ test('owner can add a staff member and assign services through workspace ui', fu
         ->assertSee('Staff members');
 
     $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('staff.store'), [
+        ->post(route('staff.store', ['tenant' => $tenant->slug]), [
             'email' => $staffUser->email,
             'display_name' => 'Dr. Staff',
             'phone' => '01012345678',
@@ -218,7 +218,7 @@ test('receptionist cannot access or manage staff', function (): void {
         ->assertForbidden();
 
     $this->actingAs($receptionist)->withSession(['tenant_id' => $tenant->id])
-        ->post(route('staff.store'), [
+        ->post(route('staff.store', ['tenant' => $tenant->slug]), [
             'email' => User::factory()->create()->email,
             'role' => 'staff',
         ])
