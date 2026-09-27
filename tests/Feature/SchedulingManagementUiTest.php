@@ -156,18 +156,18 @@ test('owner can manage a selected staff schedule', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('scheduling.index', ['staff' => $staff->id]))
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug, 'staff' => $staff->id]))
         ->assertOk()
         ->assertSee($staff->display_name);
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->put(route('scheduling.staff-hours.update', $staff), ['hours' => $hours])
-        ->assertRedirect(route('scheduling.index', ['staff' => $staff->id]));
+        ->put(route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $staff]), ['hours' => $hours])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug, 'staff' => $staff->id]));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('scheduling.staff-days-off.store', $staff), [
+        ->post(route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $staff]), [
             'starts_on' => '2026-11-10',
             'ends_on' => '2026-11-12',
             'reason' => 'Leave',
@@ -176,7 +176,7 @@ test('owner can manage a selected staff schedule', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('scheduling.staff-availability.store', $staff), [
+        ->post(route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $staff]), [
             'available_date' => '2026-11-14',
             'starts_at' => '11:00',
             'ends_at' => '14:00',
@@ -251,7 +251,7 @@ test('scheduling management is tenant isolated', function (): void {
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->delete(route('scheduling.breaks.destroy', $breakA))
+        ->delete(route('scheduling.breaks.destroy', ['tenant' => $tenantB->slug, 'break' => $breakA]))
         ->assertNotFound();
 
     app(CurrentTenant::class)->set($tenantA);
@@ -293,7 +293,7 @@ test('staff schedule deletes cannot target another staff member', function (): v
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->delete(route('scheduling.staff-availability.destroy', [$staffA, $availability]))
+        ->delete(route('scheduling.staff-availability.destroy', ['tenant' => $tenant->slug, 'staff' => $staffA, 'availability' => $availability]))
         ->assertNotFound();
 
     app(CurrentTenant::class)->set($tenant);
