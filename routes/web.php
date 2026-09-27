@@ -191,6 +191,10 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permiss
             ->middleware('permission:bookings.create')
             ->name('booking.management.create');
 
+        Route::get('/availability', [BookingManagementController::class, 'availability'])
+            ->middleware('permission:bookings.create')
+            ->name('booking.management.availability');
+
         Route::post('/', [BookingManagementController::class, 'store'])
             ->middleware('permission:bookings.create')
             ->name('booking.management.store');
