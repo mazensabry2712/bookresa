@@ -117,7 +117,7 @@ test('authorized tenant user can list and filter bookings', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('booking.management.index', ['status' => 'pending', 'search' => $booking->booking_reference]))
+        ->get(route('booking.management.index', ['tenant' => $tenant->slug, 'status' => 'pending', 'search' => $booking->booking_reference]))
         ->assertOk()
         ->assertSee($booking->booking_reference)
         ->assertSee('Customer One');
@@ -133,7 +133,7 @@ test('booking management is tenant isolated', function (): void {
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->get(route('booking.management.index', ['tenant' => $tenant->slug]))
+        ->get(route('booking.management.index', ['tenant' => $tenantA->slug]))
         ->assertOk()
         ->assertSee($bookingA->booking_reference)
         ->assertDontSee('BR-MGMT-B');
@@ -149,7 +149,7 @@ test('booking detail is tenant scoped', function (): void {
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->get(route('booking.management.show', $bookingB))
+        ->get(route('booking.management.show', ['tenant' => $tenantA->slug, 'booking' => $bookingB]))
         ->assertNotFound();
 
     expect($bookingA->exists)->toBeTrue();
@@ -162,10 +162,10 @@ test('authorized user can confirm and history is recorded', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('booking.management.status', $booking), [
+        ->post(route('booking.management.status', ['tenant' => $tenant->slug, 'booking' => $booking]), [
             'status' => 'confirmed',
         ])
-        ->assertRedirect(route('booking.management.show', $booking));
+        ->assertRedirect(route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]));
 
     app(CurrentTenant::class)->set($tenant);
 
