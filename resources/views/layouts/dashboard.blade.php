@@ -17,30 +17,9 @@
                data-bookresa-sidebar
                aria-hidden="false"
                aria-label="{{ __('app.workspace') }}">
-            <div class="br-sidebar-top flex min-h-16 items-center gap-2 border-b border-slate-200 px-3 dark:border-slate-800 sm:px-4">
-                <a href="{{ route('dashboard', ['tenant' => $tenant->slug]) }}"
-                   class="br-sidebar-brand flex min-w-0 flex-1 flex-col items-center rounded-xl p-1.5 text-center"
-                   aria-label="{{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}">
-                    <span class="br-sidebar-logo flex h-20 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-soft p-2 dark:bg-slate-800">
-                        @if ($tenant->profile?->logo_path)
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($tenant->profile->logo_path) }}"
-                                 alt="{{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}"
-                                 class="h-full w-full object-contain">
-                        @else
-                            <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-full w-full object-contain p-1 dark:hidden">
-                            <img src="{{ asset('logodark.png') }}" alt="BookResa" class="hidden h-full w-full object-contain p-1 dark:block">
-                        @endif
-                    </span>
-                    <span class="br-sidebar-label mt-2 min-w-0 w-full">
-                        <span class="block truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">
-                            {{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}
-                        </span>
-                        <span class="mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">BookResa</span>
-                    </span>
-                </a>
-
+            <div class="br-sidebar-controls flex min-h-10 items-center justify-end px-2 pt-2 sm:px-3" data-sidebar-controls>
                 <button type="button"
-                        class="br-sidebar-collapse hidden shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white lg:inline-flex"
+                        class="br-sidebar-collapse shrink-0 rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
                         data-bookresa-sidebar-collapse
                         data-label-collapse="{{ __('app.collapse_sidebar') }}"
                         data-label-expand="{{ __('app.expand_sidebar') }}"
@@ -50,15 +29,6 @@
                         title="{{ __('app.collapse_sidebar') }}">
                     <svg class="h-4.5 w-4.5 rtl-flip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m15 6-6 6 6 6"/>
-                    </svg>
-                </button>
-
-                <button type="button"
-                        class="ml-auto rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 lg:hidden"
-                        data-bookresa-sidebar-close
-                        aria-label="{{ __('app.close') }}">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                        <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
                     </svg>
                 </button>
             </div>
