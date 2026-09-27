@@ -121,3 +121,113 @@ test('tenant role names are isolated between workspaces', function (): void {
         ->and(Role::query()->where('name', 'owner')->where('tenant_id', $b->id)->exists())->toBeTrue()
         ->and($a->id)->not->toBe($b->id);
 });
+
+test('workspace configuration page is available for the active tenant', function (): void {
+    $user = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+        $user,
+        $type,
+        ['name' => 'Workspace UI Clinic'],
+    );
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('onboarding.workspace'))
+        ->assertOk()
+        ->assertSee(__('app.configure_workspace'))
+        ->assertSee(__('app.choose_modules'));
+});
+
+test('module onboarding always keeps core modules enabled', function (): void {
+    $user = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+        $user,
+        $type,
+        ['name' => 'Core Modules Clinic'],
+    );
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('onboarding.workspace.modules'), [
+            'module_ids' => [],
+        ])
+        ->assertRedirect(route('services.index'))
+        ->assertSessionHasNoErrors();
+
+    $coreModuleIds = Module::query()->where('is_core', true)->pluck('id');
+
+    expect(
+        $tenant->modules()->whereIn('module_id', $coreModuleIds)->wherePivot('enabled', true)->count()
+    )->toBe($coreModuleIds->count());
+});
+
+test('onboarding cannot be completed before services working hours and staff exist', function (): void {
+    $user = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+        $user,
+        $type,
+        ['name' => 'Incomplete Clinic'],
+    );
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('onboarding.complete'))
+        ->assertSessionHasErrors('onboarding');
+
+    expect((bool) data_get($tenant->fresh()->settings, 'onboarding.completed', false))->toBeFalse();
+});
+
+test('onboarding completes when workspace modules services working hours and staff are ready', function (): void {
+    $owner = User::factory()->create();
+    $staffUser = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+        $owner,
+        $type,
+        ['name' => 'Ready Clinic'],
+    );
+
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $owner, $staffUser): void {
+        \App\Domain\Service\Models\Service::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => ['en' => 'Consultation', 'ar' => 'كشف'],
+            'description' => ['en' => null, 'ar' => null],
+            'price_minor' => 10000,
+            'currency' => 'EGP',
+            'duration_minutes' => 30,
+            'buffer_minutes' => 0,
+            'is_active' => true,
+        ]);
+
+        \App\Domain\Scheduling\Models\BusinessWorkingHour::query()->create([
+            'tenant_id' => $tenant->id,
+            'day_of_week' => \App\Domain\Scheduling\Enums\DayOfWeek::Sunday,
+            'opens_at' => '09:00',
+            'closes_at' => '17:00',
+            'is_closed' => false,
+        ]);
+
+        \App\Domain\Staff\Models\StaffProfile::query()->create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $staffUser->id,
+            'display_name' => 'Staff One',
+            'status' => \App\Domain\Staff\Enums\StaffStatus::Active,
+        ]);
+    });
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('onboarding.complete'))
+        ->assertRedirect(route('dashboard'))
+        ->assertSessionHas('status');
+
+    expect((bool) data_get($tenant->fresh()->settings, 'onboarding.completed', false))->toBeTrue()
+        ->and(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready');
+});
