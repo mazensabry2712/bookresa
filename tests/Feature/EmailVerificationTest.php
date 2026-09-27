@@ -18,7 +18,7 @@ test('registration redirects to a valid post-registration location', function ()
         'email' => 'verified-candidate@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ])->assertRedirect('/');
+    ])->assertRedirect(route('verification.notice'));
 
     expect(auth()->check())->toBeTrue();
 });
