@@ -568,23 +568,19 @@ Onboarding should get a new business from signup to a usable booking page quickl
 
 Recommended sequence:
 
-1. create business/workspace
-2. choose business type
-3. business basics
-4. timezone
-5. add first service
-6. add first staff member
-7. configure working hours
-8. preview booking page
-9. finish and open dashboard
+1. create the business and choose its business type
+2. add the first service
+3. configure working hours
+4. add the first staff member
+5. open the dashboard
 
 Rules:
 
-- one decision per screen where possible
-- smart defaults
-- clear progress
-- allow skipping non-essential setup
-- never ask for information the backend does not currently use
+- keep onboarding focused on information required to make the booking flow usable
+- core modules are enabled automatically from the business type
+- manage optional modules later from Dashboard → Modules
+- use smart defaults and clear progress
+- do not ask for information the backend does not currently use
 - always show a useful next step
 
 ## 15. Settings
