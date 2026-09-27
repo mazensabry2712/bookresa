@@ -118,7 +118,7 @@ test('tenant role names are isolated between workspaces', function (): void {
         ['name' => 'Alpha Clinic'],
     );
 
-    $b = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $b = app(CreateBusiness::class)->handle(
         $user,
         $type,
         ['name' => 'Beta Clinic'],
@@ -133,7 +133,7 @@ test('workspace configuration page is available for the active tenant', function
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $tenant = app(CreateBusiness::class)->handle(
         $user,
         $type,
         ['name' => 'Workspace UI Clinic'],
@@ -151,7 +151,7 @@ test('module onboarding always keeps core modules enabled', function (): void {
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $tenant = app(CreateBusiness::class)->handle(
         $user,
         $type,
         ['name' => 'Core Modules Clinic'],
@@ -177,7 +177,7 @@ test('onboarding advances through services working hours and staff stages', func
     $staffUser = User::factory()->create(['email' => 'onboarding-staff@example.com']);
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $tenant = app(CreateBusiness::class)->handle(
         $owner,
         $type,
         ['name' => 'Progress Clinic'],
@@ -236,7 +236,7 @@ test('onboarding cannot complete when a core module is disabled', function (): v
     $staffUser = User::factory()->create(['email' => 'core-module-staff@example.com']);
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $tenant = app(CreateBusiness::class)->handle(
         $owner,
         $type,
         ['name' => 'Core Guard Clinic'],
@@ -286,7 +286,7 @@ test('onboarding cannot be completed before services working hours and staff exi
     $user = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $tenant = app(CreateBusiness::class)->handle(
         $user,
         $type,
         ['name' => 'Incomplete Clinic'],
@@ -305,14 +305,14 @@ test('onboarding completes when workspace modules services working hours and sta
     $staffUser = User::factory()->create();
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
-    $tenant = app(\App\Domain\Business\Actions\CreateBusiness::class)->handle(
+    $tenant = app(CreateBusiness::class)->handle(
         $owner,
         $type,
         ['name' => 'Ready Clinic'],
     );
 
     app(CurrentTenant::class)->run($tenant, function () use ($tenant, $staffUser): void {
-        \App\Domain\Service\Models\Service::query()->create([
+        Service::query()->create([
             'tenant_id' => $tenant->id,
             'name' => ['en' => 'Consultation', 'ar' => 'كشف'],
             'description' => ['en' => null, 'ar' => null],
@@ -323,19 +323,19 @@ test('onboarding completes when workspace modules services working hours and sta
             'is_active' => true,
         ]);
 
-        \App\Domain\Scheduling\Models\BusinessWorkingHour::query()->create([
+        BusinessWorkingHour::query()->create([
             'tenant_id' => $tenant->id,
-            'day_of_week' => \App\Domain\Scheduling\Enums\DayOfWeek::Sunday,
+            'day_of_week' => DayOfWeek::Sunday,
             'opens_at' => '09:00',
             'closes_at' => '17:00',
             'is_closed' => false,
         ]);
 
-        \App\Domain\Staff\Models\StaffProfile::query()->create([
+        StaffProfile::query()->create([
             'tenant_id' => $tenant->id,
             'user_id' => $staffUser->id,
             'display_name' => 'Staff One',
-            'status' => \App\Domain\Staff\Enums\StaffStatus::Active,
+            'status' => StaffStatus::Active,
         ]);
     });
 
