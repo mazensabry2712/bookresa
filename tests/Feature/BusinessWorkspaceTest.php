@@ -162,7 +162,7 @@ test('workspace modules page is available for the active tenant', function (): v
         ->get(route('onboarding.workspace'))
         ->assertOk()
         ->assertSee(__('app.choose_modules'))
-        ->assertSee(__('app.core_modules'))
+        ->assertSee(__('app.included_tools'))
         ->assertSee(__('app.workspace_ready_title'))
         ->assertSee(__('app.more_tools'));
 });
