@@ -72,7 +72,7 @@ test('authenticated owner can create a business workspace', function (): void {
 
     $tenant = Tenant::query()->where('slug', 'ahmed-clinic')->firstOrFail();
 
-    $response->assertRedirectToRoute('services.index');
+    $response->assertRedirect(route('services.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
 
