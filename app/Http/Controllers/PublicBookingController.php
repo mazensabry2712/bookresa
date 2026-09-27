@@ -158,7 +158,7 @@ class PublicBookingController
                 ->with(['customer', 'service', 'staff', 'payments'])
                 ->firstOrFail();
 
-            return view('public.booking.canonical.confirmation', [
+            return view('public.booking.confirmation', [
                 'booking' => $model,
                 'tenant' => $tenant,
             ]);
