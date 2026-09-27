@@ -210,7 +210,7 @@ class BookingManagementController
             $rescheduleBooking->handle($booking, $startsAt, $staff);
 
             return to_route('booking.management.show', $booking)->with('status', __('app.booking_ui.rescheduled_success'));
-        } catch (RuntimeException|\LogicException $exception) {
+        } catch (RuntimeException|LogicException $exception) {
             return back()->withErrors(['reschedule' => $exception->getMessage()])->withInput();
         }
     }
