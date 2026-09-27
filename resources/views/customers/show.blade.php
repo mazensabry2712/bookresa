@@ -79,7 +79,7 @@
                         <h3 class="mt-2 text-xl font-bold text-slate-950 dark:text-white">{{ $serviceName($upcomingBooking->service) }}</h3>
                         <p class="mt-1 text-sm text-slate-500">{{ $upcomingBooking->starts_at->setTimezone(data_get($tenant->profile, 'timezone', 'UTC'))->format('d M Y, H:i') }} · {{ $upcomingBooking->staff?->display_name ?? __('app.customer_ui.auto_assigned') }}</p>
                     </div>
-                    <a href="{{ route('booking.management.show', $upcomingBooking) }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                    <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $upcomingBooking]) }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                         {{ __('app.customer_ui.open_booking') }}
                     </a>
                 </div>
@@ -151,7 +151,7 @@
             </div>
             <div class="divide-y divide-slate-200 dark:divide-slate-800">
                 @forelse ($bookings as $booking)
-                    <a href="{{ route('booking.management.show', $booking) }}" class="block p-5 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="block p-5 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div class="min-w-0">
                                 <p class="truncate font-bold text-slate-950 dark:text-white">{{ $serviceName($booking->service) }}</p>
