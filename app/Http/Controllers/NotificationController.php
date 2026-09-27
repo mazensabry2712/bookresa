@@ -107,7 +107,7 @@ final class NotificationController
     private function tenantFilter(int|string $tenantId): array
     {
         return [
-            "JSON_UNQUOTE(JSON_EXTRACT(data, '$.tenant_id')) = ?",
+            "JSON_EXTRACT(data, '$.tenant_id') = ?",
             [(int) $tenantId],
         ];
     }
