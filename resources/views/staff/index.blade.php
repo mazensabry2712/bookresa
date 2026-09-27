@@ -35,7 +35,7 @@
             </div>
 
             @can('calendar.view')
-                <a href="{{ route('scheduling.index') }}"
+                <a href="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}"
                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     {{ __('app.staff_ui.configure_availability') }}
                 </a>
@@ -52,7 +52,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('staff.store') }}" class="mt-5 space-y-5">
+                <form method="POST" action="{{ route('staff.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-5">
                     @csrf
 
                     <div class="grid gap-4 lg:grid-cols-2">
@@ -262,7 +262,7 @@
                                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                     <p class="text-xs leading-5 text-slate-500">{{ __('app.staff_ui.availability_help') }}</p>
                                     @can('calendar.view')
-                                        <a href="{{ route('scheduling.index') }}" class="text-sm font-bold text-brand-indigo hover:underline">
+                                        <a href="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}" class="text-sm font-bold text-brand-indigo hover:underline">
                                             {{ __('app.staff_ui.configure_availability') }}
                                         </a>
                                     @endcan
