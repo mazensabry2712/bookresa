@@ -169,7 +169,7 @@
                                     <div class="mt-2 space-y-1.5">
                                         @foreach ($dayBookings->take(4) as $booking)
                                             @php $bookingStatus = $booking->status->value; @endphp
-                                            <a href="{{ route('booking.management.show', $booking) }}"
+                                            <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
                                                class="block rounded-xl border border-slate-200 bg-white px-2.5 py-2 transition hover:border-indigo-200 hover:bg-indigo-50/30 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20">
                                                 <div class="flex items-center justify-between gap-2">
                                                     <span class="text-[11px] font-extrabold text-brand-indigo">{{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}</span>
@@ -213,7 +213,7 @@
                                 <div class="min-h-[28rem] space-y-2 p-2.5">
                                     @forelse ($dayBookings as $booking)
                                         @php $bookingStatus = $booking->status->value; @endphp
-                                        <a href="{{ route('booking.management.show', $booking) }}"
+                                        <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
                                            class="block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-indigo-200 hover:shadow dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900">
                                             <p class="text-xs font-extrabold text-brand-indigo">
                                                 {{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}
@@ -245,7 +245,7 @@
 
                 @forelse ($dayBookings as $booking)
                     @php $bookingStatus = $booking->status->value; @endphp
-                    <a href="{{ route('booking.management.show', $booking) }}"
+                    <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
                        class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 transition last:border-b-0 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:hover:bg-slate-950/30">
                         <div class="flex items-start gap-4">
                             <div class="w-16 shrink-0">
