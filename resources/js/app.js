@@ -99,7 +99,7 @@ const setupSidebar = () => {
         }
     };
 
-    const setCollapsed = (collapsed) => {
+    const setCollapsed = (collapsed, persist = true) => {
         const next = Boolean(collapsed);
 
         shell.classList.toggle('sidebar-collapsed', next);
@@ -112,6 +112,10 @@ const setupSidebar = () => {
 
             collapseButton.setAttribute('aria-label', label);
             collapseButton.setAttribute('title', label);
+        }
+
+        if (!persist) {
+            return;
         }
 
         try {
@@ -228,7 +232,7 @@ const setupSidebar = () => {
             setMobileOpen(false, false);
             setCollapsed(getCollapsed());
         } else {
-            setCollapsed(false);
+            setCollapsed(false, false);
             syncAccessibility();
         }
     });
