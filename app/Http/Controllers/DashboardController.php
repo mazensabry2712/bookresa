@@ -38,52 +38,62 @@ final class DashboardController
         }
 
         $canViewBilling = auth()->user()?->can('billing.view') ?? false;
+        $canViewBookings = auth()->user()?->can('bookings.view') ?? false;
 
         $todayStart = CarbonImmutable::now($timezone)->startOfDay();
         $todayEnd = $todayStart->endOfDay();
         $nowUtc = CarbonImmutable::now('UTC');
 
-        $todayBookings = Booking::query()
-            ->whereBetween('starts_at', [$todayStart->utc(), $todayEnd->utc()])
-            ->whereNotIn('status', [BookingStatus::Cancelled->value])
-            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
-            ->count();
+        $todayBookings = 0;
+        $todayRevenueMinor = null;
+        $upcomingBookingsCount = 0;
+        $upcomingBookings = collect();
 
-        $todayRevenueMinor = Payment::query()
-            ->where('payable_type', (new Booking)->getMorphClass())
-            ->where('status', PaymentStatus::Paid)
-            ->whereNotNull('paid_at')
-            ->whereBetween('paid_at', [$todayStart->utc(), $todayEnd->utc()])
-            ->when(
-                $staffId !== null,
-                fn ($query) => $query->whereHasMorph(
-                    'payable',
-                    [Booking::class],
-                    fn ($query) => $query->where('staff_id', $staffId),
-                ),
-            )
-            ->sum('amount_minor');
+        if ($canViewBookings) {
+            $todayBookings = Booking::query()
+                ->whereBetween('starts_at', [$todayStart->utc(), $todayEnd->utc()])
+                ->whereNotIn('status', [BookingStatus::Cancelled->value])
+                ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
+                ->count();
 
-        $upcomingBookingsQuery = Booking::query()
-            ->with([
-                'customer:id,name,phone',
-                'service:id,name,price_minor,currency',
-                'staff:id,display_name',
-            ])
-            ->where('starts_at', '>=', $nowUtc)
-            ->whereNotIn('status', [
-                BookingStatus::Cancelled->value,
-                BookingStatus::Completed->value,
-                BookingStatus::NoShow->value,
-            ])
-            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId));
+            if ($canViewBilling) {
+                $todayRevenueMinor = Payment::query()
+                    ->where('payable_type', (new Booking)->getMorphClass())
+                    ->where('status', PaymentStatus::Paid)
+                    ->whereNotNull('paid_at')
+                    ->whereBetween('paid_at', [$todayStart->utc(), $todayEnd->utc()])
+                    ->when(
+                        $staffId !== null,
+                        fn ($query) => $query->whereHasMorph(
+                            'payable',
+                            [Booking::class],
+                            fn ($query) => $query->where('staff_id', $staffId),
+                        ),
+                    )
+                    ->sum('amount_minor');
+            }
 
-        $upcomingBookingsCount = (clone $upcomingBookingsQuery)->count();
+            $upcomingBookingsQuery = Booking::query()
+                ->with([
+                    'customer:id,name,phone',
+                    'service:id,name,price_minor,currency',
+                    'staff:id,display_name',
+                ])
+                ->where('starts_at', '>=', $nowUtc)
+                ->whereNotIn('status', [
+                    BookingStatus::Cancelled->value,
+                    BookingStatus::Completed->value,
+                    BookingStatus::NoShow->value,
+                ])
+                ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId));
 
-        $upcomingBookings = $upcomingBookingsQuery
-            ->orderBy('starts_at')
-            ->limit(8)
-            ->get();
+            $upcomingBookingsCount = (clone $upcomingBookingsQuery)->count();
+
+            $upcomingBookings = $upcomingBookingsQuery
+                ->orderBy('starts_at')
+                ->limit(8)
+                ->get();
+        }
 
         $newCustomersTodayQuery = Customer::query()
             ->whereBetween('created_at', [$todayStart->utc(), $todayEnd->utc()]);
@@ -97,25 +107,30 @@ final class DashboardController
 
         $newCustomersToday = $newCustomersTodayQuery->count();
 
-        $pendingBookings = Booking::query()
-            ->where('starts_at', '>=', $nowUtc)
-            ->where('status', BookingStatus::Pending->value)
-            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
-            ->count();
+        $pendingBookings = 0;
+        $unpaidBookings = 0;
 
-        $unpaidBookings = Booking::query()
-            ->where('starts_at', '>=', $nowUtc)
-            ->whereIn('status', [
-                BookingStatus::Pending->value,
-                BookingStatus::Confirmed->value,
-                BookingStatus::Rescheduled->value,
-            ])
-            ->whereIn('payment_status', [
-                BookingPaymentStatus::Unpaid->value,
-                BookingPaymentStatus::PartiallyPaid->value,
-            ])
-            ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
-            ->count();
+        if ($canViewBookings) {
+            $pendingBookings = Booking::query()
+                ->where('starts_at', '>=', $nowUtc)
+                ->where('status', BookingStatus::Pending->value)
+                ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
+                ->count();
+
+            $unpaidBookings = Booking::query()
+                ->where('starts_at', '>=', $nowUtc)
+                ->whereIn('status', [
+                    BookingStatus::Pending->value,
+                    BookingStatus::Confirmed->value,
+                    BookingStatus::Rescheduled->value,
+                ])
+                ->whereIn('payment_status', [
+                    BookingPaymentStatus::Unpaid->value,
+                    BookingPaymentStatus::PartiallyPaid->value,
+                ])
+                ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
+                ->count();
+        }
 
         $subscription = $canViewBilling
             ? Subscription::query()
@@ -204,7 +219,7 @@ final class DashboardController
             ],
             'metrics' => [
                 'todayBookings' => (int) $todayBookings,
-                'todayRevenueMinor' => (int) $todayRevenueMinor,
+                'todayRevenueMinor' => $todayRevenueMinor === null ? null : (int) $todayRevenueMinor,
                 'upcomingBookings' => (int) $upcomingBookingsCount,
                 'customers' => (int) $totalCustomers,
                 'newCustomersToday' => (int) $newCustomersToday,
