@@ -15,7 +15,7 @@ test('verified user can sign in with valid credentials', function (): void {
         'email' => 'login@example.com',
         'password' => 'secret-password',
     ])
-        ->assertRedirect('/')
+        ->assertRedirect(route('onboarding.business.create'))
         ->assertSessionHasNoErrors();
 
     expect(auth()->check())->toBeTrue()
