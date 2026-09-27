@@ -19,17 +19,23 @@
                aria-label="{{ __('app.workspace') }}">
             <div class="br-sidebar-top flex min-h-16 items-center gap-2 border-b border-slate-200 px-3 dark:border-slate-800 sm:px-4">
                 <a href="{{ route('dashboard', ['tenant' => $tenant->slug]) }}"
-                   class="br-sidebar-brand flex min-w-0 flex-1 items-center gap-3 rounded-xl p-1.5"
-                   aria-label="BookResa">
-                    <span class="br-sidebar-logo flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-soft dark:bg-slate-800">
-                        <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-full w-full object-contain p-0.5 dark:hidden">
-                        <img src="{{ asset('logodark.png') }}" alt="BookResa" class="hidden h-full w-full object-contain p-0.5 dark:block">
+                   class="br-sidebar-brand flex min-w-0 flex-1 flex-col items-center rounded-xl p-1.5 text-center"
+                   aria-label="{{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}">
+                    <span class="br-sidebar-logo flex h-20 w-full shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-brand-soft p-2 dark:bg-slate-800">
+                        @if ($tenant->profile?->logo_path)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($tenant->profile->logo_path) }}"
+                                 alt="{{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}"
+                                 class="h-full w-full object-contain">
+                        @else
+                            <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-full w-full object-contain p-1 dark:hidden">
+                            <img src="{{ asset('logodark.png') }}" alt="BookResa" class="hidden h-full w-full object-contain p-1 dark:block">
+                        @endif
                     </span>
-                    <span class="br-sidebar-label min-w-0">
-                        <span class="block truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">BookResa</span>
-                        <span class="block truncate text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                    <span class="br-sidebar-label mt-2 min-w-0 w-full">
+                        <span class="block truncate text-sm font-extrabold tracking-tight text-slate-950 dark:text-white">
                             {{ data_get($tenant->profile?->name, app()->getLocale()) ?? data_get($tenant->profile?->name, 'en') ?? $tenant->slug }}
                         </span>
+                        <span class="mt-0.5 block truncate text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">BookResa</span>
                     </span>
                 </a>
 
