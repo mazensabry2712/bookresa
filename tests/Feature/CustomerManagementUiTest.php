@@ -56,7 +56,7 @@ test('owner can list and create customers', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('customers.store'), [
+        ->post(route('customers.store', ['tenant' => $tenant->slug]), [
             'name' => 'Ahmed Ali',
             'phone' => '010-1234-5678',
             'email' => 'ahmed@example.com',
@@ -111,7 +111,7 @@ test('duplicate normalized phone is rejected within the tenant', function (): vo
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('customers.store'), [
+        ->post(route('customers.store', ['tenant' => $tenant->slug]), [
             'name' => 'Second Customer',
             'phone' => '+20 10 1234 5678',
         ])
@@ -169,7 +169,7 @@ test('receptionist can view and manage customers', function (): void {
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('customers.store'), [
+        ->post(route('customers.store', ['tenant' => $tenant->slug]), [
             'name' => 'Walk In Customer',
         ])
         ->assertRedirect(route('customers.index', ['tenant' => $tenant->slug]));
