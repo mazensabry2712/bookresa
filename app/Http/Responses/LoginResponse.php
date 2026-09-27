@@ -30,15 +30,24 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
             return redirect()->intended(route('admin.dashboard'));
         }
 
-        $hasActiveTenant = $user->tenantMemberships()
+        $membership = $user->tenantMemberships()
             ->where('status', MembershipStatus::Active->value)
             ->whereHas(
                 'tenant',
                 fn ($query) => $query->where('status', TenantStatus::Active->value)
             )
-            ->exists();
+            ->with('tenant')
+            ->orderByDesc('is_primary')
+            ->orderBy('id')
+            ->first();
 
-        if ($hasActiveTenant) {
+        if ($membership?->tenant !== null) {
+            $tenant = $membership->tenant;
+
+            if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+                return to_route('onboarding.workspace');
+            }
+
             return redirect()->intended(route('dashboard'));
         }
 
