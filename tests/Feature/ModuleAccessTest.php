@@ -58,17 +58,17 @@ test('enabled modules allow authorized tenant routes', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('calendar.index'))
+        ->get(route('calendar.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('booking.management.index'))
+        ->get(route('booking.management.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 });
 
@@ -79,7 +79,7 @@ test('core service route remains available when the module catalog is not seeded
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 });
 
@@ -95,7 +95,7 @@ test('disabled service module blocks service routes even with the permission', f
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 
     $this->actingAs($owner)
@@ -124,7 +124,7 @@ test('disabled staff module blocks staff routes even with the permission', funct
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index'))
+        ->get(route('staff.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
@@ -140,7 +140,7 @@ test('disabled calendar module blocks calendar route even with the permission', 
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('calendar.index'))
+        ->get(route('calendar.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
@@ -156,7 +156,7 @@ test('disabled appointments module blocks booking management and public booking'
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('booking.management.index'))
+        ->get(route('booking.management.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 
     $this->get(route('public.booking.show', ['tenant' => $tenant->slug]))
@@ -238,7 +238,7 @@ test('completed workspace requires a usable subscription for core operations', f
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 
     $plan = Plan::query()->create([
@@ -268,7 +268,7 @@ test('completed workspace requires a usable subscription for core operations', f
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 });
 
@@ -309,7 +309,7 @@ test('expired subscription blocks core operations after onboarding completion', 
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
@@ -323,6 +323,6 @@ test('inactive global module blocks tenant access even when tenant module is ena
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
