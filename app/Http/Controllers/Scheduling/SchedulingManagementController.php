@@ -100,9 +100,18 @@ final class SchedulingManagementController
     public function updateBusinessHours(
         UpdateBusinessWorkingHoursRequest $request,
         SetBusinessWorkingHours $action,
+        CurrentTenant $currentTenant,
     ): RedirectResponse {
         try {
             $action->handle(array_values($request->validated('hours')));
+
+            $tenant = $currentTenant->get();
+
+            if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+                $settings = $tenant->settings ?? [];
+                data_set($settings, 'onboarding.step', 'staff');
+                $tenant->forceFill(['settings' => $settings])->save();
+            }
 
             return to_route('scheduling.index')->with('status', __('app.scheduling_ui.business_hours_updated'));
         } catch (InvalidArgumentException|LogicException $exception) {
