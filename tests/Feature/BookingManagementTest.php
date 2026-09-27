@@ -123,6 +123,24 @@ test('authorized tenant user can list and filter bookings', function (): void {
         ->assertSee('Customer One');
 });
 
+test('booking list can filter by payment status', function (): void {
+    $tenant = managementTenant('management-payment-filter');
+    $user = managementUser($tenant, 'management-payment-filter@example.com');
+    $unpaid = managementBooking($tenant, 'BR-MGMT-UNPAID');
+    $paid = managementBooking($tenant, 'BR-MGMT-PAID');
+    $paid->update(['payment_status' => 'paid']);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.index', [
+            'tenant' => $tenant->slug,
+            'payment_status' => 'paid',
+        ]))
+        ->assertOk()
+        ->assertSee($paid->booking_reference)
+        ->assertDontSee($unpaid->booking_reference);
+});
+
 test('booking management is tenant isolated', function (): void {
     $tenantA = managementTenant('management-a');
     $userA = managementUser($tenantA, 'management-a@example.com');
