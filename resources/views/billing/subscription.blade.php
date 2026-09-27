@@ -65,7 +65,7 @@
                     <h3 class="mt-2 text-lg font-bold text-amber-950 dark:text-amber-100">{{ __('app.billing_ui.renew_title') }}</h3>
                     <p class="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-200">{{ __('app.billing_ui.renew_help') }}</p>
                     @can('subscription.manage')
-                        <form method="POST" action="{{ route('billing.subscription.renew', $subscription) }}" class="mt-4">
+                        <form method="POST" action="{{ route('billing.subscription.renew', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-4">
                             @csrf
                             <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">
                                 {{ __('app.billing_ui.renew') }}
@@ -97,7 +97,7 @@
                         <p class="mt-2 font-bold text-slate-950 dark:text-white">{{ $paymentLabels[$paymentStatus] ?? str($paymentStatus)->headline() }}</p>
                         @can('subscription.manage')
                             @if (in_array($status, ['active', 'trial'], true) && $paymentStatus !== 'paid')
-                                <form method="POST" action="{{ route('billing.subscription.checkout', $subscription) }}" class="mt-3">
+                                <form method="POST" action="{{ route('billing.subscription.checkout', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-3">
                                     @csrf
                                     <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
                                         {{ __('app.billing_ui.continue_payment') }}
@@ -170,12 +170,12 @@
                                 <p class="mt-4 rounded-xl br-surface-soft px-4 py-3 text-sm font-semibold">
                                     {{ __('app.billing_ui.scheduled_plan', ['plan' => $localized($subscription->nextPlan->name)]) }}
                                 </p>
-                                <form method="POST" action="{{ route('billing.subscription.plan.clear', $subscription) }}" class="mt-3">
+                                <form method="POST" action="{{ route('billing.subscription.plan.clear', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-3">
                                     @csrf
                                     <button type="submit" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.billing_ui.clear_change') }}</button>
                                 </form>
                             @else
-                                <form method="POST" action="{{ route('billing.subscription.plan', $subscription) }}" class="mt-4 flex flex-col gap-3 sm:flex-row">
+                                <form method="POST" action="{{ route('billing.subscription.plan', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-4 flex flex-col gap-3 sm:flex-row">
                                     @csrf
                                     <select name="plan_id" required class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                                         <option value="">{{ __('app.billing_ui.select_plan') }}</option>
@@ -197,13 +197,13 @@
                         @can('subscription.manage')
                             @if ($subscription->cancelled_at)
                                 <p class="mt-2 text-sm leading-6 text-slate-500">{{ __('app.billing_ui.cancellation_restore_help') }}</p>
-                                <form method="POST" action="{{ route('billing.subscription.reactivate', $subscription) }}" class="mt-4">
+                                <form method="POST" action="{{ route('billing.subscription.reactivate', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-4">
                                     @csrf
                                     <button type="submit" class="rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">{{ __('app.billing_ui.reactivate') }}</button>
                                 </form>
                             @else
                                 <p class="mt-2 text-sm leading-6 text-slate-500">{{ __('app.billing_ui.cancellation_help') }}</p>
-                                <form method="POST" action="{{ route('billing.subscription.cancel', $subscription) }}" class="mt-4" onsubmit="return confirm(@json(__('app.billing_ui.cancel_confirm')))">
+                                <form method="POST" action="{{ route('billing.subscription.cancel', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-4" onsubmit="return confirm(@json(__('app.billing_ui.cancel_confirm')))">
                                     @csrf
                                     <button type="submit" class="rounded-xl border border-rose-200 px-4 py-2.5 text-sm font-bold text-rose-700 hover:bg-rose-50 dark:border-rose-900 dark:text-rose-300 dark:hover:bg-rose-950/30">{{ __('app.billing_ui.cancel_at_period_end') }}</button>
                                 </form>
