@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Booking\Actions\CreateBooking;
+use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Services\StartBookingPayment;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
@@ -153,7 +154,7 @@ class PublicBookingController
         $this->ensurePublicTenant($tenant);
 
         return $currentTenant->run($tenant, function () use ($booking, $tenant): View {
-            $model = \App\Domain\Booking\Models\Booking::query()
+            $model = Booking::query()
                 ->where('booking_reference', $booking)
                 ->with(['customer', 'service', 'staff', 'payments'])
                 ->firstOrFail();
