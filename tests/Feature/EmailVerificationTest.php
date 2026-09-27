@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Enums\TenantStatus;
+use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Models\TenantMembership;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -59,6 +63,45 @@ test('signed verification link marks the user verified', function (): void {
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
     Event::assertDispatched(Verified::class);
+});
+
+
+test('verified tenant members are redirected to their workspace dashboard', function (): void {
+    Event::fake();
+
+    $user = User::factory()->unverified()->create();
+
+    $tenant = Tenant::query()->create([
+        'slug' => 'verified-workspace',
+        'status' => TenantStatus::Active,
+        'settings' => [
+            'onboarding' => [
+                'completed' => false,
+            ],
+        ],
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    $url = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(30),
+        [
+            'id' => $user->getKey(),
+            'hash' => sha1($user->getEmailForVerification()),
+        ],
+    );
+
+    $this->actingAs($user)
+        ->get($url)
+        ->assertRedirect(route('dashboard', ['tenant' => $tenant->slug, 'verified' => 1]));
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
 });
 
 test('unverified users can request another verification email', function (): void {
