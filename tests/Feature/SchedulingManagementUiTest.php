@@ -88,7 +88,7 @@ test('owner can view and manage business scheduling', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->get(route('scheduling.index', ['tenant' => $tenantB->slug]))
         ->assertOk()
         ->assertSee('Scheduling')
         ->assertSee('Business working hours');
