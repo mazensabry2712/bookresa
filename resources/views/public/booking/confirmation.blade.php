@@ -33,7 +33,7 @@
     <main class="mx-auto flex min-h-screen max-w-3xl items-center px-4 py-10 sm:px-6">
         <section class="w-full rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl dark:border-slate-800 dark:bg-slate-900 sm:p-10">
             <div class="flex items-center justify-between gap-3">
-                <a href="{{ route('public.booking.show', $tenant->slug) }}" class="flex items-center gap-2.5">
+                <a href="{{ route('public.booking.canonical.show', $tenant->slug) }}" class="flex items-center gap-2.5">
                     <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-navy text-sm font-extrabold text-white">B</span>
                     <span class="text-sm font-extrabold">BookResa</span>
                 </a>
@@ -78,7 +78,7 @@
             @endif
 
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a href="{{ route('public.booking.show', $tenant->slug) }}" class="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-brand-navy px-5 py-2.5 text-sm font-bold text-white hover:bg-slate-800">{{ __('app.book_another_appointment') }}</a>
+                <a href="{{ route('public.booking.canonical.show', $tenant->slug) }}" class="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl bg-brand-navy px-5 py-2.5 text-sm font-bold text-white hover:bg-slate-800">{{ __('app.book_another_appointment') }}</a>
                 <a href="{{ route('home') }}" class="inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.public_booking_ui.visit_bookresa') }}</a>
             </div>
         </section>
