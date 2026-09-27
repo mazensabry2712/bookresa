@@ -22,6 +22,7 @@ use App\Domain\Scheduling\Models\StaffAvailability;
 use App\Domain\Scheduling\Models\StaffDayOff;
 use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Scheduling\StoreBusinessBreakRequest;
 use App\Http\Requests\Scheduling\StoreBusinessHolidayRequest;
@@ -362,7 +363,7 @@ final class SchedulingManagementController
         }
     }
 
-    private function onboardingRedirect(?\App\Domain\Tenant\Models\Tenant $tenant): ?RedirectResponse
+    private function onboardingRedirect(?Tenant $tenant): ?RedirectResponse
     {
         if ($tenant === null || (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
             return null;
