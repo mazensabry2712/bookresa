@@ -151,7 +151,7 @@ class BookingManagementController
                 $request->filled('notes') ? $request->string('notes')->toString() : null,
             );
 
-            return to_route('booking.management.show', $booking)
+            return to_route('booking.management.show', ['tenant' => $currentTenant->get()?->slug, 'booking' => $booking])
                 ->with('status', __('app.booking_ui.created_success'));
         } catch (RuntimeException|LogicException $exception) {
             return back()
@@ -276,7 +276,7 @@ class BookingManagementController
 
             $rescheduleBooking->handle($booking, $startsAt, $staff);
 
-            return to_route('booking.management.show', $booking)->with('status', __('app.booking_ui.rescheduled_success'));
+            return to_route('booking.management.show', ['tenant' => $currentTenant->get()?->slug, 'booking' => $booking])->with('status', __('app.booking_ui.rescheduled_success'));
         } catch (RuntimeException|LogicException $exception) {
             return back()->withErrors(['reschedule' => $exception->getMessage()])->withInput();
         }
@@ -321,7 +321,7 @@ class BookingManagementController
             return back()->withErrors(['status' => $exception->getMessage()]);
         }
 
-        return to_route('booking.management.show', $booking)
+        return to_route('booking.management.show', ['tenant' => $currentTenant->get()?->slug, 'booking' => $booking])
             ->with('status', __('app.booking_ui.status_updated'));
     }
 }
