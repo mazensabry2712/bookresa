@@ -4,6 +4,8 @@
 @section('heading', __('app.staff_ui.staff'))
 
 @section('content')
+    <x-onboarding-progress :current="4" />
+
     @php
         $localized = static fn (?array $values): string => (string) (
             data_get($values, app()->getLocale())
