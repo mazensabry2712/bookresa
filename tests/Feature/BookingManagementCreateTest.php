@@ -61,7 +61,7 @@ test('booking management can create a pending booking using the workspace availa
 
     $tomorrow = now($tenant->profile->timezone ?? 'UTC')->addDay()->startOfDay()->addHours(10);
 
-    app(CurrentTenant::class)->run($tenant, function () use ($tenant): void {
+    $service = app(CurrentTenant::class)->run($tenant, function () use ($tenant): Service {
         Service::query()->create([
             'tenant_id' => $tenant->id,
             'name' => ['en' => 'Consultation', 'ar' => 'كشف'],
@@ -80,9 +80,9 @@ test('booking management can create a pending booking using the workspace availa
             'closes_at' => '17:00',
             'is_closed' => false,
         ]);
-    });
 
-    $service = Service::query()->where('tenant_id', $tenant->id)->firstOrFail();
+        return Service::query()->where('tenant_id', $tenant->id)->firstOrFail();
+    });
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
