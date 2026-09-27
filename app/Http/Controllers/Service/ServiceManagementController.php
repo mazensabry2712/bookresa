@@ -6,7 +6,6 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Actions\DeleteService;
 use App\Domain\Service\Actions\UpdateService;
 use App\Domain\Service\Models\Service;
-use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Service\StoreServiceRequest;
 use App\Http\Requests\Service\UpdateServiceRequest;
@@ -17,15 +16,9 @@ use RuntimeException;
 
 final class ServiceManagementController
 {
-    public function index(Request $request, CurrentTenant $currentTenant): RedirectResponse|View
+    public function index(Request $request, CurrentTenant $currentTenant): View
     {
-        $tenant = $currentTenant->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
+        abort_unless($currentTenant->get() !== null, 404);
 
         $editingService = null;
 
@@ -45,14 +38,6 @@ final class ServiceManagementController
         CreateService $createService,
         CurrentTenant $currentTenant,
     ): RedirectResponse {
-        $tenant = $currentTenant->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
-
         $data = $request->validated();
         $createService->handle([
             'name' => [
@@ -85,18 +70,9 @@ final class ServiceManagementController
 
     public function update(
         UpdateServiceRequest $request,
-        CurrentTenant $currentTenant,
         Service $service,
         UpdateService $updateService,
     ): RedirectResponse {
-        $tenant = $currentTenant->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
-
         try {
             $updateService->handle($service, $request->validated());
 
@@ -110,17 +86,8 @@ final class ServiceManagementController
         Request $request,
         Service $service,
         DeleteService $deleteService,
-        CurrentTenant $currentTenant,
     ): RedirectResponse {
         abort_unless($request->user()?->can('services.delete'), 403);
-
-        $tenant = $currentTenant->get();
-
-        abort_unless($tenant !== null, 404);
-
-        if ($redirect = $this->onboardingRedirect($tenant)) {
-            return $redirect;
-        }
 
         try {
             $deleteService->handle($service);
@@ -129,19 +96,6 @@ final class ServiceManagementController
         } catch (RuntimeException $exception) {
             return back()->withErrors(['service' => $exception->getMessage()]);
         }
-    }
-
-    private function onboardingRedirect(Tenant $tenant): ?RedirectResponse
-    {
-        if ((bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-            return null;
-        }
-
-        $step = (string) data_get($tenant->settings, 'onboarding.step', 'workspace');
-
-        return in_array($step, ['services', 'hours', 'staff', 'ready'], true)
-            ? null
-            : to_route('onboarding.workspace');
     }
 
     private function toMinorUnits(string $amount): int
