@@ -60,7 +60,7 @@ test('verified tenant member with incomplete onboarding is redirected to service
         ->assertSessionHasNoErrors();
 });
 
-test('verified completed tenant member is redirected to the tenant dashboard after sign in', function (): void {
+test('verified completed tenant member without subscription is redirected to billing after sign in', function (): void {
     $user = User::factory()->create([
         'email' => 'completed-tenant-login@example.com',
         'password' => bcrypt('secret-password'),
@@ -87,7 +87,7 @@ test('verified completed tenant member is redirected to the tenant dashboard aft
         'email' => $user->email,
         'password' => 'secret-password',
     ])
-        ->assertRedirect(route('dashboard'))
+        ->assertRedirect(route('billing.subscription'))
         ->assertSessionHasNoErrors();
 });
 
