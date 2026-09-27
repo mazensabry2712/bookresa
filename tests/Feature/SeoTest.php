@@ -55,7 +55,7 @@ test('private setup pages send noindex metadata', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('name="robots" content="noindex,nofollow,noarchive"', false);
 });
