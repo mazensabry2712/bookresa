@@ -34,8 +34,8 @@
                     class="mt-2 block w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm text-slate-900 shadow-sm focus:border-brand-indigo focus:ring-2 focus:ring-brand-indigo/15 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
                 <option value="">{{ __('app.select_business_type') }}</option>
                 @foreach ($businessTypes as $type)
-                    <option value="{{ $type->id }}" @selected(old('business_type_id') == $type->id)>
-                        {{ data_get($type->name, app()->getLocale()) ?? data_get($type->name, 'en') ?? $type->slug }}
+                    <option value="{{ $type['id'] }}" @selected(old('business_type_id') == $type->id)>
+                        {{ data_get($type['name'], app()->getLocale()) ?? data_get($type['name'], 'en') ?? $type['slug'] }}
                     </option>
                 @endforeach
             </select>
