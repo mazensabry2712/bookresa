@@ -155,9 +155,9 @@
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300" aria-hidden="true">
                         <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path stroke-linecap="round" d="M3.5 20a5.5 5.5 0 0 1 11 0M16 9a3 3 0 0 1 0 5.7M15.5 16a5 5 0 0 1 4.5 4"/></svg>
                     </span>
-                    <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.customers') }}</span>
+                    <span class="text-xs font-semibold text-slate-400">{{ __('app.customers') }}</span>
                 </div>
-                <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.customers') }}</p>
+                <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.customers') }}</p>
                 <div class="mt-1 flex items-end justify-between gap-3">
                     <p class="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['customers']) }}</p>
                     <span class="shrink-0 text-xs font-semibold text-slate-400">
