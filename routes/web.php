@@ -26,6 +26,10 @@ use App\Http\Controllers\Scheduling\SchedulingManagementController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\Service\ServiceManagementController;
 use App\Http\Controllers\Staff\StaffManagementController;
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Enums\TenantStatus;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,7 +47,24 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ->name('onboarding.business.store');
 });
 
-Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
+Route::middleware(['auth', 'verified'])->get('/dashboard', function (Request $request): RedirectResponse {
+    $membership = $request->user()
+        ->tenantMemberships()
+        ->where('status', MembershipStatus::Active->value)
+        ->whereHas('tenant', fn ($query) => $query->where('status', TenantStatus::Active->value))
+        ->with('tenant')
+        ->orderByDesc('is_primary')
+        ->orderBy('id')
+        ->first();
+
+    abort_unless($membership?->tenant !== null, 403, 'No active workspace is available for this account.');
+
+    return redirect()->route('dashboard', ['tenant' => $membership->tenant->slug]);
+})->name('dashboard.legacy');
+
+Route::middleware(['auth', 'verified', 'tenant'])
+    ->prefix('workspace/{tenant:slug?}/dashboard')
+    ->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware('subscription.usable')
         ->name('dashboard');
@@ -182,7 +203,7 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
 });
 
 Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permission:bookings.view'])
-    ->prefix('dashboard/bookings')
+    ->prefix('workspace/{tenant:slug?}/dashboard/bookings')
     ->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])
             ->name('booking.management.index');
@@ -214,12 +235,12 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:
     ->name('calendar.index');
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
-    Route::get('/dashboard/payments', [PaymentManagementController::class, 'index'])
+    Route::get('/workspace/{tenant:slug?}/dashboard/payments', [PaymentManagementController::class, 'index'])
         ->middleware(['module:payments', 'permission:billing.view'])
         ->name('payments.index');
 });
 
-Route::middleware(['auth', 'verified', 'tenant'])->prefix('dashboard/billing')->group(function (): void {
+Route::middleware(['auth', 'verified', 'tenant'])->prefix('workspace/{tenant:slug?}/dashboard/billing')->group(function (): void {
     Route::get('/subscription', [SubscriptionBillingController::class, 'index'])
         ->middleware('permission:billing.view')
         ->name('billing.subscription');
