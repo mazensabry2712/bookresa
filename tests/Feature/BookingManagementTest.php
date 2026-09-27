@@ -133,7 +133,7 @@ test('booking management is tenant isolated', function (): void {
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->get(route('booking.management.index'))
+        ->get(route('booking.management.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee($bookingA->booking_reference)
         ->assertDontSee('BR-MGMT-B');
@@ -188,6 +188,6 @@ test('user without booking permission is forbidden', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('booking.management.index'))
+        ->get(route('booking.management.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
