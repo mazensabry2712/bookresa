@@ -136,6 +136,29 @@ test('owner can add a staff member and assign services through workspace ui', fu
     unset($serviceB);
 });
 
+test('staff list can search and filter by status', function (): void {
+    [$owner, $tenant] = staffWorkspaceOwner();
+    $activeUser = User::factory()->create(['email' => 'active-staff@example.com', 'name' => 'Active Staff']);
+    $inactiveUser = User::factory()->create(['email' => 'inactive-staff@example.com', 'name' => 'Inactive Staff']);
+
+    app(CurrentTenant::class)->set($tenant);
+    app(AddStaffMember::class)->handle($activeUser, 'staff', ['display_name' => 'Active Staff']);
+    $inactive = app(AddStaffMember::class)->handle($inactiveUser, 'staff', ['display_name' => 'Inactive Staff']);
+    $inactive->forceFill(['status' => 'inactive'])->save();
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('staff.index', ['tenant' => $tenant->slug, 'search' => 'active-staff@example.com']))
+        ->assertOk()
+        ->assertSee('Active Staff')
+        ->assertDontSee('Inactive Staff');
+
+    $this->actingAs($owner)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('staff.index', ['tenant' => $tenant->slug, 'status' => 'inactive']))
+        ->assertOk()
+        ->assertSee('Inactive Staff')
+        ->assertDontSee('Active Staff');
+});
+
 test('manager can update staff role status and service assignments', function (): void {
     [$owner, $tenant] = staffWorkspaceOwner();
     $staffUser = User::factory()->create([
