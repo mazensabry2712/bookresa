@@ -152,7 +152,7 @@ test('owner can create and update a service through workspace ui', function (): 
         ->and($service->currency)->toBe('EGP');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->put(route('services.update', $service), [
+        ->put(route('services.update', ['tenant' => $tenant->slug, 'service' => $service]), [
             'name_en' => 'Premium Haircut',
             'name_ar' => 'حلاقة فاخرة',
             'description_en' => 'Premium',
@@ -251,7 +251,7 @@ test('service delete is blocked when booking history exists', function (): void 
     ]);
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->delete(route('services.destroy', $service))
+        ->delete(route('services.destroy', ['tenant' => $tenant->slug, 'service' => $service]))
         ->assertRedirect()
         ->assertSessionHasErrors('service');
 
