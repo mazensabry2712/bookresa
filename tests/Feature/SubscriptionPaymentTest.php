@@ -217,7 +217,7 @@ test('subscription checkout route cannot access another tenant subscription', fu
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->post(route('billing.subscription.checkout', $subscriptionB))
+        ->post(route('billing.subscription.checkout', ['tenant' => $tenantA->slug, 'subscription' => $subscriptionB]))
         ->assertNotFound();
 
     expect($subscriptionA->exists)->toBeTrue();
