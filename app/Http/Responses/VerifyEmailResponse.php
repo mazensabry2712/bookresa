@@ -2,6 +2,8 @@
 
 namespace App\Http\Responses;
 
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
@@ -48,7 +50,18 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
                 return $this->onboardingRedirect($tenant);
             }
 
-            return to_route('dashboard', ['verified' => 1]);
+            $subscription = Subscription::query()
+                ->whereIn('status', [
+                    SubscriptionStatus::Trial->value,
+                    SubscriptionStatus::Active->value,
+                ])
+                ->latest('start_at')
+                ->get()
+                ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
+
+            return $subscription !== null
+                ? to_route('dashboard', ['verified' => 1])
+                : to_route('billing.subscription', ['verified' => 1]);
         }
 
         return to_route('onboarding.business.create', ['verified' => 1]);
