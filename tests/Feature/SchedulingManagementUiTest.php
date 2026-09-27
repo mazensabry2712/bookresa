@@ -88,7 +88,7 @@ test('owner can view and manage business scheduling', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('scheduling.index'))
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Scheduling')
         ->assertSee('Business working hours');
@@ -102,7 +102,7 @@ test('owner can view and manage business scheduling', function (): void {
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->put(route('scheduling.business-hours.update'), ['hours' => $hours])
-        ->assertRedirect(route('scheduling.index'));
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
@@ -112,7 +112,7 @@ test('owner can view and manage business scheduling', function (): void {
             'ends_at' => '14:00',
             'label' => 'Lunch',
         ])
-        ->assertRedirect(route('scheduling.index'));
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
@@ -120,7 +120,7 @@ test('owner can view and manage business scheduling', function (): void {
             'holiday_date' => '2026-11-01',
             'reason' => 'Public holiday',
         ])
-        ->assertRedirect(route('scheduling.index'));
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
@@ -130,7 +130,7 @@ test('owner can view and manage business scheduling', function (): void {
             'closes_at' => '15:00',
             'reason' => 'Short day',
         ])
-        ->assertRedirect(route('scheduling.index'));
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -208,7 +208,7 @@ test('receptionist can view scheduling but cannot mutate it', function (): void 
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('scheduling.index'))
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($receptionist)
@@ -244,7 +244,7 @@ test('scheduling management is tenant isolated', function (): void {
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('scheduling.index'))
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertDontSee('Tenant A break')
         ->assertDontSee($staffA->display_name);
