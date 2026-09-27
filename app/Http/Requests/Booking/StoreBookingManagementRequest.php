@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Booking;
 
+use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,7 +15,7 @@ final class StoreBookingManagementRequest extends FormRequest
 
     public function rules(): array
     {
-        $tenantId = app(\App\Domain\Tenant\Services\CurrentTenant::class)->idOrFail();
+        $tenantId = app(CurrentTenant::class)->idOrFail();
 
         return [
             'service_id' => [
