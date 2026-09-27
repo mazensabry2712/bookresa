@@ -9,33 +9,96 @@
 </head>
 <body class="br-shell min-h-screen antialiased">
     <main class="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-8 sm:px-6 lg:px-8">
-        <div class="grid w-full gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(420px,0.75fr)] lg:items-center">
-            <section class="hidden lg:block">
-                <p class="text-sm font-bold uppercase tracking-[0.18em] text-brand-indigo">BookResa</p>
-                <h1 class="mt-4 max-w-xl text-4xl font-extrabold leading-tight tracking-[-0.03em] text-slate-950 dark:text-white">
-                    {{ __('app.auth_platform_title') }}
-                </h1>
-                <p class="mt-5 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300">
-                    {{ __('app.auth_platform_message') }}
-                </p>
+        <div class="grid w-full gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)] lg:items-center lg:gap-14">
+            <section class="hidden min-w-0 lg:block">
+                <div class="overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white/80 p-7 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/70 dark:shadow-black/15 xl:p-8">
+                    <div class="relative flex h-10 w-[165px] items-center overflow-hidden rounded-lg">
+                        <img src="{{ asset('logo.png') }}"
+                             alt="BookResa"
+                             width="707"
+                             height="353"
+                             decoding="async"
+                             class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
+                        <img src="{{ asset('logodark.png') }}"
+                             alt="BookResa"
+                             width="707"
+                             height="353"
+                             decoding="async"
+                             class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
+                    </div>
 
-                <div class="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
-                    @foreach ([
-                        ['title' => __('app.auth_benefit_booking'), 'text' => __('app.auth_benefit_booking_text')],
-                        ['title' => __('app.auth_benefit_customers'), 'text' => __('app.auth_benefit_customers_text')],
-                        ['title' => __('app.auth_benefit_growth'), 'text' => __('app.auth_benefit_growth_text')],
-                    ] as $benefit)
-                        <div class="br-panel p-4">
-                            <p class="text-sm font-bold text-slate-900 dark:text-white">{{ $benefit['title'] }}</p>
-                            <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ $benefit['text'] }}</p>
+                    <p class="mt-8 text-sm font-semibold text-brand-indigo">{{ __('app.auth_platform_eyebrow') }}</p>
+                    <h1 class="mt-3 max-w-xl text-4xl font-extrabold leading-[1.08] tracking-[-0.04em] text-slate-950 dark:text-white xl:text-[3.15rem]">
+                        {{ __('app.auth_platform_title') }}
+                    </h1>
+                    <p class="mt-5 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300">
+                        {{ __('app.auth_platform_message') }}
+                    </p>
+
+                    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950">
+                        <div class="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-3.5 dark:border-slate-800">
+                            <div class="min-w-0">
+                                <p class="text-xs font-extrabold text-slate-900 dark:text-white">{{ __('app.dashboard_ui.summary') }}</p>
+                                <p class="mt-1 text-[10px] font-medium text-slate-400">{{ __('app.dashboard_ui.today') }}</p>
+                            </div>
+                            <span class="shrink-0 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-bold text-slate-400 dark:border-slate-700 dark:bg-slate-900">
+                                BookResa
+                            </span>
                         </div>
-                    @endforeach
+
+                        <div class="space-y-3 p-4">
+                            <div class="grid grid-cols-2 gap-2.5">
+                                @foreach ([
+                                    [__('app.dashboard_ui.today_bookings'), '12'],
+                                    [__('app.dashboard_ui.upcoming_bookings'), '7'],
+                                    [__('app.dashboard_ui.new_customers'), '4'],
+                                    [__('app.dashboard_ui.open_bookings'), '3'],
+                                ] as $stat)
+                                    <div class="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+                                        <p class="text-[9px] font-semibold leading-4 text-slate-400">{{ $stat[0] }}</p>
+                                        <p class="mt-1.5 text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">{{ $stat[1] }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                                <div class="border-b border-slate-100 px-3 py-2.5 dark:border-slate-800">
+                                    <p class="text-[10px] font-extrabold text-slate-900 dark:text-white">{{ __('app.dashboard_ui.upcoming') }}</p>
+                                </div>
+                                @foreach ([
+                                    ['09:00', __('app.home_ui.preview_service_1'), 'A'],
+                                    ['11:30', __('app.home_ui.preview_service_2'), 'M'],
+                                    ['14:00', __('app.home_ui.preview_service_3'), 'S'],
+                                ] as $appointment)
+                                    <div class="flex items-center gap-2.5 border-b border-slate-100 px-3 py-2.5 last:border-b-0 dark:border-slate-800">
+                                        <span class="w-10 shrink-0 text-[10px] font-extrabold text-brand-indigo">{{ $appointment[0] }}</span>
+                                        <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[9px] font-extrabold text-slate-500 dark:bg-slate-800 dark:text-slate-300">{{ $appointment[2] }}</span>
+                                        <span class="min-w-0 truncate text-[10px] font-bold text-slate-700 dark:text-slate-200">{{ $appointment[1] }}</span>
+                                        <span class="ms-auto shrink-0 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400">{{ __('app.dashboard_ui.status_confirmed') }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <section class="mx-auto w-full max-w-md lg:mx-0 lg:ms-auto">
-                <div class="mb-5 flex items-center justify-between gap-3">
-                    <a href="{{ route('home') }}" class="text-lg font-extrabold tracking-tight text-slate-950 dark:text-white">BookResa</a>
+                <div class="mb-5 flex items-center justify-between gap-3 px-1">
+                    <a href="{{ route('home') }}" class="relative flex h-9 w-[135px] items-center overflow-hidden rounded-md" aria-label="BookResa">
+                        <img src="{{ asset('logo.png') }}"
+                             alt="BookResa"
+                             width="707"
+                             height="353"
+                             decoding="async"
+                             class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
+                        <img src="{{ asset('logodark.png') }}"
+                             alt="BookResa"
+                             width="707"
+                             height="353"
+                             decoding="async"
+                             class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
+                    </a>
 
                     <div class="relative">
                         <button type="button"
@@ -118,8 +181,12 @@
                 setOpen(panel.classList.contains('invisible'));
             });
 
-            panel.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => setOpen(false, false));
+            panel.querySelectorAll('a, button').forEach((control) => {
+                control.addEventListener('click', () => {
+                    if (control.tagName === 'A') {
+                        setOpen(false, false);
+                    }
+                });
             });
 
             document.addEventListener('click', (event) => {
@@ -135,6 +202,5 @@
             });
         });
     </script>
-
 </body>
 </html>
