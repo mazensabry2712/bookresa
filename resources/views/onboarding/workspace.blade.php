@@ -33,13 +33,16 @@
 
         <section class="mt-8">
             <div class="max-w-3xl">
-                <p class="text-sm font-semibold text-brand-indigo">{{ __('app.step_progress', ['current' => 2, 'total' => 6]) }}</p>
+                <p class="text-sm font-semibold text-brand-indigo">{{ __('app.step_progress', ['current' => $currentStepIndex + 1, 'total' => count($steps)]) }}</p>
                 <h1 class="mt-2 text-3xl font-extrabold tracking-tight text-slate-950 dark:text-white">{{ __('app.configure_workspace') }}</h1>
                 <p class="mt-2 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ __('app.configure_workspace_message') }}</p>
             </div>
 
             <div class="mt-6 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                <div class="h-full w-2/6 rounded-full bg-brand-indigo"></div>
+                <div
+                    class="h-full rounded-full bg-brand-indigo"
+                    style="width: {{ (($currentStepIndex + 1) / count($steps)) * 100 }}%"
+                ></div>
             </div>
         </section>
 
@@ -53,12 +56,12 @@
                         @endif
                     </div>
                     <p class="mt-3 text-sm font-bold text-slate-900 dark:text-white">{{ $step['label'] }}</p>
-                    @if (! $step['complete'] && $loop->index > 0)
-                        <a href="{{ route($step['route']) }}" class="mt-2 inline-block text-xs font-bold text-brand-indigo hover:underline">{{ __('app.continue') }}</a>
-                    @elseif ($step['complete'])
+                    @if ($step['complete'])
                         <p class="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">{{ __('app.complete') }}</p>
+                    @elseif ($loop->index === $currentStepIndex)
+                        <a href="{{ route($step['route']) }}" class="mt-2 inline-block text-xs font-bold text-brand-indigo hover:underline">{{ __('app.continue') }}</a>
                     @else
-                        <p class="mt-2 text-xs font-semibold text-slate-400">{{ __('app.current_step') }}</p>
+                        <p class="mt-2 text-xs font-semibold text-slate-400">{{ __('app.locked') }}</p>
                     @endif
                 </div>
             @endforeach
@@ -121,9 +124,6 @@
                 @endif
 
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-                    <a href="{{ route('services.index') }}" class="rounded-xl border border-slate-300 px-5 py-3 text-center text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
-                        {{ __('app.skip_to_services') }}
-                    </a>
                     <button type="submit" class="rounded-xl bg-brand-navy px-5 py-3 text-sm font-bold text-white shadow-sm hover:-translate-y-px hover:shadow-md dark:bg-brand-indigo">
                         {{ __('app.save_modules_continue') }}
                     </button>
