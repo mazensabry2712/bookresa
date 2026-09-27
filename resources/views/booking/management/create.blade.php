@@ -140,7 +140,7 @@
                     <div class="mt-6 grid gap-5 md:grid-cols-2">
                         <label class="md:col-span-2">
                             <span class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">{{ __('app.booking_ui.existing_customer') }}</span>
-                            <input list="booking-customer-list" type="text" autocomplete="off" placeholder="{{ __('app.booking_ui.existing_customer_placeholder') }}" data-booking-customer
+                            <input list="booking-customer-list" type="text" autocomplete="off" value="{{ old('customer_id') ? '' : ($selectedCustomer?->name ?? '') }}" placeholder="{{ __('app.booking_ui.existing_customer_placeholder') }}" data-booking-customer
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-indigo-950">
                             <datalist id="booking-customer-list">
                                 @foreach ($customers as $customer)
@@ -155,21 +155,21 @@
 
                         <label class="md:col-span-2">
                             <span class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">{{ __('app.booking_ui.customer_name') }}</span>
-                            <input name="name" value="{{ old('name') }}" autocomplete="name" required maxlength="160" placeholder="{{ __('app.booking_ui.customer_name_placeholder') }}" data-booking-customer-name
+                            <input name="name" value="{{ old('name', $selectedCustomer?->name) }}" autocomplete="name" required maxlength="160" placeholder="{{ __('app.booking_ui.customer_name_placeholder') }}" data-booking-customer-name
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-indigo-950">
                             @error('name')<p class="mt-1.5 text-sm font-semibold text-rose-600">{{ $message }}</p>@enderror
                         </label>
 
                         <label>
                             <span class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">{{ __('app.booking_ui.phone') }}</span>
-                            <input name="phone" value="{{ old('phone') }}" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="{{ __('app.booking_ui.phone_placeholder') }}" data-booking-customer-phone
+                            <input name="phone" value="{{ old('phone', $selectedCustomer?->phone) }}" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="{{ __('app.booking_ui.phone_placeholder') }}" data-booking-customer-phone
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-indigo-950">
                             @error('phone')<p class="mt-1.5 text-sm font-semibold text-rose-600">{{ $message }}</p>@enderror
                         </label>
 
                         <label>
                             <span class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">{{ __('app.booking_ui.email') }}</span>
-                            <input type="email" name="email" value="{{ old('email') }}" autocomplete="email" maxlength="255" placeholder="{{ __('app.booking_ui.email_placeholder') }}" data-booking-customer-email
+                            <input type="email" name="email" value="{{ old('email', $selectedCustomer?->email) }}" autocomplete="email" maxlength="255" placeholder="{{ __('app.booking_ui.email_placeholder') }}" data-booking-customer-email
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-indigo-950">
                             @error('email')<p class="mt-1.5 text-sm font-semibold text-rose-600">{{ $message }}</p>@enderror
                         </label>
