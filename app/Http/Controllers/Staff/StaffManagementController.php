@@ -7,6 +7,7 @@ use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Staff\Actions\UpdateStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Staff\StoreStaffMemberRequest;
 use App\Http\Requests\Staff\UpdateStaffMemberRequest;
@@ -18,9 +19,15 @@ use RuntimeException;
 
 final class StaffManagementController
 {
-    public function index(CurrentTenant $currentTenant): View
+    public function index(CurrentTenant $currentTenant): RedirectResponse|View
     {
-        abort_unless($currentTenant->get() !== null, 404);
+        $tenant = $currentTenant->get();
+
+        abort_unless($tenant !== null, 404);
+
+        if ($redirect = $this->onboardingRedirect($tenant)) {
+            return $redirect;
+        }
 
         return view('staff.index', [
             'tenant' => $currentTenant->get(),
@@ -43,6 +50,14 @@ final class StaffManagementController
         SyncServiceAssignments $syncServiceAssignments,
         CurrentTenant $currentTenant,
     ): RedirectResponse {
+        $tenant = $currentTenant->get();
+
+        abort_unless($tenant !== null, 404);
+
+        if ($redirect = $this->onboardingRedirect($tenant)) {
+            return $redirect;
+        }
+
         $data = $request->validated();
         $user = User::query()->where('email', $data['email'])->firstOrFail();
 
@@ -75,7 +90,16 @@ final class StaffManagementController
         Request $request,
         StaffProfile $staff,
         UpdateStaffMember $updateStaffMember,
+        CurrentTenant $currentTenant,
     ): RedirectResponse {
+        $tenant = $currentTenant->get();
+
+        abort_unless($tenant !== null, 404);
+
+        if ($redirect = $this->onboardingRedirect($tenant)) {
+            return $redirect;
+        }
+
         $status = $request->validate(['status' => ['required', 'in:active,inactive']])['status'];
 
         try {
@@ -96,10 +120,19 @@ final class StaffManagementController
 
     public function update(
         UpdateStaffMemberRequest $request,
+        CurrentTenant $currentTenant,
         StaffProfile $staff,
         UpdateStaffMember $updateStaffMember,
         SyncServiceAssignments $syncServiceAssignments,
-    ): RedirectResponse {
+        ): RedirectResponse {
+        $tenant = $currentTenant->get();
+
+        abort_unless($tenant !== null, 404);
+
+        if ($redirect = $this->onboardingRedirect($tenant)) {
+            return $redirect;
+        }
+
         try {
             $staff = $updateStaffMember->handle($staff, $request->validated());
             $syncServiceAssignments->handle($staff, $request->validated('services') ?? []);
@@ -108,5 +141,18 @@ final class StaffManagementController
         } catch (RuntimeException $exception) {
             return back()->withErrors(['staff' => $exception->getMessage()])->withInput();
         }
+    }
+
+    private function onboardingRedirect(Tenant $tenant): ?RedirectResponse
+    {
+        if ((bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            return null;
+        }
+
+        $step = (string) data_get($tenant->settings, 'onboarding.step', 'workspace');
+
+        return in_array($step, ['staff', 'ready'], true)
+            ? null
+            : to_route($step === 'services' ? 'services.index' : 'scheduling.index');
     }
 }
