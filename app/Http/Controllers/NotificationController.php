@@ -6,7 +6,6 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\View\View;
 
 final class NotificationController
