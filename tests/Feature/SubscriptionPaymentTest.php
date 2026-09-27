@@ -171,7 +171,7 @@ test('subscription billing page requires billing permission', function (): void 
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
@@ -188,7 +188,7 @@ test('authorized owner can open subscription billing and start checkout', functi
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Starter');
 
