@@ -39,7 +39,7 @@
                     <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.customer_ui.add_help') }}</p>
                 </div>
 
-                <form method="POST" action="{{ route('customers.store') }}" class="mt-5 grid gap-4 lg:grid-cols-3">
+                <form method="POST" action="{{ route('customers.store', ['tenant' => $tenant->slug]) }}" class="mt-5 grid gap-4 lg:grid-cols-3">
                     @csrf
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.customer_ui.name') }}</span>
@@ -72,7 +72,7 @@
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.customer_ui.customer_list_help') }}</p>
                 </div>
 
-                <form method="GET" action="{{ route('customers.index') }}" class="flex w-full gap-2 sm:w-auto">
+                <form method="GET" action="{{ route('customers.index', ['tenant' => $tenant->slug]) }}" class="flex w-full gap-2 sm:w-auto">
                     <label class="sr-only" for="customer-search">{{ __('app.customer_ui.search') }}</label>
                     <input id="customer-search" name="search" value="{{ $search }}" type="search"
                            placeholder="{{ __('app.customer_ui.search_placeholder') }}"
