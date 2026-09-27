@@ -80,7 +80,7 @@ class BusinessOnboardingController
             $entitledModuleKeys = $subscription->plan?->modules->pluck('key') ?? collect();
         }
 
-        $hasModules = $tenant->modules()->wherePivot('enabled', true)->exists();
+        $hasModules = $this->coreModulesReady($tenant);
         $hasServices = $tenant->services()->exists();
         $hasHours = BusinessWorkingHour::query()->exists();
         $hasStaff = $tenant->staffProfiles()->exists();
@@ -113,7 +113,7 @@ class BusinessOnboardingController
         $tenant = $currentTenant->get();
         abort_unless($tenant !== null, 404);
 
-        $hasModules = $tenant->modules()->wherePivot('enabled', true)->exists();
+        $hasModules = $this->coreModulesReady($tenant);
         $hasServices = $tenant->services()->exists();
         $hasHours = BusinessWorkingHour::query()->exists();
         $hasStaff = $tenant->staffProfiles()->exists();
@@ -130,6 +130,22 @@ class BusinessOnboardingController
         $tenant->forceFill(['settings' => $settings])->save();
 
         return to_route('dashboard')->with('status', __('Workspace is ready. Your booking page is now available.'));
+    }
+
+    private function coreModulesReady(\App\Domain\Tenant\Models\Tenant $tenant): bool
+    {
+        $coreModuleKeys = collect(config('bookresa.modules.core', []))
+            ->filter()
+            ->values();
+
+        if ($coreModuleKeys->isEmpty()) {
+            return false;
+        }
+
+        return $tenant->modules()
+            ->wherePivot('enabled', true)
+            ->whereIn('key', $coreModuleKeys)
+            ->count() === $coreModuleKeys->count();
     }
 
     public function updateModules(
