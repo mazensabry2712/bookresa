@@ -90,8 +90,8 @@ final class StaffManagementController
                         ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
 
                     return $subscription !== null
-                        ? to_route('dashboard')->with('status', __('app.staff_ui.added'))
-                        : to_route('billing.subscription')->with('status', __('app.staff_ui.added'));
+                        ? to_route('dashboard', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'))
+                        : to_route('billing.subscription', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'));
                 }
 
                 $settings = $tenant->settings ?? [];
