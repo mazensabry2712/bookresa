@@ -101,12 +101,12 @@ test('owner can view and manage business scheduling', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->put(route('scheduling.business-hours.update'), ['hours' => $hours])
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), ['hours' => $hours])
         ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('scheduling.breaks.store'), [
+        ->post(route('scheduling.breaks.store', ['tenant' => $tenant->slug]), [
             'day_of_week' => DayOfWeek::Monday->value,
             'starts_at' => '13:00',
             'ends_at' => '14:00',
@@ -116,7 +116,7 @@ test('owner can view and manage business scheduling', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('scheduling.holidays.store'), [
+        ->post(route('scheduling.holidays.store', ['tenant' => $tenant->slug]), [
             'holiday_date' => '2026-11-01',
             'reason' => 'Public holiday',
         ])
@@ -124,7 +124,7 @@ test('owner can view and manage business scheduling', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('scheduling.special-hours.store'), [
+        ->post(route('scheduling.special-hours.store', ['tenant' => $tenant->slug]), [
             'work_date' => '2026-11-02',
             'opens_at' => '10:00',
             'closes_at' => '15:00',
@@ -213,7 +213,7 @@ test('receptionist can view scheduling but cannot mutate it', function (): void 
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
-        ->put(route('scheduling.business-hours.update'), ['hours' => $hours])
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), ['hours' => $hours])
         ->assertForbidden();
 
     app(CurrentTenant::class)->set($tenant);
@@ -310,7 +310,7 @@ test('scheduling requests reject invalid time windows', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('scheduling.breaks.store'), [
+        ->post(route('scheduling.breaks.store', ['tenant' => $tenant->slug]), [
             'day_of_week' => DayOfWeek::Monday->value,
             'starts_at' => '15:00',
             'ends_at' => '14:00',
