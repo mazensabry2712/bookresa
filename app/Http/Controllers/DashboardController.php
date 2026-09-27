@@ -15,14 +15,19 @@ use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 final class DashboardController
 {
-    public function index(CurrentTenant $currentTenant, CalculateSubscriptionUsage $usageCalculator): View
+    public function index(CurrentTenant $currentTenant, CalculateSubscriptionUsage $usageCalculator): RedirectResponse|View
     {
         $tenant = $currentTenant->get();
         abort_unless($tenant !== null, 404);
+
+        if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            return to_route('onboarding.workspace');
+        }
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
         $staffId = null;
