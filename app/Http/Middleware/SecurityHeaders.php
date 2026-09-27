@@ -21,6 +21,20 @@ final class SecurityHeaders
             'camera=(), microphone=(), geolocation=()',
         );
 
+        if ($request->isMethod('GET') && $request->is([
+            'login',
+            'register',
+            'forgot-password',
+            'reset-password/*',
+            'email/verify',
+            'email/verify/*',
+            'two-factor-challenge',
+        ])) {
+            $response->headers->set('Cache-Control', 'no-store, private');
+            $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
+        }
+
         if ($request->isSecure() && app()->environment('production')) {
             $response->headers->set(
                 'Strict-Transport-Security',
