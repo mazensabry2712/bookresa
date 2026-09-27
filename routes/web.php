@@ -4,6 +4,7 @@ use App\Http\Controllers\Billing\SubscriptionBillingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Business\BusinessProfileController;
+use App\Http\Controllers\Business\BusinessModuleController;
 use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Customer\CustomerManagementController;
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
@@ -46,16 +47,13 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware('subscription.usable')
         ->name('dashboard');
-    Route::get('/onboarding/workspace', [BusinessOnboardingController::class, 'workspace'])
-        ->name('onboarding.workspace');
-
-    Route::post('/onboarding/workspace/modules', [BusinessOnboardingController::class, 'updateModules'])
+    Route::get('/dashboard/modules', [BusinessModuleController::class, 'index'])
         ->middleware('permission:settings.manage')
-        ->name('onboarding.workspace.modules');
+        ->name('business.modules.index');
 
-    Route::post('/onboarding/complete', [BusinessOnboardingController::class, 'complete'])
+    Route::put('/dashboard/modules', [BusinessModuleController::class, 'update'])
         ->middleware('permission:settings.manage')
-        ->name('onboarding.complete');
+        ->name('business.modules.update');
 
     Route::get('/dashboard/notifications', [NotificationController::class, 'index'])
         ->middleware('permission:notifications.view')
