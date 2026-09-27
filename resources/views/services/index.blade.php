@@ -163,9 +163,28 @@
                         <h3 class="font-semibold text-slate-950 dark:text-white">{{ __('app.service_ui.service_list') }}</h3>
                         <p class="mt-1 text-sm text-slate-500">{{ trans_choice('app.service_ui.service_count', $services->total(), ['count' => $services->total()]) }}</p>
                     </div>
-                    @if ($services->hasPages())
-                        <span class="text-xs font-semibold text-slate-400">{{ __('app.service_ui.showing_page', ['page' => $services->currentPage()]) }}</span>
-                    @endif
+                    <form method="GET" action="{{ route('services.index', ['tenant' => $tenant->slug]) }}" class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                        <label class="sr-only" for="service-search">{{ __('app.service_ui.search') }}</label>
+                        <input id="service-search" name="search" value="{{ $search }}" type="search"
+                               placeholder="{{ __('app.service_ui.search_placeholder') }}"
+                               class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950 sm:w-56">
+                        <label>
+                            <span class="sr-only">{{ __('app.service_ui.status') }}</span>
+                            <select name="status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950 sm:w-36">
+                                <option value="">{{ __('app.service_ui.all_statuses') }}</option>
+                                <option value="active" @selected($statusFilter === 'active')>{{ __('app.service_ui.active') }}</option>
+                                <option value="inactive" @selected($statusFilter === 'inactive')>{{ __('app.service_ui.inactive') }}</option>
+                            </select>
+                        </label>
+                        <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                            {{ __('app.service_ui.search') }}
+                        </button>
+                        @if ($search !== '' || $statusFilter !== '')
+                            <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">
+                                {{ __('app.service_ui.reset') }}
+                            </a>
+                        @endif
+                    </form>
                 </div>
 
                 <div class="divide-y divide-slate-200 dark:divide-slate-800">
