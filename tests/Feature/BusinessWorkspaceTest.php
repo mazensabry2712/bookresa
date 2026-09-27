@@ -32,6 +32,23 @@ afterEach(function (): void {
     app(CurrentTenant::class)->clear();
 });
 
+test('business onboarding page renders active business types from cached arrays', function (): void {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get(route('onboarding.business.create'));
+
+    $response->assertOk()
+        ->assertSee('Clinic')
+        ->assertSee('Dental Clinic');
+
+    $cached = Cache::get('bookresa:business-types:active:v2');
+
+    expect($cached)->toBeArray()
+        ->not->toBeEmpty()
+        ->and($cached[0])->toBeArray()
+        ->toHaveKeys(['id', 'slug', 'name']);
+});
+
 test('authenticated owner can create a business workspace', function (): void {
     $user = User::factory()->create([
         'email' => 'owner@example.com',
