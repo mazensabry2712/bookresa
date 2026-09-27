@@ -37,8 +37,7 @@ final class ServiceManagementController
         StoreServiceRequest $request,
         CreateService $createService,
         CurrentTenant $currentTenant,
-    ): RedirectResponse
-    {
+    ): RedirectResponse {
         $data = $request->validated();
         $createService->handle([
             'name' => [
@@ -58,7 +57,7 @@ final class ServiceManagementController
 
         $tenant = $currentTenant->get();
 
-        if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+        if ($tenant !== null && !(bool) data_get($tenant->settings, 'onboarding.completed', false)) {
             $settings = $tenant->settings ?? [];
             data_set($settings, 'onboarding.step', 'hours');
             $tenant->forceFill(['settings' => $settings])->save();
