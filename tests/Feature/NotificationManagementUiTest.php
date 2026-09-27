@@ -27,6 +27,8 @@ function notificationUiTenant(string $slug): Tenant
         'status' => TenantStatus::Active,
     ]);
 
+    app(CurrentTenant::class)->set($tenant);
+
     BusinessProfile::query()->create([
         'tenant_id' => $tenant->id,
         'name' => ['en' => $slug, 'ar' => $slug],
