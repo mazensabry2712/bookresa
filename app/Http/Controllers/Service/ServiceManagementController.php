@@ -33,7 +33,11 @@ final class ServiceManagementController
         ]);
     }
 
-    public function store(StoreServiceRequest $request, CreateService $createService): RedirectResponse
+    public function store(
+        StoreServiceRequest $request,
+        CreateService $createService,
+        CurrentTenant $currentTenant,
+    ): RedirectResponse
     {
         $data = $request->validated();
         $createService->handle([
@@ -51,6 +55,14 @@ final class ServiceManagementController
             'buffer_minutes' => (int) $data['buffer_minutes'],
             'is_active' => (bool) ($data['is_active'] ?? false),
         ]);
+
+        $tenant = $currentTenant->get();
+
+        if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            $settings = $tenant->settings ?? [];
+            data_set($settings, 'onboarding.step', 'hours');
+            $tenant->forceFill(['settings' => $settings])->save();
+        }
 
         return to_route('services.index')->with('status', __('app.service_ui.created'));
     }
