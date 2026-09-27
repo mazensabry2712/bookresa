@@ -155,7 +155,7 @@ test('calendar is tenant isolated', function (): void {
 
     $this->actingAs($userA)
         ->withSession(['tenant_id' => $tenantA->id])
-        ->get(route('calendar.index', ['tenant' => $tenant->slug, 'month' => '2026-09']))
+        ->get(route('calendar.index', ['tenant' => $tenantA->slug, 'month' => '2026-09']))
         ->assertOk()
         ->assertSee($bookingA->booking_reference)
         ->assertDontSee($bookingB->booking_reference);
