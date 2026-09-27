@@ -88,7 +88,7 @@ test('owner can view and manage business scheduling', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('scheduling.index', ['tenant' => $tenantB->slug]))
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Scheduling')
         ->assertSee('Business working hours');
@@ -244,7 +244,7 @@ test('scheduling management is tenant isolated', function (): void {
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->get(route('scheduling.index', ['tenant' => $tenantB->slug]))
         ->assertOk()
         ->assertDontSee('Tenant A break')
         ->assertDontSee($staffA->display_name);
