@@ -174,7 +174,7 @@ test('workspace modules are managed outside onboarding', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->put(route('business.modules.update'), [
+        ->put(route('business.modules.update', ['tenant' => $tenant->slug]), [
             'module_ids' => [],
         ])
         ->assertRedirect(route('business.modules.index', ['tenant' => $tenant->slug]))
@@ -200,7 +200,7 @@ test('onboarding advances through services working hours and staff stages', func
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('services.store'), [
+        ->post(route('services.store', ['tenant' => $tenant->slug]), [
             'name_en' => 'Consultation',
             'name_ar' => 'كشف',
             'price' => '100.00',
@@ -222,14 +222,14 @@ test('onboarding advances through services working hours and staff stages', func
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->put(route('scheduling.business-hours.update'), ['hours' => $hours])
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), ['hours' => $hours])
         ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]));
 
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('staff');
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('staff.store'), [
+        ->post(route('staff.store', ['tenant' => $tenant->slug]), [
             'email' => $staffUser->email,
             'display_name' => 'Onboarding Staff',
             'role' => 'staff',
