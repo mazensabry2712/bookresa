@@ -3,6 +3,7 @@
 namespace App\Http\Responses;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse as FailedPasswordResetLinkRequestResponseContract;
 
 final class FailedPasswordResetLinkRequestResponse implements FailedPasswordResetLinkRequestResponseContract
@@ -17,6 +18,6 @@ final class FailedPasswordResetLinkRequestResponse implements FailedPasswordRese
 
         return $request->wantsJson()
             ? new JsonResponse(['message' => $message], 200)
-            : to_route('password.request')->with('status', $message);
+            : redirect()->route('password.request')->with('status', $message);
     }
 }
