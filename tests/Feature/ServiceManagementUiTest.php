@@ -3,9 +3,9 @@
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Service\Actions\CreateService;
+use App\Domain\Service\Actions\SyncServiceAssignments;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
-use App\Domain\Service\Actions\SyncServiceAssignments;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
