@@ -252,7 +252,7 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permiss
     });
 
 Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:calendar.view'])
-    ->get('/dashboard/calendar', [CalendarController::class, 'index'])
+    ->get('/workspace/{tenant:slug}/dashboard/calendar', [CalendarController::class, 'index'])
     ->name('calendar.index');
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
