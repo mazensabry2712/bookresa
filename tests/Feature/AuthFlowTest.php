@@ -29,7 +29,7 @@ test('verified user can sign in with valid credentials', function (): void {
         ->and(auth()->id())->toBe($user->id);
 });
 
-test('verified tenant member with incomplete onboarding is redirected to services setup after sign in', function (): void {
+test('verified tenant member is redirected to its workspace dashboard after sign in', function (): void {
     $user = User::factory()->create([
         'email' => 'tenant-login@example.com',
         'password' => bcrypt('secret-password'),
@@ -56,11 +56,11 @@ test('verified tenant member with incomplete onboarding is redirected to service
         'email' => $user->email,
         'password' => 'secret-password',
     ])
-        ->assertRedirect(route('services.index', ['tenant' => $tenant->slug]))
+        ->assertRedirect(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertSessionHasNoErrors();
 });
 
-test('verified completed tenant member without subscription is redirected to billing after sign in', function (): void {
+test('verified completed tenant member without subscription is redirected to its workspace dashboard after sign in', function (): void {
     $user = User::factory()->create([
         'email' => 'completed-tenant-login@example.com',
         'password' => bcrypt('secret-password'),
@@ -87,7 +87,7 @@ test('verified completed tenant member without subscription is redirected to bil
         'email' => $user->email,
         'password' => 'secret-password',
     ])
-        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]))
+        ->assertRedirect(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertSessionHasNoErrors();
 });
 
