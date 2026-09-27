@@ -80,7 +80,7 @@ class BookingManagementController
 
         $tenant = $currentTenant->get();
         $timezone = (string) data_get(
-            $tenant?->profile,
+            $tenant->profile,
             'timezone',
             config('app.timezone', 'UTC'),
         );
