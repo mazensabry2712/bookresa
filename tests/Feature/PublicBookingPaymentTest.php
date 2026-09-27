@@ -85,7 +85,7 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
 
     app(CurrentTenant::class)->clear();
 
-    $response = $this->post(route('public.booking.store', $tenant->slug), [
+    $response = $this->post(route('public.booking.canonical.store', $tenant->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
@@ -163,7 +163,7 @@ test('public deposit booking charges the configured deposit amount', function ()
 
     app(CurrentTenant::class)->clear();
 
-    $response = $this->post(route('public.booking.store', $tenant->slug), [
+    $response = $this->post(route('public.booking.canonical.store', $tenant->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
@@ -198,7 +198,7 @@ test('online paid booking requires customer email', function (): void {
 
     app(CurrentTenant::class)->clear();
 
-    $this->post(route('public.booking.store', $tenant->slug), [
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
         'service_id' => $service->id,
         'date' => '2026-09-28',
         'time' => '10:00',
