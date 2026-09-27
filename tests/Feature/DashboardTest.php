@@ -177,7 +177,7 @@ test('dashboard remains accessible during incomplete onboarding', function (): v
         ->assertOk()
         ->assertSee(__('app.your_setup'))
         ->assertSee(__('app.onboarding_steps.services'))
-        ->assertSee(route('services.index'), false);
+        ->assertSee(route('services.index', ['tenant' => $tenant->slug]), false);
 });
 
 test('staff dashboard is scoped to assigned operations and hides billing metrics', function (): void {
@@ -259,5 +259,44 @@ test('staff account without a profile cannot open the dashboard', function (): v
     $this->actingAs($staffUser)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard'))
+        ->assertForbidden();
+});
+
+
+test('dashboard canonical URL contains the tenant slug and legacy dashboard redirects to it', function (): void {
+    [$user, $tenant] = dashboardWorkspace();
+
+    $canonical = route('dashboard', ['tenant' => $tenant->slug]);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get('/dashboard')
+        ->assertRedirect($canonical);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get($canonical)
+        ->assertOk();
+});
+
+test('workspace dashboard rejects a tenant the authenticated user does not belong to', function (): void {
+    [$user, $tenant] = dashboardWorkspace();
+
+    $otherTenant = Tenant::query()->create([
+        'slug' => 'other-dashboard-workspace',
+        'status' => AppDomainTenantEnumsTenantStatus::Active,
+        'settings' => [
+            'onboarding' => [
+                'completed' => true,
+                'step' => 'ready',
+            ],
+        ],
+    ]);
+
+    expect($otherTenant->id)->not->toBe($tenant->id);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard', ['tenant' => $otherTenant->slug]))
         ->assertForbidden();
 });
