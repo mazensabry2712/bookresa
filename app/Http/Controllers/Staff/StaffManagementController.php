@@ -124,7 +124,7 @@ final class StaffManagementController
         StaffProfile $staff,
         UpdateStaffMember $updateStaffMember,
         SyncServiceAssignments $syncServiceAssignments,
-        ): RedirectResponse {
+    ): RedirectResponse {
         $tenant = $currentTenant->get();
 
         abort_unless($tenant !== null, 404);
