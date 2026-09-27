@@ -109,7 +109,7 @@ final class SchedulingManagementController
 
             $tenant = $currentTenant->get() ?? $tenant;
 
-            if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $settings = $tenant->settings ?? [];
                 data_set($settings, 'onboarding.step', 'staff');
                 $tenant->forceFill(['settings' => $settings])->save();
