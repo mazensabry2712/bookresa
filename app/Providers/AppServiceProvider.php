@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
 
@@ -24,6 +26,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {
+            return (new MailMessage)
+                ->subject(__('app.verify_email_subject'))
+                ->view('emails.auth.verify-email', [
+                    'user' => $notifiable,
+                    'url' => $url,
+                ]);
+        });
     }
 }
