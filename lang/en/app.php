@@ -78,6 +78,7 @@ return [
     'have_account' => 'Already have an account?',
     'account_access' => 'Account access',
     'forgot_password_message' => 'Enter your email and we will send you a secure password reset link.',
+    'password_reset_link_sent' => 'If the email can be used, a secure password reset link has been sent.',
     'send_reset_link' => 'Send reset link',
     'back_to_login' => 'Back to login',
     'reset_password' => 'Reset password',
