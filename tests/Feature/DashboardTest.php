@@ -11,11 +11,13 @@ use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Models\Tenant;
-use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
-use App\Domain\Tenant\Enums\MembershipStatus;
-use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Models\TenantMembership;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
@@ -181,7 +183,7 @@ test('dashboard remains accessible during incomplete onboarding', function (): v
 
 
 test('staff dashboard is scoped to assigned operations and hides billing metrics', function (): void {
-    [$owner, $tenant] = dashboardWorkspace();
+    [, $tenant] = dashboardWorkspace();
 
     $staffUser = User::factory()->create([
         'name' => 'Dashboard Staff',
