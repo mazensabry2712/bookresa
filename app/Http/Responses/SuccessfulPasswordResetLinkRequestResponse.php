@@ -8,9 +8,7 @@ use Laravel\Fortify\Contracts\SuccessfulPasswordResetLinkRequestResponse as Succ
 
 final class SuccessfulPasswordResetLinkRequestResponse implements SuccessfulPasswordResetLinkRequestResponseContract
 {
-    public function __construct(protected string $status)
-    {
-    }
+    public function __construct(protected string $status) {}
 
     public function toResponse($request): JsonResponse|RedirectResponse
     {
