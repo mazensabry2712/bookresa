@@ -284,7 +284,7 @@ test('workspace dashboard rejects a tenant the authenticated user does not belon
 
     $otherTenant = Tenant::query()->create([
         'slug' => 'other-dashboard-workspace',
-        'status' => AppDomainTenantEnumsTenantStatus::Active,
+        'status' => \App\Domain\Tenant\Enums\TenantStatus::Active,
         'settings' => [
             'onboarding' => [
                 'completed' => true,
