@@ -223,7 +223,7 @@ test('onboarding advances through services working hours and staff stages', func
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->put(route('scheduling.business-hours.update'), ['hours' => $hours])
-        ->assertRedirect(route('staff.index'));
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]));
 
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('staff');
 
