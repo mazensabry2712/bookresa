@@ -10,7 +10,6 @@ use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Service\Actions\CreateService;
-use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
@@ -180,7 +179,6 @@ test('dashboard remains accessible during incomplete onboarding', function (): v
         ->assertSee(__('app.onboarding_steps.services'))
         ->assertSee(route('services.index'), false);
 });
-
 
 test('staff dashboard is scoped to assigned operations and hides billing metrics', function (): void {
     [, $tenant] = dashboardWorkspace();
