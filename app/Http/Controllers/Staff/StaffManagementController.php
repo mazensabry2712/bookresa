@@ -60,9 +60,10 @@ final class StaffManagementController
             if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $settings = $tenant->settings ?? [];
                 data_set($settings, 'onboarding.step', 'ready');
+                data_set($settings, 'onboarding.completed', true);
                 $tenant->forceFill(['settings' => $settings])->save();
 
-                return to_route('onboarding.workspace')->with('status', __('app.staff_ui.added'));
+                return to_route('dashboard')->with('status', __('app.staff_ui.added'));
             }
 
             return to_route('staff.index')->with('status', __('app.staff_ui.added'));
