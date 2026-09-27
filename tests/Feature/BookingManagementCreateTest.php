@@ -97,7 +97,13 @@ test('booking management can create a pending booking using the workspace availa
         ])
         ->assertRedirect();
 
-    $booking = Booking::query()->where('tenant_id', $tenant->id)->latest('id')->firstOrFail();
+    $booking = app(CurrentTenant::class)->run($tenant, function () use ($tenant): Booking {
+        return Booking::query()
+            ->with('customer')
+            ->where('tenant_id', $tenant->id)
+            ->latest('id')
+            ->firstOrFail();
+    });
 
     expect($booking->status)->toBe(BookingStatus::Pending)
         ->and($booking->customer->name)->toBe('Internal Customer')
