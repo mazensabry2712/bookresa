@@ -68,6 +68,8 @@ function notificationUiUser(Tenant $tenant, string $email): User
 
 function notificationUiRecord(User $user, Tenant $tenant, string $title, bool $read = false): DatabaseNotification
 {
+    app(CurrentTenant::class)->set($tenant);
+
     return DatabaseNotification::query()->create([
         'id' => (string) Str::uuid(),
         'type' => 'test',
