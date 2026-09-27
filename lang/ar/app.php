@@ -111,7 +111,7 @@ return [
     'email_placeholder' => 'you@example.com',
     'name_placeholder' => 'اسمك',
     'create_business' => 'إنشاء نشاطك',
-    'create_business_message' => 'اضبط البيانات الأساسية أولًا، ثم سنكمل إعداد مساحة العمل في الخطوات التالية.',
+    'create_business_message' => 'اضبط البيانات الأساسية أولًا، ثم أضف الخدمات وساعات العمل والموظفين.',
     'step_progress' => 'الخطوة :current من :total',
     'business_name' => 'اسم النشاط',
     'business_name_placeholder' => 'مثال: عيادة أحمد للأسنان',
