@@ -26,7 +26,11 @@ final class DashboardController
         abort_unless($tenant !== null, 404);
 
         if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-            return to_route('onboarding.workspace');
+            return match ((string) data_get($tenant->settings, 'onboarding.step', 'services')) {
+                'hours' => to_route('scheduling.index'),
+                'staff' => to_route('staff.index'),
+                default => to_route('services.index'),
+            };
         }
 
         $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
