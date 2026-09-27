@@ -161,10 +161,10 @@ test('workspace modules page is available for the active tenant', function (): v
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('onboarding.workspace'))
         ->assertOk()
-        ->assertSee(__('app.choose_modules'))
-        ->assertSee(__('app.included_tools'))
-        ->assertSee(__('app.workspace_ready_title'))
-        ->assertSee(__('app.more_tools'));
+        ->assertSeeText(__('app.choose_modules'))
+        ->assertSeeText(__('app.included_tools'))
+        ->assertSeeText(__('app.workspace_ready_title'))
+        ->assertSeeText(__('app.more_tools'));
 });
 
 test('module onboarding always keeps core modules enabled', function (): void {
