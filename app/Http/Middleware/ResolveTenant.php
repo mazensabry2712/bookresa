@@ -31,15 +31,24 @@ class ResolveTenant
         }
 
         $routeTenant = $request->route('tenant');
+        $hasExplicitTenant = $routeTenant instanceof Tenant
+            || (is_string($routeTenant) && $routeTenant !== '');
+
         $tenant = null;
 
         if ($routeTenant instanceof Tenant) {
             $tenant = $routeTenant;
         } elseif (is_string($routeTenant) && $routeTenant !== '') {
             $tenant = Tenant::query()->where('slug', $routeTenant)->first();
+
+            abort_unless(
+                $tenant !== null,
+                Response::HTTP_NOT_FOUND,
+                'Workspace not found.',
+            );
         }
 
-        if ($tenant !== null) {
+        if ($hasExplicitTenant) {
             $membershipExists = $user->tenantMemberships()
                 ->where('tenant_id', $tenant->getKey())
                 ->where('status', MembershipStatus::Active->value)
