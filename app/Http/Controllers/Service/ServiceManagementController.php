@@ -36,6 +36,7 @@ final class ServiceManagementController
 
     public function store(
         StoreServiceRequest $request,
+        Tenant $tenant,
         CreateService $createService,
         CurrentTenant $currentTenant,
     ): RedirectResponse {
@@ -56,14 +57,14 @@ final class ServiceManagementController
             'is_active' => (bool) ($data['is_active'] ?? false),
         ]);
 
-        $tenant = $currentTenant->get();
+        $tenant = $currentTenant->get() ?? $tenant;
 
         if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
             $settings = $tenant->settings ?? [];
             data_set($settings, 'onboarding.step', 'hours');
             $tenant->forceFill(['settings' => $settings])->save();
 
-            return to_route('scheduling.index')->with('status', __('app.service_ui.created'));
+            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'));
         }
 
         return to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'));
