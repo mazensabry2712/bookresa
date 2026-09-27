@@ -90,7 +90,7 @@ test('verification ignores a stale intended dashboard destination for a new acco
     );
 
     $this->actingAs($user)
-        ->withSession(['url.intended' => route('dashboard')])
+        ->withSession(['url.intended' => '/dashboard'])
         ->get($url)
         ->assertRedirect(route('onboarding.business.create').'?verified=1');
 
