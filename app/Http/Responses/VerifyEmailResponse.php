@@ -27,7 +27,7 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
             ->where('user_id', $user->getKey())
             ->where('is_active', true)
             ->exists()) {
-            return redirect()->intended(route('admin.dashboard').'?verified=1');
+            return to_route('admin.dashboard', ['verified' => 1]);
         }
 
         $membership = $user->tenantMemberships()
@@ -45,12 +45,12 @@ final class VerifyEmailResponse implements VerifyEmailResponseContract
             $tenant = $membership->tenant;
 
             if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-                return redirect()->intended(route('onboarding.workspace').'?verified=1');
+                return to_route('onboarding.workspace', ['verified' => 1]);
             }
 
-            return redirect()->intended(route('dashboard').'?verified=1');
+            return to_route('dashboard', ['verified' => 1]);
         }
 
-        return redirect()->intended(route('onboarding.business.create').'?verified=1');
+        return to_route('onboarding.business.create', ['verified' => 1]);
     }
 }
