@@ -3,11 +3,11 @@
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
-use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Service\Models\Service;
@@ -234,7 +234,7 @@ test('onboarding advances through services working hours and staff stages', func
             'display_name' => 'Onboarding Staff',
             'role' => 'staff',
         ])
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('billing.subscription'));
 
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready');
 
