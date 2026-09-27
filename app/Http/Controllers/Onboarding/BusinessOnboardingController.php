@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Onboarding;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
+use App\Domain\Module\Models\TenantModule;
 use App\Domain\Scheduling\Models\BusinessWorkingHour;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
@@ -193,7 +194,7 @@ class BusinessOnboardingController
                 'updated_at' => $now,
             ])->all();
 
-            \App\Domain\Module\Models\TenantModule::withoutGlobalScopes()->upsert(
+            TenantModule::withoutGlobalScopes()->upsert(
                 $rows,
                 ['tenant_id', 'module_id'],
                 ['enabled', 'updated_at'],
