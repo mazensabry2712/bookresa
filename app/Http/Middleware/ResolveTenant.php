@@ -74,14 +74,20 @@ class ResolveTenant
                 )
                 ->with('tenant');
 
+            $membership = null;
+
             if ($requestedTenantId !== null) {
-                $membershipQuery->where('tenant_id', (int) $requestedTenantId);
+                $membership = (clone $membershipQuery)
+                    ->where('tenant_id', (int) $requestedTenantId)
+                    ->first();
             }
 
-            $membership = $membershipQuery
-                ->orderByDesc('is_primary')
-                ->orderBy('id')
-                ->first();
+            if ($membership === null) {
+                $membership = $membershipQuery
+                    ->orderByDesc('is_primary')
+                    ->orderBy('id')
+                    ->first();
+            }
 
             $tenant = $membership?->tenant;
         }
@@ -93,6 +99,10 @@ class ResolveTenant
         );
 
         $request->session()->put('tenant_id', $tenant->getKey());
+
+        // Keep the resolved tenant available for Laravel's controller/model binding.
+        $request->route()?->setParameter('tenant', $tenant);
+
         $this->currentTenant->set($tenant);
         setPermissionsTeamId($tenant->getKey());
 
@@ -107,7 +117,7 @@ class ResolveTenant
         } finally {
             $this->currentTenant->clear();
             setPermissionsTeamId(null);
-            URL::defaults(['tenant' => null]);
+            URL::defaults([]);
             $user->unsetRelation('roles')->unsetRelation('permissions');
         }
     }
