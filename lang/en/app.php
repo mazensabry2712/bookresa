@@ -658,6 +658,7 @@ return [
         'search_placeholder' => 'Reference, customer name, phone or email',
         'status' => 'Status',
         'all_statuses' => 'All statuses',
+        'all_payment_statuses' => 'All payment statuses',
         'service' => 'Service',
         'all_services' => 'All services',
         'staff' => 'Staff',
