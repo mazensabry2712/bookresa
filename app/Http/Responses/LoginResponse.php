@@ -44,7 +44,7 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
         if ($membership?->tenant !== null) {
             $tenant = $membership->tenant;
 
-                return to_route('dashboard', ['tenant' => $tenant->slug]);
+            return to_route('dashboard', ['tenant' => $tenant->slug]);
         }
 
         return to_route('onboarding.business.create');
