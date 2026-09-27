@@ -99,12 +99,12 @@ test('owner has billing access while manager does not', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($manager)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription'))
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
@@ -115,22 +115,22 @@ test('manager can manage services and staff while receptionist cannot', function
 
     $this->actingAs($manager)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($manager)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index'))
+        ->get(route('staff.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('services.index'))
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('staff.index'))
+        ->get(route('staff.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 });
 
