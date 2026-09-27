@@ -213,11 +213,7 @@
         transition: width 180ms ease, transform 180ms ease;
     }
 
-    .br-sidebar-top {
-        min-width: 0;
-    }
-
-    .br-sidebar-brand {
+    .br-sidebar-controls {
         min-width: 0;
     }
 
@@ -266,10 +262,6 @@
             overflow: visible;
         }
 
-        .br-sidebar-top {
-            position: relative;
-        }
-
         .br-shell.sidebar-collapsed .br-sidebar {
             width: 4.75rem;
         }
@@ -293,19 +285,15 @@
             height: 2.5rem;
         }
 
-        .br-shell.sidebar-collapsed .br-sidebar-top {
+        .br-shell.sidebar-collapsed .br-sidebar-controls {
             justify-content: center;
             padding-inline: 0.625rem;
-        }
-
-        .br-shell.sidebar-collapsed .br-sidebar-brand {
-            flex: 0 0 auto;
         }
 
         .br-shell.sidebar-collapsed .br-sidebar-collapse {
             position: absolute;
             inset-inline-end: -0.625rem;
-            top: 1.15rem;
+            top: 0.6rem;
             width: 1.5rem;
             height: 1.5rem;
             align-items: center;
