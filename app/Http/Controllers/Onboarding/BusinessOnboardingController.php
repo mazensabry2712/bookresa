@@ -188,7 +188,7 @@ class BusinessOnboardingController
             $rows = $modules->map(fn (Module $module): array => [
                 'tenant_id' => $tenant->getKey(),
                 'module_id' => $module->getKey(),
-                'enabled' => $selected->has($module->id),
+                'enabled' => $selectedIds->contains($module->id),
                 'created_at' => $now,
                 'updated_at' => $now,
             ])->all();
