@@ -16,7 +16,7 @@
     <main class="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-4 py-6 sm:px-6 sm:py-8">
         <header class="flex items-center justify-between">
             <a href="{{ route('home') }}"
-               class="relative flex h-10 w-[150px] items-center overflow-hidden rounded-md"
+               class="relative flex h-11 w-[190px] items-center overflow-hidden rounded-lg sm:h-12 sm:w-[210px]"
                aria-label="BookResa">
                 <img src="{{ asset('logo.png') }}"
                      alt="BookResa"
@@ -24,13 +24,13 @@
                      height="353"
                      decoding="async"
                      fetchpriority="high"
-                     class="absolute inset-x-0 top-1/2 h-auto w-full max-w-none -translate-y-1/2 dark:hidden">
+                     class="absolute inset-x-1/2 top-1/2 h-auto w-[255px] max-w-none -translate-x-1/2 -translate-y-1/2 scale-110 transform-gpu dark:hidden">
                 <img src="{{ asset('logodark.png') }}"
                      alt="BookResa"
                      width="707"
                      height="353"
                      decoding="async"
-                     class="absolute inset-x-0 top-1/2 hidden h-auto w-full max-w-none -translate-y-1/2 dark:block">
+                     class="absolute inset-x-1/2 top-1/2 hidden h-auto w-[255px] max-w-none -translate-x-1/2 -translate-y-1/2 scale-110 transform-gpu dark:block">
             </a>
 
             <div class="relative">
