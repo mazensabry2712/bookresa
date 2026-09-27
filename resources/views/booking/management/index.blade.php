@@ -112,6 +112,17 @@
                     </label>
 
                     <label>
+                        <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.payment') }}</span>
+                        <select name="payment_status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            <option value="">{{ __('app.booking_ui.all_payment_statuses') }}</option>
+                            <option value="unpaid" @selected(request('payment_status') === 'unpaid')>{{ __('app.booking_ui.payment_unpaid') }}</option>
+                            <option value="partially_paid" @selected(request('payment_status') === 'partially_paid')>{{ __('app.booking_ui.payment_partial') }}</option>
+                            <option value="paid" @selected(request('payment_status') === 'paid')>{{ __('app.booking_ui.payment_paid') }}</option>
+                            <option value="refunded" @selected(request('payment_status') === 'refunded')>{{ __('app.booking_ui.payment_refunded') }}</option>
+                        </select>
+                    </label>
+
+                    <label>
                         <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.staff') }}</span>
                         <select name="staff_id" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                             <option value="">{{ __('app.booking_ui.all_staff') }}</option>
