@@ -146,7 +146,7 @@ final class StaffManagementController
             $staff = $updateStaffMember->handle($staff, $request->validated());
             $syncServiceAssignments->handle($staff, $request->validated('services') ?? []);
 
-            return to_route('staff.index')->with('status', __('app.staff_ui.updated'));
+            return to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.updated'));
         } catch (RuntimeException $exception) {
             return back()->withErrors(['staff' => $exception->getMessage()])->withInput();
         }
