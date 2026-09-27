@@ -29,7 +29,7 @@ test('verified user can sign in with valid credentials', function (): void {
         ->and(auth()->id())->toBe($user->id);
 });
 
-test('verified tenant member is redirected to the tenant dashboard after sign in', function (): void {
+test('verified tenant member with incomplete onboarding is redirected to workspace after sign in', function (): void {
     $user = User::factory()->create([
         'email' => 'tenant-login@example.com',
         'password' => bcrypt('secret-password'),
@@ -38,6 +38,42 @@ test('verified tenant member is redirected to the tenant dashboard after sign in
     $tenant = Tenant::query()->create([
         'slug' => 'tenant-login',
         'status' => TenantStatus::Active,
+        'settings' => [
+            'onboarding' => [
+                'completed' => false,
+            ],
+        ],
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    $this->post(route('login'), [
+        'email' => $user->email,
+        'password' => 'secret-password',
+    ])
+        ->assertRedirect(route('onboarding.workspace'))
+        ->assertSessionHasNoErrors();
+});
+
+test('verified completed tenant member is redirected to the tenant dashboard after sign in', function (): void {
+    $user = User::factory()->create([
+        'email' => 'completed-tenant-login@example.com',
+        'password' => bcrypt('secret-password'),
+    ]);
+
+    $tenant = Tenant::query()->create([
+        'slug' => 'completed-tenant-login',
+        'status' => TenantStatus::Active,
+        'settings' => [
+            'onboarding' => [
+                'completed' => true,
+            ],
+        ],
     ]);
 
     TenantMembership::query()->create([
@@ -55,6 +91,32 @@ test('verified tenant member is redirected to the tenant dashboard after sign in
         ->assertSessionHasNoErrors();
 });
 
+test('unfinished onboarding cannot open the tenant dashboard directly', function (): void {
+    $user = User::factory()->create();
+
+    $tenant = Tenant::query()->create([
+        'slug' => 'unfinished-dashboard',
+        'status' => TenantStatus::Active,
+        'settings' => [
+            'onboarding' => [
+                'completed' => false,
+            ],
+        ],
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard'))
+        ->assertRedirect(route('onboarding.workspace'));
+});
+
 test('active platform admin is redirected to the platform dashboard after sign in', function (): void {
     $user = User::factory()->create([
         'email' => 'admin-login@example.com',
@@ -62,7 +124,7 @@ test('active platform admin is redirected to the platform dashboard after sign i
     ]);
 
     PlatformAdmin::query()->create([
-        'user_id' => $user->id,
+        'user_id' => $user->getKey(),
         'is_active' => true,
     ]);
 
