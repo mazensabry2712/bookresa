@@ -118,7 +118,7 @@ class BusinessOnboardingController
         $hasHours = BusinessWorkingHour::query()->exists();
         $hasStaff = $tenant->staffProfiles()->exists();
 
-        if (!$hasModules || !$hasServices || !$hasHours || !$hasStaff) {
+        if (! $hasModules || ! $hasServices || ! $hasHours || ! $hasStaff) {
             return back()->withErrors([
                 'onboarding' => __('Complete workspace modules, services, working hours and staff before finishing onboarding.'),
             ]);
@@ -176,7 +176,7 @@ class BusinessOnboardingController
 
         $unavailable = $modules
             ->where('is_core', false)
-            ->filter(fn (Module $module): bool => $selectedIds->contains($module->id) && !$entitledKeys->contains($module->key));
+            ->filter(fn (Module $module): bool => $selectedIds->contains($module->id) && ! $entitledKeys->contains($module->key));
 
         if ($unavailable->isNotEmpty()) {
             throw ValidationException::withMessages([
