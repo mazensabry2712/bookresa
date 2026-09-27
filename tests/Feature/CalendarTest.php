@@ -112,7 +112,7 @@ test('authorized user can open the monthly calendar', function (): void {
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('calendar.index', ['tenant' => $tenantA->slug, 'month' => '2026-09']))
+        ->get(route('calendar.index', ['tenant' => $tenant->slug, 'month' => '2026-09']))
         ->assertOk()
         ->assertSee('BR-CAL-OPEN')
         ->assertSee('Calendar Customer')
