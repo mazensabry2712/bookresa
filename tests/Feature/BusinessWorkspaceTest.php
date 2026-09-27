@@ -163,7 +163,8 @@ test('workspace modules page is available for the active tenant', function (): v
         ->assertOk()
         ->assertSee(__('app.choose_modules'))
         ->assertSee(__('app.core_modules'))
-        ->assertSee(__('app.optional_modules'));
+        ->assertSee(__('app.workspace_ready_title'))
+        ->assertSee(__('app.more_tools'));
 });
 
 test('module onboarding always keeps core modules enabled', function (): void {
