@@ -81,7 +81,7 @@
 
         <section class="br-panel p-4 sm:p-5">
             <form method="GET" class="space-y-4">
-                <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-6">
+                <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-7">
                     <label class="lg:col-span-2">
                         <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.search') }}</span>
                         <input name="search" value="{{ request('search') }}"
