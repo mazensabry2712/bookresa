@@ -61,6 +61,8 @@ final class ServiceManagementController
             $settings = $tenant->settings ?? [];
             data_set($settings, 'onboarding.step', 'hours');
             $tenant->forceFill(['settings' => $settings])->save();
+
+            return to_route('scheduling.index')->with('status', __('app.service_ui.created'));
         }
 
         return to_route('services.index')->with('status', __('app.service_ui.created'));
