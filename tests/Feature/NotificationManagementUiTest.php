@@ -8,7 +8,7 @@ use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -66,23 +66,27 @@ function notificationUiUser(Tenant $tenant, string $email): User
     return $user;
 }
 
-function notificationUiRecord(User $user, Tenant $tenant, string $title, bool $read = false): DatabaseNotification
+function notificationUiRecord(User $user, Tenant $tenant, string $title, bool $read = false): string
 {
-    app(CurrentTenant::class)->set($tenant);
+    $id = (string) Str::uuid();
 
-    return DatabaseNotification::query()->create([
-        'id' => (string) Str::uuid(),
+    DB::table('notifications')->insert([
+        'id' => $id,
         'type' => 'test',
         'notifiable_type' => $user->getMorphClass(),
         'notifiable_id' => $user->getKey(),
-        'data' => [
+        'data' => json_encode([
             'type' => 'booking_created',
             'tenant_id' => $tenant->getKey(),
             'title' => ['en' => $title, 'ar' => $title],
             'message' => ['en' => $title, 'ar' => $title],
-        ],
+        ], JSON_THROW_ON_ERROR),
         'read_at' => $read ? now() : null,
+        'created_at' => now(),
+        'updated_at' => now(),
     ]);
+
+    return $id;
 }
 
 test('notification list is scoped before pagination', function (): void {
@@ -139,6 +143,6 @@ test('mark all read only updates the current workspace notifications', function 
         ->post(route('notifications.read-all', ['tenant' => $tenant->slug]))
         ->assertSessionHas('status');
 
-    expect($current->fresh()->read_at)->not->toBeNull()
-        ->and($foreign->fresh()->read_at)->toBeNull();
+    expect(DB::table('notifications')->where('id', $current)->value('read_at'))->not->toBeNull()
+        ->and(DB::table('notifications')->where('id', $foreign)->value('read_at'))->toBeNull();
 });
