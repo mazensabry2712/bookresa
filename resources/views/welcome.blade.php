@@ -279,6 +279,134 @@
             </div>
         </section>
 
+        <section class="border-b border-slate-200 dark:border-slate-800">
+            <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+                <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-brand-indigo">{{ __('app.home_ui.booking_eyebrow') }}</p>
+                        <h2 class="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-brand-navy dark:text-white sm:text-4xl">
+                            {{ __('app.home_ui.booking_title') }}
+                        </h2>
+                        <p class="mt-4 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300">
+                            {{ __('app.home_ui.booking_description') }}
+                        </p>
+
+                        <div class="mt-8 space-y-3">
+                            @foreach ([
+                                ['01', __('app.home_ui.booking_step_service')],
+                                ['02', __('app.home_ui.booking_step_date')],
+                                ['03', __('app.home_ui.booking_step_time')],
+                                ['04', __('app.home_ui.booking_step_details')],
+                                ['05', __('app.home_ui.booking_step_confirmation')],
+                            ] as $step)
+                                <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                                    <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">{{ $step[0] }}</span>
+                                    <span class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ $step[1] }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="min-w-0">
+                        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                            <div class="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
+                                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.home_ui.preview_label') }}</p>
+                                <h3 class="mt-2 text-lg font-extrabold text-slate-900 dark:text-white">{{ __('app.home_ui.booking_preview_title') }}</h3>
+                            </div>
+                            <div class="space-y-5 p-4 sm:p-5">
+                                <div>
+                                    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.home_ui.booking_service_label') }}</p>
+                                    <div class="mt-2 flex items-center justify-between gap-3 rounded-xl border border-brand-indigo bg-brand-indigo/5 px-3 py-3 dark:bg-indigo-400/10">
+                                        <span class="min-w-0 truncate text-sm font-extrabold text-slate-900 dark:text-white">{{ __('app.home_ui.preview_service_1') }}</span>
+                                        <span class="shrink-0 text-xs font-bold text-brand-indigo">{{ __('app.home_ui.preview_price') }}</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.home_ui.booking_date_label') }}</p>
+                                    <div class="mt-2 grid grid-cols-4 gap-2">
+                                        @foreach (['24','25','26','27'] as $day)
+                                            <span class="{{ $day === '26' ? 'border-brand-indigo bg-brand-indigo text-white' : 'border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-300' }} rounded-lg border px-2 py-2 text-center text-xs font-extrabold">{{ $day }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.home_ui.booking_time_label') }}</p>
+                                    <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                                        @foreach (['09:00','10:30','11:30','13:00','14:00','15:30'] as $time)
+                                            <span class="{{ $time === '11:30' ? 'border-brand-indigo bg-brand-indigo text-white' : 'border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-200' }} rounded-lg border px-2 py-2.5 text-center text-xs font-bold">{{ $time }}</span>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+                                    <span class="text-xs font-semibold text-slate-400">{{ __('app.home_ui.booking_secure_note') }}</span>
+                                    <span class="shrink-0 rounded-lg bg-brand-navy px-4 py-2 text-xs font-extrabold text-white dark:bg-indigo-500">{{ __('app.home_ui.booking_preview_cta') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="border-b border-slate-200 bg-slate-50/70 dark:border-slate-800 dark:bg-slate-950">
+            <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+                <div class="max-w-2xl">
+                    <p class="text-sm font-semibold text-brand-indigo">{{ __('app.home_ui.faq_eyebrow') }}</p>
+                    <h2 class="mt-3 text-3xl font-extrabold tracking-[-0.035em] text-brand-navy dark:text-white sm:text-4xl">
+                        {{ __('app.home_ui.faq_title') }}
+                    </h2>
+                    <p class="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">{{ __('app.home_ui.faq_description') }}</p>
+                </div>
+
+                <div class="mt-8 divide-y divide-slate-200 border-y border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                    @foreach ([
+                        [__('app.home_ui.faq_q1'), __('app.home_ui.faq_a1')],
+                        [__('app.home_ui.faq_q2'), __('app.home_ui.faq_a2')],
+                        [__('app.home_ui.faq_q3'), __('app.home_ui.faq_a3')],
+                        [__('app.home_ui.faq_q4'), __('app.home_ui.faq_a4')],
+                        [__('app.home_ui.faq_q5'), __('app.home_ui.faq_a5')],
+                    ] as $faq)
+                        <details class="group">
+                            <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-start text-sm font-extrabold text-slate-900 marker:hidden dark:text-white">
+                                <span>{{ $faq[0] }}</span>
+                                <span class="shrink-0 text-xl font-normal leading-none text-slate-400 transition-transform group-open:rotate-45">+</span>
+                            </summary>
+                            <p class="max-w-3xl pb-5 text-sm leading-7 text-slate-500 dark:text-slate-400">{{ $faq[1] }}</p>
+                        </details>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
+        <section class="border-b border-slate-200 dark:border-slate-800">
+            <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+                <div class="grid gap-8 lg:grid-cols-[0.75fr_1.25fr] lg:items-center">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold text-brand-indigo">{{ __('app.home_ui.trust_eyebrow') }}</p>
+                        <h2 class="mt-3 text-2xl font-extrabold tracking-[-0.03em] text-brand-navy dark:text-white sm:text-3xl">
+                            {{ __('app.home_ui.trust_title') }}
+                        </h2>
+                        <p class="mt-4 text-sm leading-7 text-slate-600 dark:text-slate-300">{{ __('app.home_ui.trust_description') }}</p>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        @foreach ([
+                            __('app.home_ui.trust_auth'),
+                            __('app.home_ui.trust_roles'),
+                            __('app.home_ui.trust_payments'),
+                            __('app.home_ui.trust_booking_controls'),
+                        ] as $trust)
+                            <div class="rounded-xl border border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-950">
+                                <div class="flex items-start gap-3">
+                                    <span class="mt-0.5 text-sm font-extrabold text-brand-indigo">✓</span>
+                                    <p class="text-sm font-bold leading-6 text-slate-800 dark:text-slate-200">{{ $trust }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="bg-brand-navy text-white">
             <div class="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-12 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
                 <div class="min-w-0">
