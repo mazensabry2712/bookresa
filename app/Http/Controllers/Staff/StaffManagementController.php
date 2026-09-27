@@ -41,6 +41,7 @@ final class StaffManagementController
         StoreStaffMemberRequest $request,
         AddStaffMember $addStaffMember,
         SyncServiceAssignments $syncServiceAssignments,
+        CurrentTenant $currentTenant,
     ): RedirectResponse {
         $data = $request->validated();
         $user = User::query()->where('email', $data['email'])->firstOrFail();
@@ -53,6 +54,14 @@ final class StaffManagementController
             ]);
 
             $syncServiceAssignments->handle($staff, $data['services'] ?? []);
+
+            $tenant = $currentTenant->get();
+
+            if ($tenant !== null && ! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+                $settings = $tenant->settings ?? [];
+                data_set($settings, 'onboarding.step', 'ready');
+                $tenant->forceFill(['settings' => $settings])->save();
+            }
 
             return to_route('staff.index')->with('status', __('app.staff_ui.added'));
         } catch (RuntimeException $exception) {
