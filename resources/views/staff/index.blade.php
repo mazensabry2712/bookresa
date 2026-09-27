@@ -147,6 +147,29 @@
                     <h3 class="font-semibold text-slate-950 dark:text-white">{{ __('app.staff_ui.staff_members') }}</h3>
                     <p class="mt-1 text-sm text-slate-500">{{ trans_choice('app.staff_ui.staff_count', $staffMembers->total(), ['count' => $staffMembers->total()]) }}</p>
                 </div>
+                <form method="GET" action="{{ route('staff.index', ['tenant' => $tenant->slug]) }}" class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                    <label class="sr-only" for="staff-search">{{ __('app.staff_ui.search') }}</label>
+                    <input id="staff-search" name="search" value="{{ $search }}" type="search"
+                           placeholder="{{ __('app.staff_ui.search_placeholder') }}"
+                           class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950 sm:w-56">
+                    <label>
+                        <span class="sr-only">{{ __('app.staff_ui.status') }}</span>
+                        <select name="status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950 sm:w-36">
+                            <option value="">{{ __('app.staff_ui.all_statuses') }}</option>
+                            @foreach ($statusLabels as $value => $label)
+                                <option value="{{ $value }}" @selected($statusFilter === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </label>
+                    <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                        {{ __('app.staff_ui.search') }}
+                    </button>
+                    @if ($search !== '' || $statusFilter !== '')
+                        <a href="{{ route('staff.index', ['tenant' => $tenant->slug]) }}" class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800">
+                            {{ __('app.staff_ui.reset') }}
+                        </a>
+                    @endif
+                </form>
                 @if ($staffMembers->hasPages())
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.staff_ui.showing_page', ['page' => $staffMembers->currentPage()]) }}</span>
                 @endif
