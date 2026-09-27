@@ -84,7 +84,7 @@ Route::middleware(['auth', 'verified'])->get('/dashboard/{legacyPath}', function
 })->where('legacyPath', '.*')->name('dashboard.legacy.path');
 
 Route::middleware(['auth', 'verified', 'tenant'])
-    ->prefix('workspace/{tenant:slug?}/dashboard')
+    ->prefix('workspace/{tenant:slug}/dashboard')
     ->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])
         ->middleware('subscription.usable')
@@ -224,7 +224,7 @@ Route::middleware(['auth', 'verified', 'tenant'])
 });
 
 Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permission:bookings.view'])
-    ->prefix('workspace/{tenant:slug?}/dashboard/bookings')
+    ->prefix('workspace/{tenant:slug}/dashboard/bookings')
     ->group(function (): void {
         Route::get('/', [BookingManagementController::class, 'index'])
             ->name('booking.management.index');
@@ -256,12 +256,12 @@ Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:
     ->name('calendar.index');
 
 Route::middleware(['auth', 'verified', 'tenant'])->group(function (): void {
-    Route::get('/workspace/{tenant:slug?}/dashboard/payments', [PaymentManagementController::class, 'index'])
+    Route::get('/workspace/{tenant:slug}/dashboard/payments', [PaymentManagementController::class, 'index'])
         ->middleware(['module:payments', 'permission:billing.view'])
         ->name('payments.index');
 });
 
-Route::middleware(['auth', 'verified', 'tenant'])->prefix('workspace/{tenant:slug?}/dashboard/billing')->group(function (): void {
+Route::middleware(['auth', 'verified', 'tenant'])->prefix('workspace/{tenant:slug}/dashboard/billing')->group(function (): void {
     Route::get('/subscription', [SubscriptionBillingController::class, 'index'])
         ->middleware('permission:billing.view')
         ->name('billing.subscription');
