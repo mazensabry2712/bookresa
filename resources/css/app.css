@@ -214,6 +214,7 @@
     }
 
     .br-sidebar-controls {
+        position: relative;
         min-width: 0;
     }
 
