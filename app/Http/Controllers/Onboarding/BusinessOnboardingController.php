@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Onboarding;
 
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
-use App\Domain\Tenant\Models\Tenant;
-use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
