@@ -2,6 +2,8 @@
 
 namespace App\Http\Responses;
 
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
@@ -48,7 +50,18 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
                 return $this->onboardingRedirect($tenant);
             }
 
-            return redirect()->intended(route('dashboard'));
+            $subscription = Subscription::query()
+                ->whereIn('status', [
+                    SubscriptionStatus::Trial->value,
+                    SubscriptionStatus::Active->value,
+                ])
+                ->latest('start_at')
+                ->get()
+                ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
+
+            return redirect()->intended(
+                $subscription !== null ? route('dashboard') : route('billing.subscription')
+            );
         }
 
         return to_route('onboarding.business.create');
@@ -63,4 +76,3 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
     }
 
 }
-
