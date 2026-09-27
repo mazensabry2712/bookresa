@@ -151,8 +151,11 @@ final class StaffManagementController
 
         $step = (string) data_get($tenant->settings, 'onboarding.step', 'workspace');
 
-        return in_array($step, ['staff', 'ready'], true)
-            ? null
-            : to_route($step === 'services' ? 'services.index' : 'scheduling.index');
+        return match ($step) {
+            'workspace' => to_route('onboarding.workspace'),
+            'services' => to_route('services.index'),
+            'hours' => to_route('scheduling.index'),
+            default => null,
+        };
     }
 }
