@@ -2,16 +2,16 @@
 
 ## Current verified local gate
 
-The latest local verification reported on 2026-09-26:
-- full test suite: 241 passed, 1 skipped, 890 assertions
+The latest local verification reported on 2026-09-27:
+- full test suite: 270 passed, 1 skipped, 1037 assertions
 - `php artisan view:cache`: passed
 - Vite production build: passed
 - `composer install` and optimized autoload generation: passed
 - `php artisan optimize:clear`: passed
 
-The latest locally verified application commit is `7b68bbb`; GitHub Actions status for the subsequent verification commits should be checked before release.
+The latest locally verified application commit is `da488a39`; GitHub Actions CI run #910 passed on this commit.
 
-Pint: touched files pass; the full repository currently has 104 existing style issues across 290 files
+Pint: touched files pass; the full repository currently has 101 existing style issues across 301 files
 - SEO regression tests: previously verified
 - PHP 8.4 is the project target
 - Larastan is declared in Composer and locked on `main`, so CI can enforce PHPStan
