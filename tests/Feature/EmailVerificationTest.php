@@ -74,3 +74,25 @@ test('unverified users can request another verification email', function (): voi
 
     Notification::assertSentTo($user, VerifyEmail::class);
 });
+
+test('verification ignores a stale intended dashboard destination for a new account', function (): void {
+    Event::fake();
+
+    $user = User::factory()->unverified()->create();
+
+    $url = URL::temporarySignedRoute(
+        'verification.verify',
+        now()->addMinutes(30),
+        [
+            'id' => $user->getKey(),
+            'hash' => sha1($user->getEmailForVerification()),
+        ],
+    );
+
+    $this->actingAs($user)
+        ->withSession(['url.intended' => route('dashboard')])
+        ->get($url)
+        ->assertRedirect(route('onboarding.business.create').'?verified=1');
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+});
