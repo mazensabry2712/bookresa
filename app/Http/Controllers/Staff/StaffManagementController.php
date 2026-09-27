@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Staff;
 
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Service\Actions\SyncServiceAssignments;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
@@ -78,7 +80,18 @@ final class StaffManagementController
                     data_set($settings, 'onboarding.completed', true);
                     $tenant->forceFill(['settings' => $settings])->save();
 
-                    return to_route('dashboard')->with('status', __('app.staff_ui.added'));
+                    $subscription = Subscription::query()
+                        ->whereIn('status', [
+                            SubscriptionStatus::Trial->value,
+                            SubscriptionStatus::Active->value,
+                        ])
+                        ->latest('start_at')
+                        ->get()
+                        ->first(fn (Subscription $subscription): bool => $subscription->isUsable());
+
+                    return $subscription !== null
+                        ? to_route('dashboard')->with('status', __('app.staff_ui.added'))
+                        : to_route('billing.subscription')->with('status', __('app.staff_ui.added'));
                 }
 
                 $settings = $tenant->settings ?? [];
