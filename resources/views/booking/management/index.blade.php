@@ -179,7 +179,7 @@
                                     <span class="inline-flex rounded-full border px-2.5 py-1 text-xs font-bold {{ $paymentClasses[$paymentStatus] ?? $paymentClasses['unpaid'] }}">{{ $paymentLabels[$paymentStatus] ?? $paymentStatus }}</span>
                                 </td>
                                 <td class="px-5 py-4 text-end">
-                                    <a href="{{ route('booking.management.show', $booking) }}" class="font-bold text-brand-indigo hover:underline">{{ __('app.booking_ui.view') }}</a>
+                                    <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="font-bold text-brand-indigo hover:underline">{{ __('app.booking_ui.view') }}</a>
                                 </td>
                             </tr>
                         @empty
@@ -200,7 +200,7 @@
                         $status = $booking->status->value;
                         $paymentStatus = $booking->payment_status->value;
                     @endphp
-                    <a href="{{ route('booking.management.show', $booking) }}" class="block p-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                    <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="block p-4 transition hover:bg-slate-50 dark:hover:bg-slate-950/40">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <p class="font-mono text-xs font-bold text-slate-500">{{ $booking->booking_reference }}</p>
