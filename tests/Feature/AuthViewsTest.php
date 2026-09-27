@@ -18,6 +18,12 @@ test('registration page uses the application registration view', function (): vo
         ->assertSee('Create your account first.');
 });
 
+test('guest auth pages use the dedicated BookResa session cookie', function (): void {
+    $this->get(route('register'))
+        ->assertOk()
+        ->assertCookie(config('session.cookie'));
+});
+
 test('guest auth pages are not cached with stale csrf tokens', function (): void {
     foreach ([route('login'), route('register'), route('password.request')] as $url) {
         $this->get($url)
