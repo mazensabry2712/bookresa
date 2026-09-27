@@ -45,7 +45,7 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
             $tenant = $membership->tenant;
 
             if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
-                return to_route('onboarding.workspace');
+                return $this->onboardingRedirect($tenant);
             }
 
             return redirect()->intended(route('dashboard'));
@@ -53,4 +53,14 @@ final class LoginResponse implements LoginResponseContract, TwoFactorLoginRespon
 
         return to_route('onboarding.business.create');
     }
+    private function onboardingRedirect(\App\Domain\Tenant\Models\Tenant $tenant): RedirectResponse
+    {
+        return match ((string) data_get($tenant->settings, 'onboarding.step', 'services')) {
+            'hours' => to_route('scheduling.index'),
+            'staff' => to_route('staff.index'),
+            default => to_route('services.index'),
+        };
+    }
+
 }
+
