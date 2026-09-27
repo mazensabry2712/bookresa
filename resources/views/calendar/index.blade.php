@@ -69,6 +69,12 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                @can('bookings.create')
+                    <a href="{{ route('booking.management.create', ['tenant' => $tenant->slug]) }}"
+                       class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-indigo px-3.5 py-2 text-sm font-bold text-white shadow-sm hover:bg-indigo-600">
+                        {{ __('app.booking_ui.new_booking') }}
+                    </a>
+                @endcan
                 @foreach ($viewLabels as $key => $label)
                     <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $key, 'date' => $reference->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl border px-3.5 py-2 text-sm font-bold {{ $viewMode === $key ? 'border-brand-indigo bg-indigo-50 text-brand-indigo dark:border-indigo-800 dark:bg-indigo-950/30 dark:text-indigo-300' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800' }}">
