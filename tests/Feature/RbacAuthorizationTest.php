@@ -168,13 +168,13 @@ test('a tenant role cannot be reused to grant access in another tenant', functio
     expect($shared->hasRole('manager'))->toBeFalse();
 });
 
-test('explicit workspace route cannot be overridden by a forged tenant session', function (): void {
+test('forged tenant session falls back to an authorized tenant instead of switching access', function (): void {
     [$ownerA, $tenantA] = rbacWorkspace('Authorized Tenant');
     [, $tenantB] = rbacWorkspace('Other Tenant');
 
     $this->actingAs($ownerA)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('business.profile.edit', ['tenant' => $tenantA->slug]))
+        ->get(route('business.profile.edit'))
         ->assertOk()
         ->assertSee('Authorized Tenant')
         ->assertDontSee('Other Tenant');
