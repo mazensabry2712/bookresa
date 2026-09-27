@@ -26,7 +26,7 @@
             </div>
 
             @if ($isEditing)
-                <a href="{{ route('services.index') }}"
+                <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}"
                    class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     {{ __('app.service_ui.create_new') }}
                 </a>
@@ -59,7 +59,7 @@
                 </div>
 
                 <form method="POST"
-                      action="{{ $isEditing ? route('services.update', ['tenant' => $tenant->slug, 'service' => $editingService]) : route('services.store') }}"
+                      action="{{ $isEditing ? route('services.update', ['tenant' => $tenant->slug, 'service' => $editingService]) : route('services.store', ['tenant' => $tenant->slug]) }}"
                       class="mt-5 space-y-5">
                     @csrf
 
@@ -148,7 +148,7 @@
                         </button>
 
                         @if ($isEditing)
-                            <a href="{{ route('services.index') }}"
+                            <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}"
                                class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                                 {{ __('app.cancel') }}
                             </a>
@@ -200,7 +200,7 @@
 
                                 <div class="flex shrink-0 gap-2">
                                     @can('services.update')
-                                        <a href="{{ route('services.index', ['edit' => $service->id]) }}"
+                                        <a href="{{ route('services.index', ['tenant' => $tenant->slug, 'edit' => $service->id]) }}"
                                            class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
                                             {{ __('app.service_ui.edit') }}
                                         </a>
