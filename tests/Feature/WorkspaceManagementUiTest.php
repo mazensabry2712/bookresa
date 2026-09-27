@@ -5,8 +5,8 @@ use App\Domain\Business\Models\BusinessType;
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
-use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
@@ -74,7 +74,7 @@ function workspaceOwner(string $name = 'Workspace Owner'): array
 
     $subscription->forceFill([
         'payment_status' => PaymentStatus::Paid,
-        'end_at' => \Carbon\CarbonImmutable::now()->addMonth(),
+        'end_at' => CarbonImmutable::now()->addMonth(),
         'pricing_snapshot' => ['modules' => []],
     ])->save();
 
