@@ -141,6 +141,13 @@ return [
     'optional_modules_help' => 'أضف فقط ما يحتاجه هذا النشاط الآن.',
     'available' => 'متاحة',
     'optional_module_locked_help' => 'اختر خطة تتضمن هذه الوحدة لتتمكن من تفعيلها.',
+    'included' => 'مضمنة',
+    'module_descriptions' => [
+        'payments' => 'استقبل المدفوعات من العملاء عبر الإنترنت.',
+        'invoices' => 'أنشئ الفواتير وأدرها من مكان واحد.',
+        'inventory' => 'تابع المنتجات ومستويات المخزون وحركته.',
+        'branches' => 'أدر فروع ومواقع النشاط المتعددة.',
+    ],
     'configure_workspace' => 'إعداد مساحة العمل',
     'modules_enabled' => 'وحدات مفعلة',
     'next_step' => 'الخطوة التالية',
