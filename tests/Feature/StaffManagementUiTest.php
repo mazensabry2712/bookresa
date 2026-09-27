@@ -3,6 +3,7 @@
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Service\Actions\CreateService;
@@ -14,6 +15,7 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -56,7 +58,7 @@ function staffWorkspaceOwner(string $name = 'Staff Workspace Owner'): array
 
     app(CurrentTenant::class)->set($tenant);
 
-    $plan = \App\Domain\Billing\Models\Plan::query()->create([
+    $plan = Plan::query()->create([
         'name' => ['en' => 'Test Core Plan'],
         'description' => ['en' => 'Test core plan'],
         'price_minor' => 0,
@@ -70,7 +72,7 @@ function staffWorkspaceOwner(string $name = 'Staff Workspace Owner'): array
 
     $subscription = app(CreateSubscription::class)->handle(
         $plan,
-        \Carbon\CarbonImmutable::now(),
+        CarbonImmutable::now(),
     );
 
     $subscription->forceFill([
