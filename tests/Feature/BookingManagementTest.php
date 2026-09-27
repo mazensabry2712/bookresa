@@ -81,7 +81,12 @@ function managementUser(Tenant $tenant, string $email): User
     return $user;
 }
 
-function managementBooking(Tenant $tenant, string $reference = 'BR-MGMT-001'): Booking
+function managementBooking(
+    Tenant $tenant,
+    string $reference = 'BR-MGMT-001',
+    string $customerName = 'Customer One',
+    string $phone = '01000000999',
+): Booking
 {
     app(CurrentTenant::class)->set($tenant);
 
@@ -95,9 +100,9 @@ function managementBooking(Tenant $tenant, string $reference = 'BR-MGMT-001'): B
 
     return Booking::query()->create([
         'customer_id' => Customer::query()->create([
-            'name' => 'Customer One',
-            'phone' => '01000000999',
-            'normalized_phone' => '201000000999',
+            'name' => $customerName,
+            'phone' => $phone,
+            'normalized_phone' => preg_replace('/\D+/', '', str_starts_with($phone, '+20') ? '20'.substr(preg_replace('/\D+/', '', $phone), 2) : '20'.ltrim(preg_replace('/\D+/', '', $phone), '0')),
         ])->id,
         'service_id' => $service->id,
         'staff_id' => null,
@@ -126,8 +131,8 @@ test('authorized tenant user can list and filter bookings', function (): void {
 test('booking list can filter by payment status', function (): void {
     $tenant = managementTenant('management-payment-filter');
     $user = managementUser($tenant, 'management-payment-filter@example.com');
-    $unpaid = managementBooking($tenant, 'BR-MGMT-UNPAID');
-    $paid = managementBooking($tenant, 'BR-MGMT-PAID');
+    $unpaid = managementBooking($tenant, 'BR-MGMT-UNPAID', 'Unpaid Customer', '01000000999');
+    $paid = managementBooking($tenant, 'BR-MGMT-PAID', 'Paid Customer', '01000000888');
     $paid->update(['payment_status' => 'paid']);
 
     $this->actingAs($user)
