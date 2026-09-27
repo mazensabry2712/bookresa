@@ -9,6 +9,7 @@ use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Scheduling\Models\BusinessWorkingHour;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Onboarding\StoreBusinessRequest;
 use Illuminate\Http\RedirectResponse;
@@ -132,7 +133,7 @@ class BusinessOnboardingController
         return to_route('dashboard')->with('status', __('Workspace is ready. Your booking page is now available.'));
     }
 
-    private function coreModulesReady(\App\Domain\Tenant\Models\Tenant $tenant): bool
+    private function coreModulesReady(Tenant $tenant): bool
     {
         $coreModuleKeys = collect(config('bookresa.modules.core', []))
             ->filter()
