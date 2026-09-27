@@ -62,6 +62,7 @@ return [
     'resend_verification' => 'إعادة إرسال رسالة التحقق',
     'login' => 'تسجيل الدخول',
     'welcome_back' => 'مرحبًا بعودتك',
+    'auth_access_eyebrow' => 'الوصول إلى الحساب',
     'login_message' => 'سجّل الدخول لإدارة مساحة عمل نشاطك.',
     'password' => 'كلمة المرور',
     'show_password' => 'إظهار كلمة المرور',
