@@ -434,14 +434,27 @@
 
                 <section class="br-panel p-5" aria-labelledby="workspace-title">
                     <div class="flex items-center justify-between gap-4">
-                        <div>
+                        <div class="min-w-0">
                             <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.dashboard_ui.workspace') }}</p>
-                            <h3 id="workspace-title" class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $businessName }}</h3>
                         </div>
-                        <span class="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                        <span class="shrink-0 rounded-full border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-600 dark:border-slate-700 dark:text-slate-300">
                             {{ trans_choice('app.dashboard_ui.active_staff_count', $metrics['activeStaff'], ['count' => $metrics['activeStaff']]) }}
                         </span>
                     </div>
+
+                    <div class="mt-4 flex h-28 w-full items-center justify-center overflow-hidden rounded-2xl bg-brand-soft p-3 dark:bg-slate-800">
+                        @if ($tenant->profile?->logo_path)
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($tenant->profile->logo_path) }}"
+                                 alt="{{ $businessName }}"
+                                 class="h-full w-full object-contain">
+                        @else
+                            <img src="{{ asset('logo.png') }}" alt="BookResa" class="h-full w-full object-contain p-2 dark:hidden">
+                            <img src="{{ asset('logodark.png') }}" alt="BookResa" class="hidden h-full w-full object-contain p-2 dark:block">
+                        @endif
+                    </div>
+
+                    <h3 id="workspace-title" class="mt-3 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $businessName }}</h3>
+
                     <div class="mt-4 grid grid-cols-2 gap-2">
                         @can('bookings.view')
                             <a href="{{ route('booking.management.index') }}" class="rounded-xl br-surface-soft px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800">
