@@ -50,7 +50,7 @@ test('owner can list and create customers', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('customers.index'))
+        ->get(route('customers.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Customers');
 
@@ -61,7 +61,7 @@ test('owner can list and create customers', function (): void {
             'phone' => '010-1234-5678',
             'email' => 'ahmed@example.com',
         ])
-        ->assertRedirect(route('customers.index'));
+        ->assertRedirect(route('customers.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -130,7 +130,7 @@ test('customers are tenant isolated for list and update', function (): void {
 
     $this->actingAs($ownerB)
         ->withSession(['tenant_id' => $tenantB->id])
-        ->get(route('customers.index'))
+        ->get(route('customers.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertDontSee('Tenant A Customer');
 
@@ -164,7 +164,7 @@ test('receptionist can view and manage customers', function (): void {
 
     $this->actingAs($receptionist)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('customers.index'))
+        ->get(route('customers.index', ['tenant' => $tenant->slug]))
         ->assertOk();
 
     $this->actingAs($receptionist)
@@ -172,7 +172,7 @@ test('receptionist can view and manage customers', function (): void {
         ->post(route('customers.store'), [
             'name' => 'Walk In Customer',
         ])
-        ->assertRedirect(route('customers.index'));
+        ->assertRedirect(route('customers.index', ['tenant' => $tenant->slug]));
 
     app(CurrentTenant::class)->set($tenant);
     expect(Customer::query()->where('name', 'Walk In Customer')->exists())->toBeTrue();
@@ -192,7 +192,7 @@ test('staff without customer permission is forbidden', function (): void {
 
     $this->actingAs($staff)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('customers.index'))
+        ->get(route('customers.index', ['tenant' => $tenant->slug]))
         ->assertForbidden();
 
     unset($owner);
@@ -208,7 +208,7 @@ test('customer management paginates large lists', function (): void {
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('customers.index'))
+        ->get(route('customers.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertViewHas('customers', function ($customers): bool {
             return $customers->perPage() === 20
