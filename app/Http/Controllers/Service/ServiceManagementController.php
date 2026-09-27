@@ -21,6 +21,13 @@ final class ServiceManagementController
     {
         abort_unless($currentTenant->get() !== null, 404);
 
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string', 'in:active,inactive'],
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
+
         $editingService = null;
 
         if ($request->filled('edit')) {
@@ -29,8 +36,26 @@ final class ServiceManagementController
 
         return view('services.index', [
             'tenant' => $currentTenant->get(),
-            'services' => Service::query()->latest('id')->paginate(20)->withQueryString(),
+            'services' => Service::query()
+                ->withCount('staff')
+                ->when($search !== '', function ($query) use ($search): void {
+                    $query->where(function ($query) use ($search): void {
+                        $like = '%'.$search.'%';
+
+                        $query
+                            ->where('name->en', 'like', $like)
+                            ->orWhere('name->ar', 'like', $like)
+                            ->orWhere('description->en', 'like', $like)
+                            ->orWhere('description->ar', 'like', $like);
+                    });
+                })
+                ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('is_active', $status === 'active'))
+                ->latest('id')
+                ->paginate(20)
+                ->withQueryString(),
             'editingService' => $editingService,
+            'search' => $search,
+            'statusFilter' => $validated['status'] ?? '',
         ]);
     }
 
