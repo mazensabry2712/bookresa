@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Booking\Enums\BookingStatus;
+use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Scheduling\Enums\DayOfWeek;
@@ -96,7 +97,7 @@ test('booking management can create a pending booking using the workspace availa
         ])
         ->assertRedirect();
 
-    $booking = $tenant->bookings()->latest('id')->firstOrFail();
+    $booking = Booking::query()->where('tenant_id', $tenant->id)->latest('id')->firstOrFail();
 
     expect($booking->status)->toBe(BookingStatus::Pending)
         ->and($booking->customer->name)->toBe('Internal Customer')
