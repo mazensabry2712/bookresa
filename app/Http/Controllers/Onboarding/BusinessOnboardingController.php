@@ -87,6 +87,23 @@ class BusinessOnboardingController
         $hasStaff = $tenant->staffProfiles()->exists();
         $isReady = (bool) data_get($tenant->settings, 'onboarding.completed', false);
 
+        $steps = [
+            ['key' => 'workspace', 'label' => __('Workspace'), 'route' => 'onboarding.workspace', 'complete' => true],
+            ['key' => 'modules', 'label' => __('Modules'), 'route' => 'onboarding.workspace', 'complete' => $hasModules],
+            ['key' => 'services', 'label' => __('Services'), 'route' => 'services.index', 'complete' => $hasServices],
+            ['key' => 'hours', 'label' => __('Working hours'), 'route' => 'scheduling.index', 'complete' => $hasHours],
+            ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $hasStaff],
+            ['key' => 'ready', 'label' => __('Ready'), 'route' => 'dashboard', 'complete' => $isReady],
+        ];
+
+        $currentStepIndex = collect($steps)->search(
+            static fn (array $step): bool => ! $step['complete'],
+        );
+
+        if ($currentStepIndex === false) {
+            $currentStepIndex = count($steps) - 1;
+        }
+
         return view('onboarding.workspace', [
             'tenant' => $tenant->loadMissing(['profile', 'businessType', 'modules']),
             'modules' => Module::query()
@@ -96,14 +113,8 @@ class BusinessOnboardingController
                 ->get(),
             'entitledModuleKeys' => $entitledModuleKeys,
             'hasSubscription' => $subscription !== null,
-            'steps' => [
-                ['key' => 'workspace', 'label' => __('Workspace'), 'route' => 'onboarding.workspace', 'complete' => true],
-                ['key' => 'modules', 'label' => __('Modules'), 'route' => 'onboarding.workspace', 'complete' => $hasModules],
-                ['key' => 'services', 'label' => __('Services'), 'route' => 'services.index', 'complete' => $hasServices],
-                ['key' => 'hours', 'label' => __('Working hours'), 'route' => 'scheduling.index', 'complete' => $hasHours],
-                ['key' => 'staff', 'label' => __('Staff'), 'route' => 'staff.index', 'complete' => $hasStaff],
-                ['key' => 'ready', 'label' => __('Ready'), 'route' => 'dashboard', 'complete' => $isReady],
-            ],
+            'steps' => $steps,
+            'currentStepIndex' => $currentStepIndex,
         ]);
     }
 
