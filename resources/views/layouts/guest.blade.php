@@ -16,7 +16,7 @@
     <main class="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-4 py-6 sm:px-6 sm:py-8">
         <header class="flex items-center justify-between">
             <a href="{{ route('home') }}"
-               class="relative flex h-10 w-[142px] items-center overflow-hidden rounded-md"
+               class="relative flex h-10 w-[150px] items-center overflow-hidden rounded-md"
                aria-label="BookResa">
                 <img src="{{ asset('logo.png') }}"
                      alt="BookResa"
@@ -41,7 +41,11 @@
                         aria-controls="bookresa-guest-utility-panel"
                         aria-haspopup="true"
                         aria-label="{{ __('app.language') }} & {{ __('app.theme') }}">
-                    <span class="text-lg font-bold leading-none" aria-hidden="true">•••</span>
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <circle cx="5" cy="12" r="1.5"/>
+                        <circle cx="12" cy="12" r="1.5"/>
+                        <circle cx="19" cy="12" r="1.5"/>
+                    </svg>
                 </button>
 
                 <div id="bookresa-guest-utility-panel"
@@ -66,7 +70,7 @@
         </header>
 
         <section class="my-auto py-10 sm:py-14">
-            <div class="br-panel p-6 sm:p-8">
+            <div class="br-panel rounded-2xl p-6 sm:p-8">
                 @if (session('status'))
                     <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" role="status">
                         {{ session('status') }}
