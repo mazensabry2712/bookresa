@@ -117,6 +117,7 @@ return [
     'business_name_placeholder' => 'e.g. Ahmed Dental Clinic',
     'business_type' => 'Business type',
     'select_business_type' => 'Select a business type',
+    'select_timezone' => 'Select a timezone',
     'booking_slug' => 'Booking URL',
     'booking_slug_placeholder' => 'ahmed-clinic',
     'booking_slug_help' => 'This becomes the public address customers use to book.',
