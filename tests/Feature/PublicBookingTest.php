@@ -235,5 +235,6 @@ test('booking confirmation renders localized Arabic content', function (): void 
         ->assertOk()
         ->assertSee('تم استلام الحجز')
         ->assertSee('استشارة')
+        ->assertSee('سبتمبر')
         ->assertSee('احجز موعدًا آخر');
 });
