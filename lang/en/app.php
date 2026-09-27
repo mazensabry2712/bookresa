@@ -866,6 +866,12 @@ return [
     ],
     'errors_ui' => [
         'eyebrow' => 'BookResa system',
+        'context_403' => 'Restricted area',
+        'context_404' => 'Page not found',
+        'context_419' => 'Session check',
+        'context_429' => 'Request limit',
+        'context_500' => 'Unexpected issue',
+        'context_503' => 'Service status',
         'try_again' => 'Try again',
 
         'home' => 'Back to home',
