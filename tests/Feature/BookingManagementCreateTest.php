@@ -40,7 +40,7 @@ test('booking management create screen is available to users with booking creati
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('booking.management.create'))
+        ->get(route('booking.management.create', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee(__('app.booking_ui.new_booking'))
         ->assertSee(__('app.booking_ui.customer_name'))
@@ -86,7 +86,7 @@ test('booking management can create a pending booking using the workspace availa
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('booking.management.store'), [
+        ->post(route('booking.management.store', ['tenant' => $tenant->slug]), [
             'service_id' => $service->id,
             'date' => $tomorrow->toDateString(),
             'time' => $tomorrow->format('H:i'),
