@@ -20,7 +20,7 @@ test('registered users can request a password reset link', function (): void {
         'email' => $user->email,
     ])
         ->assertRedirect(route('password.request'))
-        ->assertSessionHas('status', trans('passwords.sent'));
+        ->assertSessionHas('status', trans('app.password_reset_link_sent'));
 
     Notification::assertSentTo($user, ResetPassword::class);
 });
