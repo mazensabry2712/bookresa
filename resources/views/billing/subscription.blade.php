@@ -270,7 +270,7 @@
                                 <p class="mt-3 text-sm font-bold text-emerald-600 dark:text-emerald-300">{{ $plan->trial_days }} {{ __('app.billing_ui.trial_days') }}</p>
                             @endif
                             @can('subscription.manage')
-                                <form method="POST" action="{{ route('billing.subscribe', $plan) }}" class="mt-5">
+                                <form method="POST" action="{{ route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]) }}" class="mt-5">
                                     @csrf
                                     <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.billing_ui.select_plan') }}</button>
                                 </form>
