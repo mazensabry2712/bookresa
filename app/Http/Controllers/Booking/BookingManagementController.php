@@ -7,6 +7,7 @@ use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Booking\Services\RescheduleBooking;
+use App\Domain\Customer\Models\Customer;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
@@ -41,6 +42,10 @@ class BookingManagementController
                 ->where('status', 'active')
                 ->orderBy('display_name')
                 ->get(['id', 'display_name']),
+            'customers' => Customer::query()
+                ->latest('last_seen_at')
+                ->limit(50)
+                ->get(['id', 'name', 'phone', 'email']),
             'timezone' => (string) data_get(
                 $tenant->profile,
                 'timezone',
@@ -93,7 +98,7 @@ class BookingManagementController
                     'end_time' => $slot['end']->format('H:i'),
                     'staff_id' => $slot['staff_id'],
                 ])
-                ->unique(fn (array $slot): string => $slot['time'].'|'.($slot['staff_id'] ?? 'auto'))
+                ->unique(fn (array $slot): string => $staff === null ? $slot['time'] : $slot['time'].'|'.($slot['staff_id'] ?? 'auto'))
                 ->values(),
         ]);
     }
