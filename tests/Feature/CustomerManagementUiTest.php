@@ -72,6 +72,28 @@ test('owner can list and create customers', function (): void {
         ->and($customer->normalized_phone)->toBe('201012345678');
 });
 
+test('owner can start a booking with an existing customer prefilled', function (): void {
+    [$owner, $tenant] = customerWorkspaceOwner();
+    app(CurrentTenant::class)->set($tenant);
+
+    $customer = app(CreateCustomer::class)->handle([
+        'name' => 'Ahmed Ali',
+        'phone' => '01012345678',
+        'email' => 'ahmed@example.com',
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.create', [
+            'tenant' => $tenant->slug,
+            'customer_id' => $customer->id,
+        ]))
+        ->assertOk()
+        ->assertSee('value="Ahmed Ali"', false)
+        ->assertSee('value="01012345678"', false)
+        ->assertSee('value="ahmed@example.com"', false);
+});
+
 test('owner can update customer details without changing tenant ownership', function (): void {
     [$owner, $tenant] = customerWorkspaceOwner();
     app(CurrentTenant::class)->set($tenant);
