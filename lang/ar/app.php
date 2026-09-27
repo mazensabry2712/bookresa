@@ -865,6 +865,9 @@ return [
         'status_no_show' => 'لم يحضر',
     ],
     'errors_ui' => [
+        'eyebrow' => 'نظام BookResa',
+        'try_again' => 'حاول مرة أخرى',
+
         'home' => 'العودة للرئيسية',
         'login' => 'تسجيل الدخول',
         'title_403' => 'الوصول مرفوض',
