@@ -19,6 +19,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use LogicException;
 use RuntimeException;
@@ -61,9 +62,19 @@ class BookingManagementController
     ): JsonResponse {
         abort_unless($currentTenant->get() !== null, 404);
 
+        $tenantId = $currentTenant->idOrFail();
+
         $validated = $request->validate([
-            'service_id' => ['required', 'integer', 'exists:services,id'],
-            'staff_id' => ['nullable', 'integer', 'exists:staff_profiles,id'],
+            'service_id' => [
+                'required',
+                'integer',
+                Rule::exists('services', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
+            'staff_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('staff_profiles', 'id')->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
             'date' => ['required', 'date_format:Y-m-d'],
         ]);
 
