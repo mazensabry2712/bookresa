@@ -676,8 +676,6 @@ return [
         'payment_refunded' => 'Refunded',
         'appointment' => 'Appointment',
         'duration' => 'Duration',
-        'minutes' => 'min',
-        'notes' => 'Notes',
         'status_history' => 'Status history',
         'no_status_history' => 'No status history recorded.',
         'manage_booking' => 'Manage booking',
