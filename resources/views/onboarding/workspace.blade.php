@@ -190,15 +190,12 @@
                                         @endif
                                     </span>
 
-                                    <span class="absolute end-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 transition
-                                        {{ $enabled
-                                            ? 'border-brand-indigo bg-brand-indigo text-white'
-                                            : ($locked ? 'border-slate-300 bg-transparent dark:border-slate-700' : 'border-slate-300 bg-transparent group-hover:border-brand-indigo dark:border-slate-600') }}">
-                                        @if ($enabled)
-                                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                                            </svg>
-                                        @endif
+                                    <span class="absolute end-4 top-4 flex h-5 w-5 items-center justify-center rounded-full border-2 border-slate-300 bg-transparent text-white transition
+                                        peer-checked:border-brand-indigo peer-checked:bg-brand-indigo peer-checked:text-white
+                                        {{ $locked ? 'dark:border-slate-700' : 'group-hover:border-brand-indigo dark:border-slate-600' }}">
+                                        <svg class="hidden h-3.5 w-3.5 peer-checked:block" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                            <path d="m6 12 4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
                                     </span>
                                 </label>
                             @endforeach
