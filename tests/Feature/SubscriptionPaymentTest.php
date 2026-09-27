@@ -194,7 +194,7 @@ test('authorized owner can open subscription billing and start checkout', functi
 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
-        ->post(route('billing.subscription.checkout', $subscription))
+        ->post(route('billing.subscription.checkout', ['tenant' => $tenant->slug, 'subscription' => $subscription]))
         ->assertRedirect('https://payments.example.test/session/001');
 });
 
