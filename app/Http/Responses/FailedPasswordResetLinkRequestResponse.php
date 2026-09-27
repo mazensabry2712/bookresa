@@ -12,7 +12,7 @@ final class FailedPasswordResetLinkRequestResponse implements FailedPasswordRese
     {
     }
 
-    public function toResponse($request): JsonResponse|\Illuminate\Http\RedirectResponse
+    public function toResponse($request): JsonResponse|RedirectResponse
     {
         $message = __('app.password_reset_link_sent');
 
