@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use App\Domain\Platform\Models\PlatformAdmin;
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Enums\TenantStatus;
+use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Models\TenantMembership;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -22,6 +27,51 @@ test('verified user can sign in with valid credentials', function (): void {
 
     expect(auth()->check())->toBeTrue()
         ->and(auth()->id())->toBe($user->id);
+});
+
+test('verified tenant member is redirected to the tenant dashboard after sign in', function (): void {
+    $user = User::factory()->create([
+        'email' => 'tenant-login@example.com',
+        'password' => bcrypt('secret-password'),
+    ]);
+
+    $tenant = Tenant::query()->create([
+        'slug' => 'tenant-login',
+        'status' => TenantStatus::Active,
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    $this->post(route('login'), [
+        'email' => $user->email,
+        'password' => 'secret-password',
+    ])
+        ->assertRedirect(route('dashboard'))
+        ->assertSessionHasNoErrors();
+});
+
+test('active platform admin is redirected to the platform dashboard after sign in', function (): void {
+    $user = User::factory()->create([
+        'email' => 'admin-login@example.com',
+        'password' => bcrypt('secret-password'),
+    ]);
+
+    PlatformAdmin::query()->create([
+        'user_id' => $user->id,
+        'is_active' => true,
+    ]);
+
+    $this->post(route('login'), [
+        'email' => $user->email,
+        'password' => 'secret-password',
+    ])
+        ->assertRedirect(route('admin.dashboard'))
+        ->assertSessionHasNoErrors();
 });
 
 test('invalid credentials do not authenticate the user', function (): void {
