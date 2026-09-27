@@ -66,7 +66,7 @@ Tenant members governed by RBAC:
 The backend is the authorization source of truth. The frontend may hide unavailable actions but cannot grant access.
 
 ## 6. Registration/onboarding
-Register → Verify Account → Create Business → Select Business Type → Configure Workspace → Select Required Modules → Set Services → Set Working Hours → Add Staff → Workspace Ready.
+Register → Verify Account → Create Business → Select Business Type → Set Services → Set Working Hours → Add Staff → Workspace Ready. Core modules are enabled automatically from the business type; optional modules are managed later from workspace settings.
 
 ## 7. Business profile
 Business Name, Logo, Cover Image, Description, Business Type, Phone, Email, Location, Address, Social Links, Working Hours and public Booking URL.
