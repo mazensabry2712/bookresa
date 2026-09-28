@@ -207,6 +207,12 @@
                     </div>
 
                     <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                        @if (auth()->user()->platformAdmin?->is_active)
+                            <a href="{{ route('admin.dashboard') }}"
+                               class="hidden rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-200 dark:hover:bg-indigo-950/70 sm:inline-flex">
+                                {{ __('app.super_admin') }}
+                            </a>
+                        @endif
                         @can('notifications.view')
                             <a href="{{ route('notifications.index', ['tenant' => $tenant->slug]) }}"
                                class="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
