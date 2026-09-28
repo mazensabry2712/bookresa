@@ -70,7 +70,9 @@ test('platform admin can render a workspace overview from admin businesses', fun
         ->assertOk()
         ->assertSee('Admin Overview Clinic')
         ->assertSee('workspace-overview-owner@example.com')
-        ->assertSee(__('app.open_workspace'));
+        ->assertSee(__('app.open_workspace'))
+        ->assertSee('/admin/users/memberships/', false)
+        ->assertSee('/admin/businesses/', false);
 });
 
 test('platform admin can render workspace module management from admin navigation', function (): void {
