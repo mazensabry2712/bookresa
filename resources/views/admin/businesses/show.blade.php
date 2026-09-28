@@ -79,23 +79,41 @@
                     </div>
 
                     @if ($latestSubscription)
-                        <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            <div>
-                                <p class="text-xs text-slate-500">{{ __('app.plan') }}</p>
-                                <p class="mt-1 font-semibold">{{ $subscriptionPlan }}</p>
+                        <div class="mt-5 flex flex-wrap items-start justify-between gap-4">
+                            <div class="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                <div>
+                                    <p class="text-xs text-slate-500">{{ __('app.plan') }}</p>
+                                    <p class="mt-1 font-semibold">{{ $subscriptionPlan }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500">{{ __('app.status') }}</p>
+                                    <p class="mt-1 font-semibold">{{ str($latestSubscription->status->value)->headline() }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500">{{ __('app.ends') }}</p>
+                                    <p class="mt-1 font-semibold">{{ $latestSubscription->end_at?->format('Y-m-d H:i') ?? '—' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500">{{ __('app.access') }}</p>
+                                    <p class="mt-1 font-semibold">{{ $subscriptionUsable ? __('app.subscription_usable') : __('app.subscription_not_usable') }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-xs text-slate-500">{{ __('app.status') }}</p>
-                                <p class="mt-1 font-semibold">{{ str($latestSubscription->status->value)->headline() }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-500">{{ __('app.ends') }}</p>
-                                <p class="mt-1 font-semibold">{{ $latestSubscription->end_at?->format('Y-m-d H:i') ?? '—' }}</p>
-                            </div>
-                            <div>
-                                <p class="text-xs text-slate-500">{{ __('app.access') }}</p>
-                                <p class="mt-1 font-semibold">{{ $subscriptionUsable ? __('app.subscription_usable') : __('app.subscription_not_usable') }}</p>
-                            </div>
+                            @if (in_array($latestSubscription->status, [
+                                \App\Domain\Billing\Enums\SubscriptionStatus::Trial,
+                                \App\Domain\Billing\Enums\SubscriptionStatus::Active,
+                                \App\Domain\Billing\Enums\SubscriptionStatus::Suspended,
+                            ], true))
+                                <form method="POST" action="{{ route('admin.subscriptions.toggle-status', $latestSubscription) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit" class="rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold dark:border-slate-700">
+                                        {{ $latestSubscription->status === \App\Domain\Billing\Enums\SubscriptionStatus::Suspended ? __('Activate') : __('Suspend') }}
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                        <div class="mt-5 hidden lg:block"></div>
+                        <div class="mt-0 grid gap-4 sm:grid-cols-2 lg:hidden">
                         </div>
                     @else
                         <div class="mt-5 rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500 dark:border-slate-700">
@@ -193,12 +211,23 @@
                     <div class="mt-4 space-y-2">
                         @forelse ($members as $membership)
                             <div class="rounded-xl border border-slate-200 px-3 py-2.5 dark:border-slate-800">
-                                <p class="truncate text-sm font-semibold">{{ $membership->user?->name ?? '—' }}</p>
-                                <p class="mt-1 truncate text-xs text-slate-500">
-                                    {{ $membership->user?->email ?? '—' }}
-                                    ·
-                                    {{ $membership->is_primary ? __('app.owner') : str($membership->status->value)->headline() }}
-                                </p>
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="truncate text-sm font-semibold">{{ $membership->user?->name ?? '—' }}</p>
+                                        <p class="mt-1 truncate text-xs text-slate-500">
+                                            {{ $membership->user?->email ?? '—' }}
+                                            ·
+                                            {{ $membership->is_primary ? __('app.owner') : str($membership->status->value)->headline() }}
+                                        </p>
+                                    </div>
+                                    <form method="POST" action="{{ route('admin.users.membership-toggle', $membership) }}" class="shrink-0">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold dark:border-slate-700">
+                                            {{ $membership->status === \App\Domain\Tenant\Enums\MembershipStatus::Active ? __('Suspend') : __('Activate') }}
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         @empty
                             <p class="text-sm text-slate-500">{{ __('app.no_workspace_members') }}</p>
