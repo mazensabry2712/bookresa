@@ -49,7 +49,7 @@
                 ['label' => __('app.services'), 'value' => $stats['services']],
                 ['label' => __('app.staff'), 'value' => $stats['staff']],
                 ['label' => __('app.active_members'), 'value' => $stats['activeMembers']],
-                ['label' => __('app.paid_revenue'), 'value' => number_format($stats['paidRevenueMinor'] / 100, 2).' '.($tenant->profile?->booking_settings['currency'] ?? 'EGP')],
+                ['label' => __('app.paid_revenue'), 'value' => number_format($stats['paidRevenueMinor'] / 100, 2).' '.($latestSubscription?->currency ?? 'EGP')],
             ] as $stat)
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $stat['label'] }}</p>
@@ -144,7 +144,7 @@
                             <div class="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
                                 <div class="min-w-0">
                                     <p class="truncate font-semibold">{{ $booking->customer?->name ?? '—' }}</p>
-                                    <p class="mt-1 text-xs text-slate-500">{{ $booking->service?->name ?? '—' }} · {{ $booking->booking_reference }}</p>
+                                    <p class="mt-1 text-xs text-slate-500">{{ data_get($booking->service?->name, app()->getLocale()) ?? data_get($booking->service?->name, 'en') ?? '—' }} · {{ $booking->booking_reference }}</p>
                                 </div>
                                 <div class="shrink-0 text-start sm:text-end">
                                     <p class="text-sm font-semibold">{{ $booking->starts_at?->format('Y-m-d H:i') }}</p>
