@@ -2,6 +2,17 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Subscription;
+use App\Domain\Billing\Models\UsagePeriod;
+use App\Domain\Booking\Models\Booking;
+use App\Domain\Customer\Models\Customer;
+use App\Domain\Module\Models\TenantModule;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
+use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Support\AuditLogger;
@@ -44,6 +55,92 @@ final class PlatformBusinessController
 
         return view('admin.businesses.index', [
             'businesses' => $businesses,
+        ]);
+    }
+
+    public function show(Tenant $tenant): View
+    {
+        $tenantId = (int) $tenant->getKey();
+
+        $tenant->load([
+            'businessType',
+            'profile' => fn ($query) => $query->withoutGlobalScopes(),
+        ]);
+
+        $members = $tenant->memberships()
+            ->withoutGlobalScopes()
+            ->with('user')
+            ->orderByDesc('is_primary')
+            ->orderByDesc('id')
+            ->limit(12)
+            ->get();
+
+        $owner = $members->first(fn ($membership): bool => $membership->is_primary)
+            ?? $members->first();
+
+        $latestSubscription = Subscription::withoutGlobalScopes()
+            ->with('plan')
+            ->where('tenant_id', $tenantId)
+            ->latest('start_at')
+            ->first();
+
+        $usage = UsagePeriod::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->latest('period_start')
+            ->first();
+
+        $activeModules = TenantModule::withoutGlobalScopes()
+            ->with('module')
+            ->where('tenant_id', $tenantId)
+            ->where('enabled', true)
+            ->whereHas('module', fn ($query) => $query->where('is_active', true))
+            ->get()
+            ->sortBy(fn ($tenantModule) => [
+                ! (bool) $tenantModule->module?->is_core,
+                (int) $tenantModule->module_id,
+            ])
+            ->values();
+
+        $stats = [
+            'customers' => Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->count(),
+            'bookings' => Booking::withoutGlobalScopes()->where('tenant_id', $tenantId)->count(),
+            'services' => Service::withoutGlobalScopes()->where('tenant_id', $tenantId)->count(),
+            'staff' => StaffProfile::withoutGlobalScopes()->where('tenant_id', $tenantId)->count(),
+            'activeMembers' => $tenant->memberships()
+                ->withoutGlobalScopes()
+                ->where('status', MembershipStatus::Active)
+                ->count(),
+            'paidRevenueMinor' => Payment::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('status', PaymentStatus::Paid)
+                ->sum('amount_minor'),
+        ];
+
+        $recentBookings = Booking::withoutGlobalScopes()
+            ->with([
+                'customer' => fn ($query) => $query->withoutGlobalScopes(),
+                'service' => fn ($query) => $query->withoutGlobalScopes(),
+            ])
+            ->where('tenant_id', $tenantId)
+            ->latest('starts_at')
+            ->limit(5)
+            ->get();
+
+        $usagePercent = $usage !== null && $usage->included_customer_limit > 0
+            ? min(100, (int) round(($usage->unique_customer_count / $usage->included_customer_limit) * 100))
+            : 0;
+
+        return view('admin.businesses.show', [
+            'tenant' => $tenant,
+            'owner' => $owner,
+            'members' => $members,
+            'latestSubscription' => $latestSubscription,
+            'subscriptionUsable' => $latestSubscription?->isUsable() === true,
+            'usage' => $usage,
+            'usagePercent' => $usagePercent,
+            'activeModules' => $activeModules,
+            'stats' => $stats,
+            'recentBookings' => $recentBookings,
         ]);
     }
 
