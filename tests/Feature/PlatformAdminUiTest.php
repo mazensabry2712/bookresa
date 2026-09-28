@@ -46,7 +46,6 @@ test('platform admin can render every primary admin page', function (): void {
     }
 });
 
-
 test('platform admin can render a workspace overview from admin businesses', function (): void {
     $this->seed([
         ModuleSeeder::class,
