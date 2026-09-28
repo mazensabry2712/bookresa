@@ -31,6 +31,7 @@ test('platform admin can render every primary admin page', function (): void {
     foreach ([
         'admin.dashboard',
         'admin.businesses.index',
+        'admin.businesses.show',
         'admin.users.index',
         'admin.subscriptions.index',
         'admin.payments.index',
