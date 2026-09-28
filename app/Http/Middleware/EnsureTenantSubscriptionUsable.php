@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
+use App\Models\User;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,6 +19,17 @@ final class EnsureTenantSubscriptionUsable
 
     public function handle(Request $request, Closure $next): Response
     {
+        $user = $request->user();
+        if ($user instanceof User) {
+            $platformAdmin = $user->relationLoaded('platformAdmin')
+                ? $user->platformAdmin
+                : $user->load('platformAdmin')->platformAdmin;
+
+            if ($platformAdmin?->is_active === true) {
+                return $next($request);
+            }
+        }
+
         $tenant = $this->currentTenant->get();
 
         abort_unless($tenant !== null, Response::HTTP_FORBIDDEN, 'An active workspace is required.');
