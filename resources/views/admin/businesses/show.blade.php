@@ -39,6 +39,13 @@
                 <a href="{{ route('admin.businesses.index') }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">
                     {{ __('app.back_to_businesses') }}
                 </a>
+                <form method="POST" action="{{ route('admin.businesses.toggle-status', $tenant) }}">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">
+                        {{ $tenant->status === \App\Domain\Tenant\Enums\TenantStatus::Suspended ? __('Activate') : __('Suspend') }}
+                    </button>
+                </form>
             </div>
         </div>
 
