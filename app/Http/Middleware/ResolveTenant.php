@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -49,20 +50,27 @@ class ResolveTenant
         }
 
         if ($hasExplicitTenant) {
-            $membershipExists = $user->tenantMemberships()
-                ->where('tenant_id', $tenant->getKey())
-                ->where('status', MembershipStatus::Active->value)
-                ->whereHas(
-                    'tenant',
-                    fn ($query) => $query->where('status', TenantStatus::Active->value)
-                )
+            $isPlatformAdmin = PlatformAdmin::query()
+                ->where('user_id', $user->getKey())
+                ->where('is_active', true)
                 ->exists();
 
-            abort_unless(
-                $membershipExists && $tenant->status === TenantStatus::Active,
-                Response::HTTP_FORBIDDEN,
-                'You do not have access to this workspace.',
-            );
+            if (! $isPlatformAdmin) {
+                $membershipExists = $user->tenantMemberships()
+                    ->where('tenant_id', $tenant->getKey())
+                    ->where('status', MembershipStatus::Active->value)
+                    ->whereHas(
+                        'tenant',
+                        fn ($query) => $query->where('status', TenantStatus::Active->value)
+                    )
+                    ->exists();
+
+                abort_unless(
+                    $membershipExists && $tenant->status === TenantStatus::Active,
+                    Response::HTTP_FORBIDDEN,
+                    'You do not have access to this workspace.',
+                );
+            }
         } else {
             $requestedTenantId = $request->session()->get('tenant_id');
 
