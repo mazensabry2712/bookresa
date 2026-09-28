@@ -1266,22 +1266,33 @@ Priority:
 Exit condition:
 Business and platform operators can read the current report data without spreadsheet-style overload.
 
-### F16 — Platform Admin
+### F16 — Platform Admin / SaaS Super Admin
 Screens:
-- Admin Dashboard
-- Businesses
+- Super Admin Dashboard
+- Businesses / Workspaces
 - Business Modules
-- Users
+- Users and memberships
 - Subscriptions
 - Payments
 - Usage
 - Reports
 - Plans
 - Support
-- Settings
+- Platform Settings
+
+Super Admin workspace control:
+- search and inspect every workspace;
+- activate or suspend a workspace;
+- open any workspace directly, including suspended workspaces;
+- use the existing tenant-facing screens for bookings, calendar, scheduling, services, staff, customers, payments, billing, reports, notifications and business settings;
+- keep a visible return path from the workspace shell back to the platform console.
+
+Security rule:
+- only authenticated active PlatformAdmin accounts receive the cross-workspace Super Admin capability;
+- normal workspace users remain restricted by membership and tenant permissions.
 
 Exit condition:
-Platform operations are possible without using tenant-facing screens.
+Platform operations are possible from the Super Admin console, and the SaaS owner can enter any workspace and operate it without duplicating the entire workspace UI.
 
 ### F17 — System states + final QA
 Build/review:
