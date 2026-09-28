@@ -27,6 +27,9 @@ beforeEach(function (): void {
 
     Route::middleware(['web', 'auth', 'tenant', 'module:payments'])
         ->get('/__test/optional-payments-module', fn () => 'ok');
+
+    Route::middleware(['web', 'auth', 'tenant', 'subscription.usable'])
+        ->get('/__test/subscription-gated-route', fn () => 'ok');
 });
 
 afterEach(function (): void {
@@ -252,6 +255,30 @@ test('enabled optional module requires subscription entitlement', function (): v
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get('/__test/optional-payments-module')
+        ->assertOk();
+});
+
+test('platform admin bypasses subscription usability gate', function (): void {
+    [$owner, $tenant] = moduleWorkspace('Platform Admin Subscription Access');
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', true);
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $settings): void {
+        $tenant->forceFill(['settings' => $settings])->save();
+    });
+
+    $admin = User::factory()->create([
+        'email' => 'subscription-platform-admin@example.com',
+    ]);
+
+    \App\Domain\Platform\Models\PlatformAdmin::query()->create([
+        'user_id' => $admin->id,
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($admin)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get('/__test/subscription-gated-route')
         ->assertOk();
 });
 
