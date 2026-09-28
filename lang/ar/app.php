@@ -44,6 +44,8 @@ return [
     'support' => 'الدعم',
     'plans' => 'الخطط',
     'admin' => 'الإدارة',
+    'super_admin' => 'المدير العام',
+    'open_workspace' => 'فتح مساحة العمل',
     'platform' => 'المنصة',
     'businesses' => 'الأنشطة',
     'service' => 'الخدمة',
