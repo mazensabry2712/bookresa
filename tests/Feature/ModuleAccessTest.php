@@ -83,6 +83,34 @@ test('core service route remains available when the module catalog is not seeded
         ->assertOk();
 });
 
+test('platform admin can access disabled modules', function (): void {
+    [$owner, $tenant] = moduleWorkspace('Platform Admin Module Access');
+
+    $admin = User::factory()->create([
+        'email' => 'module-platform-admin@example.com',
+    ]);
+
+    \App\Domain\Platform\Models\PlatformAdmin::query()->create([
+        'user_id' => $admin->id,
+        'is_active' => true,
+    ]);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $module = Module::query()->where('key', 'services')->firstOrFail();
+    TenantModule::query()
+        ->where('tenant_id', $tenant->id)
+        ->where('module_id', $module->id)
+        ->update(['enabled' => false]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->actingAs($admin)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
+        ->assertOk();
+});
+
 test('disabled service module blocks service routes even with the permission', function (): void {
     [$owner, $tenant] = moduleWorkspace();
 
