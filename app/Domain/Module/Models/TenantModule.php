@@ -32,6 +32,7 @@ class TenantModule extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return BelongsTo<Module, $this> */
     public function module(): BelongsTo
     {
         return $this->belongsTo(Module::class);
