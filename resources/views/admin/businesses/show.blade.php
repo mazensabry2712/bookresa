@@ -112,10 +112,7 @@
                                 </form>
                             @endif
                         </div>
-                        <div class="mt-5 hidden lg:block"></div>
-                        <div class="mt-0 grid gap-4 sm:grid-cols-2 lg:hidden">
-                        </div>
-                    @else
+                                            @else
                         <div class="mt-5 rounded-xl border border-dashed border-slate-300 px-4 py-6 text-sm text-slate-500 dark:border-slate-700">
                             {{ __('app.no_active_subscription') }}
                         </div>
