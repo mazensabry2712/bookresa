@@ -300,6 +300,7 @@ Route::middleware(['auth', 'verified', 'platform'])
     ->group(function (): void {
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
+        Route::get('/businesses/{tenant}', [PlatformBusinessController::class, 'show'])->name('businesses.show');
         Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
         Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
         Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
