@@ -49,6 +49,7 @@
                                 <td class="px-5 py-4">{{ number_format($business->staff_profiles_count) }}</td>
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap gap-2">
+                                        <a href="{{ route('dashboard', ['tenant' => $business->slug]) }}" class="rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('Open workspace') }}</a>
                                         <a href="{{ route('admin.businesses.modules.index', $business) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Modules') }}</a>
                                         <form method="POST" action="{{ route('admin.businesses.toggle-status', $business) }}">
                                             @csrf
