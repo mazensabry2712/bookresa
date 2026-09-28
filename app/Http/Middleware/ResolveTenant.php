@@ -36,6 +36,7 @@ class ResolveTenant
             || (is_string($routeTenant) && $routeTenant !== '');
 
         $tenant = null;
+        $isPlatformAdmin = false;
 
         if ($routeTenant instanceof Tenant) {
             $tenant = $routeTenant;
@@ -101,7 +102,8 @@ class ResolveTenant
         }
 
         abort_unless(
-            $tenant !== null && $tenant->status === TenantStatus::Active,
+            $tenant !== null
+                && ($tenant->status === TenantStatus::Active || $isPlatformAdmin),
             Response::HTTP_FORBIDDEN,
             'No active workspace is available for this account.',
         );
