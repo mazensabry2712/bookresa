@@ -130,7 +130,7 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] platform admin dashboard
 - [x] cross-workspace Super Admin access
 - [x] businesses/workspaces list and search
-- [x] Workspace Overview with owner, members, subscription, usage and operational quick links
+- [x] Workspace Overview with owner, members, subscription, usage, operational quick links and direct status controls
 - [x] business suspension/activation
 - [x] subscriptions list
 - [x] payments list
