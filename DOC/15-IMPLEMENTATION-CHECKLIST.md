@@ -126,9 +126,10 @@ This checklist measures the current backend/product implementation scope, not th
 - [ ] backup/restore test
 - [x] production build
 
-## Platform Admin
+## Platform Admin / SaaS Super Admin
 - [x] platform admin dashboard
-- [x] businesses list/search
+- [x] cross-workspace Super Admin access
+- [x] businesses/workspaces list and search
 - [x] business suspension/activation
 - [x] subscriptions list
 - [x] payments list
