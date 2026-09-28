@@ -7,7 +7,6 @@ use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Closure;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +15,7 @@ class ResolveTenant
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    ) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -55,7 +53,7 @@ class ResolveTenant
                 : $user->load('platformAdmin')->platformAdmin;
             $isPlatformAdmin = $platformAdmin?->is_active === true;
 
-            if (! $isPlatformAdmin) {
+            if (!$isPlatformAdmin) {
                 $membershipExists = $user->tenantMemberships()
                     ->where('tenant_id', $tenant->getKey())
                     ->where('status', MembershipStatus::Active->value)
