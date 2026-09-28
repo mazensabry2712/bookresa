@@ -54,7 +54,7 @@ test('platform admin can render a workspace overview from admin businesses', fun
     ]);
 
     $admin = platformUiAdmin();
-    $owner = User::factory()->create();
+    $owner = User::factory()->create(['email' => 'workspace-overview-owner@example.com']);
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
 
     $tenant = app(CreateBusiness::class)->handle($owner, $type, [
@@ -69,7 +69,7 @@ test('platform admin can render a workspace overview from admin businesses', fun
         ->get(route('admin.businesses.show', $tenant))
         ->assertOk()
         ->assertSee('Admin Overview Clinic')
-        ->assertSee('workspace-owner')
+        ->assertSee('workspace-overview-owner@example.com')
         ->assertSee(__('app.open_workspace'));
 });
 
