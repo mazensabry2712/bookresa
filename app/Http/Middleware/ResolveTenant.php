@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -51,10 +50,10 @@ class ResolveTenant
         }
 
         if ($hasExplicitTenant) {
-            $isPlatformAdmin = PlatformAdmin::query()
-                ->where('user_id', $user->getKey())
-                ->where('is_active', true)
-                ->exists();
+            $platformAdmin = $user->relationLoaded('platformAdmin')
+                ? $user->platformAdmin
+                : $user->load('platformAdmin')->platformAdmin;
+            $isPlatformAdmin = $platformAdmin?->is_active === true;
 
             if (! $isPlatformAdmin) {
                 $membershipExists = $user->tenantMemberships()
