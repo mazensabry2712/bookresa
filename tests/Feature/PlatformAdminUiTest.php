@@ -31,7 +31,6 @@ test('platform admin can render every primary admin page', function (): void {
     foreach ([
         'admin.dashboard',
         'admin.businesses.index',
-        'admin.businesses.show',
         'admin.users.index',
         'admin.subscriptions.index',
         'admin.payments.index',
@@ -45,6 +44,33 @@ test('platform admin can render every primary admin page', function (): void {
             ->get(route($routeName))
             ->assertOk();
     }
+});
+
+
+test('platform admin can render a workspace overview from admin businesses', function (): void {
+    $this->seed([
+        ModuleSeeder::class,
+        BusinessTypeSeeder::class,
+    ]);
+
+    $admin = platformUiAdmin();
+    $owner = User::factory()->create();
+    $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
+
+    $tenant = app(CreateBusiness::class)->handle($owner, $type, [
+        'name' => 'Admin Overview Clinic',
+        'name_en' => 'Admin Overview Clinic',
+        'name_ar' => 'عيادة النظرة العامة',
+        'timezone' => 'Africa/Cairo',
+        'locale' => 'en',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.businesses.show', $tenant))
+        ->assertOk()
+        ->assertSee('Admin Overview Clinic')
+        ->assertSee('workspace-owner')
+        ->assertSee(__('app.open_workspace'));
 });
 
 test('platform admin can render workspace module management from admin navigation', function (): void {
