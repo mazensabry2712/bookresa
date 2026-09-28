@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domain\Module\Services\TenantModuleAccess;
+use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Closure;
@@ -19,6 +20,13 @@ final class EnsureTenantModuleEnabled
     public function handle(Request $request, Closure $next, string $moduleKey): Response
     {
         $tenant = $this->currentTenant->get();
+
+        if (request()->user() !== null && PlatformAdmin::query()
+            ->where('user_id', request()->user()->getKey())
+            ->where('is_active', true)
+            ->exists()) {
+            return $next($request);
+        }
 
         if ($tenant === null) {
             $routeTenant = $request->route('tenant');
