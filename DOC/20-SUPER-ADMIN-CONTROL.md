@@ -20,6 +20,8 @@ A Super Admin can operate across the entire platform:
 - activate or suspend a workspace
 - open any workspace directly
 - manage workspace modules
+- suspend/activate workspace members directly from the workspace overview
+- suspend/activate an eligible workspace subscription directly from the workspace overview
 - enter suspended workspaces for operational control
 
 ### Workspace operations
@@ -75,7 +77,7 @@ The Platform Admin console lives under /admin.
 
 The workspace list provides:
 
-- **Workspace Overview** — inspect the workspace from one platform-level control page
+- **Workspace Overview** — inspect and operate the workspace from one platform-level control page
 - **Open workspace** — enter the selected tenant's normal workspace UI
 - **Modules** — manage enabled modules
 - **Suspend / Activate** — control workspace availability
