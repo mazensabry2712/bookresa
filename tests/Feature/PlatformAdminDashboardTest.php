@@ -210,6 +210,33 @@ test('platform finance pages reject non platform admins', function (): void {
         ->assertForbidden();
 });
 
+test('platform admin can enter any workspace including suspended or disabled modules', function (): void {
+    $admin = adminDashboardUser();
+    $owner = User::factory()->create(['email' => 'super-admin-target@example.com']);
+    $tenant = adminDashboardTenant($owner, 'Super Admin Target', TenantStatus::Suspended);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $servicesModule = \App\Domain\Module\Models\Module::query()
+        ->where('key', 'services')
+        ->firstOrFail();
+
+    \App\Domain\Module\Models\TenantModule::query()
+        ->where('tenant_id', $tenant->id)
+        ->where('module_id', $servicesModule->id)
+        ->update(['enabled' => false]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->actingAs($admin)
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
+        ->assertOk();
+
+    $this->actingAs($admin)
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
+        ->assertOk();
+});
+
 test('platform routes remain independent from current tenant context', function (): void {
     $admin = adminDashboardUser();
     $owner = User::factory()->create(['email' => 'independent-owner@example.com']);
