@@ -70,6 +70,13 @@ test('non platform admin cannot access platform dashboard or businesses', functi
     $this->actingAs($user)
         ->get(route('admin.businesses.index'))
         ->assertForbidden();
+
+    $owner = User::factory()->create(['email' => 'non-admin-target@example.com']);
+    $tenant = adminDashboardTenant($owner, 'Protected Workspace');
+
+    $this->actingAs($user)
+        ->get(route('admin.businesses.show', $tenant))
+        ->assertForbidden();
 });
 
 test('platform admin can view dashboard metrics', function (): void {
@@ -208,6 +215,47 @@ test('platform finance pages reject non platform admins', function (): void {
     $this->actingAs($user)
         ->get(route('admin.usage.index'))
         ->assertForbidden();
+});
+
+
+test('platform admin can view a workspace control overview', function (): void {
+    $admin = adminDashboardUser();
+    $owner = User::factory()->create(['email' => 'workspace-owner@example.com']);
+    $tenant = adminDashboardTenant($owner, 'Workspace Overview Clinic');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Overview Plan', 'ar' => 'خطة النظرة العامة'],
+        'price_minor' => 19900,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 20,
+        'additional_customer_price_minor' => 1000,
+        'trial_days' => 0,
+        'is_active' => true,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle($plan);
+    $subscription->forceFill(['payment_status' => PaymentStatus::Paid])->save();
+
+    app(CurrentTenant::class)->clear();
+
+    $this->actingAs($admin)
+        ->get(route('admin.businesses.show', $tenant))
+        ->assertOk()
+        ->assertSee('Workspace Overview Clinic')
+        ->assertSee('workspace-owner@example.com')
+        ->assertSee('Overview Plan')
+        ->assertViewHas('stats', function (array $stats): bool {
+            return $stats['customers'] === 0
+                && $stats['bookings'] === 0
+                && $stats['services'] === 0
+                && $stats['staff'] === 0
+                && $stats['activeMembers'] === 1
+                && $stats['paidRevenueMinor'] === 0;
+        })
+        ->assertViewHas('subscriptionUsable', true);
 });
 
 test('platform admin can enter any workspace including suspended or disabled modules', function (): void {
