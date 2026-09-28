@@ -53,7 +53,7 @@ class ResolveTenant
                 : $user->load('platformAdmin')->platformAdmin;
             $isPlatformAdmin = $platformAdmin?->is_active === true;
 
-            if (!$isPlatformAdmin) {
+            if (! $isPlatformAdmin) {
                 $membershipExists = $user->tenantMemberships()
                     ->where('tenant_id', $tenant->getKey())
                     ->where('status', MembershipStatus::Active->value)
