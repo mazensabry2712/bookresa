@@ -29,7 +29,7 @@ beforeEach(function (): void {
         ->get('/__test/optional-payments-module', fn () => 'ok');
 
     Route::middleware(['web', 'auth', 'tenant', 'subscription.usable'])
-        ->get('/__test/subscription-gated-route', fn () => 'ok');
+        ->get('/__test/{tenant:slug}/subscription-gated-route', fn () => 'ok');
 });
 
 afterEach(function (): void {
@@ -278,7 +278,7 @@ test('platform admin bypasses subscription usability gate', function (): void {
 
     $this->actingAs($admin)
         ->withSession(['tenant_id' => $tenant->id])
-        ->get('/__test/subscription-gated-route')
+        ->get('/__test/'.$tenant->slug.'/subscription-gated-route')
         ->assertOk();
 });
 
