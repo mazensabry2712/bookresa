@@ -44,6 +44,8 @@ return [
     'support' => 'Support',
     'plans' => 'Plans',
     'admin' => 'Admin',
+    'super_admin' => 'Super Admin',
+    'open_workspace' => 'Open workspace',
     'platform' => 'Platform',
     'businesses' => 'Businesses',
     'service' => 'Service',
