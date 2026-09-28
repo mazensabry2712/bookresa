@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Models\User;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::before(function ($user): ?bool {
-            return $user instanceof \App\Models\User
+            return $user instanceof User
                 && PlatformAdmin::query()
                     ->where('user_id', $user->getKey())
                     ->where('is_active', true)
