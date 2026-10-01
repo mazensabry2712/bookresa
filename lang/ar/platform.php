@@ -171,4 +171,7 @@ return [
     'stop_impersonation' => 'العودة لمسؤول المنصة',
     'impersonation_member_required' => 'هذا المستخدم ليس عضوًا نشطًا في مساحة العمل المحددة.',
     'impersonation_verified_required' => 'يجب أن يكون بريد المستخدم المحدد موثقًا قبل بدء الدخول بحسابه.',
+
+    'recent_workspace_activity' => 'أحدث نشاط مساحة العمل',
+    'recent_workspace_activity_help' => 'أحدث العمليات الحساسة المرتبطة بمساحة العمل.',
 ];
