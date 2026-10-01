@@ -19,6 +19,7 @@ final class PlatformCustomerController
     {
         $search = trim((string) $request->input('search'));
         $tenantId = $request->integer('tenant_id');
+        $currency = strtoupper(trim((string) $request->input('currency')));
         $sort = (string) $request->input('sort', 'spending_desc');
         $vipOnly = $request->boolean('vip');
 
@@ -30,7 +31,8 @@ final class PlatformCustomerController
             })
             ->whereColumn('bookings.customer_id', 'customers.id')
             ->whereColumn('bookings.tenant_id', 'customers.tenant_id')
-            ->where('payments.status', PaymentStatus::Paid->value);
+            ->where('payments.status', PaymentStatus::Paid->value)
+            ->when($currency !== '', fn ($query) => $query->where('payments.currency', $currency));
 
         $bookings = Booking::withoutGlobalScopes()
             ->whereColumn('bookings.customer_id', 'customers.id')
@@ -91,6 +93,12 @@ final class PlatformCustomerController
             ->paginate(25)
             ->withQueryString();
 
+        $currencies = Payment::withoutGlobalScopes()
+            ->where('status', PaymentStatus::Paid->value)
+            ->distinct()
+            ->orderBy('currency')
+            ->pluck('currency');
+
         $tenants = Tenant::query()
             ->with(['profile' => fn ($query) => $query->withoutGlobalScopes()])
             ->orderByDesc('id')
@@ -100,6 +108,8 @@ final class PlatformCustomerController
             'customers' => $customers,
             'tenants' => $tenants,
             'sort' => $sort,
+            'currency' => $currency,
+            'currencies' => $currencies,
             'vipOnly' => $vipOnly,
         ]);
     }
