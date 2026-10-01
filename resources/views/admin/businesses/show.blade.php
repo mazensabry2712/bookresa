@@ -276,9 +276,9 @@
                             <span class="font-semibold">{{ __('app.connection_status') }}</span>
                             <select name="status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                                 @foreach ([
-                                    'pending' => '{{ __('app.pending_verification') }}',
-                                    'active' => 'Active',
-                                    'disabled' => 'Disabled',
+                                    'pending' => __('app.pending_verification'),
+                                    'active' => __('app.active'),
+                                    'disabled' => __('app.suspended'),
                                 ] as $value => $label)
                                     <option value="{{ $value }}" @selected($tenant->paymentAccount?->status?->value === $value)>{{ $label }}</option>
                                 @endforeach
