@@ -87,7 +87,7 @@ final class KashierReturnController
 
                     $returnedMerchantId = trim((string) data_get($result->metadata, 'merchant_id'));
 
-                    if ($returnedMerchantId !== '' && $expectedMerchantId !== '' && $returnedMerchantId !== $expectedMerchantId) {
+                    if ($returnedMerchantId === '' || $expectedMerchantId === '' || $returnedMerchantId !== $expectedMerchantId) {
                         throw new RuntimeException('Kashier payment merchant account does not match the payment.');
                     }
 
