@@ -36,6 +36,12 @@
                 <a href="{{ route('dashboard', ['tenant' => $tenant->slug]) }}" class="rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">
                     {{ __('app.open_workspace') }}
                 </a>
+                <a href="{{ route('admin.businesses.edit', $tenant) }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">
+                    {{ __('platform.edit_workspace') }}
+                </a>
+                <a href="{{ route('admin.customers.index', ['tenant_id' => $tenant->id]) }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">
+                    {{ __('platform.customer_intelligence') }}
+                </a>
                 <a href="{{ route('admin.businesses.index') }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">
                     {{ __('app.back_to_businesses') }}
                 </a>
@@ -292,6 +298,26 @@
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
+                            <h3 class="font-semibold">{{ __('platform.customer_intelligence') }}</h3>
+                            <p class="mt-1 text-sm text-slate-500">{{ __('platform.customer_intelligence_help') }}</p>
+                        </div>
+                        <a href="{{ route('admin.customers.index', ['tenant_id' => $tenant->id]) }}" class="text-sm font-semibold underline underline-offset-4">{{ __('platform.open_customer_data') }}</a>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                            <p class="text-xs text-slate-500">{{ __('platform.customers') }}</p>
+                            <p class="mt-1 text-xl font-bold">{{ number_format($stats['customers']) }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                            <p class="text-xs text-slate-500">{{ __('platform.paid_revenue') }}</p>
+                            <p class="mt-1 text-xl font-bold">{{ number_format($stats['paidRevenueMinor'] / 100, 2) }} {{ $latestSubscription?->currency ?? 'EGP' }}</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
