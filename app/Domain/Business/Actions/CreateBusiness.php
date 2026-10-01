@@ -6,6 +6,8 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Module\Models\Module;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -55,6 +57,15 @@ final class CreateBusiness
             ]);
 
             return $this->currentTenant->run($tenant, function () use ($owner, $businessType, $data, $name, $tenant): Tenant {
+                TenantPaymentAccount::query()->create([
+                    'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
+                    'merchant_id' => null,
+                    'status' => TenantPaymentAccountStatus::Pending,
+                    'metadata' => [
+                        'connection_source' => 'tenant_created',
+                    ],
+                ]);
+
                 BusinessProfile::query()->create([
                     'tenant_id' => $tenant->getKey(),
                     'name' => [
