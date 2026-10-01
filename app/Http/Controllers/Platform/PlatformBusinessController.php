@@ -158,7 +158,8 @@ final class PlatformBusinessController
             ->first();
 
         if ($account === null) {
-            $account = TenantPaymentAccount::query()->create([
+            $account = new TenantPaymentAccount();
+            $account->forceFill([
                 'tenant_id' => $tenant->getKey(),
                 'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
                 'merchant_id' => $validated['merchant_id'],
@@ -166,6 +167,7 @@ final class PlatformBusinessController
                 'connected_at' => $validated['status'] === TenantPaymentAccountStatus::Active->value ? now() : null,
                 'metadata' => ['connection_source' => 'platform_admin'],
             ]);
+            $account->saveQuietly();
         } else {
             abort_unless((int) $account->tenant_id === (int) $tenant->getKey(), 409);
 
@@ -173,7 +175,7 @@ final class PlatformBusinessController
                 'merchant_id' => $validated['merchant_id'],
                 'status' => $validated['status'],
                 'connected_at' => $validated['status'] === TenantPaymentAccountStatus::Active->value ? now() : null,
-            ])->save();
+            ])->saveQuietly();
         }
 
         app(AuditLogger::class)->log(
