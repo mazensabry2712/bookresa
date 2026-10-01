@@ -97,6 +97,7 @@ function webhookPayload(string $reference, string $transactionId = 'TX-WEBHOOK-0
         'data' => [
             'merchantOrderId' => 'MERCHANT-001',
             'kashierOrderId' => 'KASHIER-001',
+            'merchantId' => 'MID-WEBHOOK',
             'orderReference' => $reference,
             'transactionId' => $transactionId,
             'status' => $status,
@@ -111,6 +112,7 @@ function webhookPayload(string $reference, string $transactionId = 'TX-WEBHOOK-0
                 'channel',
                 'currency',
                 'kashierOrderId',
+                'merchantId',
                 'merchantOrderId',
                 'method',
                 'orderReference',
