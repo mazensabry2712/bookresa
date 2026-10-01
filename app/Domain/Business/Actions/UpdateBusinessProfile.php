@@ -46,7 +46,7 @@ final class UpdateBusinessProfile
             $merchantId = trim((string) ($data['payment_merchant_id'] ?? ''));
             $paymentAccount = TenantPaymentAccount::query()->first();
 
-            if ($paymentsAvailable && $paymentAccount === null && $merchantId !== '') {
+            if ($paymentAccount === null && $merchantId !== '') {
                 TenantPaymentAccount::query()->create([
                     'tenant_id' => $tenantId,
                     'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
@@ -54,7 +54,7 @@ final class UpdateBusinessProfile
                     'status' => TenantPaymentAccountStatus::Pending,
                     'metadata' => ['connection_source' => 'workspace_settings'],
                 ]);
-            } elseif ($paymentsAvailable && $paymentAccount !== null && $merchantId !== '') {
+            } elseif ($paymentAccount !== null && $merchantId !== '') {
                 $merchantChanged = $paymentAccount->merchant_id !== $merchantId;
 
                 $paymentAccount->forceFill([
