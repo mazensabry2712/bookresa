@@ -1,15 +1,17 @@
 # BookResa — Production Readiness Runbook
 
-## Current verified local gate
+## Current verified CI gate
 
-The latest local verification reported on 2026-09-27:
-- full test suite: 270 passed, 1 skipped, 1037 assertions
-- `php artisan view:cache`: passed
+The latest GitHub Actions CI verification on 2026-10-02:
+- full test suite: 292 passed, 1 skipped, 1149 assertions
+- PHPStan: passed
+- PHP syntax scan: passed
+- changed-file Pint: passed
 - Vite production build: passed
-- `composer install` and optimized autoload generation: passed
-- `php artisan optimize:clear`: passed
 
-The latest locally verified application commit is `da488a39`; GitHub Actions CI run #910 passed on this commit.
+The verified `main` commit is `7a0d81b1`; CI run #1386 passed on this commit.
+
+A real production deployment is a separate gate and must still be verified against the live infrastructure.
 
 Pint: touched files pass; the full repository currently has 101 existing style issues across 301 files
 - SEO regression tests: previously verified
