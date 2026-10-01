@@ -2,10 +2,8 @@
 
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
-use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\MembershipStatus;
-use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Models\User;
 use Database\Seeders\BusinessTypeSeeder;
@@ -89,29 +87,47 @@ test('platform admin can add update transfer ownership and remove workspace memb
         ->where('user_id', $memberUser->id)
         ->firstOrFail();
 
-    expect($memberMembership->fresh()->is_primary)->toBeTrue();
+    expect($memberMembership->fresh()->is_primary)->toBeFalse();
+
+    $this->actingAs($admin)
+        ->delete(route('admin.businesses.members.destroy', [$tenant, $memberMembership]))
+        ->assertRedirect();
+
+    expect(TenantMembership::query()
+        ->where('tenant_id', $tenant->id)
+        ->where('user_id', $memberUser->id)
+        ->exists())->toBeFalse();
 
     $this->actingAs($admin)
         ->post(route('admin.businesses.members.store', $tenant), [
             'name' => $memberUser->name,
             'email' => $memberUser->email,
             'role' => 'receptionist',
-            'is_primary' => '',
         ])
         ->assertRedirect();
 
-    expect(TenantMembership::query()->where('tenant_id', $tenant->id)->where('user_id', $memberUser->id)->count())->toBe(1);
+    $readded = TenantMembership::query()
+        ->where('tenant_id', $tenant->id)
+        ->where('user_id', $memberUser->id)
+        ->firstOrFail();
+
+    expect($readded->is_primary)->toBeFalse();
 
     $this->actingAs($admin)
-        ->patch(route('admin.businesses.members.update', [$tenant, $memberMembership]), [
-            'role' => 'receptionist',
+        ->patch(route('admin.businesses.members.update', [$tenant, $readded]), [
+            'role' => 'manager',
             'status' => 'active',
             'is_primary' => '1',
         ])
         ->assertRedirect();
 
-    // The primary owner can only be changed explicitly, never removed accidentally.
-    expect($memberMembership->fresh()->is_primary)->toBeTrue();
+    $roleTeamId = getPermissionsTeamId();
+    setPermissionsTeamId($tenant->id);
+    try {
+        expect($memberUser->fresh()->hasRole('owner'))->toBeTrue();
+    } finally {
+        setPermissionsTeamId($roleTeamId);
+    }
 });
 
 test('non platform admin cannot mutate workspace members', function (): void {
