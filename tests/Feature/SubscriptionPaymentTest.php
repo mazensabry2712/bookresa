@@ -9,7 +9,6 @@ use App\Domain\Billing\Services\RenewSubscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
-use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
