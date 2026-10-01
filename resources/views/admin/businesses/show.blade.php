@@ -383,6 +383,18 @@
                                         <p class="mt-1 break-all text-xs text-slate-500">{{ $membership->user?->email ?? '—' }}</p>
                                     </div>
 
+                                    <div class="flex flex-wrap items-center gap-2 xl:shrink-0">
+                                        @php($membership->user?->loadMissing('platformAdmin'))
+                                        @if ($membership->user && ! $membership->user->platformAdmin?->is_active)
+                                            <form method="POST" action="{{ route('admin.businesses.impersonate', [$tenant, $membership->user]) }}">
+                                                @csrf
+                                                <button type="submit" class="rounded-lg border border-indigo-200 px-3 py-2 text-xs font-bold text-indigo-700 dark:border-indigo-900 dark:text-indigo-300">
+                                                    {{ __('platform.impersonate') }}
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+
                                     <form method="POST" action="{{ route('admin.businesses.members.update', [$tenant, $membership]) }}" class="grid gap-2 sm:grid-cols-3 xl:min-w-[34rem]">
                                         @csrf
                                         @method('PATCH')
