@@ -63,7 +63,7 @@
                 <p class="mt-2 text-2xl font-bold">{{ $money((int) $metrics['paidSubscriptionRevenueMinor']) }}</p>
             </div>
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Workspace booking volume') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ __('Workspace booking revenue') }}</p>
                 <p class="mt-2 text-2xl font-bold">{{ $money((int) $metrics['bookingRevenueMinor']) }}</p>
             </div>
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
