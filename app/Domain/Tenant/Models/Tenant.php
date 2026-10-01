@@ -7,6 +7,7 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
@@ -120,6 +121,14 @@ class Tenant extends Model implements IsTenant
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * @return HasOne<TenantPaymentAccount, $this>
+     */
+    public function paymentAccount(): HasOne
+    {
+        return $this->hasOne(TenantPaymentAccount::class);
     }
 
     /**
