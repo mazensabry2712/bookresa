@@ -307,6 +307,9 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::put('/businesses/{tenant}', [PlatformBusinessController::class, 'update'])->name('businesses.update');
         Route::delete('/businesses/{tenant}', [PlatformBusinessController::class, 'destroy'])->name('businesses.destroy');
         Route::get('/businesses/{tenant}', [PlatformBusinessController::class, 'show'])->name('businesses.show');
+        Route::post('/businesses/{tenant}/members', [PlatformBusinessController::class, 'addMember'])->name('businesses.members.store');
+        Route::patch('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'updateMember'])->name('businesses.members.update');
+        Route::delete('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'removeMember'])->name('businesses.members.destroy');
         Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
         Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
         Route::get('/customers', [PlatformCustomerController::class, 'index'])->name('customers.index');
