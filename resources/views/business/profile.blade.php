@@ -216,7 +216,16 @@
                     <div class="rounded-xl br-surface-soft px-4 py-3 lg:min-w-56">
                         <p class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ __('app.connection_status') }}</p>
                         <p class="mt-2 text-sm font-bold">
-                            {{ str($paymentAccount?->status?->value ?? '{{ __('app.not_connected') }}')->headline() }}
+                            @if ($paymentAccount?->status?->value)
+                                {{ match ($paymentAccount->status->value) {
+                                    'active' => __('app.active'),
+                                    'pending' => __('app.pending_verification'),
+                                    'disabled' => __('app.suspended'),
+                                    default => str($paymentAccount->status->value)->headline(),
+                                } }}
+                            @else
+                                {{ __('app.not_connected') }}
+                            @endif
                         </p>
                         @if ($paymentAccount?->merchant_id)
                             <p class="mt-1 text-xs text-slate-500">{{ $paymentAccount->merchant_id }}</p>
