@@ -11,7 +11,6 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class PlatformCustomerController
@@ -105,13 +104,13 @@ final class PlatformCustomerController
         ]);
     }
 
-    public function show(Tenant $tenant, Customer $customer): View
+    public function show(Tenant $tenant, int $customer): View
     {
         $tenantId = (int) $tenant->getKey();
 
         $customer = Customer::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
-            ->findOrFail($customer->getKey());
+            ->findOrFail($customer);
 
         $customer->loadMissing([
             'tenant' => fn ($query) => $query->withoutGlobalScopes()->with([
@@ -168,11 +167,11 @@ final class PlatformCustomerController
         ]);
     }
 
-    public function toggleVip(Tenant $tenant, Customer $customer): RedirectResponse
+    public function toggleVip(Tenant $tenant, int $customer): RedirectResponse
     {
         $customer = Customer::withoutGlobalScopes()
             ->where('tenant_id', $tenant->getKey())
-            ->findOrFail($customer->getKey());
+            ->findOrFail($customer);
 
         $next = ! $customer->is_vip;
         $customer->forceFill(['is_vip' => $next])->save();
