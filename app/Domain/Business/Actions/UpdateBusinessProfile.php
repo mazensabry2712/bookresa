@@ -31,7 +31,7 @@ final class UpdateBusinessProfile
             $paymentMode = 'pay_later';
         }
 
-        return DB::transaction(function () use ($data, $tenantId, $paymentMode, $paymentsAvailable): BusinessProfile {
+        return DB::transaction(function () use ($data, $tenantId, $paymentMode): BusinessProfile {
             $profile = BusinessProfile::query()->first();
 
             if ($profile === null) {
