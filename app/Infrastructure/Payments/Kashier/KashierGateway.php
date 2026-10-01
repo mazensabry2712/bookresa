@@ -59,6 +59,16 @@ final class KashierGateway implements PaymentGateway
             $payload['serverWebhook'] = $config['server_webhook'];
         }
 
+        $connectedAccount = trim((string) ($request->metadata['connected_account_merchant_id'] ?? ''));
+
+        if ($connectedAccount !== '') {
+            if (! preg_match('/^MID-[A-Z0-9-]+$/', $connectedAccount)) {
+                throw new RuntimeException('Kashier connected account merchant ID is invalid.');
+            }
+
+            $payload['connectedAccount'] = $connectedAccount;
+        }
+
         if ($request->metadata !== []) {
             $payload['metaData'] = $request->metadata;
         }
@@ -139,6 +149,7 @@ final class KashierGateway implements PaymentGateway
             metadata: [
                 'kashier_status' => $data['status'] ?? null,
                 'merchant_order_id' => $data['merchantOrderId'] ?? null,
+                'merchant_id' => $data['merchantId'] ?? null,
                 'kashier_order_id' => $data['orderId'] ?? null,
                 'session_id' => $data['sessionId'] ?? $providerReference,
             ],
