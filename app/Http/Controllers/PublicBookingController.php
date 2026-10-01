@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Payment\Services\StartBookingPayment;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
@@ -101,6 +103,25 @@ class PublicBookingController
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                     : null;
 
+                $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
+                $paymentMode = (string) data_get($bookingSettings, 'payment_mode', 'pay_later');
+                $paymentRequired = (bool) data_get($bookingSettings, 'payment_required', false)
+                    || in_array($paymentMode, ['full', 'deposit'], true);
+
+                if ($paymentRequired) {
+                    $paymentAccount = TenantPaymentAccount::query()
+                        ->where('provider', (string) config('bookresa.payments.default_provider', 'kashier'))
+                        ->first();
+
+                    if ($paymentAccount === null || $paymentAccount->status !== TenantPaymentAccountStatus::Active || blank($paymentAccount->merchant_id)) {
+                        throw new RuntimeException('Online booking payments are not connected for this workspace yet.');
+                    }
+
+                    if ($request->filled('email') === false) {
+                        throw new RuntimeException('Customer email is required for online payment.');
+                    }
+                }
+
                 $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
                 $startsAt = CarbonImmutable::createFromFormat(
                     'Y-m-d H:i',
@@ -117,12 +138,6 @@ class PublicBookingController
                     $staff,
                     $request->filled('notes') ? $request->string('notes')->toString() : null,
                 );
-
-                $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
-                $paymentMode = data_get($bookingSettings, 'payment_mode');
-
-                $paymentRequired = (bool) data_get($bookingSettings, 'payment_required', false)
-                    || in_array($paymentMode, ['full', 'deposit'], true);
 
                 if ($paymentRequired) {
                     $payment = $startBookingPayment->handle($booking);
