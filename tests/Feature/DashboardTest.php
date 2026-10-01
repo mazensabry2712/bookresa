@@ -26,6 +26,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-09-27 08:00:00', 'Africa/Cairo'));
     $this->seed([
         ModuleSeeder::class,
         BusinessTypeSeeder::class,
@@ -33,6 +34,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
+    CarbonImmutable::setTestNow();
     setPermissionsTeamId(null);
     app(CurrentTenant::class)->clear();
 });
