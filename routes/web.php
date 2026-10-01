@@ -318,6 +318,9 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
         Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
         Route::patch('/support/{ticket}', [SupportTicketController::class, 'update'])->name('support.update');
+        Route::patch('/businesses/{tenant}/payment-account', [PlatformBusinessController::class, 'updatePaymentAccount'])
+            ->name('businesses.payment-account.update');
+
         Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
             ->name('businesses.toggle-status');
         Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');
