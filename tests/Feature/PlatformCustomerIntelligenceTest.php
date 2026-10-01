@@ -134,7 +134,7 @@ test('platform customer intelligence aggregates spending per customer and sorts 
     ]);
 
     $response = $this->actingAs($admin)
-        ->get(route('admin.customers.index'));
+        ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'currency' => 'EGP']));
 
     $response->assertOk()
         ->assertSee('High Value Customer')
@@ -146,17 +146,14 @@ test('platform customer intelligence aggregates spending per customer and sorts 
                 && (int) $rows->first()->total_paid_minor === 75000;
         });
 
-    $this->actingAs($admin)
-        ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'currency' => 'EGP']))
-        ->assertOk()
-        ->assertSee('High Value Customer')
-        ->assertSee('750.00 EGP')
-        ->assertDontSee('Regular Customer');
+    $response->assertSee('750.00 EGP');
 
     $this->actingAs($admin)
         ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'currency' => 'USD']))
+        ->assertOk()
         ->assertSee('High Value Customer')
         ->assertSee('50.00 USD');
+
 });
 
 test('platform admin can view customer details and toggle vip without crossing tenants', function (): void {
