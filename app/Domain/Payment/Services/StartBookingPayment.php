@@ -4,6 +4,7 @@ namespace App\Domain\Payment\Services;
 
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Payment\Contracts\PaymentGateway;
@@ -62,9 +63,17 @@ final class StartBookingPayment
             'payment_mode' => $paymentMode,
             'deposit_percent' => $paymentMode === 'deposit' ? (int) data_get($settings, 'deposit_percent', 50) : null,
             'merchant_redirect' => route('payments.kashier.return'),
+            'connected_account_merchant_id' => $paymentAccount->merchant_id,
         ];
 
         $provider = (string) config('bookresa.payments.default_provider', 'kashier');
+        $paymentAccount = TenantPaymentAccount::query()
+            ->where('provider', $provider)
+            ->first();
+
+        if ($paymentAccount === null || ! $paymentAccount->isActive()) {
+            throw new RuntimeException('Online booking payments are not connected for this workspace yet.');
+        }
 
         $latestPayment = $booking->payments()
             ->where('provider', $provider)
