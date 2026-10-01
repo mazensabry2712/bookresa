@@ -197,6 +197,36 @@
 
             <section class="br-panel p-5 sm:p-6">
                 <div>
+                    <h3 class="font-semibold text-slate-950 dark:text-white">Booking payment account</h3>
+                    <p class="mt-1 text-sm leading-6 text-slate-500">Connect your own payment merchant so money from your customers' bookings is settled to your business, not to BookResa.</p>
+                </div>
+
+                <div class="mt-5 grid gap-4 lg:grid-cols-[1fr_auto]">
+                    <label class="space-y-1.5 text-sm">
+                        <span class="font-semibold">Kashier Merchant ID</span>
+                        <input name="payment_merchant_id"
+                               value="{{ old('payment_merchant_id', $paymentAccount?->merchant_id) }}"
+                               placeholder="MID-..."
+                               pattern="MID-[A-Z0-9-]+"
+                               maxlength="80"
+                               class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                        <span class="block text-xs leading-5 text-slate-500">The connected merchant must authorize BookResa as a platform before online booking payments can be activated.</span>
+                    </label>
+
+                    <div class="rounded-xl br-surface-soft px-4 py-3 lg:min-w-56">
+                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">Connection status</p>
+                        <p class="mt-2 text-sm font-bold">
+                            {{ str($paymentAccount?->status?->value ?? 'not_connected')->headline() }}
+                        </p>
+                        @if ($paymentAccount?->merchant_id)
+                            <p class="mt-1 text-xs text-slate-500">{{ $paymentAccount->merchant_id }}</p>
+                        @endif
+                    </div>
+                </div>
+            </section>
+
+            <section class="br-panel p-5 sm:p-6">
+                <div>
                     <h3 class="font-semibold text-slate-950 dark:text-white">{{ __('app.business_ui.booking_settings') }}</h3>
                     <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.business_ui.booking_settings_help') }}</p>
                 </div>
