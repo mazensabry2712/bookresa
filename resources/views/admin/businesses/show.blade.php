@@ -253,6 +253,48 @@
                 </div>
 
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                    <div>
+                        <h3 class="font-semibold">Booking payment account</h3>
+                        <p class="mt-1 text-sm text-slate-500">Control which connected Kashier merchant receives this workspace's customer booking payments.</p>
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.businesses.payment-account.update', $tenant) }}" class="mt-5 space-y-4">
+                        @csrf
+                        @method('PATCH')
+
+                        <label class="block space-y-1.5 text-sm">
+                            <span class="font-semibold">Merchant ID</span>
+                            <input name="merchant_id"
+                                   value="{{ old('merchant_id', $tenant->paymentAccount?->merchant_id) }}"
+                                   placeholder="MID-..."
+                                   pattern="MID-[A-Z0-9-]+"
+                                   required
+                                   class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                        </label>
+
+                        <label class="block space-y-1.5 text-sm">
+                            <span class="font-semibold">Connection status</span>
+                            <select name="status" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                                @foreach ([
+                                    'pending' => 'Pending verification',
+                                    'active' => 'Active',
+                                    'disabled' => 'Disabled',
+                                ] as $value => $label)
+                                    <option value="{{ $value }}" @selected($tenant->paymentAccount?->status?->value === $value)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <p class="text-xs leading-5 text-slate-500">Only an active connected account is used for online booking payments.</p>
+                            <button type="submit" class="rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white">
+                                Save payment account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <h3 class="font-semibold">{{ __('app.manage_workspace') }}</h3>
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.manage_workspace_help') }}</p>
                     <div class="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
