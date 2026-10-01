@@ -53,3 +53,14 @@ Plan price, included limit, additional customer price, billing period and enable
 
 ## Correctness
 Billing must be deterministic, auditable and idempotent against duplicate jobs/events.
+
+
+## Lifecycle policy
+
+- Cancellation is scheduled at the current period boundary; access remains available until `end_at`.
+- A scheduled cancellation can be reactivated before the boundary.
+- Plan changes are scheduled for the next billing boundary through `next_plan_id` and `plan_change_effective_at`; customers are never deleted because of plan limits.
+- Expiry is deterministic: Trial/Active subscriptions with `end_at <= now` become Expired.
+- The expiry command is scheduled hourly and uses overlap protection.
+- Renewal is explicit in the MVP: an Expired subscription can be renewed using its scheduled next plan (or current plan) and is reset to payment pending before a new subscription payment settles it.
+- A paid Active subscription is usable only after its subscription payment is Paid. A Trial subscription remains usable during the trial window.
