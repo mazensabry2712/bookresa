@@ -22,8 +22,7 @@ final class HandleKashierWebhook
         private readonly PaymentService $payments,
         private readonly SyncBookingPaymentStatus $bookingPaymentSync,
         private readonly SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
-    ) {
-    }
+    ) {}
 
     /**
      * @param array<string, mixed> $payload
@@ -32,7 +31,7 @@ final class HandleKashierWebhook
     {
         $data = $payload['data'] ?? null;
 
-        if (! is_array($data)) {
+        if (!is_array($data)) {
             throw new RuntimeException('Invalid Kashier webhook payload.');
         }
 
@@ -41,13 +40,13 @@ final class HandleKashierWebhook
         $orderReference = (string) ($data['orderReference'] ?? '');
         $status = strtoupper((string) ($data['status'] ?? ''));
 
-        if ($event === '' || $transactionId === '' || $orderReference === '' || ! in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
+        if ($event === '' || $transactionId === '' || $orderReference === '' || !in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
 
-        if (! $this->verifier->verify($data, $signature, $apiKey)) {
+        if (!$this->verifier->verify($data, $signature, $apiKey)) {
             throw new LogicException('Invalid Kashier webhook signature.');
         }
 
@@ -160,7 +159,7 @@ final class HandleKashierWebhook
     {
         $value = trim((string) $amount);
 
-        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
+        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
             throw new RuntimeException('Kashier webhook amount is invalid.');
         }
 
@@ -171,7 +170,7 @@ final class HandleKashierWebhook
 
     private function parseDate(mixed $value): ?CarbonImmutable
     {
-        if (! is_string($value) || trim($value) === '') {
+        if (!is_string($value) || trim($value) === '') {
             return null;
         }
 
