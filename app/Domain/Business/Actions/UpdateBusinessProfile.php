@@ -7,6 +7,7 @@ use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
 use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use LogicException;
@@ -16,8 +17,7 @@ final class UpdateBusinessProfile
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly TenantModuleAccess $moduleAccess,
-    ) {
-    }
+    ) {}
 
     public function handle(array $data): BusinessProfile
     {
@@ -41,7 +41,6 @@ final class UpdateBusinessProfile
             if ((int) $profile->tenant_id !== $tenantId) {
                 throw new LogicException('Business profile must belong to the current tenant.');
             }
-
 
             $merchantId = trim((string) ($data['payment_merchant_id'] ?? ''));
             $paymentAccount = TenantPaymentAccount::query()->first();
@@ -81,7 +80,7 @@ final class UpdateBusinessProfile
                 $coverPath = null;
             }
 
-            if (($data['logo'] ?? null) instanceof \Illuminate\Http\UploadedFile) {
+            if (($data['logo'] ?? null) instanceof UploadedFile) {
                 if ($logoPath) {
                     Storage::disk('public')->delete($logoPath);
                 }
