@@ -316,7 +316,7 @@ final class PlatformBusinessController
                 'email_verified_at' => now(),
             ]);
         } else {
-            if ($user->name !== $data['name']) {
+            if (blank($user->name)) {
                 $user->forceFill(['name' => $data['name']])->save();
             }
 
