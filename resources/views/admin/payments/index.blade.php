@@ -34,6 +34,7 @@
                         <tr>
                             <th class="px-5 py-3 text-start">{{ __('Business') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Reference') }}</th>
+                            <th class="px-5 py-3 text-start">{{ __('Flow') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Provider') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Amount') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Status') }}</th>
@@ -48,13 +49,20 @@
                                     <p class="font-semibold">{{ $payment->reference }}</p>
                                     <p class="mt-1 text-xs text-slate-500">{{ $payment->provider_reference ?: '—' }}</p>
                                 </td>
+                                <td class="px-5 py-4">
+                                    @if ($payment->payable_type === \App\Domain\Billing\Models\Subscription::class)
+                                        <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-200">BookResa subscription</span>
+                                    @else
+                                        <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200">Workspace booking</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-4 text-slate-500">{{ $payment->provider }}</td>
                                 <td class="px-5 py-4 font-semibold">{{ number_format($payment->amount_minor / 100, 2) }} {{ $payment->currency }}</td>
                                 <td class="px-5 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold dark:bg-slate-800">{{ str($payment->status->value)->headline() }}</span></td>
                                 <td class="px-5 py-4 text-slate-500">{{ $payment->paid_at?->format('Y-m-d H:i') ?? '—' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="px-5 py-10 text-center text-sm text-slate-500">{{ __('No payments found.') }}</td></tr>
+                            <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">{{ __('No payments found.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
