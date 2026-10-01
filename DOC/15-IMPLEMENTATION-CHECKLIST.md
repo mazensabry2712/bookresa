@@ -49,13 +49,14 @@
 - [ ] availability
 
 ## Booking
-- [ ] customers
-- [ ] public booking
-- [ ] availability engine
-- [ ] booking lifecycle
-- [ ] reference
+- [x] customers
+- [x] public booking
+- [x] availability engine
+- [x] booking lifecycle
+- [x] reference
+- [x] management list/detail/status actions
 - [ ] calendar
-- [ ] concurrency protection
+- [x] concurrency protection
 
 ## Payments
 - [ ] PaymentGateway
