@@ -33,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Event::listen(Login::class, function (Login $event): void {
+            if (! $event->user instanceof User) {
+                return;
+            }
+
             app(\App\Support\AuditLogger::class)->log(
                 'auth.login',
                 $event->user,
@@ -42,6 +46,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Event::listen(Logout::class, function (Logout $event): void {
+            if (! $event->user instanceof User) {
+                return;
+            }
+
             app(\App\Support\AuditLogger::class)->log(
                 'auth.logout',
                 $event->user,
@@ -53,12 +61,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Failed::class, function (Failed $event): void {
             app(\App\Support\AuditLogger::class)->log(
                 'auth.login_failed',
-                $event->user,
+                null,
                 [
                     'email' => (string) ($event->credentials['email'] ?? ''),
                     'guard' => $event->guard,
                 ],
-                $event->user,
             );
         });
 
