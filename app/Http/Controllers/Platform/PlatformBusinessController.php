@@ -99,7 +99,7 @@ final class PlatformBusinessController
             ->whereHas('module', fn ($query) => $query->where('is_active', true))
             ->get()
             ->sortBy(fn ($tenantModule) => [
-                ! (bool) $tenantModule->module?->is_core,
+                !(bool) $tenantModule->module?->is_core,
                 (int) $tenantModule->module_id,
             ])
             ->values();
@@ -160,7 +160,7 @@ final class PlatformBusinessController
             ->first();
 
         if ($account === null) {
-            $account = new TenantPaymentAccount();
+            $account = new TenantPaymentAccount;
             $account->forceFill([
                 'tenant_id' => $tenant->getKey(),
                 'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
