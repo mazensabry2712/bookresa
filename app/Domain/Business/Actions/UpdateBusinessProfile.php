@@ -4,6 +4,8 @@ namespace App\Domain\Business\Actions;
 
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Module\Services\TenantModuleAccess;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +31,7 @@ final class UpdateBusinessProfile
             $paymentMode = 'pay_later';
         }
 
-        return DB::transaction(function () use ($data, $tenantId, $paymentMode): BusinessProfile {
+        return DB::transaction(function () use ($data, $tenantId, $paymentMode, $paymentsAvailable): BusinessProfile {
             $profile = BusinessProfile::query()->first();
 
             if ($profile === null) {
@@ -38,6 +40,32 @@ final class UpdateBusinessProfile
 
             if ((int) $profile->tenant_id !== $tenantId) {
                 throw new LogicException('Business profile must belong to the current tenant.');
+            }
+
+
+            $merchantId = trim((string) ($data['payment_merchant_id'] ?? ''));
+            $paymentAccount = TenantPaymentAccount::query()->first();
+
+            if ($paymentsAvailable && $paymentAccount === null && $merchantId !== '') {
+                TenantPaymentAccount::query()->create([
+                    'tenant_id' => $tenantId,
+                    'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
+                    'merchant_id' => $merchantId,
+                    'status' => TenantPaymentAccountStatus::Pending,
+                    'metadata' => ['connection_source' => 'workspace_settings'],
+                ]);
+            } elseif ($paymentsAvailable && $paymentAccount !== null && $merchantId !== '') {
+                $merchantChanged = $paymentAccount->merchant_id !== $merchantId;
+
+                $paymentAccount->forceFill([
+                    'merchant_id' => $merchantId,
+                    'status' => $merchantChanged
+                        ? TenantPaymentAccountStatus::Pending
+                        : $paymentAccount->status,
+                    'connected_at' => $merchantChanged
+                        ? null
+                        : $paymentAccount->connected_at,
+                ])->save();
             }
 
             $logoPath = $profile->logo_path;
