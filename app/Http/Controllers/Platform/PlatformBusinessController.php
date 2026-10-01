@@ -360,7 +360,8 @@ final class PlatformBusinessController
             }
         }
 
-        $role = $roleProvisioner->provisionRole($tenant, $user);
+        $roleKey = $membership->is_primary ? 'owner' : $data['role'];
+        $role = $roleProvisioner->provisionRole($tenant, $roleKey);
         $previousTeamId = getPermissionsTeamId();
         setPermissionsTeamId($tenant->getKey());
         try {
@@ -375,7 +376,7 @@ final class PlatformBusinessController
             [
                 'tenant_id' => (int) $tenant->getKey(),
                 'user_id' => (int) $user->getKey(),
-                'role' => $data['role'],
+                'role' => $roleKey,
                 'is_primary' => (bool) $membership->is_primary,
             ],
         );
@@ -421,7 +422,8 @@ final class PlatformBusinessController
             'is_primary' => $isPrimary,
         ])->save();
 
-        $role = $roleProvisioner->provisionRole($tenant, $membership->user);
+        $roleKey = $membership->is_primary ? 'owner' : $data['role'];
+        $role = $roleProvisioner->provisionRole($tenant, $roleKey);
         $previousTeamId = getPermissionsTeamId();
         setPermissionsTeamId($tenant->getKey());
         try {
@@ -436,7 +438,7 @@ final class PlatformBusinessController
             [
                 'tenant_id' => (int) $tenant->getKey(),
                 'user_id' => (int) $membership->user_id,
-                'role' => $data['role'],
+                'role' => $roleKey,
                 'status' => $membership->status->value,
                 'is_primary' => (bool) $membership->is_primary,
             ],
