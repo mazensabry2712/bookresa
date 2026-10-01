@@ -171,4 +171,7 @@ return [
     'stop_impersonation' => 'Return to Super Admin',
     'impersonation_member_required' => 'This user is not an active member of the selected workspace.',
     'impersonation_verified_required' => 'The selected user must have a verified email before impersonation can start.',
+
+    'recent_workspace_activity' => 'Recent workspace activity',
+    'recent_workspace_activity_help' => 'Recent sensitive actions associated with this workspace.',
 ];
