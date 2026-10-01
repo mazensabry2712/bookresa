@@ -14,7 +14,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-09-27 08:00:00', 'Africa/Cairo'));
+});
+
 afterEach(function (): void {
+    CarbonImmutable::setTestNow();
     app(CurrentTenant::class)->clear();
 });
 
