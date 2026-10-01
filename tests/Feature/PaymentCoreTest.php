@@ -8,6 +8,8 @@ use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\StartBookingPayment;
@@ -197,6 +199,13 @@ test('booking payment creates a new attempt after a failed payment', function ()
 
     $this->app->instance(PaymentGateway::class, $gateway);
     config(['bookresa.payments.default_provider' => 'fake']);
+
+    TenantPaymentAccount::query()->create([
+        'provider' => 'fake',
+        'merchant_id' => 'MID-FAKE-123',
+        'status' => TenantPaymentAccountStatus::Active,
+        'connected_at' => now(),
+    ]);
 
     $first = app(StartBookingPayment::class)->handle($booking);
     $first->forceFill(['status' => PaymentStatus::Failed])->save();
