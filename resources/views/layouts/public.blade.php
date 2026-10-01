@@ -20,6 +20,7 @@
         :description="__('app.home_ui.meta_description')"
         :canonical="$homeCanonical"
         :alternates="$homeAlternates"
+        :og-image="asset('logo.png')"
         :json-ld="[
             '@context' => 'https://schema.org',
             '@type' => 'SoftwareApplication',
