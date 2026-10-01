@@ -81,6 +81,16 @@ final class KashierReturnController
                 }
 
                 if ($result !== null) {
+                    $expectedMerchantId = $payment->payable_type === Subscription::class
+                        ? (string) config('bookresa.payments.kashier.merchant_id')
+                        : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
+
+                    $returnedMerchantId = trim((string) data_get($result->metadata, 'merchant_id'));
+
+                    if ($returnedMerchantId !== '' && $expectedMerchantId !== '' && $returnedMerchantId !== $expectedMerchantId) {
+                        throw new RuntimeException('Kashier payment merchant account does not match the payment.');
+                    }
+
                     $updated = $payments->applyResult($payment->fresh(), $result);
                     $bookingPaymentSync->handle($updated, $result->status);
                     $subscriptionPaymentSync->handle($updated, $result->status);
