@@ -23,8 +23,7 @@ final class CreateBusiness
     public function __construct(
         private readonly TenantRoleProvisioner $roleProvisioner,
         private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    ) {}
 
     public function handle(
         User $owner,
