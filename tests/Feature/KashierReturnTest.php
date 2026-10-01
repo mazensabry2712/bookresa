@@ -72,13 +72,16 @@ test('signed Kashier return verifies the payment server-side and redirects to co
         'currency' => 'EGP',
         'status' => PaymentStatus::Processing,
         'checkout_url' => 'https://payments.kashier.io/session/session-return-001?mode=test',
+        'metadata' => [
+            'connected_account_merchant_id' => 'MID-RETURN-CLINIC',
+        ],
     ]);
 
     config([
         'bookresa.payments.kashier' => [
             'mode' => 'test',
             'base_url' => 'https://test-api.kashier.io',
-            'merchant_id' => 'MID-123',
+            'merchant_id' => 'MID-RETURN-CLINIC',
             'api_key' => 'api-key',
             'secret_key' => 'secret-key',
             'merchant_redirect' => null,
@@ -99,6 +102,7 @@ test('signed Kashier return verifies the payment server-side and redirects to co
         'orderId' => 'order-return-001',
         'cardBrand' => 'Mastercard',
         'orderReference' => $payment->reference,
+        'merchantId' => 'MID-RETURN-CLINIC',
         'transactionId' => 'TX-RETURN-001',
         'amount' => '200',
         'currency' => 'EGP',
@@ -115,6 +119,7 @@ test('signed Kashier return verifies the payment server-side and redirects to co
                 'method' => 'card',
                 'updatedAt' => '2026-09-21T01:00:00Z',
                 'merchantOrderId' => $payment->reference,
+                'merchantId' => 'MID-RETURN-CLINIC',
                 'orderId' => 'order-return-001',
             ],
         ]),
