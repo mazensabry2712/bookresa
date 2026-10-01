@@ -16,6 +16,9 @@ use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
 use App\Http\Controllers\Platform\PlatformCustomerController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
+use App\Http\Controllers\Platform\PlatformAuditController;
+use App\Http\Controllers\Platform\PlatformImpersonationController;
+use App\Http\Controllers\Platform\PlatformSecurityController;
 use App\Http\Controllers\Platform\PlatformFinanceController;
 use App\Http\Controllers\Platform\PlatformModuleController;
 use App\Http\Controllers\Platform\PlatformSettingsController;
@@ -300,6 +303,8 @@ Route::middleware(['auth', 'verified', 'platform'])
     ->name('admin.')
     ->group(function (): void {
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/audit', [PlatformAuditController::class, 'index'])->name('audit.index');
+        Route::get('/security', [PlatformSecurityController::class, 'index'])->name('security.index');
         Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
         Route::get('/businesses/create', [PlatformBusinessController::class, 'create'])->name('businesses.create');
         Route::post('/businesses', [PlatformBusinessController::class, 'store'])->name('businesses.store');
@@ -311,6 +316,8 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::patch('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'updateMember'])->name('businesses.members.update');
         Route::delete('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'removeMember'])->name('businesses.members.destroy');
         Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
+        Route::post('/businesses/{tenant}/impersonate/{user}', [PlatformImpersonationController::class, 'start'])
+            ->name('businesses.impersonate');
         Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
         Route::get('/customers', [PlatformCustomerController::class, 'index'])->name('customers.index');
         Route::get('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'show'])->name('customers.show');
@@ -342,6 +349,9 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::put('/plans/{plan}', [PlanAdminController::class, 'update'])->name('plans.update');
         Route::patch('/plans/{plan}/toggle', [PlanAdminController::class, 'toggle'])->name('plans.toggle');
     });
+
+Route::middleware(['auth', 'verified'])->post('/impersonation/stop', [PlatformImpersonationController::class, 'stop'])
+    ->name('platform.impersonation.stop');
 
 Route::post('/webhooks/kashier', KashierWebhookController::class)
     ->middleware('throttle:60,1')
