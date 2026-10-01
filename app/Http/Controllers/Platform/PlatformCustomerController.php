@@ -138,9 +138,11 @@ final class PlatformCustomerController
             ]),
         ]);
 
-        $bookings = Booking::withoutGlobalScopes()
+        $bookingBase = Booking::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
-            ->where('customer_id', $customer->getKey())
+            ->where('customer_id', $customer->getKey());
+
+        $bookings = (clone $bookingBase)
             ->with([
                 'service' => fn ($query) => $query->withoutGlobalScopes(),
                 'staff' => fn ($query) => $query->withoutGlobalScopes(),
@@ -149,38 +151,59 @@ final class PlatformCustomerController
             ->limit(50)
             ->get();
 
-        $bookingIds = $bookings->pluck('id');
+        $paymentBase = Payment::withoutGlobalScopes()
+            ->where('payments.tenant_id', $tenantId)
+            ->where('payments.payable_type', Booking::class)
+            ->whereExists(function ($query) use ($tenantId, $customer): void {
+                $query->selectRaw('1')
+                    ->from('bookings')
+                    ->whereColumn('bookings.id', 'payments.payable_id')
+                    ->where('bookings.tenant_id', $tenantId)
+                    ->where('bookings.customer_id', $customer->getKey());
+            });
 
-        $payments = Payment::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('payable_type', Booking::class)
-            ->whereIn('payable_id', $bookingIds->all())
+        $payments = (clone $paymentBase)
             ->orderByDesc('paid_at')
             ->orderByDesc('id')
+            ->limit(50)
             ->get();
 
-        $paidPayments = $payments->where('status', PaymentStatus::Paid);
-        $refundedPayments = $payments->where('status', PaymentStatus::Refunded);
-
-        $currencyTotals = $paidPayments
+        $paymentAggregates = (clone $paymentBase)
+            ->selectRaw('currency,
+                SUM(CASE WHEN status = ? THEN amount_minor ELSE 0 END) AS paid_minor,
+                SUM(CASE WHEN status = ? THEN amount_minor ELSE 0 END) AS refunded_minor,
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS paid_count,
+                MAX(CASE WHEN status = ? THEN paid_at ELSE NULL END) AS last_paid_at', [
+                PaymentStatus::Paid->value,
+                PaymentStatus::Refunded->value,
+                PaymentStatus::Paid->value,
+                PaymentStatus::Paid->value,
+            ])
             ->groupBy('currency')
-            ->map(fn ($rows): int => (int) $rows->sum('amount_minor'))
+            ->get();
+
+        $currencyTotals = $paymentAggregates
+            ->mapWithKeys(fn ($row): array => [(string) $row->currency => (int) $row->paid_minor])
             ->sortKeys()
             ->all();
 
+        $singleCurrencyAggregate = $paymentAggregates->count() === 1
+            ? $paymentAggregates->first()
+            : null;
+
         $metrics = [
-            'bookings' => $bookings->count(),
-            'completedBookings' => $bookings->where('status', BookingStatus::Completed)->count(),
-            'cancelledBookings' => $bookings->where('status', BookingStatus::Cancelled)->count(),
-            'noShows' => $bookings->where('status', BookingStatus::NoShow)->count(),
-            'totalSpentMinor' => (int) $paidPayments->sum('amount_minor'),
-            'refundedMinor' => (int) $refundedPayments->sum('amount_minor'),
-            'averagePaidMinor' => $paidPayments->count() > 0
-                ? (int) round($paidPayments->sum('amount_minor') / $paidPayments->count())
+            'bookings' => (int) (clone $bookingBase)->count(),
+            'completedBookings' => (int) (clone $bookingBase)->where('status', BookingStatus::Completed->value)->count(),
+            'cancelledBookings' => (int) (clone $bookingBase)->where('status', BookingStatus::Cancelled->value)->count(),
+            'noShows' => (int) (clone $bookingBase)->where('status', BookingStatus::NoShow->value)->count(),
+            'totalSpentMinor' => (int) ($singleCurrencyAggregate?->paid_minor ?? 0),
+            'refundedMinor' => (int) ($singleCurrencyAggregate?->refunded_minor ?? 0),
+            'averagePaidMinor' => $singleCurrencyAggregate !== null && (int) $singleCurrencyAggregate->paid_count > 0
+                ? (int) round((int) $singleCurrencyAggregate->paid_minor / (int) $singleCurrencyAggregate->paid_count)
                 : 0,
             'firstSeenAt' => $customer->first_seen_at,
             'lastSeenAt' => $customer->last_seen_at,
-            'lastPaidAt' => $paidPayments->max('paid_at'),
+            'lastPaidAt' => $singleCurrencyAggregate?->last_paid_at,
             'currencyTotals' => $currencyTotals,
         ];
 
