@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'workspaces' => 'مساحات العمل',
     'workspace_control' => 'التحكم في مساحات العمل',
     'workspace_control_help' => 'تحكم كامل على مستوى المنصة في مساحات العمل والصلاحيات والإعدادات ودورة الحياة.',
     'customer_intelligence' => 'ذكاء العملاء',
