@@ -37,8 +37,9 @@
             <div class="flex-1 overflow-y-auto px-3 py-4">
                 <p class="px-3 pb-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('app.platform') }}</p>
                 <nav class="space-y-1" aria-label="{{ __('Admin') }}">
+                    <p class="px-3 pb-1 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('platform.workspace_control') }}</p>
                     @php
-                        $adminLinks = [
+                        $workspaceControlLinks = [
                             ['route' => 'admin.dashboard', 'label' => __('app.dashboard')],
                             ['route' => 'admin.businesses.index', 'label' => __('app.businesses')],
                             ['route' => 'admin.users.index', 'label' => __('app.users')],
@@ -52,12 +53,18 @@
                         ];
                     @endphp
 
-                    @foreach ($adminLinks as $link)
+                    @foreach ($workspaceControlLinks as $link)
                         <a href="{{ route($link['route']) }}" data-active="{{ request()->routeIs($link['route']) ? 'true' : 'false' }}" class="br-nav-link">
                             <span class="h-2 w-2 shrink-0 rounded-full bg-slate-300 dark:bg-slate-700" aria-hidden="true"></span>
                             <span>{{ $link['label'] }}</span>
                         </a>
                     @endforeach
+
+                    <p class="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('platform.customer_intelligence') }}</p>
+                    <a href="{{ route('admin.customers.index') }}" data-active="{{ request()->routeIs('admin.customers.*') ? 'true' : 'false' }}" class="br-nav-link">
+                        <span class="h-2 w-2 shrink-0 rounded-full bg-amber-300 dark:bg-amber-600" aria-hidden="true"></span>
+                        <span>{{ __('platform.all_customers') }}</span>
+                    </a>
 
                     <a href="{{ route('home') }}" data-active="false" class="br-nav-link">
                         <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M4 10.5 12 4l8 6.5M6 9.5V20h12V9.5M10 20v-5h4v5"/></svg></span>
