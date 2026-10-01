@@ -141,6 +141,11 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] cross-workspace Customer Intelligence
 - [x] customer search, workspace filtering and objective customer signals
 - [x] currency-safe customer spending ranking
+- [x] Platform Command Center metrics and currency-separated revenue view
+- [x] Workspace 360 operational and security activity view
+- [x] secure platform impersonation with audited start/stop
+- [x] platform security posture view and 2FA status
+- [x] platform Activity Log console with workspace/admin/date filters
 - [x] support management
 - [x] platform settings
 
