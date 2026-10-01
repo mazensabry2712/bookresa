@@ -13,7 +13,7 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
 - [x] Light/Dark foundation (dark class + system preference + persisted theme API)
 - [x] Blade design tokens (central brand + semantic CSS variables)
-- [x] Verified test baseline (270 passed / 1 skipped / 1037 assertions on 2026-09-27)
+- [x] Verified test baseline (292 passed / 1 skipped / 1149 assertions in GitHub Actions CI on 2026-10-02)
 
 ## Identity/Tenancy
 - [x] Fortify
@@ -107,7 +107,7 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] canonical
 - [x] hreflang (locale query variants for public booking URLs)
 - [x] Open Graph
-- [ ] social image (waiting for configured public image source)
+- [x] social image (public/logo.png configured in shared SEO metadata)
 - [x] JSON-LD
 - [x] sitemap
 - [x] robots
