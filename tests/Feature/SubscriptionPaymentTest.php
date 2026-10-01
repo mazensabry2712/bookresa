@@ -277,6 +277,7 @@ test('signed Kashier return completes subscription payment and returns to billin
     ]);
 
     config([
+        'bookresa.payments.kashier.merchant_id' => 'MID-PLATFORM-TEST',
         'bookresa.payments.kashier.api_key' => 'api-key',
         'bookresa.payments.kashier.secret_key' => 'secret-key',
         'bookresa.payments.kashier.base_url' => 'https://test-api.kashier.io',
@@ -290,6 +291,7 @@ test('signed Kashier return completes subscription payment and returns to billin
                 'method' => 'card',
                 'updatedAt' => '2026-09-21T01:00:00Z',
                 'merchantOrderId' => $payment->reference,
+                'merchantId' => 'MID-PLATFORM-TEST',
             ],
         ]),
     ]);
@@ -342,12 +344,16 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
         'status' => PaymentStatus::Processing,
     ]);
 
-    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+    config([
+        'bookresa.payments.kashier.merchant_id' => 'MID-PLATFORM-TEST',
+        'bookresa.payments.kashier.api_key' => 'api-key',
+    ]);
 
     $data = [
-        'signatureKeys' => ['amount', 'currency', 'orderReference', 'status', 'transactionId'],
+        'signatureKeys' => ['amount', 'currency', 'merchantId', 'orderReference', 'status', 'transactionId'],
         'amount' => '199',
         'currency' => 'EGP',
+        'merchantId' => 'MID-PLATFORM-TEST',
         'orderReference' => $payment->reference,
         'status' => 'SUCCESS',
         'transactionId' => 'TX-SUB-WEBHOOK-001',
