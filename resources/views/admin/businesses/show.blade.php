@@ -241,6 +241,29 @@
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <div class="flex items-center justify-between gap-3">
                         <div>
+                            <h3 class="font-semibold">{{ __('platform.recent_workspace_activity') }}</h3>
+                            <p class="mt-1 text-sm text-slate-500">{{ __('platform.recent_workspace_activity_help') }}</p>
+                        </div>
+                        <a href="{{ route('admin.audit.index', ['tenant_id' => $tenant->id]) }}" class="text-sm font-semibold underline underline-offset-4">{{ __('platform.activity_log') }}</a>
+                    </div>
+                    <div class="mt-4 divide-y divide-slate-200 dark:divide-slate-800">
+                        @forelse ($recentActivity as $activity)
+                            <div class="flex flex-col gap-1 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm font-semibold">{{ $activity->description }}</p>
+                                    <p class="mt-1 text-xs text-slate-500">{{ $activity->causer?->name ?? __('platform.system') }}</p>
+                                </div>
+                                <time class="text-xs text-slate-500">{{ $activity->created_at?->timezone(config('app.timezone'))->format('Y-m-d H:i') }}</time>
+                            </div>
+                        @empty
+                            <p class="py-5 text-center text-sm text-slate-500">{{ __('platform.no_activity') }}</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                    <div class="flex items-center justify-between gap-3">
+                        <div>
                             <h3 class="font-semibold">{{ __('app.workspace_modules') }}</h3>
                             <p class="mt-1 text-sm text-slate-500">{{ __('app.workspace_modules_help') }}</p>
                         </div>
@@ -385,6 +408,18 @@
 
                                     <div class="flex flex-wrap items-center gap-2 xl:shrink-0">
                                         @php($membership->user?->loadMissing('platformAdmin'))
+                                        @if ($membership->user && ! $membership->user->platformAdmin?->is_active)
+                                            <form method="POST" action="{{ route('admin.businesses.impersonate', [$tenant, $membership->user]) }}">
+                                                @csrf
+                                                <button type="submit" class="rounded-lg border border-indigo-200 px-3 py-2 text-xs font-bold text-indigo-700 dark:border-indigo-900 dark:text-indigo-300">
+                                                    {{ __('platform.impersonate') }}
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+
+                                    @php($membership->user?->loadMissing('platformAdmin'))
+                                    <div class="flex flex-wrap items-center gap-2 xl:shrink-0">
                                         @if ($membership->user && ! $membership->user->platformAdmin?->is_active)
                                             <form method="POST" action="{{ route('admin.businesses.impersonate', [$tenant, $membership->user]) }}">
                                                 @csrf
