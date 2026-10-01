@@ -32,6 +32,7 @@ class UpdateBusinessProfileRequest extends FormRequest
             'customer_limit_policy' => (string) $this->input('customer_limit_policy', 'allow_overage'),
             'minimum_notice_minutes' => $this->input('minimum_notice_minutes', 0),
             'maximum_advance_days' => $this->input('maximum_advance_days'),
+            'payment_merchant_id' => strtoupper(trim((string) $this->input('payment_merchant_id'))),
         ]);
     }
 
@@ -57,6 +58,7 @@ class UpdateBusinessProfileRequest extends FormRequest
             'customer_limit_policy' => ['required', Rule::in(['allow_overage', 'block_new_customers'])],
             'minimum_notice_minutes' => ['required', 'integer', 'min:0', 'max:43200'],
             'maximum_advance_days' => ['nullable', 'integer', 'min:1', 'max:730'],
+            'payment_merchant_id' => ['required_if:payment_mode,full,deposit', 'nullable', 'regex:/^MID-[A-Z0-9-]+$/', 'max:80'],
             'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:6144'],
             'remove_logo' => ['boolean'],
