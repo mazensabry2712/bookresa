@@ -80,7 +80,7 @@
 - [x] upgrade/downgrade policy
 - [x] renewal/expiry core
 - [ ] admin pricing
-- [ ] subscription checkout/payment
+- [x] subscription checkout/payment flow
 
 ## Notifications
 - [ ] confirmations

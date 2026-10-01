@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Payment;
 
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\SyncBookingPaymentStatus;
+use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -22,6 +24,7 @@ final class KashierReturnController
         KashierGateway $gateway,
         PaymentService $payments,
         SyncBookingPaymentStatus $bookingPaymentSync,
+        SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
     ): RedirectResponse|JsonResponse {
         $query = $request->all();
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
@@ -59,35 +62,45 @@ final class KashierReturnController
             return response()->json(['message' => 'Payment tenant was not found.'], 404);
         }
 
-        return $currentTenant->run($tenant, function () use ($payment, $gateway, $payments, $bookingPaymentSync, $query, $tenant): RedirectResponse {
+        return $currentTenant->run($tenant, function () use ($payment, $gateway, $payments, $bookingPaymentSync, $subscriptionPaymentSync, $query, $tenant): RedirectResponse {
             $notice = 'Payment is being verified.';
 
             if ($payment->provider_reference !== null) {
                 try {
                     $result = $gateway->verifyPayment($payment->provider_reference);
+                } catch (RuntimeException) {
+                    $result = null;
+                }
+
+                if ($result !== null) {
                     $updated = $payments->applyResult($payment->fresh(), $result);
                     $bookingPaymentSync->handle($updated, $result->status);
+                    $subscriptionPaymentSync->handle($updated, $result->status);
 
                     $notice = match ($updated->status->value) {
                         'paid' => 'Payment completed successfully.',
                         'failed' => 'Payment was not completed.',
                         default => 'Payment is being verified.',
                     };
-                } catch (RuntimeException) {
-                    // The signed redirect is valid, but webhook/verification may be delayed.
                 }
             }
 
-            $booking = $payment->payable;
+            $payable = $payment->payable;
 
-            if ($booking === null || blank($booking->booking_reference)) {
+            if ($payable instanceof Subscription) {
+                return redirect()
+                    ->route('billing.subscription')
+                    ->with('payment_notice', $notice);
+            }
+
+            if ($payable === null || blank($payable->booking_reference)) {
                 return redirect()->route('home')->with('status', $notice);
             }
 
             return redirect()
                 ->route('public.booking.confirmation', [
                     'tenant' => $tenant->slug,
-                    'booking' => $booking->booking_reference,
+                    'booking' => $payable->booking_reference,
                 ])
                 ->with('payment_notice', $notice);
         });

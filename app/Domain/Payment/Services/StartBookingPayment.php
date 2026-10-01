@@ -4,7 +4,7 @@ namespace App\Domain\Payment\Services;
 
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Infrastructure\Payments\Kashier\KashierGateway;
+use App\Domain\Payment\Contracts\PaymentGateway;
 use LogicException;
 use RuntimeException;
 
@@ -13,7 +13,7 @@ final class StartBookingPayment
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly PaymentService $payments,
-        private readonly KashierGateway $gateway,
+        private readonly PaymentGateway $gateway,
     ) {
     }
 
@@ -51,7 +51,7 @@ final class StartBookingPayment
             payable: $booking,
             amountMinor: (int) $service->price_minor,
             currency: (string) $service->currency,
-            provider: 'kashier',
+            provider: (string) config('bookresa.payments.default_provider', 'kashier'),
             description: 'Booking '.$booking->booking_reference,
             metadata: $metadata,
             idempotencyKey: 'booking-'.$booking->id.'-kashier',

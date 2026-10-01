@@ -4,6 +4,7 @@ use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Calendar\CalendarController;
+use App\Http\Controllers\Billing\SubscriptionBillingController;
 use App\Http\Controllers\Payment\KashierReturnController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,16 @@ Route::middleware(['auth', 'tenant', 'permission:bookings.view'])
 Route::middleware(['auth', 'tenant', 'permission:calendar.view'])
     ->get('/dashboard/calendar', [CalendarController::class, 'index'])
     ->name('calendar.index');
+
+Route::middleware(['auth', 'tenant'])->prefix('dashboard/billing')->group(function (): void {
+    Route::get('/subscription', [SubscriptionBillingController::class, 'index'])
+        ->middleware('permission:billing.view')
+        ->name('billing.subscription');
+
+    Route::post('/subscription/{subscription}/checkout', [SubscriptionBillingController::class, 'checkout'])
+        ->middleware('permission:subscription.manage')
+        ->name('billing.subscription.checkout');
+});
 
 Route::post('/webhooks/kashier', KashierWebhookController::class)
     ->middleware('throttle:60,1')

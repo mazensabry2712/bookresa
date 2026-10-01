@@ -8,7 +8,6 @@ use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Models\PaymentWebhookEvent;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
-use App\Domain\Payment\Services\SyncBookingPaymentStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -21,6 +20,7 @@ final class HandleKashierWebhook
         private readonly KashierWebhookVerifier $verifier,
         private readonly PaymentService $payments,
         private readonly SyncBookingPaymentStatus $bookingPaymentSync,
+        private readonly SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
     ) {
     }
 
@@ -98,6 +98,7 @@ final class HandleKashierWebhook
                     $updated = $this->payments->applyResult($payment->fresh(), $mapped);
 
                     $this->bookingPaymentSync->handle($updated, $mapped->status);
+                    $this->subscriptionPaymentSync->handle($updated, $mapped->status);
 
                     return true;
                 });
