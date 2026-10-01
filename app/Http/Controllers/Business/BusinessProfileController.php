@@ -17,9 +17,12 @@ final class BusinessProfileController
 
         $profile = BusinessProfile::query()->firstOrFail();
 
+        $tenant = $currentTenant->get()->loadMissing(['businessType', 'modules', 'paymentAccount']);
+
         return view('business.profile', [
-            'tenant' => $currentTenant->get()->loadMissing(['businessType', 'modules']),
+            'tenant' => $tenant,
             'profile' => $profile,
+            'paymentAccount' => $tenant->paymentAccount,
         ]);
     }
 
