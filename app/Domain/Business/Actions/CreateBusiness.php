@@ -71,6 +71,7 @@ final class CreateBusiness
                     'locale' => $data['locale'] ?? config('bookresa.default_locale', 'en'),
                     'booking_settings' => [
                         'customer_account_required' => false,
+                        'payment_required' => false,
                     ],
                 ]);
 

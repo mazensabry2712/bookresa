@@ -140,6 +140,7 @@ final class PaymentService
             'provider_reference' => $result->providerReference ?? $payment->provider_reference,
             'status' => $result->status,
             'method' => $result->method ?? $payment->method,
+            'checkout_url' => $result->checkoutUrl ?? $payment->checkout_url,
             'metadata' => $metadata,
             'paid_at' => $result->paidAt ?? ($result->status === PaymentStatus::Paid ? $payment->paid_at ?? now() : $payment->paid_at),
         ])->save();

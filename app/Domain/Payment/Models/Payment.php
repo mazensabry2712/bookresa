@@ -23,6 +23,7 @@ class Payment extends Model
         'currency',
         'status',
         'method',
+        'checkout_url',
         'idempotency_key',
         'metadata',
         'paid_at',
