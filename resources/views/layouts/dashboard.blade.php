@@ -187,6 +187,23 @@
         </aside>
 
         <div class="min-w-0 flex-1">
+            @if (session()->has('platform_impersonator_id'))
+                <div class="border-b border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40">
+                    <div class="mx-auto flex max-w-[1440px] flex-col gap-3 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5 lg:px-8">
+                        <div>
+                            <p class="text-xs font-extrabold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">{{ __('platform.impersonation_active') }}</p>
+                            <p class="mt-1 text-sm font-semibold text-amber-900 dark:text-amber-100">{{ __('platform.impersonation_active_help') }}</p>
+                        </div>
+                        <form method="POST" action="{{ route('platform.impersonation.stop') }}">
+                            @csrf
+                            <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-amber-700">
+                                {{ __('platform.stop_impersonation') }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
             <header class="sticky top-0 z-30 border-b border-slate-200/90 bg-white/95 backdrop-blur dark:border-slate-800/90 dark:bg-slate-900/95">
                 <div class="flex min-h-16 items-center justify-between gap-3 px-3 sm:px-5 lg:px-8">
                     <div class="flex min-w-0 items-center gap-2.5 sm:gap-3">
