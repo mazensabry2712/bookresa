@@ -120,3 +120,47 @@ The automated test suite covers:
 - existing tenant permission/module restrictions for non-platform users
 
 Production deployment must still verify the actual infrastructure release gates documented in DOC/17-PRODUCTION-READINESS.md.
+
+## Platform operations foundation
+
+The platform console now includes a dedicated **Platform Command Center** with:
+- workspace/customer/user totals and 30-day growth signals
+- subscription, trial, expiry and failed-payment signals
+- currency-separated MRR and revenue views
+- recent workspace operations
+- recent security activity
+
+Each Workspace Overview acts as a **Workspace 360** control surface and now includes:
+- complete member lifecycle controls
+- direct impersonation of an eligible verified workspace member
+- recent workspace security activity
+- direct filtered access to platform audit records
+
+### Impersonation safety
+
+Impersonation is session-bound and reversible:
+- only active PlatformAdmin accounts can start impersonation
+- the target must be an active member of the selected workspace
+- the target email must be verified
+- active PlatformAdmin accounts cannot be impersonated
+- the original active PlatformAdmin must still exist when returning
+- start/stop events are written to the security audit trail
+
+### Security center
+
+The platform security console exposes:
+- current platform administrator 2FA configuration status
+- 2FA status for every platform administrator
+- recent security events
+
+Fortify two-factor authentication remains enabled with password confirmation. The security console does not bypass the existing authentication flow.
+
+### Audit console
+
+The Activity Log console supports filtering by:
+- workspace
+- platform administrator
+- action/search text
+- date range
+
+Audit entries include request context where available, including IP address, route and user-agent, while existing tenant context is attached automatically when a current workspace is active.
