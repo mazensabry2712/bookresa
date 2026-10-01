@@ -120,6 +120,18 @@ test('platform customer intelligence aggregates spending per customer and sorts 
 
     intelligencePayment($tenant, $vipBooking, 75000, 'PAY-INTEL-1');
     intelligencePayment($tenant, $regularBooking, 12000, 'PAY-INTEL-2');
+    Payment::withoutGlobalScopes()->create([
+        'tenant_id' => $tenant->id,
+        'payable_type' => Booking::class,
+        'payable_id' => $vipBooking->id,
+        'reference' => 'PAY-INTEL-USD',
+        'provider' => 'kashier',
+        'amount_minor' => 5000,
+        'currency' => 'USD',
+        'status' => \\App\\Domain\\Payment\\Enums\\PaymentStatus::Paid,
+        'method' => 'card',
+        'paid_at' => now(),
+    ]);
 
     $response = $this->actingAs($admin)
         ->get(route('admin.customers.index'));
@@ -135,10 +147,16 @@ test('platform customer intelligence aggregates spending per customer and sorts 
         });
 
     $this->actingAs($admin)
-        ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'vip' => 1]))
+        ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'currency' => 'EGP']))
         ->assertOk()
         ->assertSee('High Value Customer')
+        ->assertSee('750.00 EGP')
         ->assertDontSee('Regular Customer');
+
+    $this->actingAs($admin)
+        ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'currency' => 'USD']))
+        ->assertSee('High Value Customer')
+        ->assertSee('50.00 USD');
 });
 
 test('platform admin can view customer details and toggle vip without crossing tenants', function (): void {
