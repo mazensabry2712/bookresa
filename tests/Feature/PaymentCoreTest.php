@@ -384,6 +384,13 @@ test('expired booking payment session creates a fresh attempt', function (): voi
     $this->app->instance(PaymentGateway::class, $gateway);
     config(['bookresa.payments.default_provider' => 'fake']);
 
+    TenantPaymentAccount::query()->create([
+        'provider' => 'fake',
+        'merchant_id' => 'MID-FAKE-123',
+        'status' => TenantPaymentAccountStatus::Active,
+        'connected_at' => now(),
+    ]);
+
     $fresh = app(StartBookingPayment::class)->handle($booking->fresh());
 
     expect($fresh->id)->not->toBe($expired->id)
