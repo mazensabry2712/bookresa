@@ -17,7 +17,8 @@ final class UpdateBusinessProfile
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly TenantModuleAccess $moduleAccess,
-    ) {}
+    ) {
+    }
 
     public function handle(array $data): BusinessProfile
     {
@@ -87,7 +88,7 @@ final class UpdateBusinessProfile
                 $logoPath = $data['logo']->store('businesses/'.$tenantId.'/logo', 'public');
             }
 
-            if (($data['cover'] ?? null) instanceof \Illuminate\Http\UploadedFile) {
+            if (($data['cover'] ?? null) instanceof UploadedFile) {
                 if ($coverPath) {
                     Storage::disk('public')->delete($coverPath);
                 }
