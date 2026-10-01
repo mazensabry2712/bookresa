@@ -8,6 +8,8 @@ use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -297,4 +299,33 @@ test('platform routes remain independent from current tenant context', function 
         ->assertOk();
 
     expect(app(CurrentTenant::class)->get())->toBeNull();
+});
+
+
+test('platform admin can activate a workspace booking payment account', function (): void {
+    $admin = adminDashboardUser();
+    $owner = User::factory()->create(['email' => 'connected-account-owner@example.com']);
+    $tenant = adminDashboardTenant($owner, 'Connected Account Clinic');
+
+    $this->actingAs($admin)
+        ->patch(route('admin.businesses.payment-account.update', $tenant), [
+            'merchant_id' => 'MID-123-ABC',
+            'status' => 'active',
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('status', 'Workspace payment account updated successfully.');
+
+    $account = TenantPaymentAccount::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    expect($account->merchant_id)->toBe('MID-123-ABC')
+        ->and($account->status)->toBe(TenantPaymentAccountStatus::Active)
+        ->and($account->connected_at)->not->toBeNull();
+
+    $this->actingAs($admin)
+        ->get(route('admin.businesses.show', $tenant))
+        ->assertOk()
+        ->assertSee('MID-123-ABC')
+        ->assertSee('Active');
 });
