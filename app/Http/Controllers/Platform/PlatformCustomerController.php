@@ -23,6 +23,20 @@ final class PlatformCustomerController
         $sort = (string) $request->input('sort', 'spending_desc');
         $vipOnly = $request->boolean('vip');
 
+        $currencies = Payment::withoutGlobalScopes()
+            ->where('status', PaymentStatus::Paid->value)
+            ->distinct()
+            ->orderBy('currency')
+            ->pluck('currency');
+
+        if ($currency === '' && $currencies->count() === 1) {
+            $currency = (string) $currencies->first();
+        }
+
+        if ($currency === '' && str_starts_with($sort, 'spending_')) {
+            $sort = 'bookings_desc';
+        }
+
         $paidPayments = Payment::withoutGlobalScopes()
             ->from('payments')
             ->join('bookings', function ($join): void {
@@ -32,7 +46,8 @@ final class PlatformCustomerController
             ->whereColumn('bookings.customer_id', 'customers.id')
             ->whereColumn('bookings.tenant_id', 'customers.tenant_id')
             ->where('payments.status', PaymentStatus::Paid->value)
-            ->when($currency !== '', fn ($query) => $query->where('payments.currency', $currency));
+            ->when($currency !== '', fn ($query) => $query->where('payments.currency', $currency))
+            ->when($currency === '', fn ($query) => $query->whereRaw('1 = 0'));
 
         $bookings = Booking::withoutGlobalScopes()
             ->whereColumn('bookings.customer_id', 'customers.id')
@@ -93,12 +108,6 @@ final class PlatformCustomerController
             ->paginate(25)
             ->withQueryString();
 
-        $currencies = Payment::withoutGlobalScopes()
-            ->where('status', PaymentStatus::Paid->value)
-            ->distinct()
-            ->orderBy('currency')
-            ->pluck('currency');
-
         $tenants = Tenant::query()
             ->with(['profile' => fn ($query) => $query->withoutGlobalScopes()])
             ->orderByDesc('id')
@@ -153,6 +162,12 @@ final class PlatformCustomerController
         $paidPayments = $payments->where('status', PaymentStatus::Paid);
         $refundedPayments = $payments->where('status', PaymentStatus::Refunded);
 
+        $currencyTotals = $paidPayments
+            ->groupBy('currency')
+            ->map(fn ($rows): int => (int) $rows->sum('amount_minor'))
+            ->sortKeys()
+            ->all();
+
         $metrics = [
             'bookings' => $bookings->count(),
             'completedBookings' => $bookings->where('status', BookingStatus::Completed)->count(),
@@ -166,6 +181,7 @@ final class PlatformCustomerController
             'firstSeenAt' => $customer->first_seen_at,
             'lastSeenAt' => $customer->last_seen_at,
             'lastPaidAt' => $paidPayments->max('paid_at'),
+            'currencyTotals' => $currencyTotals,
         ];
 
         return view('admin.customers.show', [
