@@ -9,6 +9,11 @@
         <p class="text-sm text-slate-500">{{ __('platform.customer_intelligence') }}</p>
         <h2 class="mt-1 text-2xl font-bold tracking-tight">{{ __('platform.all_customers') }}</h2>
         <p class="mt-1 text-sm text-slate-500">{{ __('platform.customer_intelligence_help') }}</p>
+        @if($currencies->count() > 1 && $currency === '')
+            <p class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+                {{ __('platform.choose_currency_for_spending') }}
+            </p>
+        @endif
     </div>
 
     <form method="GET" class="grid gap-3 lg:grid-cols-[1fr_220px_190px_auto]">
@@ -20,6 +25,12 @@
                 <option value="{{ $tenantOption->id }}" @selected((int) request('tenant_id') === (int) $tenantOption->id)>
                     {{ data_get($tenantOption->profile?->name, app()->getLocale()) ?? $tenantOption->slug }}
                 </option>
+            @endforeach
+        </select>
+        <select name="currency" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+            <option value="">{{ __('platform.all_currencies') }}</option>
+            @foreach($currencies as $currencyOption)
+                <option value="{{ $currencyOption }}" @selected($currency === $currencyOption)>{{ $currencyOption }}</option>
             @endforeach
         </select>
         <select name="sort" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
@@ -68,7 +79,9 @@
                             <p class="font-semibold">{{ $workspaceName }}</p>
                             <p class="mt-1 text-xs text-slate-500">{{ $customerRow->tenant?->slug }}</p>
                         </td>
-                        <td class="px-5 py-4 font-bold">{{ number_format($spent / 100, 2) }} {{ $currency }}</td>
+                        <td class="px-5 py-4 font-bold">
+                            {{ $currency !== '' ? number_format($spent / 100, 2).' '.$currency : '—' }}
+                        </td>
                         <td class="px-5 py-4">{{ number_format($bookingsCount) }}</td>
                         <td class="px-5 py-4 text-slate-500">{{ $customerRow->last_paid_at ? \Illuminate\Support\Carbon::parse($customerRow->last_paid_at)->format('Y-m-d H:i') : '—' }}</td>
                         <td class="px-5 py-4">
