@@ -50,6 +50,8 @@
                             ['route' => 'admin.support.index', 'label' => __('app.support')],
                             ['route' => 'admin.settings.index', 'label' => __('app.settings')],
                             ['route' => 'admin.plans.index', 'label' => __('app.plans')],
+                            ['route' => 'admin.audit.index', 'label' => __('platform.activity_log')],
+                            ['route' => 'admin.security.index', 'label' => __('platform.platform_security')],
                         ];
                     @endphp
 
