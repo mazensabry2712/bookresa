@@ -34,10 +34,12 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-09-27 08:00:00', 'Africa/Cairo'));
     $this->seed([ModuleSeeder::class, BusinessTypeSeeder::class]);
 });
 
 afterEach(function (): void {
+    CarbonImmutable::setTestNow();
     setPermissionsTeamId(null);
     app(CurrentTenant::class)->clear();
 });
