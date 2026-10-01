@@ -51,7 +51,7 @@ function paidBookingTenant(string $slug): Tenant
     TenantPaymentAccount::query()->create([
         'tenant_id' => $tenant->id,
         'provider' => 'kashier',
-        'merchant_id' => 'MID-'.$slug,
+        'merchant_id' => 'MID-'.strtoupper($slug),
         'status' => TenantPaymentAccountStatus::Active,
         'connected_at' => now(),
     ]);
@@ -129,7 +129,7 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
         return $request['customer']['email'] === 'ahmed@example.com'
             && str_starts_with((string) $request['customer']['reference'], 'customer-')
             && $request['merchantRedirect'] === route('payments.kashier.return')
-            && $request['connectedAccount'] === 'MID-paid-clinic';
+            && $request['connectedAccount'] === 'MID-PAID-CLINIC';
     });
 });
 
