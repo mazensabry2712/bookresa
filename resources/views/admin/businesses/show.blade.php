@@ -321,6 +321,103 @@
                 </div>
 
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                    <div>
+                        <h3 class="font-semibold">{{ __('platform.member_management') }}</h3>
+                        <p class="mt-1 text-sm text-slate-500">{{ __('platform.member_management_help') }}</p>
+                    </div>
+
+                    <form method="POST" action="{{ route('admin.businesses.members.store', $tenant) }}" class="mt-5 space-y-4">
+                        @csrf
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <label class="block text-sm">
+                                <span class="font-semibold">{{ __('platform.member_name') }}</span>
+                                <input name="name" value="{{ old('name') }}" required class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+                            </label>
+                            <label class="block text-sm">
+                                <span class="font-semibold">{{ __('platform.member_email') }}</span>
+                                <input type="email" name="email" value="{{ old('email') }}" required class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+                            </label>
+                            <label class="block text-sm">
+                                <span class="font-semibold">{{ __('platform.member_password') }}</span>
+                                <input type="password" name="password" class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+                                <span class="mt-1 block text-xs text-slate-500">{{ __('platform.member_password_help') }}</span>
+                            </label>
+                            <label class="block text-sm">
+                                <span class="font-semibold">{{ __('platform.member_password_confirmation') }}</span>
+                                <input type="password" name="password_confirmation" class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+                            </label>
+                            <label class="block text-sm">
+                                <span class="font-semibold">{{ __('platform.role') }}</span>
+                                <select name="role" required class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+                                    @foreach(array_keys(config('bookresa.rbac.roles', [])) as $role)
+                                        <option value="{{ $role }}" @selected(old('role') === $role)>{{ str($role)->headline() }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="inline-flex items-center gap-2 self-end text-sm font-semibold">
+                                <input type="checkbox" name="is_primary" value="1" @checked(old('is_primary'))>
+                                {{ __('platform.make_primary_owner') }}
+                            </label>
+                        </div>
+                        <button class="rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white dark:bg-white dark:text-slate-900">
+                            {{ __('platform.add_member') }}
+                        </button>
+                    </form>
+
+                    <div class="mt-6 space-y-3">
+                        @forelse($members as $membership)
+                            @php
+                                $memberRole = $memberRoles[$membership->getKey()] ?? '—';
+                            @endphp
+                            <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                                <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                                    <div class="min-w-0">
+                                        <div class="flex flex-wrap items-center gap-2">
+                                            <p class="font-semibold">{{ $membership->user?->name ?? '—' }}</p>
+                                            @if($membership->is_primary)
+                                                <span class="rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-200">{{ __('platform.primary_owner') }}</span>
+                                            @endif
+                                            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{ $memberRole }}</span>
+                                            <span class="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{{ str($membership->status->value)->headline() }}</span>
+                                        </div>
+                                        <p class="mt-1 break-all text-xs text-slate-500">{{ $membership->user?->email ?? '—' }}</p>
+                                    </div>
+
+                                    <form method="POST" action="{{ route('admin.businesses.members.update', [$tenant, $membership]) }}" class="grid gap-2 sm:grid-cols-3 xl:min-w-[34rem]">
+                                        @csrf
+                                        @method('PATCH')
+                                        <select name="role" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">
+                                            @foreach(array_keys(config('bookresa.rbac.roles', [])) as $role)
+                                                <option value="{{ $role }}" @selected($memberRole === $role)>{{ str($role)->headline() }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select name="status" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">
+                                            <option value="active" @selected($membership->status->value === 'active')>{{ __('Active') }}</option>
+                                            <option value="suspended" @selected($membership->status->value === 'suspended')>{{ __('Suspended') }}</option>
+                                        </select>
+                                        <label class="flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-2 text-xs font-semibold dark:border-slate-700">
+                                            <input type="checkbox" name="is_primary" value="1" @checked($membership->is_primary)>
+                                            {{ __('platform.primary_owner') }}
+                                        </label>
+                                        <button class="rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white dark:bg-white dark:text-slate-900">{{ __('platform.save_member') }}</button>
+                                    </form>
+
+                                    @unless($membership->is_primary)
+                                        <form method="POST" action="{{ route('admin.businesses.members.destroy', [$tenant, $membership]) }}" onsubmit="return confirm(@js(__('platform.remove_member_confirm')))">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="rounded-lg border border-rose-300 px-3 py-2 text-xs font-semibold text-rose-700 dark:border-rose-700 dark:text-rose-300">{{ __('platform.remove_member') }}</button>
+                                        </form>
+                                    @endunless
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500">{{ __('app.no_workspace_members') }}</p>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <h3 class="font-semibold">{{ __('app.manage_workspace') }}</h3>
                     <p class="mt-1 text-sm text-slate-500">{{ __('app.manage_workspace_help') }}</p>
                     <div class="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
