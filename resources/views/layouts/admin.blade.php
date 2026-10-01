@@ -41,7 +41,7 @@
                     @php
                         $workspaceControlLinks = [
                             ['route' => 'admin.dashboard', 'label' => __('app.dashboard')],
-                            ['route' => 'admin.businesses.index', 'label' => __('app.businesses')],
+                            ['route' => 'admin.businesses.index', 'label' => __('platform.workspaces')],
                             ['route' => 'admin.users.index', 'label' => __('app.users')],
                             ['route' => 'admin.subscriptions.index', 'label' => __('app.subscriptions')],
                             ['route' => 'admin.payments.index', 'label' => __('app.payments')],
