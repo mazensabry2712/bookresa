@@ -3,6 +3,7 @@
 namespace App\Domain\Payment\Models;
 
 use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Tenant\Concerns\BelongsToTenant;
 use App\Domain\Tenant\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TenantPaymentAccount extends Model
 {
     /** @use HasFactory<\Database\Factories\TenantPaymentAccountFactory> */
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',
