@@ -21,7 +21,11 @@ use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
 use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
+use App\Http\Requests\Platform\StoreWorkspaceMemberRequest;
+use App\Http\Requests\Platform\UpdateWorkspaceMemberRequest;
+use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Models\User;
+use Illuminate\Validation\ValidationException;
 use App\Support\AuditLogger;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\RedirectResponse;
@@ -263,10 +267,22 @@ final class PlatformBusinessController
             ? min(100, (int) round(($usage->unique_customer_count / $usage->included_customer_limit) * 100))
             : 0;
 
+        $memberRoles = [];
+        $previousTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($tenantId);
+        try {
+            foreach ($members as $membership) {
+                $memberRoles[$membership->getKey()] = $membership->user?->getRoleNames()?->implode(', ') ?? '—';
+            }
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+        }
+
         return view('admin.businesses.show', [
             'tenant' => $tenant,
             'owner' => $owner,
             'members' => $members,
+            'memberRoles' => $memberRoles,
             'latestSubscription' => $latestSubscription,
             'subscriptionUsable' => $latestSubscription?->isUsable() === true,
             'usage' => $usage,
@@ -276,6 +292,185 @@ final class PlatformBusinessController
             'recentBookings' => $recentBookings,
         ]);
     }
+
+    public function addMember(
+        StoreWorkspaceMemberRequest $request,
+        Tenant $tenant,
+        TenantRoleProvisioner $roleProvisioner,
+    ): RedirectResponse {
+        $data = $request->validated();
+
+        $user = User::query()->where('email', $data['email'])->first();
+
+        if ($user === null) {
+            if (blank($data['password'] ?? null)) {
+                throw ValidationException::withMessages([
+                    'password' => __('A password is required when creating a new workspace member account.'),
+                ]);
+            }
+
+            $user = User::query()->create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'email_verified_at' => now(),
+            ]);
+        } else {
+            if ($user->name !== $data['name']) {
+                $user->forceFill(['name' => $data['name']])->save();
+            }
+
+            if ($user->email_verified_at === null) {
+                $user->forceFill(['email_verified_at' => now()])->save();
+            }
+        }
+
+        $membership = $tenant->memberships()
+            ->withoutGlobalScopes()
+            ->where('user_id', $user->getKey())
+            ->first();
+
+        if ($membership === null) {
+            $makePrimary = (bool) ($data['is_primary'] ?? false)
+                || ! $tenant->memberships()->withoutGlobalScopes()->where('is_primary', true)->exists();
+
+            if ($makePrimary) {
+                $tenant->memberships()
+                    ->withoutGlobalScopes()
+                    ->where('is_primary', true)
+                    ->update(['is_primary' => false]);
+            }
+
+            $membership = $tenant->memberships()->create([
+                'user_id' => $user->getKey(),
+                'status' => MembershipStatus::Active,
+                'is_primary' => $makePrimary,
+            ]);
+        } else {
+            $membership->forceFill(['status' => MembershipStatus::Active])->save();
+
+            if ((bool) ($data['is_primary'] ?? false)) {
+                $tenant->memberships()
+                    ->withoutGlobalScopes()
+                    ->whereKeyNot($membership->getKey())
+                    ->where('is_primary', true)
+                    ->update(['is_primary' => false]);
+
+                $membership->forceFill(['is_primary' => true])->save();
+            }
+        }
+
+        $role = $roleProvisioner->provisionRole($tenant, $user);
+        $previousTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($tenant->getKey());
+        try {
+            $user->syncRoles([$role]);
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+        }
+
+        app(AuditLogger::class)->log(
+            'platform.workspace_member_added',
+            $membership,
+            [
+                'tenant_id' => (int) $tenant->getKey(),
+                'user_id' => (int) $user->getKey(),
+                'role' => $data['role'],
+                'is_primary' => (bool) $membership->is_primary,
+            ],
+        );
+
+        return to_route('admin.businesses.show', $tenant)
+            ->with('status', __('platform.member_added'));
+    }
+
+    public function updateMember(
+        UpdateWorkspaceMemberRequest $request,
+        Tenant $tenant,
+        int $membership,
+        TenantRoleProvisioner $roleProvisioner,
+    ): RedirectResponse {
+        $data = $request->validated();
+
+        $membership = $tenant->memberships()
+            ->withoutGlobalScopes()
+            ->findOrFail($membership);
+
+        $isPrimary = (bool) ($data['is_primary'] ?? false);
+
+        if ($data['status'] === MembershipStatus::Suspended->value && $membership->is_primary) {
+            throw ValidationException::withMessages([
+                'status' => __('The workspace owner cannot be suspended. Promote another member first.'),
+            ]);
+        }
+
+        if ($isPrimary) {
+            $tenant->memberships()
+                ->withoutGlobalScopes()
+                ->whereKeyNot($membership->getKey())
+                ->where('is_primary', true)
+                ->update(['is_primary' => false]);
+        } elseif ($membership->is_primary && ! $isPrimary) {
+            throw ValidationException::withMessages([
+                'is_primary' => __('The workspace must always have a primary owner.'),
+            ]);
+        }
+
+        $membership->forceFill([
+            'status' => MembershipStatus::from($data['status']),
+            'is_primary' => $isPrimary,
+        ])->save();
+
+        $role = $roleProvisioner->provisionRole($tenant, $membership->user);
+        $previousTeamId = getPermissionsTeamId();
+        setPermissionsTeamId($tenant->getKey());
+        try {
+            $membership->user->syncRoles([$role]);
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+        }
+
+        app(AuditLogger::class)->log(
+            'platform.workspace_member_updated',
+            $membership,
+            [
+                'tenant_id' => (int) $tenant->getKey(),
+                'user_id' => (int) $membership->user_id,
+                'role' => $data['role'],
+                'status' => $membership->status->value,
+                'is_primary' => (bool) $membership->is_primary,
+            ],
+        );
+
+        return back()->with('status', __('platform.member_updated'));
+    }
+
+    public function removeMember(Tenant $tenant, int $membership): RedirectResponse
+    {
+        $membership = $tenant->memberships()
+            ->withoutGlobalScopes()
+            ->findOrFail($membership);
+
+        if ($membership->is_primary) {
+            throw ValidationException::withMessages([
+                'membership' => __('The primary workspace owner cannot be removed. Promote another member first.'),
+            ]);
+        }
+
+        app(AuditLogger::class)->log(
+            'platform.workspace_member_removed',
+            $membership,
+            [
+                'tenant_id' => (int) $tenant->getKey(),
+                'user_id' => (int) $membership->user_id,
+            ],
+        );
+
+        $membership->delete();
+
+        return back()->with('status', __('platform.member_removed'));
+    }
+
 
     public function updatePaymentAccount(Request $request, Tenant $tenant): RedirectResponse
     {
