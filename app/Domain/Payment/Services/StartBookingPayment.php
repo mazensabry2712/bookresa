@@ -56,6 +56,15 @@ final class StartBookingPayment
             $amountMinor = max(1, (int) ceil($amountMinor * ($percent / 100)));
         }
 
+        $provider = (string) config('bookresa.payments.default_provider', 'kashier');
+        $paymentAccount = TenantPaymentAccount::query()
+            ->where('provider', $provider)
+            ->first();
+
+        if ($paymentAccount === null || ! $paymentAccount->isActive()) {
+            throw new RuntimeException('Online booking payments are not connected for this workspace yet.');
+        }
+
         $metadata = [
             'booking_reference' => $booking->booking_reference,
             'customer_reference' => 'customer-'.$booking->customer_id,
@@ -65,15 +74,6 @@ final class StartBookingPayment
             'merchant_redirect' => route('payments.kashier.return'),
             'connected_account_merchant_id' => $paymentAccount->merchant_id,
         ];
-
-        $provider = (string) config('bookresa.payments.default_provider', 'kashier');
-        $paymentAccount = TenantPaymentAccount::query()
-            ->where('provider', $provider)
-            ->first();
-
-        if ($paymentAccount === null || ! $paymentAccount->isActive()) {
-            throw new RuntimeException('Online booking payments are not connected for this workspace yet.');
-        }
 
         $latestPayment = $booking->payments()
             ->where('provider', $provider)
