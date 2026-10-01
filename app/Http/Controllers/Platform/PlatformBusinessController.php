@@ -5,18 +5,25 @@ namespace App\Http\Controllers\Platform;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Business\Actions\CreateBusiness;
+use App\Domain\Business\Models\BusinessProfile;
+use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
+use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
+use App\Models\User;
 use App\Support\AuditLogger;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,6 +44,7 @@ final class PlatformBusinessController
                 'memberships' => fn ($query) => $query->withoutGlobalScopes(),
                 'services' => fn ($query) => $query->withoutGlobalScopes(),
                 'staffProfiles' => fn ($query) => $query->withoutGlobalScopes(),
+                'subscriptions' => fn ($query) => $query->withoutGlobalScopes(),
             ])
             ->when($search !== '', function ($query) use ($search): void {
                 $query->where(function ($nested) use ($search): void {
@@ -58,6 +66,127 @@ final class PlatformBusinessController
         return view('admin.businesses.index', [
             'businesses' => $businesses,
         ]);
+    }
+
+    public function create(): View
+    {
+        return view('admin.businesses.create', [
+            'businessTypes' => BusinessType::query()
+                ->where('is_active', true)
+                ->orderBy('id')
+                ->get(),
+        ]);
+    }
+
+    public function store(
+        StorePlatformWorkspaceRequest $request,
+        CreateBusiness $createBusiness,
+        DatabaseManager $database,
+    ): RedirectResponse {
+        $data = $request->validated();
+
+        $tenant = $database->transaction(function () use ($data, $createBusiness): Tenant {
+            $owner = User::query()->create([
+                'name' => $data['owner_name'],
+                'email' => $data['owner_email'],
+                'password' => $data['owner_password'],
+                'email_verified_at' => now(),
+            ]);
+
+            $tenant = $createBusiness->handle(
+                $owner,
+                BusinessType::query()->findOrFail($data['business_type_id']),
+                [
+                    'name' => $data['business_name_en'],
+                    'name_en' => $data['business_name_en'],
+                    'name_ar' => $data['business_name_ar'] ?? $data['business_name_en'],
+                    'slug' => $data['slug'] ?? $data['business_name_en'],
+                    'phone' => $data['phone'] ?? null,
+                    'email' => $data['email'] ?? $data['owner_email'],
+                    'timezone' => $data['timezone'],
+                    'locale' => $data['locale'],
+                ],
+            );
+
+            if ($data['status'] !== TenantStatus::Active->value) {
+                $tenant->forceFill(['status' => TenantStatus::from($data['status'])])->save();
+            }
+
+            app(AuditLogger::class)->log(
+                'platform.workspace_created',
+                $tenant,
+                [
+                    'tenant_id' => (int) $tenant->getKey(),
+                    'owner_id' => (int) $owner->getKey(),
+                ],
+            );
+
+            return $tenant;
+        });
+
+        return to_route('admin.businesses.show', $tenant)
+            ->with('status', __('platform.workspace_created'));
+    }
+
+    public function edit(Tenant $tenant): View
+    {
+        $tenant->load([
+            'businessType',
+            'profile' => fn ($query) => $query->withoutGlobalScopes(),
+        ]);
+
+        return view('admin.businesses.edit', [
+            'tenant' => $tenant,
+            'businessTypes' => BusinessType::query()
+                ->where('is_active', true)
+                ->orderBy('id')
+                ->get(),
+        ]);
+    }
+
+    public function update(UpdatePlatformWorkspaceRequest $request, Tenant $tenant): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $tenant->forceFill([
+            'slug' => $data['slug'],
+            'business_type_id' => $data['business_type_id'],
+            'status' => TenantStatus::from($data['status']),
+        ])->save();
+
+        $profile = BusinessProfile::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->getKey())
+            ->firstOrCreate(
+                ['tenant_id' => $tenant->getKey()],
+                [
+                    'name' => ['en' => $data['business_name_en'], 'ar' => $data['business_name_ar'] ?? $data['business_name_en']],
+                    'timezone' => $data['timezone'],
+                    'locale' => $data['locale'],
+                ],
+            );
+
+        $profile->forceFill([
+            'name' => [
+                'en' => $data['business_name_en'],
+                'ar' => $data['business_name_ar'] ?? $data['business_name_en'],
+            ],
+            'phone' => $data['phone'] ?? null,
+            'email' => $data['email'] ?? null,
+            'timezone' => $data['timezone'],
+            'locale' => $data['locale'],
+        ])->save();
+
+        app(AuditLogger::class)->log(
+            'platform.workspace_updated',
+            $tenant,
+            [
+                'tenant_id' => (int) $tenant->getKey(),
+                'status' => $tenant->status->value,
+            ],
+        );
+
+        return to_route('admin.businesses.show', $tenant)
+            ->with('status', __('platform.workspace_updated'));
     }
 
     public function show(Tenant $tenant): View
@@ -213,5 +342,21 @@ final class PlatformBusinessController
                 ? __('Business suspended successfully.')
                 : __('Business activated successfully.'),
         );
+    }
+
+    public function destroy(Tenant $tenant): RedirectResponse
+    {
+        $tenantId = (int) $tenant->getKey();
+
+        app(AuditLogger::class)->log(
+            'platform.workspace_deleted',
+            $tenant,
+            ['tenant_id' => $tenantId],
+        );
+
+        $tenant->delete();
+
+        return to_route('admin.businesses.index')
+            ->with('status', __('platform.workspace_deleted'));
     }
 }
