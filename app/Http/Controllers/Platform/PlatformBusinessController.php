@@ -352,7 +352,7 @@ final class PlatformBusinessController
             if ((bool) ($data['is_primary'] ?? false)) {
                 $tenant->memberships()
                     ->withoutGlobalScopes()
-                    ->whereKeyNot($membership->getKey())
+                    ->where($membership->getKeyName(), '!=', $membership->getKey())
                     ->where('is_primary', true)
                     ->update(['is_primary' => false]);
 
@@ -407,7 +407,7 @@ final class PlatformBusinessController
         if ($isPrimary) {
             $tenant->memberships()
                 ->withoutGlobalScopes()
-                ->whereKeyNot($membership->getKey())
+                ->where($membership->getKeyName(), '!=', $membership->getKey())
                 ->where('is_primary', true)
                 ->update(['is_primary' => false]);
         } elseif ($membership->is_primary && ! $isPrimary) {
