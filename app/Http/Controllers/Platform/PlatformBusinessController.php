@@ -19,6 +19,7 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
+use Spatie\Activitylog\Models\Activity;
 use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
 use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
 use App\Http\Requests\Platform\StoreWorkspaceMemberRequest;
@@ -208,7 +209,6 @@ final class PlatformBusinessController
             ->with('user')
             ->orderByDesc('is_primary')
             ->orderByDesc('id')
-            ->limit(12)
             ->get();
 
         $owner = $members->first(fn ($membership): bool => $membership->is_primary)
@@ -253,6 +253,14 @@ final class PlatformBusinessController
                 ->sum('amount_minor'),
         ];
 
+        $recentActivity = Activity::query()
+            ->where('log_name', 'security')
+            ->where('properties->tenant_id', $tenantId)
+            ->with('causer')
+            ->latest('id')
+            ->limit(12)
+            ->get();
+
         $recentBookings = Booking::withoutGlobalScopes()
             ->with([
                 'customer' => fn ($query) => $query->withoutGlobalScopes(),
@@ -290,6 +298,7 @@ final class PlatformBusinessController
             'activeModules' => $activeModules,
             'stats' => $stats,
             'recentBookings' => $recentBookings,
+            'recentActivity' => $recentActivity,
         ]);
     }
 
