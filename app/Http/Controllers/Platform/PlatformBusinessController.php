@@ -153,7 +153,9 @@ final class PlatformBusinessController
             'status' => ['required', 'in:pending,active,disabled'],
         ]);
 
-        $account = TenantPaymentAccount::query()->first();
+        $account = TenantPaymentAccount::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->getKey())
+            ->first();
 
         if ($account === null) {
             $account = TenantPaymentAccount::query()->create([
