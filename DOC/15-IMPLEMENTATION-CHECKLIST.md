@@ -1,6 +1,6 @@
 # BookResa — Implementation Checklist
 
-**Backend implementation progress: 111/122 (91.0%).**
+**Backend implementation progress: platform control and customer intelligence are now included in the implemented scope; production-only gates remain environment-dependent.**
 
 This checklist measures the current backend/product implementation scope, not the frontend rollout. Frontend execution is governed by DOC/18. Production readiness is governed by DOC/17.
 
@@ -131,11 +131,16 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] cross-workspace Super Admin access
 - [x] businesses/workspaces list and search
 - [x] Workspace Overview with owner, members, subscription, usage, operational quick links and direct status controls
+- [x] Platform Workspace CRUD (create/edit/delete) and lifecycle controls
+- [x] Platform workspace member management (add, role, owner transfer, suspend, remove)
 - [x] business suspension/activation
 - [x] subscriptions list
 - [x] payments list
 - [x] usage periods list
 - [x] platform users management
+- [x] cross-workspace Customer Intelligence
+- [x] customer search, workspace filtering and objective customer signals
+- [x] currency-safe customer spending ranking
 - [x] support management
 - [x] platform settings
 
