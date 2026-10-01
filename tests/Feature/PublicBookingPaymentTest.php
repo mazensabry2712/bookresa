@@ -3,6 +3,8 @@
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Service\Actions\CreateService;
@@ -44,6 +46,14 @@ function paidBookingTenant(string $slug): Tenant
             'payment_mode' => 'full',
             'customer_email_required' => false,
         ],
+    ]);
+
+    TenantPaymentAccount::query()->create([
+        'tenant_id' => $tenant->id,
+        'provider' => 'kashier',
+        'merchant_id' => 'MID-'.$slug,
+        'status' => TenantPaymentAccountStatus::Active,
+        'connected_at' => now(),
     ]);
 
     app(SetBusinessWorkingHours::class)->handle([
@@ -118,7 +128,8 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
     Http::assertSent(function ($request): bool {
         return $request['customer']['email'] === 'ahmed@example.com'
             && str_starts_with((string) $request['customer']['reference'], 'customer-')
-            && $request['merchantRedirect'] === route('payments.kashier.return');
+            && $request['merchantRedirect'] === route('payments.kashier.return')
+            && $request['connectedAccount'] === 'MID-paid-clinic';
     });
 });
 
