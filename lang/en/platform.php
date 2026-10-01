@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'workspaces' => 'Workspaces',
     'workspace_control' => 'Workspace Control',
     'workspace_control_help' => 'Full platform-level control over workspaces, access, configuration and lifecycle.',
     'customer_intelligence' => 'Customer Intelligence',
