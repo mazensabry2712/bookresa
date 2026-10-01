@@ -22,11 +22,11 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
 use App\Models\User;
-use Tests\Fakes\FakeSubscriptionGateway;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Tests\Fakes\FakeSubscriptionGateway;
 
 uses(RefreshDatabase::class);
 
