@@ -17,8 +17,7 @@ final class UpdateBusinessProfile
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly TenantModuleAccess $moduleAccess,
-    ) {
-    }
+    ) {}
 
     public function handle(array $data): BusinessProfile
     {
@@ -28,7 +27,7 @@ final class UpdateBusinessProfile
 
         $paymentsAvailable = $this->moduleAccess->allows('payments');
 
-        if (! $paymentsAvailable && in_array($paymentMode, ['full', 'deposit'], true)) {
+        if (!$paymentsAvailable && in_array($paymentMode, ['full', 'deposit'], true)) {
             $paymentMode = 'pay_later';
         }
 
