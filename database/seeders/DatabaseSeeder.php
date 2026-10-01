@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ModuleSeeder::class,
             BusinessTypeSeeder::class,
+            PlatformAdminSeeder::class,
         ]);
     }
 }
