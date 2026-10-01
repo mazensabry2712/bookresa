@@ -84,6 +84,9 @@ function webhookPayment(Tenant $tenant, Booking $booking): Payment
         'amount_minor' => 25000,
         'currency' => 'EGP',
         'status' => PaymentStatus::Processing,
+        'metadata' => [
+            'connected_account_merchant_id' => 'MID-WEBHOOK',
+        ],
     ]);
 }
 
@@ -170,8 +173,6 @@ test('invalid Kashier webhook signature is rejected', function (): void {
     $this->postJson(route('webhooks.kashier'), webhookPayload($payment->reference), [
         'x-kashier-signature' => 'invalid-signature',
     ])->assertUnauthorized();
-
-    app(CurrentTenant::class)->set($tenant);
 
     app(CurrentTenant::class)->set($tenant);
 
