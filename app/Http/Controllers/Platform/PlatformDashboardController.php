@@ -89,7 +89,7 @@ final class PlatformDashboardController
                     ->where('payable_type', Booking::class)
                     ->where('status', PaymentStatus::Paid)
                     ->sum('amount_minor'),
-                'connectedPaymentAccounts' => TenantPaymentAccount::query()
+                'connectedPaymentAccounts' => TenantPaymentAccount::withoutGlobalScopes()
                     ->where('provider', config('bookresa.payments.default_provider', 'kashier'))
                     ->where('status', 'active')
                     ->count(),
