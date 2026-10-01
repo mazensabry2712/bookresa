@@ -7,6 +7,8 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
@@ -124,6 +126,50 @@ test('owner can view and update business profile', function (): void {
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'minimum_notice_minutes'))->toBe(60)
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'maximum_advance_days'))->toBe(90)
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'customer_email_required'))->toBeTrue();
+});
+
+test('owner can connect a workspace booking payment merchant', function (): void {
+    [$user, $tenant] = workspaceOwner();
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
+            'name_en' => 'Owner Clinic',
+            'name_ar' => 'عيادة المالك',
+            'description_en' => '',
+            'description_ar' => '',
+            'phone' => '',
+            'email' => 'clinic@example.com',
+            'location' => '',
+            'address' => '',
+            'website' => '',
+            'facebook' => '',
+            'instagram' => '',
+            'timezone' => 'Africa/Cairo',
+            'locale' => 'en',
+            'payment_mode' => 'full',
+            'payment_merchant_id' => 'MID-OWNER-123',
+            'deposit_percent' => 50,
+            'customer_email_required' => true,
+            'customer_limit_policy' => 'allow_overage',
+            'minimum_notice_minutes' => 0,
+            'maximum_advance_days' => 90,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('status');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $account = TenantPaymentAccount::query()->firstOrFail();
+
+    expect($account->merchant_id)->toBe('MID-OWNER-123')
+        ->and($account->status)->toBe(TenantPaymentAccountStatus::Pending);
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('Booking payment account')
+        ->assertSee('MID-OWNER-123')
+        ->assertSee('Pending');
 });
 
 test('owner can create and update a service through workspace ui', function (): void {
