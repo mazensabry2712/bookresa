@@ -69,15 +69,12 @@ final class HandleKashierWebhook
         }
 
         $merchantId = trim((string) ($data['merchantId'] ?? ''));
+        $expectedMerchantId = $payment->payable_type === Subscription::class
+            ? (string) config('bookresa.payments.kashier.merchant_id')
+            : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
 
-        if ($merchantId !== '') {
-            $expectedMerchantId = $payment->payable_type === Subscription::class
-                ? (string) config('bookresa.payments.kashier.merchant_id')
-                : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
-
-            if ($expectedMerchantId === '' || $merchantId !== $expectedMerchantId) {
-                throw new RuntimeException('Kashier webhook merchant account does not match the payment.');
-            }
+        if ($merchantId === '' || $expectedMerchantId === '' || $merchantId !== $expectedMerchantId) {
+            throw new RuntimeException('Kashier webhook merchant account does not match the payment.');
         }
 
         $tenant = $payment->tenant;
