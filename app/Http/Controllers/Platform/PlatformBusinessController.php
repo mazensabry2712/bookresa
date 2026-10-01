@@ -31,7 +31,7 @@ final class PlatformBusinessController
             ->with([
                 'profile' => fn ($query) => $query->withoutGlobalScopes(),
                 'businessType',
-            'paymentAccount',
+                'paymentAccount' => fn ($query) => $query->withoutGlobalScopes(),
             ])
             ->withCount([
                 'memberships' => fn ($query) => $query->withoutGlobalScopes(),
@@ -67,6 +67,7 @@ final class PlatformBusinessController
         $tenant->load([
             'businessType',
             'profile' => fn ($query) => $query->withoutGlobalScopes(),
+            'paymentAccount' => fn ($query) => $query->withoutGlobalScopes(),
         ]);
 
         $members = $tenant->memberships()
@@ -114,6 +115,7 @@ final class PlatformBusinessController
                 ->count(),
             'paidRevenueMinor' => Payment::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
+                ->where('payable_type', Booking::class)
                 ->where('status', PaymentStatus::Paid)
                 ->sum('amount_minor'),
         ];
