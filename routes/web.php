@@ -14,6 +14,7 @@ use App\Http\Controllers\Payment\PaymentManagementController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
+use App\Http\Controllers\Platform\PlatformCustomerController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformFinanceController;
 use App\Http\Controllers\Platform\PlatformModuleController;
@@ -300,9 +301,17 @@ Route::middleware(['auth', 'verified', 'platform'])
     ->group(function (): void {
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
+        Route::get('/businesses/create', [PlatformBusinessController::class, 'create'])->name('businesses.create');
+        Route::post('/businesses', [PlatformBusinessController::class, 'store'])->name('businesses.store');
+        Route::get('/businesses/{tenant}/edit', [PlatformBusinessController::class, 'edit'])->name('businesses.edit');
+        Route::put('/businesses/{tenant}', [PlatformBusinessController::class, 'update'])->name('businesses.update');
+        Route::delete('/businesses/{tenant}', [PlatformBusinessController::class, 'destroy'])->name('businesses.destroy');
         Route::get('/businesses/{tenant}', [PlatformBusinessController::class, 'show'])->name('businesses.show');
         Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
         Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
+        Route::get('/customers', [PlatformCustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'show'])->name('customers.show');
+        Route::patch('/customers/{tenant}/{customer}/vip', [PlatformCustomerController::class, 'toggleVip'])->name('customers.vip-toggle');
         Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
         Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
             ->name('users.membership-toggle');
