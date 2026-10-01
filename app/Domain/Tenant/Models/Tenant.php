@@ -3,6 +3,8 @@
 namespace App\Domain\Tenant\Models;
 
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Booking\Models\Booking;
+use App\Domain\Customer\Models\Customer;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
@@ -96,6 +98,22 @@ class Tenant extends Model implements IsTenant
     public function staffProfiles(): HasMany
     {
         return $this->hasMany(StaffProfile::class);
+    }
+
+    /**
+     * @return HasMany<Customer, $this>
+     */
+    public function customers(): HasMany
+    {
+        return $this->hasMany(Customer::class);
+    }
+
+    /**
+     * @return HasMany<Booking, $this>
+     */
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
     }
 
     /**
