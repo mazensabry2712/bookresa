@@ -4,7 +4,7 @@
     'canonical' => url()->current(),
     'robots' => 'index,follow',
     'ogType' => 'website',
-    'ogImage' => null,
+    'ogImage' => asset('logo.png'),
     'jsonLd' => null,
     'alternates' => [],
 ])
@@ -35,8 +35,14 @@
 <meta property="og:locale" content="{{ $ogLocale }}">
 
 @if (filled($ogImage))
-    <meta property="og:image" content="{{ $ogImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $title }}">
+    @if (filled($description))
+        <meta name="twitter:description" content="{{ $description }}">
+    @endif
+    <meta name="twitter:image" content="{{ $ogImage }}">
 @endif
+
 
 @foreach ($alternates as $alternate)
     <link rel="alternate" hreflang="{{ $alternate['locale'] }}" href="{{ $alternate['url'] }}">
