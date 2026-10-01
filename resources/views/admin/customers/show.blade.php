@@ -7,8 +7,9 @@
 <div class="space-y-6">
     @php
         $workspaceName = data_get($tenant->profile?->name, app()->getLocale()) ?? $tenant->slug;
-        $paidCurrency = $payments->first()?->currency ?? 'EGP';
-        $money = static fn (int $minor): string => number_format($minor / 100, 2).' '.$paidCurrency;
+        $currencyTotals = $metrics['currencyTotals'] ?? [];
+        $singleCurrency = count($currencyTotals) === 1 ? (string) array_key_first($currencyTotals) : null;
+        $money = static fn (int $minor, ?string $currency = null): string => number_format($minor / 100, 2).' '.($currency ?? '');
     @endphp
 
     <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -32,10 +33,14 @@
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @foreach([
-            [__('platform.total_spending'), $money((int) $metrics['totalSpentMinor'])],
+            [__('platform.total_spending'), $singleCurrency !== null
+                ? $money((int) $metrics['totalSpentMinor'], $singleCurrency)
+                : __('platform.multiple_currencies')],
             [__('platform.bookings'), number_format($metrics['bookings'])],
             [__('platform.completed'), number_format($metrics['completedBookings'])],
-            [__('platform.average_paid'), $money((int) $metrics['averagePaidMinor'])],
+            [__('platform.average_paid'), $singleCurrency !== null
+                ? $money((int) $metrics['averagePaidMinor'], $singleCurrency)
+                : '—'],
         ] as [$label,$value])
             <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                 <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $label }}</p>
@@ -43,6 +48,23 @@
             </div>
         @endforeach
     </div>
+
+    @if(count($currencyTotals) > 0)
+        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            <div>
+                <h3 class="font-semibold">{{ __('platform.spending_by_currency') }}</h3>
+                <p class="mt-1 text-sm text-slate-500">{{ __('platform.spending_by_currency_help') }}</p>
+            </div>
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach($currencyTotals as $currency => $minor)
+                    <div class="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $currency }}</p>
+                        <p class="mt-1 text-xl font-bold">{{ $money($minor, $currency) }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
