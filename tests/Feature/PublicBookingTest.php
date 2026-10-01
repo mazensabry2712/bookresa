@@ -8,12 +8,18 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-09-27 08:00:00', 'Africa/Cairo'));
+});
+
 afterEach(function (): void {
+    CarbonImmutable::setTestNow();
     app(CurrentTenant::class)->clear();
 });
 
