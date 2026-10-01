@@ -8,6 +8,7 @@ use App\Domain\Booking\Models\Booking;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use Illuminate\View\View;
@@ -84,6 +85,14 @@ final class PlatformDashboardController
                     ->where('payable_type', Subscription::class)
                     ->where('status', PaymentStatus::Paid)
                     ->sum('amount_minor'),
+                'bookingRevenueMinor' => Payment::withoutGlobalScopes()
+                    ->where('payable_type', Booking::class)
+                    ->where('status', PaymentStatus::Paid)
+                    ->sum('amount_minor'),
+                'connectedPaymentAccounts' => TenantPaymentAccount::query()
+                    ->where('provider', config('bookresa.payments.default_provider', 'kashier'))
+                    ->where('status', 'active')
+                    ->count(),
                 'usageRevenueMinor' => Subscription::withoutGlobalScopes()
                     ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
                     ->join('usage_periods', 'subscriptions.id', '=', 'usage_periods.subscription_id')
