@@ -165,11 +165,11 @@ test('owner can connect a workspace booking payment merchant', function (): void
         ->and($account->status)->toBe(TenantPaymentAccountStatus::Pending);
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'en']))
         ->assertOk()
-        ->assertSee('Booking payment account')
+        ->assertSee(__('app.booking_payment_account', [], 'en'))
         ->assertSee('MID-OWNER-123')
-        ->assertSee('Pending');
+        ->assertSee(__('app.pending_verification', [], 'en'));
 });
 
 test('owner can create and update a service through workspace ui', function (): void {
