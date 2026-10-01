@@ -3,6 +3,7 @@
 use App\Http\Controllers\Onboarding\BusinessOnboardingController;
 use App\Http\Controllers\PublicBookingController;
 use App\Http\Controllers\Booking\BookingManagementController;
+use App\Http\Controllers\Calendar\CalendarController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,6 +36,10 @@ Route::middleware(['auth', 'tenant', 'permission:bookings.view'])
         Route::post('/{booking}/status', [BookingManagementController::class, 'status'])
             ->name('booking.management.status');
     });
+
+Route::middleware(['auth', 'tenant', 'permission:calendar.view'])
+    ->get('/dashboard/calendar', [CalendarController::class, 'index'])
+    ->name('calendar.index');
 
 Route::prefix('book/{tenant:slug}')->group(function (): void {
     Route::get('/', [PublicBookingController::class, 'show'])
