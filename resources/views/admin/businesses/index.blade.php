@@ -10,6 +10,10 @@
             <h2 class="mt-1 text-2xl font-bold tracking-tight">{{ __('Businesses') }}</h2>
             <p class="mt-1 text-sm text-slate-500">{{ __('Review tenant status, team size and workspace activity.') }}</p>
         </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.businesses.create') }}" class="rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white dark:bg-white dark:text-slate-900">{{ __('platform.create_workspace') }}</a>
+            <a href="{{ route('admin.customers.index') }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('platform.open_customer_data') }}</a>
+        </div>
 
         <form method="GET" class="flex flex-col gap-3 sm:flex-row">
             <input name="search" value="{{ request('search') }}" placeholder="{{ __('Search by business name, slug or email') }}"
@@ -50,8 +54,17 @@
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap gap-2">
                                         <a href="{{ route('admin.businesses.show', $business) }}" class="rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('app.workspace_overview') }}</a>
+                                        <a href="{{ route('admin.businesses.edit', $business) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('platform.edit_workspace') }}</a>
+                                        <a href="{{ route('admin.customers.index', ['tenant_id' => $business->id]) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('platform.customer_intelligence') }}</a>
                                         <a href="{{ route('dashboard', ['tenant' => $business->slug]) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('app.open_workspace') }}</a>
                                         <a href="{{ route('admin.businesses.modules.index', $business) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Modules') }}</a>
+                                        <form method="POST" action="{{ route('admin.businesses.destroy', $business) }}" onsubmit="return confirm(@js(__('platform.delete_workspace_confirm')))">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-semibold text-rose-700 dark:border-rose-700 dark:text-rose-300">
+                                                {{ __('platform.delete_workspace') }}
+                                            </button>
+                                        </form>
                                         <form method="POST" action="{{ route('admin.businesses.toggle-status', $business) }}">
                                             @csrf
                                             @method('PATCH')
