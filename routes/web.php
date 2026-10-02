@@ -345,6 +345,7 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
         Route::get('/customers', [PlatformCustomerController::class, 'index'])->name('customers.index');
         Route::get('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'show'])->name('customers.show');
+        Route::put('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'update'])->name('customers.update');
         Route::patch('/customers/{tenant}/{customer}/vip', [PlatformCustomerController::class, 'toggleVip'])->name('customers.vip-toggle');
         Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
         Route::get('/users/{user}', [PlatformUserOperationsController::class, 'show'])->name('users.show');
