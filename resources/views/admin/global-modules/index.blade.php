@@ -35,6 +35,9 @@
                     <label class="block text-sm"><span class="mb-1 block font-medium">{{ __('English description') }}</span><textarea name="description_en" rows="3" maxlength="1000" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 dark:border-slate-700 dark:bg-slate-950">{{ data_get($module->description, 'en') }}</textarea></label>
                     <label class="block text-sm"><span class="mb-1 block font-medium">{{ __('Arabic description') }}</span><textarea name="description_ar" rows="3" maxlength="1000" dir="rtl" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-3 dark:border-slate-700 dark:bg-slate-950">{{ data_get($module->description, 'ar') }}</textarea></label>
                     <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm dark:border-slate-800 md:col-span-2">
+                        @if($module->is_core)
+                            <input type="hidden" name="is_active" value="1">
+                        @endif
                         <input type="checkbox" name="is_active" value="1" @checked($module->is_active) @disabled($module->is_core) class="h-4 w-4">
                         <span><span class="block font-semibold">{{ __('Globally active') }}</span><span class="text-xs text-slate-500">{{ $module->is_core ? __('Core modules are always active.') : __('Disabling here blocks the module for every workspace until re-enabled.') }}</span></span>
                     </label>
