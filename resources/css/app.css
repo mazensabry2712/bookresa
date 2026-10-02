@@ -672,3 +672,94 @@
         }
     }
 }
+
+
+@layer components {
+    @media (max-width: 767px) {
+        .br-admin-shell main [class*="min-w-["] {
+            min-width: 0 !important;
+        }
+
+        .br-admin-shell main [class*="w-["] {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .br-admin-shell main .flex.items-center.justify-between,
+        .br-admin-shell main .flex.items-start.justify-between {
+            flex-wrap: wrap;
+        }
+
+        .br-admin-shell main .flex.items-center.justify-between > :last-child,
+        .br-admin-shell main .flex.items-start.justify-between > :last-child {
+            max-width: 100%;
+        }
+
+        .br-admin-shell main form {
+            min-width: 0;
+        }
+
+        .br-admin-shell main form > button,
+        .br-admin-shell main form > a[role="button"] {
+            width: 100%;
+            min-height: 2.75rem;
+        }
+
+        .br-admin-shell main input:not([type="checkbox"]):not([type="radio"]),
+        .br-admin-shell main select,
+        .br-admin-shell main textarea {
+            min-height: 2.75rem;
+            max-width: 100%;
+        }
+
+        .br-admin-shell main textarea {
+            resize: vertical;
+        }
+
+        .br-admin-shell main .overflow-x-auto {
+            max-width: 100%;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .br-admin-shell main nav[aria-label*="Pagination"],
+        .br-admin-shell main nav[aria-label*="pagination"] {
+            overflow-x: auto;
+            max-width: 100%;
+            padding-bottom: 0.125rem;
+        }
+
+        .br-admin-shell main pre,
+        .br-admin-shell main code {
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .br-admin-shell main .font-mono {
+            overflow-wrap: anywhere;
+        }
+
+        .br-admin-shell main .br-panel > .p-5,
+        .br-admin-shell main .br-panel.p-5 {
+            padding: 1rem;
+        }
+
+        .br-admin-shell main .text-2xl {
+            font-size: 1.375rem;
+            line-height: 1.3;
+        }
+
+        .br-admin-shell main .text-xl {
+            font-size: 1.125rem;
+            line-height: 1.4;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .br-admin-shell main .overflow-x-auto {
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+}
