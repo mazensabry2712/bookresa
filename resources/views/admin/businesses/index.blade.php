@@ -15,7 +15,10 @@
             <a href="{{ route('admin.customers.index') }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('platform.open_customer_data') }}</a>
         </div>
 
+        <div class="flex flex-wrap gap-2"><a href="{{ route('admin.businesses.index', ['archived' => request('archived') ? null : 1]) }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ request('archived') ? __('Active workspaces') : __('Archived workspaces') }}</a></div>
+
         <form method="GET" class="flex flex-col gap-3 sm:flex-row">
+            <input type="hidden" name="archived" value="{{ request('archived') }}">
             <input name="search" value="{{ request('search') }}" placeholder="{{ __('Search by business name, slug or email') }}"
                    class="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
             <button class="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('Search') }}</button>
