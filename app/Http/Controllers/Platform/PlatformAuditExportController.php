@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Spatie\Activitylog\Models\Activity;
@@ -51,7 +52,7 @@ final class PlatformAuditExportController
                     $activity->getKey(),
                     $activity->created_at?->toIso8601String(),
                     $activity->description,
-                    $activity->causer?->email,
+                    $activity->causer instanceof User ? $activity->causer->email : '',
                     $activity->subject_type ? $activity->subject_type.'#'.$activity->subject_id : '',
                     data_get($properties, 'tenant_id'),
                     data_get($properties, 'ip_address'),
