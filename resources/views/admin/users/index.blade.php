@@ -74,7 +74,7 @@
                                                         @csrf
                                                         @method('PATCH')
                                                         <button type="submit" class="whitespace-nowrap rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold dark:border-slate-700">
-                                                            {{ $membership->status === 'active' ? __('Suspend') : __('Activate') }}
+                                                            {{ $membership->status->value === 'active' ? __('Suspend') : __('Activate') }}
                                                         </button>
                                                     </form>
                                                 @endif
