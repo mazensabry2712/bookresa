@@ -56,6 +56,9 @@
                                 <td class="px-5 py-4">{{ number_format($business->staff_profiles_count) }}</td>
                                 <td class="px-5 py-4">
                                     <div class="flex flex-wrap gap-2">
+                                        @if($business->deleted_at)
+                                            <form method="POST" action="{{ route('admin.businesses.restore', $business->id) }}">@csrf<button class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">{{ __('Restore') }}</button></form>
+                                        @else
                                         <a href="{{ route('admin.businesses.show', $business) }}" class="rounded-lg bg-brand-navy px-3 py-1.5 text-xs font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('app.workspace_overview') }}</a>
                                         <a href="{{ route('admin.businesses.edit', $business) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('platform.edit_workspace') }}</a>
                                         <a href="{{ route('admin.customers.index', ['tenant_id' => $business->id]) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('platform.customer_intelligence') }}</a>
@@ -75,6 +78,7 @@
                                                 {{ $business->status === \App\Domain\Tenant\Enums\TenantStatus::Suspended ? __('Activate') : __('Suspend') }}
                                             </button>
                                         </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
