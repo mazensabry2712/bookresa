@@ -97,6 +97,10 @@ final class TenantSupportController
             ->where('tenant_id', $tenant->getKey())
             ->findOrFail($ticketId);
 
+        if ($ticket->status === SupportTicketStatus::Closed) {
+            abort(422, __('Closed support tickets cannot receive new replies.'));
+        }
+
         SupportTicketMessage::query()->create([
             'support_ticket_id' => $ticket->getKey(),
             'author_user_id' => $request->user()->getKey(),
