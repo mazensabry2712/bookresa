@@ -255,7 +255,7 @@ test('platform admin can view a workspace control overview', function (): void {
                 && $stats['services'] === 0
                 && $stats['staff'] === 0
                 && $stats['activeMembers'] === 1
-                && $stats['paidRevenueMinor'] === 0;
+                && $stats['paidRevenueByCurrency']->isEmpty();
         })
         ->assertViewHas('subscriptionUsable', true);
 });
