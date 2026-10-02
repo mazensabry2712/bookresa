@@ -46,7 +46,6 @@ return [
                 'workspaces.members',
                 'workspaces.modules',
                 'workspaces.payment_accounts',
-                'modules.manage',
                 'workspaces.impersonate',
                 'customers.view',
                 'customers.manage',
