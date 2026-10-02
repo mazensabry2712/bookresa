@@ -44,7 +44,9 @@ final class PlatformAuditExportController
             ]);
 
             foreach ($activities as $activity) {
-                $properties = is_array($activity->properties) ? $activity->properties->toArray() : (array) $activity->properties;
+                $properties = $activity->properties instanceof \Illuminate\Support\Collection
+                    ? $activity->properties->toArray()
+                    : (array) $activity->properties;
                 $cells = [
                     $activity->getKey(),
                     $activity->created_at?->toIso8601String(),
