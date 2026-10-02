@@ -38,7 +38,7 @@
                             <th class="px-5 py-3 text-start">{{ __('Provider') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Amount') }}</th>
                             <th class="px-5 py-3 text-start">{{ __('Status') }}</th>
-                            <th class="px-5 py-3 text-start">{{ __('Paid at') }}</th>
+                            <th class="px-5 py-3 text-start">{{ __('Paid at') }}</th><th class="px-5 py-3 text-end">{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
@@ -60,9 +60,10 @@
                                 <td class="px-5 py-4 font-semibold">{{ number_format($payment->amount_minor / 100, 2) }} {{ $payment->currency }}</td>
                                 <td class="px-5 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold dark:bg-slate-800">{{ str($payment->status->value)->headline() }}</span></td>
                                 <td class="px-5 py-4 text-slate-500">{{ $payment->paid_at?->format('Y-m-d H:i') ?? '—' }}</td>
+                                <td class="px-5 py-4 text-end"><a href="{{ route('admin.payments.show', $payment->id) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Manage') }}</a></td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">{{ __('No payments found.') }}</td></tr>
+                            <tr><td colspan="8" class="px-5 py-10 text-center text-sm text-slate-500">{{ __('No payments found.') }}</td></tr>
                         @endforelse
                     </tbody>
                 </table>
