@@ -217,6 +217,34 @@ final class PlatformCustomerController
         ]);
     }
 
+    public function update(Request $request, Tenant $tenant, int $customer): RedirectResponse
+    {
+        $customerModel = Customer::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->getKey())
+            ->findOrFail($customer);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:180'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        app(CurrentTenant::class)->run($tenant, function () use ($customerModel, $validated): void {
+            $customerModel->forceFill([
+                'name' => $validated['name'],
+                'phone' => $validated['phone'] ?? null,
+                'email' => $validated['email'] ?? null,
+            ])->save();
+        });
+
+        app(AuditLogger::class)->log('platform.customer_updated', $customerModel, [
+            'tenant_id' => (int) $tenant->getKey(),
+            'customer_id' => (int) $customerModel->getKey(),
+        ]);
+
+        return back()->with('status', __('Customer updated successfully.'));
+    }
+
     public function toggleVip(Tenant $tenant, int $customer): RedirectResponse
     {
         $customer = Customer::withoutGlobalScopes()
