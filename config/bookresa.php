@@ -29,7 +29,7 @@ return [
     'operations' => [
         'backup_path' => env(
             'BOOKRESA_BACKUP_PATH',
-            dirname(dirname(base_path())).DIRECTORY_SEPARATOR.'bookresa-backups',
+            dirname(dirname(dirname(base_path()))).DIRECTORY_SEPARATOR.'bookresa-backups',
         ),
     ],
 
