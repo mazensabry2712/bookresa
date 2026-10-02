@@ -119,3 +119,15 @@ test('platform admin shell renders Arabic navigation labels', function (): void 
         ->assertSee('فتح القائمة')
         ->assertSee('<html lang="ar" dir="rtl">', false);
 });
+
+
+test('platform admin shell exposes the mobile responsive system', function (): void {
+    $admin = platformUiAdmin();
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('br-admin-shell', false)
+        ->assertSee('br-data-table', false)
+        ->assertSee('data-bookresa-sidebar-toggle', false);
+});
