@@ -518,3 +518,105 @@
         }
     }
 }
+
+
+@layer components {
+    .br-admin-shell button,
+    .br-admin-shell a[role='button'] {
+        min-height: 2.75rem;
+    }
+
+    .br-admin-shell input:not([type='checkbox']):not([type='radio']),
+    .br-admin-shell select,
+    .br-admin-shell textarea {
+        min-height: 2.75rem;
+    }
+
+    .br-admin-shell input:not([type='checkbox']):not([type='radio']),
+    .br-admin-shell select,
+    .br-admin-shell textarea {
+        font-size: 0.9375rem;
+    }
+
+    .br-admin-shell form {
+        min-width: 0;
+    }
+
+    .br-admin-shell form > * {
+        min-width: 0;
+    }
+
+    .br-admin-shell nav[role='navigation'] {
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+
+    .br-admin-shell pre,
+    .br-admin-shell code {
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-wrap: normal;
+        white-space: pre;
+    }
+
+    @media (max-width: 479px) {
+        .br-admin-shell .br-data-table tbody {
+            padding: 0.5rem;
+            gap: 0.625rem;
+        }
+
+        .br-admin-shell .br-data-table tbody tr td {
+            grid-template-columns: 1fr;
+            gap: 0.35rem;
+            padding: 0.7rem 0.8rem;
+        }
+
+        .br-admin-shell .br-data-table tbody tr td::before {
+            font-size: 0.625rem;
+            letter-spacing: 0.045em;
+        }
+
+        .br-admin-shell .br-data-table tbody tr td > form,
+        .br-admin-shell .br-data-table tbody tr td > form > div,
+        .br-admin-shell .br-data-table tbody tr td > form > label,
+        .br-admin-shell .br-data-table tbody tr td > form > button,
+        .br-admin-shell .br-data-table tbody tr td > form > a {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-data-table tbody tr td > form {
+            display: grid;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .br-admin-shell main {
+            padding-inline: 0.75rem;
+        }
+
+        .br-admin-shell h1,
+        .br-admin-shell h2 {
+            overflow-wrap: anywhere;
+        }
+
+        .br-admin-shell [class*='justify-between'] {
+            row-gap: 0.75rem;
+        }
+
+        .br-admin-shell .br-panel {
+            overflow-wrap: anywhere;
+        }
+    }
+
+    @media (pointer: coarse) {
+        .br-admin-shell button,
+        .br-admin-shell a,
+        .br-admin-shell select,
+        .br-admin-shell input,
+        .br-admin-shell textarea {
+            touch-action: manipulation;
+        }
+    }
+}
