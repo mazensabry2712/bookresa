@@ -17,7 +17,7 @@
             <div><p class="text-xs text-slate-500">{{ __('Workspace') }}</p><p class="mt-1 font-semibold">{{ data_get($payment->tenant?->profile?->name, app()->getLocale()) ?? $payment->tenant?->slug }}</p></div>
         </div>
         <div class="mt-6 flex flex-wrap gap-2">
-            @if($payment->provider_reference)
+            @if($payment->provider_reference && auth()->user()?->platformAdmin?->hasPlatformPermission('finance.manage'))
                 <form method="POST" action="{{ route('admin.payments.verify', $payment->id) }}">@csrf<button class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('Verify with provider') }}</button></form>
             @endif
             @if($payment->status === \App\Domain\Payment\Enums\PaymentStatus::Paid)
