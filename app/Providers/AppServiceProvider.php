@@ -4,8 +4,8 @@ namespace App\Providers;
 
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Models\User;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
+use App\Models\User;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -69,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
-        Gate::before(function ($user): ?bool {
+        Gate::before(function ($user, string $ability): ?bool {
             if (! $user instanceof User) {
                 return null;
             }
@@ -78,7 +78,11 @@ class AppServiceProvider extends ServiceProvider
                 ? $user->platformAdmin
                 : $user->load('platformAdmin')->platformAdmin;
 
-            return $platformAdmin?->is_active === true ? true : null;
+            if (! $platformAdmin?->is_active) {
+                return null;
+            }
+
+            return $platformAdmin->hasTenantPermission($ability) ? true : null;
         });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {
