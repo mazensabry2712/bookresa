@@ -32,6 +32,7 @@
                     <div class="flex items-center justify-between gap-4"><span>{{ __('Email verification') }}</span><span class="font-semibold">{{ $user->email_verified_at ? __('Verified') : __('Unverified') }}</span></div>
                     <div class="flex items-center justify-between gap-4"><span>{{ __('Two-factor authentication') }}</span><span class="font-semibold">{{ $user->two_factor_confirmed_at ? __('Enabled') : __('Disabled') }}</span></div>
                 </div>
+                @if(auth()->user()?->platformAdmin?->hasPlatformPermission('users.manage'))
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">
                     <form method="POST" action="{{ route('admin.users.verify-email', $user) }}">@csrf<button class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('Mark email verified') }}</button></form>
                     <form method="POST" action="{{ route('admin.users.revoke-sessions', $user) }}">@csrf<button class="w-full rounded-xl border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-700 dark:border-rose-900 dark:text-rose-300">{{ __('Revoke sessions') }}</button></form>
@@ -42,6 +43,7 @@
                     <label class="block text-sm"><span class="mb-1 block font-medium">{{ __('Confirm password') }}</span><input type="password" name="password_confirmation" required minlength="12" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950"></label>
                     <button class="rounded-xl border border-amber-300 px-4 py-2.5 text-sm font-semibold text-amber-800 dark:border-amber-900 dark:text-amber-300">{{ __('Reset password and revoke sessions') }}</button>
                 </form>
+                @endif
             </section>
         </div>
 
@@ -51,6 +53,7 @@
                 <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold dark:bg-slate-800">{{ $platformAdmin?->roleLabel() ?? __('Not a platform admin') }}</span>
             </div>
 
+            @if(auth()->user()?->platformAdmin?->hasPlatformPermission('security.manage'))
             <form method="POST" action="{{ route('admin.users.platform-admin-access', $user) }}" class="mt-5 space-y-5">
                 @csrf
                 @method('PATCH')
@@ -82,6 +85,7 @@
 
                 <button class="rounded-xl bg-brand-indigo px-5 py-2.5 text-sm font-semibold text-white">{{ __('Save platform access') }}</button>
             </form>
+            @endif
         </section>
 
         <div class="grid gap-6 xl:grid-cols-2">
