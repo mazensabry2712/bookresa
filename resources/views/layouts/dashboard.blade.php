@@ -118,6 +118,12 @@
                                     <span class="br-sidebar-label">{{ __('app.reports') }}</span>
                                 </a>
                             @endcan
+                            @can('support.view')
+                                <a href="{{ route('support.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('support.*') ? 'true' : 'false' }}" class="br-nav-link" title="{{ __('Support') }}">
+                                    <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M5 6h14v10H9l-4 3V6Z"/><path stroke-linecap="round" d="M8 10h8M8 13h5"/></svg></span>
+                                    <span class="br-sidebar-label">{{ __('Support') }}</span>
+                                </a>
+                            @endcan
                             @can('notifications.view')
                                 <a href="{{ route('notifications.index', ['tenant' => $tenant->slug]) }}" data-active="{{ request()->routeIs('notifications.*') ? 'true' : 'false' }}" class="br-nav-link" title="{{ __('app.notification_ui.notifications') }}">
                                     <span class="br-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></span>
