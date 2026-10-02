@@ -9,6 +9,7 @@ use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Models\User;
 use App\Support\AuditLogger;
@@ -210,7 +211,8 @@ test('workspace overview keeps paid booking revenue separated by currency', func
     $admin = platformCoreAdmin();
     $tenant = platformCoreTenant('Multi Currency Clinic');
 
-    Payment::query()->create([
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant): void {
+        Payment::query()->create([
         'tenant_id' => $tenant->id,
         'payable_type' => Booking::class,
         'payable_id' => 1,
@@ -222,7 +224,7 @@ test('workspace overview keeps paid booking revenue separated by currency', func
         'paid_at' => now(),
     ]);
 
-    Payment::query()->create([
+        Payment::query()->create([
         'tenant_id' => $tenant->id,
         'payable_type' => Booking::class,
         'payable_id' => 2,
@@ -232,7 +234,8 @@ test('workspace overview keeps paid booking revenue separated by currency', func
         'currency' => 'USD',
         'status' => PaymentStatus::Paid,
         'paid_at' => now(),
-    ]);
+        ]);
+    });
 
     $this->actingAs($admin)
         ->get(route('admin.businesses.show', $tenant))
