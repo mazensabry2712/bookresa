@@ -73,8 +73,8 @@
         <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
             <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h3 class="font-semibold">{{ __('platform.paid_revenue') }}</h3>
-                    <p class="mt-1 text-sm text-slate-500">{{ __('Revenue is displayed separately by currency.') }}</p>
+                    <h3 class="font-semibold">{{ __('platform.revenue_by_currency') }}</h3>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('platform.currency_totals_help') }}</p>
                 </div>
             </div>
             <div class="mt-4 flex flex-wrap gap-3">
@@ -84,7 +84,7 @@
                         <p class="mt-1 text-xl font-bold">{{ number_format($revenue->total_minor / 100, 2) }}</p>
                     </div>
                 @empty
-                    <p class="text-sm text-slate-500">{{ __('No paid booking revenue yet.') }}</p>
+                    <p class="text-sm text-slate-500">{{ __('platform.no_paid_booking_revenue') }}</p>
                 @endforelse
             </div>
         </section>
