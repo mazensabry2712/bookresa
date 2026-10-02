@@ -238,9 +238,41 @@ const setupSidebar = () => {
     });
 };
 
+const setupResponsiveAdminTables = () => {
+    if (!document.body.classList.contains('br-admin-shell')) {
+        return;
+    }
+
+    document.querySelectorAll('main table').forEach((table) => {
+        const headerCells = Array.from(table.querySelectorAll(':scope > thead > tr:last-child > th'));
+
+        if (headerCells.length === 0) {
+            return;
+        }
+
+        const headers = headerCells.map((cell) => cell.textContent.trim().replace(/\s+/g, ' '));
+        table.classList.add('br-data-table');
+
+        table.querySelectorAll(':scope > tbody > tr').forEach((row) => {
+            Array.from(row.children).forEach((cell, index) => {
+                if (!(cell instanceof HTMLTableCellElement) || cell.hasAttribute('colspan')) {
+                    return;
+                }
+
+                const label = headers[index] ?? '';
+
+                if (label !== '') {
+                    cell.setAttribute('data-label', label);
+                }
+            });
+        });
+    });
+};
+
 const setupUtilities = () => {
     setupTheme();
     setupSidebar();
+    setupResponsiveAdminTables();
 };
 
 if (document.readyState === 'loading') {
