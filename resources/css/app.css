@@ -763,3 +763,120 @@
         }
     }
 }
+
+
+@layer components {
+    .br-admin-shell .br-admin-form {
+        min-width: 0;
+    }
+
+    .br-admin-shell .br-admin-form > * {
+        min-width: 0;
+    }
+
+    .br-admin-shell .br-admin-filter-form {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .br-admin-shell .br-admin-filter-form input,
+    .br-admin-shell .br-admin-filter-form select,
+    .br-admin-shell .br-admin-filter-form textarea {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .br-admin-shell .br-admin-actions {
+        display: flex;
+        min-width: 0;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .br-admin-shell .br-admin-actions > * {
+        min-width: 0;
+    }
+
+    .br-admin-shell button,
+    .br-admin-shell [role='button'],
+    .br-admin-shell a.rounded-lg,
+    .br-admin-shell a.rounded-xl {
+        min-height: 2.75rem;
+    }
+
+    .br-admin-shell button {
+        white-space: normal;
+    }
+
+    .br-admin-shell input,
+    .br-admin-shell select,
+    .br-admin-shell textarea {
+        min-height: 2.75rem;
+    }
+
+    .br-admin-shell textarea {
+        min-height: 6.5rem;
+    }
+
+    .br-admin-shell .overflow-x-auto {
+        scrollbar-width: thin;
+        overscroll-behavior-inline: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .br-admin-shell main > * {
+        max-width: 100%;
+    }
+
+    @media (max-width: 639px) {
+        .br-admin-shell .br-admin-actions {
+            align-items: stretch;
+        }
+
+        .br-admin-shell .br-admin-actions > a,
+        .br-admin-shell .br-admin-actions > button,
+        .br-admin-shell .br-admin-actions > form {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-actions > form > button {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-filter-form {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .br-admin-shell .br-admin-filter-form > * {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-filter-form input,
+        .br-admin-shell .br-admin-filter-form select,
+        .br-admin-shell .br-admin-filter-form textarea,
+        .br-admin-shell .br-admin-filter-form button {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-page-actions {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-page-actions > * {
+            width: 100%;
+        }
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+        .br-admin-shell .br-page-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .br-admin-shell .br-page-actions > * {
+            min-width: min(100%, 13rem);
+        }
+    }
+}
