@@ -82,6 +82,8 @@ return [
     'open_customer_data' => 'ذكاء العملاء',
     'customers' => 'العملاء',
     'paid_revenue' => 'إيراد حجوزات مدفوع',
+    'revenue_by_currency' => 'الإيراد حسب العملة',
+    'no_paid_booking_revenue' => 'لا توجد إيرادات حجوزات مدفوعة بعد.',
     'member_management' => 'أعضاء مساحة العمل',
     'member_management_help' => 'أنشئ حسابات، عيّن الأدوار، انقل الملكية، وأوقف أو احذف وصول أعضاء مساحة العمل.',
     'member_name' => 'اسم العضو',
