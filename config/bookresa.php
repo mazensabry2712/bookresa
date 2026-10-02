@@ -26,6 +26,13 @@ return [
         'slot_interval_minutes' => (int) env('BOOKRESA_BOOKING_SLOT_INTERVAL', 15),
     ],
 
+    'operations' => [
+        'backup_path' => env(
+            'BOOKRESA_BACKUP_PATH',
+            dirname(dirname(base_path())).DIRECTORY_SEPARATOR.'bookresa-backups',
+        ),
+    ],
+
     'payments' => [
         'default_provider' => env('BOOKRESA_PAYMENT_PROVIDER', 'kashier'),
         'kashier' => [
