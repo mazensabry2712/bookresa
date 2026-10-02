@@ -115,7 +115,7 @@ test('platform admin shell renders Arabic navigation labels', function (): void 
         ->get(route('admin.dashboard').'?locale=ar')
         ->assertOk()
         ->assertSee('المنصة')
-        ->assertSee('الأنشطة')
+        ->assertSee(__('platform.workspaces'))
         ->assertSee('فتح القائمة')
         ->assertSee('<html lang="ar" dir="rtl">', false);
 });
