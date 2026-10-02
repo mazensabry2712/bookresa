@@ -57,15 +57,27 @@
                                             <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 dark:border-slate-800">
                                                 <div class="min-w-0">
                                                     <p class="truncate font-medium">{{ $businessName }}</p>
-                                                    <p class="text-xs text-slate-500">{{ str($membership->status->value)->headline() }}</p>
+                                                    <p class="text-xs text-slate-500">
+                                                        {{ str($membership->status->value)->headline() }}
+                                                        @if ($membership->is_primary)
+                                                            · {{ __('Owner') }}
+                                                        @endif
+                                                    </p>
                                                 </div>
-                                                <form method="POST" action="{{ route('admin.users.membership-toggle', $membership) }}">
-                                                    @csrf
-                                                    @method('PATCH')
-                                                    <button type="submit" class="whitespace-nowrap rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold dark:border-slate-700">
-                                                        {{ $membership->status === \App\Domain\Tenant\Enums\MembershipStatus::Active ? __('Suspend') : __('Activate') }}
-                                                    </button>
-                                                </form>
+
+                                                @if ($membership->is_primary && $membership->status === AppDomainTenantEnumsMembershipStatus::Active)
+                                                    <span class="whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-400 dark:border-slate-700 dark:text-slate-500">
+                                                        {{ __('Protected owner') }}
+                                                    </span>
+                                                @else
+                                                    <form method="POST" action="{{ route('admin.users.membership-toggle', $membership) }}">
+                                                        @csrf
+                                                        @method('PATCH')
+                                                        <button type="submit" class="whitespace-nowrap rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold dark:border-slate-700">
+                                                            {{ $membership->status === AppDomainTenantEnumsMembershipStatus::Active ? __('Suspend') : __('Activate') }}
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </div>
                                         @empty
                                             <span class="text-xs text-slate-500">{{ __('No workspace memberships.') }}</span>
