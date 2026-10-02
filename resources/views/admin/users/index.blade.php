@@ -8,7 +8,7 @@
         <div>
             <p class="text-sm text-slate-500">{{ __('Platform users') }}</p>
             <h2 class="mt-1 text-2xl font-bold tracking-tight">{{ __('Users') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ __('Manage platform access, tenant memberships and administrator access.') }}</p>
+            <p class="mt-1 text-sm text-slate-500">{{ __('Manage profile security, tenant memberships and flexible platform administrator access.') }}</p>
         </div>
 
         <form method="GET" class="flex flex-col gap-3 sm:flex-row">
@@ -33,13 +33,18 @@
                         @forelse ($users as $user)
                             <tr>
                                 <td class="px-5 py-4">
-                                    <p class="font-semibold">{{ $user->name }}</p>
+                                    <a href="{{ route('admin.users.show', $user) }}" class="font-semibold text-brand-indigo hover:underline">{{ $user->name }}</a>
                                     <p class="mt-1 text-xs text-slate-500">{{ $user->email }}</p>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $user->platformAdmin?->is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' }}">
-                                        {{ $user->platformAdmin?->is_active ? __('Active') : __('No') }}
-                                    </span>
+                                    <div class="space-y-1">
+    <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $user->platformAdmin?->is_active ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300' }}">
+        {{ $user->platformAdmin?->is_active ? __('Active') : __('No') }}
+    </span>
+    @if($user->platformAdmin)
+        <p class="text-xs text-slate-500">{{ $user->platformAdmin->roleLabel() }}</p>
+    @endif
+</div>
                                 </td>
                                 <td class="px-5 py-4">
                                     <p class="font-semibold">{{ number_format($user->active_memberships_count) }}</p>
@@ -85,7 +90,8 @@
                                     </div>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <form method="POST" action="{{ route('admin.users.platform-admin-toggle', $user) }}">
+                                    <a href="{{ route('admin.users.show', $user) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Manage') }}</a>
+                                    <form class="mt-2" method="POST" action="{{ route('admin.users.platform-admin-toggle', $user) }}">
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">
