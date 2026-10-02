@@ -148,6 +148,16 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] platform Activity Log console with workspace/admin/date filters
 - [x] support management
 - [x] platform settings
+- [x] flexible Platform Admin roles with custom permissions
+- [x] platform user security controls
+- [x] platform payment verification and refund operations
+- [x] customer editing and VIP controls
+- [x] reversible workspace archive/restore
+- [x] two-way support conversations
+- [x] platform broadcast center
+- [x] platform system health center
+- [x] audit CSV export
+- [x] global module catalog controls
 
 ## Reports
 - [x] business reports
