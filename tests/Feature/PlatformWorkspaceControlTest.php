@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Business\Actions\CreateBusiness;
+use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\TenantStatus;
@@ -56,7 +57,9 @@ test('platform admin can create update and delete a workspace', function (): voi
     $tenant = Tenant::query()->where('slug', 'platform-created-clinic')->firstOrFail();
     $owner = User::query()->where('email', 'platform-created-owner@example.com')->firstOrFail();
 
-    $profile = $tenant->profile()->withoutGlobalScopes()->firstOrFail();
+    $profile = BusinessProfile::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->getKey())
+        ->firstOrFail();
 
     expect($tenant->status)->toBe(TenantStatus::Active)
         ->and($profile->email)->toBe('clinic@example.com')
@@ -77,7 +80,9 @@ test('platform admin can create update and delete a workspace', function (): voi
         ->assertRedirect();
 
     $tenant->refresh();
-    $updatedProfile = $tenant->profile()->withoutGlobalScopes()->firstOrFail();
+    $updatedProfile = BusinessProfile::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->getKey())
+        ->firstOrFail();
 
     expect($tenant->slug)->toBe('updated-clinic')
         ->and($tenant->status)->toBe(TenantStatus::Suspended)
