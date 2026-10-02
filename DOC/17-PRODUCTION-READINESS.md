@@ -2,14 +2,16 @@
 
 ## Current verified CI gate
 
-The latest GitHub Actions CI verification on 2026-10-02:
+The latest previously verified GitHub Actions CI baseline on 2026-10-02:
 - full test suite: 292 passed, 1 skipped, 1149 assertions
 - PHPStan: passed
 - PHP syntax scan: passed
 - changed-file Pint: passed
 - Vite production build: passed
 
-The verified `main` commit is `7a0d81b1`; CI run #1386 passed on this commit.
+That baseline was verified on commit `7a0d81b1` before the Super Admin 2.0 control-plane changes.
+
+Super Admin 2.0 adds new platform RBAC, security, finance, support, broadcast, health, module and workspace-lifecycle tests. Those new changes require a fresh CI run before they are treated as a fully verified release.
 
 A real production deployment is a separate gate and must still be verified against the live infrastructure.
 
