@@ -305,14 +305,6 @@ const setupResponsiveAdminUi = () => {
         }
     });
 
-    document.querySelectorAll('main > *').forEach((section) => {
-        const actions = section.querySelector(':scope > .flex > :scope a, :scope > .flex > :scope button');
-
-        if (actions) {
-            section.classList.add('br-admin-section');
-        }
-    });
-
     document.querySelectorAll('main .flex').forEach((group) => {
         const children = Array.from(group.children);
 
