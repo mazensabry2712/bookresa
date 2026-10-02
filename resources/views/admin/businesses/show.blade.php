@@ -245,7 +245,7 @@
                                         @csrf
                                         @method('PATCH')
                                         <button type="submit" class="rounded-lg border border-slate-300 px-2.5 py-1.5 text-[11px] font-semibold dark:border-slate-700">
-                                            {{ $membership->status === \App\Domain\Tenant\Enums\MembershipStatus::Active ? __('Suspend') : __('Activate') }}
+                                            {{ $membership->status->value === 'active' ? __('Suspend') : __('Activate') }}
                                         </button>
                                     </form>
                                 </div>
