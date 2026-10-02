@@ -8,7 +8,7 @@
     <meta name="robots" content="noindex,nofollow,noarchive">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="br-shell antialiased">
+<body class="br-shell br-admin-shell antialiased overflow-x-hidden">
     <div class="br-drawer-backdrop lg:hidden" data-bookresa-sidebar-backdrop aria-hidden="true"></div>
 
     <div class="min-h-screen lg:flex">
@@ -123,7 +123,7 @@
                 </div>
             </header>
 
-            <main class="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+            <main class="mx-auto w-full max-w-[1440px] min-w-0 px-3 py-5 sm:px-5 sm:py-6 lg:px-8 lg:py-8">
                 @if (session('status'))
                     <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200" role="status">
                         {{ session('status') }}
