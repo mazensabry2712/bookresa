@@ -28,6 +28,8 @@ final class SetPlatformAdminCommand extends Command
 
         $admin = PlatformAdmin::query()->firstOrNew(['user_id' => $user->getKey()]);
         $admin->is_active = ! $this->option('revoke');
+        $admin->role = (string) $this->option('role');
+        $admin->permissions = $admin->permissions ?? [];
         $admin->save();
 
         app(AuditLogger::class)->log(
