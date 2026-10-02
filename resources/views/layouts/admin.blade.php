@@ -53,6 +53,7 @@
                             ['route' => 'admin.audit.index', 'label' => __('platform.activity_log'), 'permission' => 'audit.view'],
                             ['route' => 'admin.security.index', 'label' => __('platform.platform_security'), 'permission' => 'security.manage'],
                             ['route' => 'admin.health.index', 'label' => __('System Health'), 'permission' => 'health.view'],
+                            ['route' => 'admin.modules.index', 'label' => __('Global Modules'), 'permission' => 'modules.manage'],
                             ['route' => 'admin.broadcasts.index', 'label' => __('Broadcasts'), 'permission' => 'broadcast.manage'],
                         ];
                         $workspaceControlLinks = array_values(array_filter(
