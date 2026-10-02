@@ -82,6 +82,8 @@ return [
     'open_customer_data' => 'Customer Intelligence',
     'customers' => 'Customers',
     'paid_revenue' => 'Paid booking revenue',
+    'revenue_by_currency' => 'Revenue by currency',
+    'no_paid_booking_revenue' => 'No paid booking revenue yet.',
     'member_management' => 'Workspace members',
     'member_management_help' => 'Create accounts, assign roles, transfer ownership, suspend or remove workspace access.',
     'member_name' => 'Member name',
