@@ -289,17 +289,19 @@ test('platform finance can verify and refund a payment through the provider cont
     $owner = User::factory()->create(['email_verified_at' => now()]);
     $tenant = v2Tenant($owner);
 
-    $payment = Payment::query()->create([
-        'tenant_id' => $tenant->getKey(),
-        'payable_type' => User::class,
-        'payable_id' => $owner->getKey(),
-        'reference' => 'PAY-SUPER-ADMIN-001',
-        'provider' => 'test',
-        'provider_reference' => 'PROVIDER-1',
-        'amount_minor' => 5000,
-        'currency' => 'EGP',
-        'status' => PaymentStatus::Paid,
-    ]);
+    $payment = app(\App\Domain\Tenant\Services\CurrentTenant::class)->run($tenant, function () use ($tenant, $owner): Payment {
+        return Payment::query()->create([
+            'tenant_id' => $tenant->getKey(),
+            'payable_type' => User::class,
+            'payable_id' => $owner->getKey(),
+            'reference' => 'PAY-SUPER-ADMIN-001',
+            'provider' => 'test',
+            'provider_reference' => 'PROVIDER-1',
+            'amount_minor' => 5000,
+            'currency' => 'EGP',
+            'status' => PaymentStatus::Paid,
+        ]);
+    });
 
     $fakeGateway = new class implements PaymentGateway
     {
