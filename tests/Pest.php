@@ -3,25 +3,6 @@
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-// Keep the feature suite isolated even when the host server exports production
-// environment variables at the process level. Laravel reads those variables
-// in addition to PHPUnit's $_ENV values.
-foreach ([
-    'APP_ENV' => 'testing',
-    // Production deployments cache config; use a test-only cache path so
-    // Laravel loads config from the test environment during the suite.
-    'APP_CONFIG_CACHE' => 'bootstrap/cache/config-testing.php',
-    'DB_CONNECTION' => 'sqlite',
-    'DB_DATABASE' => ':memory:',
-    'DB_URL' => '',
-    'CACHE_STORE' => 'array',
-    'SESSION_DRIVER' => 'array',
-    'QUEUE_CONNECTION' => 'sync',
-    'MAIL_MAILER' => 'array',
-] as $key => $value) {
-    putenv($key.'='.$value);
-}
-
 /*
 |--------------------------------------------------------------------------
 | Test Case
