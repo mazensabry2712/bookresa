@@ -128,7 +128,7 @@ test('platform customer intelligence aggregates spending per customer and sorts 
         'provider' => 'kashier',
         'amount_minor' => 5000,
         'currency' => 'USD',
-        'status' => \\App\\Domain\\Payment\\Enums\\PaymentStatus::Paid,
+        'status' => \App\Domain\Payment\Enums\PaymentStatus::Paid,
         'method' => 'card',
         'paid_at' => now(),
     ]);
