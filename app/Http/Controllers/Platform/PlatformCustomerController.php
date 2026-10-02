@@ -200,7 +200,7 @@ final class PlatformCustomerController
             'totalSpentMinor' => (int) ($singleCurrencyAggregate?->getAttribute('paid_minor') ?? 0),
             'refundedMinor' => (int) ($singleCurrencyAggregate?->getAttribute('refunded_minor') ?? 0),
             'averagePaidMinor' => $singleCurrencyAggregate !== null && (int) $singleCurrencyAggregate->getAttribute('paid_count') > 0
-                ? (int) round((int) $singleCurrencyAggregate->getAttribute('paid_minor') / (int) $singleCurrencyAggregate->paid_count)
+                ? (int) round((int) $singleCurrencyAggregate->getAttribute('paid_minor') / (int) $singleCurrencyAggregate->getAttribute('paid_count'))
                 : 0,
             'firstSeenAt' => $customer->first_seen_at,
             'lastSeenAt' => $customer->last_seen_at,
