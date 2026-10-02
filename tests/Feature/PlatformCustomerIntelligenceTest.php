@@ -103,19 +103,23 @@ test('platform customer intelligence aggregates spending per customer and sorts 
     $owner = User::factory()->create();
     $tenant = intelligenceTenant($owner, 'Intelligence Clinic');
 
-    $vip = Customer::withoutGlobalScopes()->create([
-        'tenant_id' => $tenant->id,
-        'name' => 'High Value Customer',
-        'phone' => '+201000000010',
-        'email' => 'high@example.com',
-        'is_vip' => true,
-    ]);
-    $regular = Customer::withoutGlobalScopes()->create([
-        'tenant_id' => $tenant->id,
-        'name' => 'Regular Customer',
-        'phone' => '+201000000011',
-        'email' => 'regular@example.com',
-    ]);
+    [$vip, $regular] = app(CurrentTenant::class)->run($tenant, function () use ($tenant): array {
+        return [
+            Customer::withoutGlobalScopes()->create([
+                'tenant_id' => $tenant->id,
+                'name' => 'High Value Customer',
+                'phone' => '+201000000010',
+                'email' => 'high@example.com',
+                'is_vip' => true,
+            ]),
+            Customer::withoutGlobalScopes()->create([
+                'tenant_id' => $tenant->id,
+                'name' => 'Regular Customer',
+                'phone' => '+201000000011',
+                'email' => 'regular@example.com',
+            ]),
+        ];
+    });
 
     $vipBooking = intelligenceBooking($tenant, $vip, 1);
     $regularBooking = intelligenceBooking($tenant, $regular, 2);
@@ -165,12 +169,14 @@ test('platform admin can view customer details and toggle vip without crossing t
     $owner = User::factory()->create();
     $tenant = intelligenceTenant($owner, 'Customer Detail Clinic');
 
-    $customer = Customer::withoutGlobalScopes()->create([
-        'tenant_id' => $tenant->id,
-        'name' => 'Detail Customer',
-        'phone' => '+201000000020',
-        'email' => 'detail@example.com',
-    ]);
+    $customer = app(CurrentTenant::class)->run($tenant, function () use ($tenant): Customer {
+        return Customer::withoutGlobalScopes()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Detail Customer',
+            'phone' => '+201000000020',
+            'email' => 'detail@example.com',
+        ]);
+    });
 
     $booking = intelligenceBooking($tenant, $customer, 3);
     intelligencePayment($tenant, $booking, 25000, 'PAY-INTEL-3');
@@ -183,10 +189,12 @@ test('platform admin can view customer details and toggle vip without crossing t
         ->assertSee('BR-INTEL3');
 
     $otherTenant = intelligenceTenant(User::factory()->create(), 'Other Clinic');
-    $otherCustomer = Customer::withoutGlobalScopes()->create([
-        'tenant_id' => $otherTenant->id,
-        'name' => 'Other Customer',
-    ]);
+    $otherCustomer = app(CurrentTenant::class)->run($otherTenant, function () use ($otherTenant): Customer {
+        return Customer::withoutGlobalScopes()->create([
+            'tenant_id' => $otherTenant->id,
+            'name' => 'Other Customer',
+        ]);
+    });
 
     $this->actingAs($admin)
         ->patch(route('admin.customers.vip-toggle', [$tenant, $otherCustomer]))
