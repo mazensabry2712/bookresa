@@ -14,6 +14,11 @@ use App\Http\Controllers\Payment\PaymentManagementController;
 use App\Http\Controllers\Payment\KashierWebhookController;
 use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
+use App\Http\Controllers\Platform\PlatformBroadcastController;
+use App\Http\Controllers\Platform\PlatformHealthController;
+use App\Http\Controllers\Platform\PlatformPaymentController;
+use App\Http\Controllers\Platform\PlatformUserOperationsController;
+use App\Http\Controllers\Platform\PlatformAuditExportController;
 use App\Http\Controllers\Platform\PlatformCustomerController;
 use App\Http\Controllers\Platform\PlatformDashboardController;
 use App\Http\Controllers\Platform\PlatformAuditController;
@@ -30,6 +35,7 @@ use App\Http\Controllers\Scheduling\SchedulingManagementController;
 use App\Http\Controllers\SeoController;
 use App\Http\Controllers\Service\ServiceManagementController;
 use App\Http\Controllers\Staff\StaffManagementController;
+use App\Http\Controllers\Support\TenantSupportController;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use Illuminate\Http\RedirectResponse;
@@ -99,6 +105,22 @@ Route::middleware(['auth', 'verified', 'tenant'])
     Route::put('/modules', [BusinessModuleController::class, 'update'])
         ->middleware('permission:settings.manage')
         ->name('business.modules.update');
+
+    Route::get('/support', [TenantSupportController::class, 'index'])
+        ->middleware('permission:support.view')
+        ->name('support.index');
+
+    Route::post('/support', [TenantSupportController::class, 'store'])
+        ->middleware('permission:support.create')
+        ->name('support.store');
+
+    Route::get('/support/{ticket}', [TenantSupportController::class, 'show'])
+        ->middleware('permission:support.view')
+        ->name('support.show');
+
+    Route::post('/support/{ticket}/reply', [TenantSupportController::class, 'reply'])
+        ->middleware('permission:support.reply')
+        ->name('support.reply');
 
     Route::get('/notifications', [NotificationController::class, 'index'])
         ->middleware('permission:notifications.view')
@@ -304,11 +326,13 @@ Route::middleware(['auth', 'verified', 'platform'])
     ->group(function (): void {
         Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
         Route::get('/audit', [PlatformAuditController::class, 'index'])->name('audit.index');
+        Route::get('/audit/export', PlatformAuditExportController::class)->name('audit.export');
         Route::get('/security', [PlatformSecurityController::class, 'index'])->name('security.index');
         Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
         Route::get('/businesses/create', [PlatformBusinessController::class, 'create'])->name('businesses.create');
         Route::post('/businesses', [PlatformBusinessController::class, 'store'])->name('businesses.store');
         Route::get('/businesses/{tenant}/edit', [PlatformBusinessController::class, 'edit'])->name('businesses.edit');
+        Route::post('/businesses/{tenantId}/restore', [PlatformBusinessController::class, 'restore'])->name('businesses.restore');
         Route::put('/businesses/{tenant}', [PlatformBusinessController::class, 'update'])->name('businesses.update');
         Route::delete('/businesses/{tenant}', [PlatformBusinessController::class, 'destroy'])->name('businesses.destroy');
         Route::get('/businesses/{tenant}', [PlatformBusinessController::class, 'show'])->name('businesses.show');
@@ -323,6 +347,12 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::get('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'show'])->name('customers.show');
         Route::patch('/customers/{tenant}/{customer}/vip', [PlatformCustomerController::class, 'toggleVip'])->name('customers.vip-toggle');
         Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [PlatformUserOperationsController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}', [PlatformUserOperationsController::class, 'updateProfile'])->name('users.update');
+        Route::post('/users/{user}/password', [PlatformUserOperationsController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('/users/{user}/verify-email', [PlatformUserOperationsController::class, 'forceVerify'])->name('users.verify-email');
+        Route::post('/users/{user}/revoke-sessions', [PlatformUserOperationsController::class, 'revokeSessions'])->name('users.revoke-sessions');
+        Route::patch('/users/{user}/platform-admin-access', [PlatformUserOperationsController::class, 'updatePlatformAdminAccess'])->name('users.platform-admin-access');
         Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
             ->name('users.membership-toggle');
         Route::patch('/users/{user}/platform-admin/toggle', [PlatformUserController::class, 'togglePlatformAdmin'])
@@ -331,12 +361,20 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::patch('/subscriptions/{subscription}/toggle-status', [PlatformFinanceController::class, 'toggleSubscriptionStatus'])
             ->name('subscriptions.toggle-status');
         Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
+        Route::get('/payments/{paymentId}', [PlatformPaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments/{paymentId}/verify', [PlatformPaymentController::class, 'verify'])->name('payments.verify');
+        Route::post('/payments/{paymentId}/refund', [PlatformPaymentController::class, 'refund'])->name('payments.refund');
         Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
         Route::get('/reports', [ReportController::class, 'platform'])->name('reports.index');
         Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
+        Route::get('/support/{ticketId}', [SupportTicketController::class, 'show'])->name('support.show');
         Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
+        Route::get('/health', [PlatformHealthController::class, 'index'])->name('health.index');
+        Route::get('/broadcasts', [PlatformBroadcastController::class, 'index'])->name('broadcasts.index');
+        Route::post('/broadcasts', [PlatformBroadcastController::class, 'store'])->name('broadcasts.store');
         Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
         Route::patch('/support/{ticket}', [SupportTicketController::class, 'update'])->name('support.update');
+        Route::post('/support/{ticketId}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
         Route::patch('/businesses/{tenant}/payment-account', [PlatformBusinessController::class, 'updatePaymentAccount'])
             ->name('businesses.payment-account.update');
 
