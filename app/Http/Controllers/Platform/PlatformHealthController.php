@@ -37,10 +37,7 @@ final class PlatformHealthController
         $openTickets = (int) SupportTicket::query()->whereIn('status', ['open', 'in_progress'])->count();
         $pendingBroadcasts = (int) PlatformBroadcast::query()->where('status', 'pending')->count();
 
-        $backupPath = (string) env(
-            'BOOKRESA_BACKUP_PATH',
-            dirname(base_path()).DIRECTORY_SEPARATOR.'bookresa-backups',
-        );
+        $backupPath = (string) config('bookresa.operations.backup_path');
 
         $backups = [];
         if (is_dir($backupPath) && is_readable($backupPath)) {
