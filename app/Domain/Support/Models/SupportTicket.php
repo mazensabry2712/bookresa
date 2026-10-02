@@ -52,6 +52,6 @@ class SupportTicket extends Model
     /** @return HasMany<SupportTicketMessage, $this> */
     public function messages(): HasMany
     {
-        return $this->hasMany(SupportTicketMessage::class);
+        return $this->hasMany(SupportTicketMessage::class)->oldest('created_at');
     }
 }
