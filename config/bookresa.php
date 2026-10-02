@@ -79,6 +79,9 @@ return [
             'settings.manage',
             'reports.view',
             'notifications.view',
+            'support.view',
+            'support.create',
+            'support.reply',
         ],
 
         'roles' => [
@@ -105,6 +108,9 @@ return [
                 'settings.manage',
                 'reports.view',
                 'notifications.view',
+                'support.view',
+                'support.create',
+                'support.reply',
             ],
             'manager' => [
                 'business.view',
@@ -127,6 +133,9 @@ return [
                 'settings.manage',
                 'reports.view',
                 'notifications.view',
+                'support.view',
+                'support.create',
+                'support.reply',
             ],
             'receptionist' => [
                 'business.view',
@@ -139,6 +148,9 @@ return [
                 'bookings.cancel',
                 'calendar.view',
                 'notifications.view',
+                'support.view',
+                'support.create',
+                'support.reply',
             ],
             'staff' => [
                 'business.view',
@@ -147,6 +159,7 @@ return [
                 'bookings.complete',
                 'calendar.view',
                 'notifications.view',
+                'support.view',
             ],
         ],
     ],
