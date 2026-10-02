@@ -12,8 +12,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Spatie\Multitenancy\Jobs\NotTenantAware;
 
-final class DeliverPlatformBroadcast implements ShouldQueue
+final class DeliverPlatformBroadcast implements ShouldQueue, NotTenantAware
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
