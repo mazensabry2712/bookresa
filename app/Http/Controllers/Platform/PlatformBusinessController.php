@@ -19,6 +19,7 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use Spatie\Activitylog\Models\Activity;
 use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
 use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
@@ -162,27 +163,29 @@ final class PlatformBusinessController
             'status' => TenantStatus::from($data['status']),
         ])->save();
 
-        $profile = BusinessProfile::withoutGlobalScopes()
-            ->where('tenant_id', $tenant->getKey())
-            ->firstOrCreate(
-                ['tenant_id' => $tenant->getKey()],
-                [
-                    'name' => ['en' => $data['business_name_en'], 'ar' => $data['business_name_ar'] ?? $data['business_name_en']],
-                    'timezone' => $data['timezone'],
-                    'locale' => $data['locale'],
-                ],
-            );
+        app(CurrentTenant::class)->run($tenant, function () use ($data, $tenant): void {
+            $profile = BusinessProfile::withoutGlobalScopes()
+                ->where('tenant_id', $tenant->getKey())
+                ->firstOrCreate(
+                    ['tenant_id' => $tenant->getKey()],
+                    [
+                        'name' => ['en' => $data['business_name_en'], 'ar' => $data['business_name_ar'] ?? $data['business_name_en']],
+                        'timezone' => $data['timezone'],
+                        'locale' => $data['locale'],
+                    ],
+                );
 
-        $profile->forceFill([
-            'name' => [
-                'en' => $data['business_name_en'],
-                'ar' => $data['business_name_ar'] ?? $data['business_name_en'],
-            ],
-            'phone' => $data['phone'] ?? null,
-            'email' => $data['email'] ?? null,
-            'timezone' => $data['timezone'],
-            'locale' => $data['locale'],
-        ])->save();
+            $profile->forceFill([
+                'name' => [
+                    'en' => $data['business_name_en'],
+                    'ar' => $data['business_name_ar'] ?? $data['business_name_en'],
+                ],
+                'phone' => $data['phone'] ?? null,
+                'email' => $data['email'] ?? null,
+                'timezone' => $data['timezone'],
+                'locale' => $data['locale'],
+            ])->save();
+        });
 
         app(AuditLogger::class)->log(
             'platform.workspace_updated',
