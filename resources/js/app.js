@@ -269,10 +269,30 @@ const setupResponsiveAdminTables = () => {
     });
 };
 
+
+const setupResponsiveAdminShell = () => {
+    if (!document.body.classList.contains('br-admin-shell')) {
+        return;
+    }
+
+    document.querySelectorAll('main form').forEach((form) => {
+        form.classList.add('br-admin-form');
+    });
+
+    document.querySelectorAll('main [class*="space-y-6"], main [class*="space-y-5"]').forEach((container) => {
+        const first = container.firstElementChild;
+
+        if (first instanceof HTMLElement && first.querySelector(':scope > .flex')) {
+            first.classList.add('br-admin-page-header');
+        }
+    });
+};
+
 const setupUtilities = () => {
     setupTheme();
     setupSidebar();
     setupResponsiveAdminTables();
+    setupResponsiveAdminShell();
 };
 
 if (document.readyState === 'loading') {
