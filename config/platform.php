@@ -190,6 +190,7 @@ return [
         'admin.businesses.impersonate' => 'workspaces.impersonate',
         'admin.customers.index' => 'customers.view',
         'admin.customers.show' => 'customers.view',
+        'admin.customers.update' => 'customers.manage',
         'admin.customers.vip-toggle' => 'customers.manage',
         'admin.users.index' => 'users.view',
         'admin.users.show' => 'users.view',
