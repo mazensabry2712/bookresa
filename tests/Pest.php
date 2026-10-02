@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Spatie\Permission\PermissionRegistrar;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +18,10 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
  // ->use(RefreshDatabase::class)
     ->in('Feature');
+
+afterEach(function (): void {
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+});
 
 /*
 |--------------------------------------------------------------------------
