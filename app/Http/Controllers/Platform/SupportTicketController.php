@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Platform;
 use App\Domain\Support\Enums\SupportTicketPriority;
 use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
+use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,7 @@ final class SupportTicketController
                 'tenant' => fn ($query) => $query->withoutGlobalScopes()->with('profile'),
                 'requester',
             ])
+            ->withCount('messages')
             ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->when($priority !== '', fn ($query) => $query->where('priority', $priority))
             ->when($search !== '', function ($query) use ($search): void {
@@ -32,6 +34,7 @@ final class SupportTicketController
                         ->where('subject', 'like', '%'.$search.'%')
                         ->orWhere('message', 'like', '%'.$search.'%')
                         ->orWhereHas('tenant.profile', function ($profile) use ($search): void {
+                            $profile->withoutGlobalScopes();
                             $profile->where('email', 'like', '%'.$search.'%');
                         });
                 });
@@ -42,6 +45,23 @@ final class SupportTicketController
 
         return view('admin.support.index', [
             'tickets' => $tickets,
+            'statuses' => SupportTicketStatus::cases(),
+            'priorities' => SupportTicketPriority::cases(),
+        ]);
+    }
+
+    public function show(int $ticketId): View
+    {
+        $ticket = SupportTicket::withoutGlobalScopes()
+            ->with([
+                'tenant' => fn ($query) => $query->withoutGlobalScopes()->with('profile'),
+                'requester',
+                'messages.author',
+            ])
+            ->findOrFail($ticketId);
+
+        return view('admin.support.show', [
+            'ticket' => $ticket,
             'statuses' => SupportTicketStatus::cases(),
             'priorities' => SupportTicketPriority::cases(),
         ]);
@@ -78,5 +98,37 @@ final class SupportTicketController
         });
 
         return back()->with('status', __('Support ticket updated successfully.'));
+    }
+
+    public function reply(Request $request, int $ticketId, AuditLogger $audit): RedirectResponse
+    {
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'max:10000'],
+        ]);
+
+        $ticket = SupportTicket::withoutGlobalScopes()->findOrFail($ticketId);
+        $tenant = $ticket->tenant()->withoutGlobalScopes()->firstOrFail();
+
+        app(CurrentTenant::class)->run($tenant, function () use ($ticket, $validated, $request, $audit): void {
+            SupportTicketMessage::query()->create([
+                'support_ticket_id' => $ticket->getKey(),
+                'author_user_id' => $request->user()->getKey(),
+                'author_kind' => 'platform',
+                'message' => $validated['message'],
+            ]);
+
+            $ticket->forceFill([
+                'status' => SupportTicketStatus::InProgress,
+                'last_replied_at' => now(),
+                'resolved_at' => null,
+            ])->save();
+
+            $audit->log('platform.support_reply_sent', $ticket, [
+                'tenant_id' => (int) $ticket->tenant_id,
+                'ticket_id' => (int) $ticket->getKey(),
+            ]);
+        });
+
+        return back()->with('status', __('Support reply added successfully.'));
     }
 }
