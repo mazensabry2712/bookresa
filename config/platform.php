@@ -172,6 +172,7 @@ return [
     'route_permissions' => [
         'admin.dashboard' => 'dashboard.view',
         'admin.audit.index' => 'audit.view',
+        'admin.audit.export' => 'audit.export',
         'admin.security.index' => 'security.manage',
         'admin.businesses.index' => 'workspaces.view',
         'admin.businesses.create' => 'workspaces.create',
