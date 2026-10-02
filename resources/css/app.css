@@ -880,3 +880,174 @@
         }
     }
 }
+
+
+@layer components {
+    .br-admin-shell {
+        min-height: 100svh;
+    }
+
+    .br-admin-shell header {
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .br-admin-shell main {
+        padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    }
+
+    .br-admin-shell .br-admin-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .br-admin-shell .br-admin-actions > * {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .br-admin-shell .br-admin-filter-form {
+        align-items: stretch;
+    }
+
+    .br-admin-shell .br-admin-filter-form input,
+    .br-admin-shell .br-admin-filter-form select {
+        min-width: 0;
+    }
+
+    .br-admin-shell .br-admin-table-action-form {
+        min-width: 0;
+    }
+
+    .br-admin-shell .br-admin-page-header {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .br-admin-shell .br-admin-page-header > * {
+        min-width: 0;
+    }
+
+    .br-admin-shell .br-admin-data-region {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    @media (max-width: 767px) {
+        .br-admin-shell header > div {
+            min-height: 3.75rem;
+            padding-inline: 0.75rem;
+        }
+
+        .br-admin-shell header .flex.shrink-0 {
+            gap: 0.25rem;
+        }
+
+        .br-admin-shell .br-admin-actions {
+            width: 100%;
+            align-items: stretch;
+        }
+
+        .br-admin-shell .br-admin-actions > a,
+        .br-admin-shell .br-admin-actions > button,
+        .br-admin-shell .br-admin-actions > form,
+        .br-admin-shell .br-admin-actions > [role='button'] {
+            flex: 1 1 10rem;
+            max-width: 100%;
+        }
+
+        .br-admin-shell .br-admin-actions > form {
+            min-width: 0;
+        }
+
+        .br-admin-shell .br-admin-actions > form > button {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-filter-form {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-filter-form > * {
+            width: 100%;
+            min-width: 0 !important;
+        }
+
+        .br-admin-shell .br-admin-filter-form > button {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-drawer {
+            width: min(20rem, calc(100vw - 0.75rem));
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .br-admin-shell .br-drawer-backdrop {
+            backdrop-filter: blur(2px);
+        }
+
+        .br-admin-shell .br-admin-page-header {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-page-header > .flex,
+        .br-admin-shell .br-admin-page-header .br-admin-actions {
+            width: 100%;
+        }
+
+        .br-admin-shell .br-admin-page-header .br-admin-actions > a,
+        .br-admin-shell .br-admin-page-header .br-admin-actions > button {
+            flex-basis: calc(50% - 0.25rem);
+        }
+
+        .br-admin-shell .br-admin-data-region {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 479px) {
+        .br-admin-shell header > div {
+            gap: 0.5rem;
+        }
+
+        .br-admin-shell header h1 {
+            font-size: 0.9375rem;
+        }
+
+        .br-admin-shell header .flex.shrink-0 > * {
+            max-width: 2.5rem;
+        }
+
+        .br-admin-shell .br-admin-page-header .br-admin-actions > a,
+        .br-admin-shell .br-admin-page-header .br-admin-actions > button {
+            flex-basis: 100%;
+        }
+
+        .br-admin-shell .br-admin-actions > a,
+        .br-admin-shell .br-admin-actions > button,
+        .br-admin-shell .br-admin-actions > form {
+            flex-basis: 100%;
+        }
+    }
+
+    @media (max-width: 359px) {
+        .br-admin-shell main {
+            padding-inline: 0.625rem;
+        }
+
+        .br-admin-shell header > div {
+            padding-inline: 0.625rem;
+        }
+
+        .br-admin-shell .br-nav-link {
+            padding-inline: 0.625rem;
+        }
+
+        .br-admin-shell .br-data-table tbody tr td {
+            padding-inline: 0.7rem;
+        }
+    }
+}
