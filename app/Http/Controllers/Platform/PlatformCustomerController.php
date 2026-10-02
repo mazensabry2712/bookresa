@@ -184,7 +184,7 @@ final class PlatformCustomerController
             ->get();
 
         $currencyTotals = $paymentAggregates
-            ->mapWithKeys(fn ($row): array => [(string) $row->currency => (int) $row->paid_minor])
+            ->mapWithKeys(fn ($row): array => [(string) $row->currency => (int) $row->getAttribute('paid_minor')])
             ->sortKeys()
             ->all();
 
@@ -197,14 +197,14 @@ final class PlatformCustomerController
             'completedBookings' => (int) (clone $bookingBase)->where('status', BookingStatus::Completed->value)->count(),
             'cancelledBookings' => (int) (clone $bookingBase)->where('status', BookingStatus::Cancelled->value)->count(),
             'noShows' => (int) (clone $bookingBase)->where('status', BookingStatus::NoShow->value)->count(),
-            'totalSpentMinor' => (int) ($singleCurrencyAggregate?->paid_minor ?? 0),
-            'refundedMinor' => (int) ($singleCurrencyAggregate?->refunded_minor ?? 0),
-            'averagePaidMinor' => $singleCurrencyAggregate !== null && (int) $singleCurrencyAggregate->paid_count > 0
-                ? (int) round((int) $singleCurrencyAggregate->paid_minor / (int) $singleCurrencyAggregate->paid_count)
+            'totalSpentMinor' => (int) ($singleCurrencyAggregate?->getAttribute('paid_minor') ?? 0),
+            'refundedMinor' => (int) ($singleCurrencyAggregate?->getAttribute('refunded_minor') ?? 0),
+            'averagePaidMinor' => $singleCurrencyAggregate !== null && (int) $singleCurrencyAggregate->getAttribute('paid_count') > 0
+                ? (int) round((int) $singleCurrencyAggregate->getAttribute('paid_minor') / (int) $singleCurrencyAggregate->paid_count)
                 : 0,
             'firstSeenAt' => $customer->first_seen_at,
             'lastSeenAt' => $customer->last_seen_at,
-            'lastPaidAt' => $singleCurrencyAggregate?->last_paid_at,
+            'lastPaidAt' => $singleCurrencyAggregate?->getAttribute('last_paid_at'),
             'currencyTotals' => $currencyTotals,
         ];
 
