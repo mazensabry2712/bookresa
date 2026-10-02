@@ -59,6 +59,10 @@ final class EnsurePlatformAdmin
 
         $permissions = (array) config('platform.route_permissions', []);
 
-        return isset($permissions[$routeName]) ? (string) $permissions[$routeName] : null;
+        if (isset($permissions[$routeName])) {
+            return (string) $permissions[$routeName];
+        }
+
+        return str_starts_with($routeName, 'admin.') ? '__unmapped_platform_route__' : null;
     }
 }
