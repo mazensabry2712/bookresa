@@ -12,6 +12,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property MembershipStatus $status
  * @property bool $is_primary
  */
+/**
+ * @property MembershipStatus $status
+ * @property bool $is_primary
+ */
 class TenantMembership extends Model
 {
     use HasFactory;
