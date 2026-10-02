@@ -17,6 +17,7 @@
         <div class="grid gap-6 xl:grid-cols-2">
             <section class="br-panel p-5">
                 <h3 class="font-bold">{{ __('Profile') }}</h3>
+                @if(auth()->user()?->platformAdmin?->hasPlatformPermission('users.manage'))
                 <form method="POST" action="{{ route('admin.users.update', $user) }}" class="mt-4 space-y-4">
                     @csrf
                     @method('PUT')
@@ -24,6 +25,7 @@
                     <label class="block text-sm"><span class="mb-1 block font-medium">{{ __('Email') }}</span><input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950"></label>
                     <button class="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('Save profile') }}</button>
                 </form>
+                @endif
             </section>
 
             <section class="br-panel p-5">
@@ -33,9 +35,10 @@
                     <div class="flex items-center justify-between gap-4"><span>{{ __('Two-factor authentication') }}</span><span class="font-semibold">{{ $user->two_factor_confirmed_at ? __('Enabled') : __('Disabled') }}</span></div>
                 </div>
                 @if(auth()->user()?->platformAdmin?->hasPlatformPermission('users.manage'))
-                <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                <div class="mt-5 grid gap-3 sm:grid-cols-3">
                     <form method="POST" action="{{ route('admin.users.verify-email', $user) }}">@csrf<button class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('Mark email verified') }}</button></form>
                     <form method="POST" action="{{ route('admin.users.revoke-sessions', $user) }}">@csrf<button class="w-full rounded-xl border border-rose-300 px-4 py-2.5 text-sm font-semibold text-rose-700 dark:border-rose-900 dark:text-rose-300">{{ __('Revoke sessions') }}</button></form>
+                    <form method="POST" action="{{ route('admin.users.disable-two-factor', $user) }}">@csrf<button class="w-full rounded-xl border border-amber-300 px-4 py-2.5 text-sm font-semibold text-amber-800 dark:border-amber-900 dark:text-amber-300">{{ __('Disable 2FA') }}</button></form>
                 </div>
                 <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" class="mt-5 space-y-3">
                     @csrf
