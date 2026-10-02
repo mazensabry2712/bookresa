@@ -82,18 +82,20 @@ function intelligenceBooking(Tenant $tenant, Customer $customer, int $index): Bo
 
 function intelligencePayment(Tenant $tenant, Booking $booking, int $amountMinor, string $reference): void
 {
-    Payment::withoutGlobalScopes()->create([
-        'tenant_id' => $tenant->id,
-        'payable_type' => Booking::class,
-        'payable_id' => $booking->id,
-        'reference' => $reference,
-        'provider' => 'kashier',
-        'amount_minor' => $amountMinor,
-        'currency' => 'EGP',
-        'status' => \App\Domain\Payment\Enums\PaymentStatus::Paid,
-        'method' => 'card',
-        'paid_at' => now(),
-    ]);
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $booking, $amountMinor, $reference): void {
+        Payment::query()->create([
+            'tenant_id' => $tenant->id,
+            'payable_type' => Booking::class,
+            'payable_id' => $booking->id,
+            'reference' => $reference,
+            'provider' => 'kashier',
+            'amount_minor' => $amountMinor,
+            'currency' => 'EGP',
+            'status' => \App\Domain\Payment\Enums\PaymentStatus::Paid,
+            'method' => 'card',
+            'paid_at' => now(),
+        ]);
+    });
 }
 
 test('platform customer intelligence aggregates spending per customer and sorts highest first', function (): void {
@@ -120,18 +122,20 @@ test('platform customer intelligence aggregates spending per customer and sorts 
 
     intelligencePayment($tenant, $vipBooking, 75000, 'PAY-INTEL-1');
     intelligencePayment($tenant, $regularBooking, 12000, 'PAY-INTEL-2');
-    Payment::withoutGlobalScopes()->create([
-        'tenant_id' => $tenant->id,
-        'payable_type' => Booking::class,
-        'payable_id' => $vipBooking->id,
-        'reference' => 'PAY-INTEL-USD',
-        'provider' => 'kashier',
-        'amount_minor' => 5000,
-        'currency' => 'USD',
-        'status' => \App\Domain\Payment\Enums\PaymentStatus::Paid,
-        'method' => 'card',
-        'paid_at' => now(),
-    ]);
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $vipBooking): void {
+        Payment::query()->create([
+            'tenant_id' => $tenant->id,
+            'payable_type' => Booking::class,
+            'payable_id' => $vipBooking->id,
+            'reference' => 'PAY-INTEL-USD',
+            'provider' => 'kashier',
+            'amount_minor' => 5000,
+            'currency' => 'USD',
+            'status' => \App\Domain\Payment\Enums\PaymentStatus::Paid,
+            'method' => 'card',
+            'paid_at' => now(),
+        ]);
+    });
 
     $response = $this->actingAs($admin)
         ->get(route('admin.customers.index', ['tenant_id' => $tenant->id, 'currency' => 'EGP']));
