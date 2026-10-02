@@ -64,7 +64,7 @@
                 @forelse($customers as $customerRow)
                     @php
                         $workspaceName = data_get($customerRow->tenant?->profile?->name, app()->getLocale()) ?? $customerRow->tenant?->slug ?? '—';
-                        $currency = 'EGP';
+                        $displayCurrency = $currency !== '' ? $currency : null;
                         $spent = (int) $customerRow->total_paid_minor;
                         $bookingsCount = (int) $customerRow->bookings_count;
                     @endphp
@@ -80,7 +80,7 @@
                             <p class="mt-1 text-xs text-slate-500">{{ $customerRow->tenant?->slug }}</p>
                         </td>
                         <td class="px-5 py-4 font-bold">
-                            {{ $currency !== '' ? number_format($spent / 100, 2).' '.$currency : '—' }}
+                            {{ $displayCurrency !== null ? number_format($spent / 100, 2).' '.$displayCurrency : '—' }}
                         </td>
                         <td class="px-5 py-4">{{ number_format($bookingsCount) }}</td>
                         <td class="px-5 py-4 text-slate-500">{{ $customerRow->last_paid_at ? \Illuminate\Support\Carbon::parse($customerRow->last_paid_at)->format('Y-m-d H:i') : '—' }}</td>
