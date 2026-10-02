@@ -8,6 +8,7 @@ use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
+use App\Notifications\SupportReplyNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -127,6 +128,9 @@ final class SupportTicketController
                 'tenant_id' => (int) $ticket->tenant_id,
                 'ticket_id' => (int) $ticket->getKey(),
             ]);
+
+            $requester = $ticket->requester()->first();
+            $requester?->notify(new SupportReplyNotification($ticket, $validated['message']));
         });
 
         return back()->with('status', __('Support reply added successfully.'));
