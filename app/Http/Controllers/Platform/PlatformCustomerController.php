@@ -8,6 +8,7 @@ use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -223,7 +224,10 @@ final class PlatformCustomerController
             ->findOrFail($customer);
 
         $next = ! $customer->is_vip;
-        $customer->forceFill(['is_vip' => $next])->save();
+
+        app(CurrentTenant::class)->run($tenant, function () use ($customer, $next): void {
+            $customer->forceFill(['is_vip' => $next])->save();
+        });
 
         app(AuditLogger::class)->log(
             $next ? 'platform.customer_vip_enabled' : 'platform.customer_vip_disabled',
