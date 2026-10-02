@@ -351,6 +351,7 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::put('/users/{user}', [PlatformUserOperationsController::class, 'updateProfile'])->name('users.update');
         Route::post('/users/{user}/password', [PlatformUserOperationsController::class, 'resetPassword'])->name('users.reset-password');
         Route::post('/users/{user}/verify-email', [PlatformUserOperationsController::class, 'forceVerify'])->name('users.verify-email');
+        Route::post('/users/{user}/disable-two-factor', [PlatformUserOperationsController::class, 'disableTwoFactor'])->name('users.disable-two-factor');
         Route::post('/users/{user}/revoke-sessions', [PlatformUserOperationsController::class, 'revokeSessions'])->name('users.revoke-sessions');
         Route::patch('/users/{user}/platform-admin-access', [PlatformUserOperationsController::class, 'updatePlatformAdminAccess'])->name('users.platform-admin-access');
         Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
