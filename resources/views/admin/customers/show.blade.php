@@ -66,6 +66,20 @@
         </section>
     @endif
 
+    @if(auth()->user()?->platformAdmin?->hasPlatformPermission('customers.manage'))
+        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            <h3 class="font-semibold">{{ __('Edit customer') }}</h3>
+            <form method="POST" action="{{ route('admin.customers.update', [$tenant, $customer]) }}" class="mt-4 grid gap-4 md:grid-cols-3">
+                @csrf
+                @method('PUT')
+                <input name="name" value="{{ old('name', $customer->name) }}" required maxlength="180" class="rounded-xl border border-slate-300 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950" placeholder="{{ __('Name') }}">
+                <input name="phone" value="{{ old('phone', $customer->phone) }}" maxlength="50" class="rounded-xl border border-slate-300 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950" placeholder="{{ __('Phone') }}">
+                <input name="email" type="email" value="{{ old('email', $customer->email) }}" maxlength="255" class="rounded-xl border border-slate-300 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950" placeholder="{{ __('Email') }}">
+                <button class="rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-semibold text-white md:col-span-3">{{ __('Save customer') }}</button>
+            </form>
+        </section>
+    @endif
+
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
             <h3 class="font-semibold">{{ __('platform.contact_details') }}</h3>
