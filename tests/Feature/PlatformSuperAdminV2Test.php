@@ -354,3 +354,57 @@ test('audit export returns a bounded CSV report', function (): void {
     expect($response->streamedContent())
         ->toContain('platform.super_admin_v2_test');
 });
+
+
+test('super admin can control the global module catalog while protecting core modules', function (): void {
+    $admin = v2Admin();
+    $payments = App\Domain\Module\Models\Module::query()->where('key', 'payments')->firstOrFail();
+    $appointments = App\Domain\Module\Models\Module::query()->where('key', 'appointments')->firstOrFail();
+
+    $this->actingAs($admin)
+        ->put(route('admin.modules.update', $payments), [
+            'name_en' => 'Payments',
+            'name_ar' => 'المدفوعات',
+            'description_en' => 'Customer payments',
+            'description_ar' => 'مدفوعات العملاء',
+            'is_active' => 0,
+        ])
+        ->assertRedirect();
+
+    expect($payments->fresh()->is_active)->toBeFalse();
+
+    $this->actingAs($admin)
+        ->put(route('admin.modules.update', $appointments), [
+            'name_en' => 'Appointments',
+            'name_ar' => 'المواعيد',
+            'description_en' => 'Appointments',
+            'description_ar' => 'المواعيد',
+            'is_active' => 0,
+        ])
+        ->assertRedirect()
+        ->assertSessionHasErrors('is_active');
+
+    expect($appointments->fresh()->is_active)->toBeTrue();
+});
+
+test('tenant cannot reply to a closed support ticket', function (): void {
+    $owner = User::factory()->create(['email_verified_at' => now()]);
+    $tenant = v2Tenant($owner);
+
+    $ticket = SupportTicket::query()->create([
+        'tenant_id' => $tenant->getKey(),
+        'requester_user_id' => $owner->getKey(),
+        'subject' => 'Closed ticket',
+        'message' => 'This ticket is closed.',
+        'status' => App\Domain\Support\Enums\SupportTicketStatus::Closed,
+        'priority' => App\Domain\Support\Enums\SupportTicketPriority::Normal,
+    ]);
+
+    $this->actingAs($owner)
+        ->post(route('support.reply', [$tenant, $ticket->getKey()]), [
+            'message' => 'New reply',
+        ])
+        ->assertStatus(422);
+
+    expect(SupportTicketMessage::query()->where('support_ticket_id', $ticket->getKey())->count())->toBe(0);
+});
