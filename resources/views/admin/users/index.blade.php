@@ -65,7 +65,7 @@
                                                     </p>
                                                 </div>
 
-                                                @if ($membership->is_primary && $membership->status === AppDomainTenantEnumsMembershipStatus::Active)
+                                                @if ($membership->is_primary && $membership->status->value === 'active')
                                                     <span class="whitespace-nowrap rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-400 dark:border-slate-700 dark:text-slate-500">
                                                         {{ __('Protected owner') }}
                                                     </span>
@@ -74,7 +74,7 @@
                                                         @csrf
                                                         @method('PATCH')
                                                         <button type="submit" class="whitespace-nowrap rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold dark:border-slate-700">
-                                                            {{ $membership->status === AppDomainTenantEnumsMembershipStatus::Active ? __('Suspend') : __('Activate') }}
+                                                            {{ $membership->status === 'active' ? __('Suspend') : __('Activate') }}
                                                         </button>
                                                     </form>
                                                 @endif
