@@ -94,12 +94,18 @@ test('platform admin can list users and workspace memberships', function (): voi
         ->assertDontSee('Beta Owner');
 });
 
-test('platform admin can activate and suspend memberships', function (): void {
+test('platform admin can activate and suspend non-owner memberships', function (): void {
     $admin = platformUsersAdmin();
     $owner = User::factory()->create(['email' => 'membership-owner@example.com']);
+    $member = User::factory()->create(['email' => 'membership-member@example.com']);
     $tenant = platformUsersBusiness($owner, 'Membership Clinic');
 
-    $membership = $owner->tenantMemberships()->where('tenant_id', $tenant->id)->firstOrFail();
+    $membership = TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $member->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => false,
+    ]);
 
     $this->actingAs($admin)
         ->patch(route('admin.users.membership-toggle', $membership))
@@ -112,6 +118,21 @@ test('platform admin can activate and suspend memberships', function (): void {
         ->patch(route('admin.users.membership-toggle', $membership))
         ->assertRedirect()
         ->assertSessionHas('status', 'User membership activated successfully.');
+
+    expect($membership->fresh()->status)->toBe(MembershipStatus::Active);
+});
+
+test('platform admin cannot suspend a primary workspace owner from global user management', function (): void {
+    $admin = platformUsersAdmin();
+    $owner = User::factory()->create(['email' => 'primary-owner@example.com']);
+    $tenant = platformUsersBusiness($owner, 'Primary Owner Clinic');
+
+    $membership = $owner->tenantMemberships()->where('tenant_id', $tenant->id)->firstOrFail();
+
+    $this->actingAs($admin)
+        ->patch(route('admin.users.membership-toggle', $membership))
+        ->assertRedirect()
+        ->assertSessionHasErrors('membership');
 
     expect($membership->fresh()->status)->toBe(MembershipStatus::Active);
 });
