@@ -246,11 +246,14 @@ final class PlatformBusinessController
                 ->withoutGlobalScopes()
                 ->where('status', MembershipStatus::Active)
                 ->count(),
-            'paidRevenueMinor' => Payment::withoutGlobalScopes()
+            'paidRevenueByCurrency' => Payment::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
                 ->where('payable_type', Booking::class)
                 ->where('status', PaymentStatus::Paid)
-                ->sum('amount_minor'),
+                ->selectRaw('currency, SUM(amount_minor) as total_minor')
+                ->groupBy('currency')
+                ->orderBy('currency')
+                ->get(),
         ];
 
         $recentActivity = Activity::query()
