@@ -37,7 +37,11 @@ final class PlatformPaymentController
 
         $tenant = $payment->tenant()->withoutGlobalScopes()->firstOrFail();
 
-        $result = $gateway->verifyPayment((string) $payment->provider_reference);
+        try {
+            $result = $gateway->verifyPayment((string) $payment->provider_reference);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['payment' => $e->getMessage()]);
+        }
 
         $currentTenant->run($tenant, function () use ($payment, $result): void {
             app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
@@ -64,12 +68,21 @@ final class PlatformPaymentController
             return back()->withErrors(['payment' => __('Only paid payments can be refunded.')]);
         }
 
+        if (blank($payment->provider_reference)) {
+            return back()->withErrors(['payment' => __('Payment has no provider reference and cannot be refunded.')]);
+        }
+
         if ($payment->amount_minor <= 0) {
             return back()->withErrors(['payment' => __('Payment amount is invalid for refund.')]);
         }
 
         $tenant = $payment->tenant()->withoutGlobalScopes()->firstOrFail();
-        $result = $gateway->refundPayment((string) $payment->provider_reference, (int) $payment->amount_minor);
+
+        try {
+            $result = $gateway->refundPayment((string) $payment->provider_reference, (int) $payment->amount_minor);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['payment' => $e->getMessage()]);
+        }
 
         $currentTenant->run($tenant, function () use ($payment, $result): void {
             app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
