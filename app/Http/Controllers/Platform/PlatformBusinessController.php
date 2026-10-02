@@ -39,8 +39,10 @@ final class PlatformBusinessController
     public function index(Request $request): View
     {
         $search = trim((string) $request->input('search'));
+        $archived = $request->boolean('archived');
 
         $businesses = Tenant::query()
+            ->when($archived, fn ($query) => $query->withTrashed()->whereNotNull('tenants.deleted_at'))
             ->with([
                 'profile' => fn ($query) => $query->withoutGlobalScopes(),
                 'businessType',
@@ -573,8 +575,10 @@ final class PlatformBusinessController
     {
         $tenantId = (int) $tenant->getKey();
 
+        app(CurrentTenant::class)->clear();
+
         app(AuditLogger::class)->log(
-            'platform.workspace_deleted',
+            'platform.workspace_archived',
             $tenant,
             ['tenant_id' => $tenantId],
         );
@@ -582,6 +586,22 @@ final class PlatformBusinessController
         $tenant->delete();
 
         return to_route('admin.businesses.index')
-            ->with('status', __('platform.workspace_deleted'));
+            ->with('status', __('Workspace archived successfully. Data is retained and can be restored.'));
+    }
+
+    public function restore(int $tenantId): RedirectResponse
+    {
+        $tenant = Tenant::withTrashed()->findOrFail($tenantId);
+
+        $tenant->restore();
+
+        app(AuditLogger::class)->log(
+            'platform.workspace_restored',
+            $tenant,
+            ['tenant_id' => (int) $tenant->getKey()],
+        );
+
+        return to_route('admin.businesses.show', $tenant)
+            ->with('status', __('Workspace restored successfully.'));
     }
 }
