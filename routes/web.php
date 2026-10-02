@@ -16,6 +16,7 @@ use App\Http\Controllers\Platform\PlanAdminController;
 use App\Http\Controllers\Platform\PlatformBusinessController;
 use App\Http\Controllers\Platform\PlatformBroadcastController;
 use App\Http\Controllers\Platform\PlatformHealthController;
+use App\Http\Controllers\Platform\PlatformGlobalModuleController;
 use App\Http\Controllers\Platform\PlatformPaymentController;
 use App\Http\Controllers\Platform\PlatformUserOperationsController;
 use App\Http\Controllers\Platform\PlatformAuditExportController;
@@ -372,6 +373,8 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::get('/support/{ticketId}', [SupportTicketController::class, 'show'])->name('support.show');
         Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
         Route::get('/health', [PlatformHealthController::class, 'index'])->name('health.index');
+        Route::get('/modules', [PlatformGlobalModuleController::class, 'index'])->name('modules.index');
+        Route::put('/modules/{module}', [PlatformGlobalModuleController::class, 'update'])->name('modules.update');
         Route::get('/broadcasts', [PlatformBroadcastController::class, 'index'])->name('broadcasts.index');
         Route::post('/broadcasts', [PlatformBroadcastController::class, 'store'])->name('broadcasts.store');
         Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
