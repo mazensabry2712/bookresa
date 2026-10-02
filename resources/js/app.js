@@ -288,10 +288,45 @@ const setupResponsiveAdminShell = () => {
     });
 };
 
+const setupResponsiveAdminUi = () => {
+    if (!document.body.classList.contains('br-admin-shell')) {
+        return;
+    }
+
+    document.querySelectorAll('main form').forEach((form) => {
+        form.classList.add('br-admin-form');
+
+        if (form.method.toLowerCase() === 'get') {
+            form.classList.add('br-admin-filter-form');
+        }
+
+        if (form.closest('td')) {
+            form.classList.add('br-admin-table-action-form');
+        }
+    });
+
+    document.querySelectorAll('main > *').forEach((section) => {
+        const actions = section.querySelector(':scope > .flex > :scope a, :scope > .flex > :scope button');
+
+        if (actions) {
+            section.classList.add('br-admin-section');
+        }
+    });
+
+    document.querySelectorAll('main .flex').forEach((group) => {
+        const children = Array.from(group.children);
+
+        if (children.some((child) => child.matches('a, button, form'))) {
+            group.classList.add('br-admin-actions');
+        }
+    });
+};
+
 const setupUtilities = () => {
     setupTheme();
     setupSidebar();
     setupResponsiveAdminTables();
+    setupResponsiveAdminUi();
     setupResponsiveAdminShell();
 };
 
