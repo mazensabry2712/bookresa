@@ -11,7 +11,8 @@ final class SetPlatformAdminCommand extends Command
 {
     protected $signature = 'platform-admin:set
                             {email : Existing user email}
-                            {--revoke : Disable platform administrator access}';
+                            {--revoke : Disable platform administrator access}
+                            {--role=super_admin : Platform administrator role when granting access}';
 
     protected $description = 'Grant or revoke platform administrator access for an existing user';
 
