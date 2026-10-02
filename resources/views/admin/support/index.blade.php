@@ -70,6 +70,7 @@
                                     {{ $ticket->created_at->format('Y-m-d H:i') }}
                                 </td>
                                 <td class="px-5 py-4 align-top">
+                                    @if(auth()->user()?->platformAdmin?->hasPlatformPermission('support.manage'))
                                     <form method="POST" action="{{ route('admin.support.update', $ticket) }}" class="grid gap-2">
                                         @csrf
                                         @method('PATCH')
@@ -86,6 +87,9 @@
                                         <textarea name="admin_notes" rows="2" placeholder="{{ __('Internal notes') }}" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">{{ old('admin_notes', $ticket->admin_notes) }}</textarea>
                                         <button class="rounded-lg bg-slate-900 px-3 py-2 text-xs font-semibold text-white dark:bg-white dark:text-slate-900">{{ __('Save') }}</button>
                                     </form>
+                                    @else
+                                        <a href="{{ route('admin.support.show', $ticket->id) }}" class="text-xs font-semibold text-slate-500">{{ __('View only') }}</a>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-4 text-end align-top"><a href="{{ route('admin.support.show', $ticket->id) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Conversation') }}</a></td>
                             </tr>
