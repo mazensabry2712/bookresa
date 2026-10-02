@@ -57,6 +57,8 @@ final class EnsurePlatformAdmin
             return null;
         }
 
-        return config('platform.route_permissions.'.$routeName);
+        $permissions = (array) config('platform.route_permissions', []);
+
+        return isset($permissions[$routeName]) ? (string) $permissions[$routeName] : null;
     }
 }
