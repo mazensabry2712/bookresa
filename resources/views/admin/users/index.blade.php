@@ -91,6 +91,7 @@
                                 </td>
                                 <td class="px-5 py-4">
                                     <a href="{{ route('admin.users.show', $user) }}" class="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold dark:border-slate-700">{{ __('Manage') }}</a>
+                                    @if(auth()->user()?->platformAdmin?->role === 'super_admin')
                                     <form class="mt-2" method="POST" action="{{ route('admin.users.platform-admin-toggle', $user) }}">
                                         @csrf
                                         @method('PATCH')
@@ -98,6 +99,7 @@
                                             {{ $user->platformAdmin?->is_active ? __('Disable admin') : __('Make platform admin') }}
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty
