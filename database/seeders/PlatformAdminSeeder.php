@@ -31,10 +31,14 @@ class PlatformAdminSeeder extends Seeder
             $user->forceFill(['email_verified_at' => now()])->saveQuietly();
         }
 
-        PlatformAdmin::query()->updateOrCreate(
+        $platformAdmin = PlatformAdmin::query()->firstOrCreate(
             ['user_id' => $user->getKey()],
             ['is_active' => true, 'role' => 'super_admin', 'permissions' => []],
         );
+
+        if (! $platformAdmin->is_active) {
+            $platformAdmin->forceFill(['is_active' => true])->saveQuietly();
+        }
 
         $this->command?->info("Super Admin ready: {$email}");
     }
