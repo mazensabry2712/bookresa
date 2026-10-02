@@ -82,6 +82,7 @@ final class PlatformUserController
 
     public function togglePlatformAdmin(User $user): RedirectResponse
     {
+        abort_unless(auth()->user()?->platformAdmin?->role === 'super_admin', 403);
         $platformAdmin = PlatformAdmin::query()
             ->where('user_id', $user->getKey())
             ->first();
