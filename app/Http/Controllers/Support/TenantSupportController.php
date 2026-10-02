@@ -6,6 +6,7 @@ use App\Domain\Support\Enums\SupportTicketPriority;
 use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Support\Models\SupportTicketMessage;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -84,7 +85,7 @@ final class TenantSupportController
         ]);
     }
 
-    public function reply(Request $request, CurrentTenant $currentTenant, int $ticketId, AuditLogger $audit): RedirectResponse
+    public function reply(Request $request, CurrentTenant $currentTenant, Tenant $tenant, int $ticketId, AuditLogger $audit): RedirectResponse
     {
         $validated = $request->validate([
             'message' => ['required', 'string', 'max:10000'],
