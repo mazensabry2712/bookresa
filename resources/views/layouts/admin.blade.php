@@ -40,19 +40,25 @@
                     <p class="px-3 pb-1 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">{{ __('platform.workspace_control') }}</p>
                     @php
                         $workspaceControlLinks = [
-                            ['route' => 'admin.dashboard', 'label' => __('app.dashboard')],
-                            ['route' => 'admin.businesses.index', 'label' => __('platform.workspaces')],
-                            ['route' => 'admin.users.index', 'label' => __('app.users')],
-                            ['route' => 'admin.subscriptions.index', 'label' => __('app.subscriptions')],
-                            ['route' => 'admin.payments.index', 'label' => __('app.payments')],
-                            ['route' => 'admin.usage.index', 'label' => __('app.usage')],
-                            ['route' => 'admin.reports.index', 'label' => __('app.reports')],
-                            ['route' => 'admin.support.index', 'label' => __('app.support')],
-                            ['route' => 'admin.settings.index', 'label' => __('app.settings')],
-                            ['route' => 'admin.plans.index', 'label' => __('app.plans')],
-                            ['route' => 'admin.audit.index', 'label' => __('platform.activity_log')],
-                            ['route' => 'admin.security.index', 'label' => __('platform.platform_security')],
+                            ['route' => 'admin.dashboard', 'label' => __('app.dashboard'), 'permission' => 'dashboard.view'],
+                            ['route' => 'admin.businesses.index', 'label' => __('platform.workspaces'), 'permission' => 'workspaces.view'],
+                            ['route' => 'admin.users.index', 'label' => __('app.users'), 'permission' => 'users.view'],
+                            ['route' => 'admin.subscriptions.index', 'label' => __('app.subscriptions'), 'permission' => 'finance.view'],
+                            ['route' => 'admin.payments.index', 'label' => __('app.payments'), 'permission' => 'finance.view'],
+                            ['route' => 'admin.usage.index', 'label' => __('app.usage'), 'permission' => 'finance.view'],
+                            ['route' => 'admin.reports.index', 'label' => __('app.reports'), 'permission' => 'reports.view'],
+                            ['route' => 'admin.support.index', 'label' => __('app.support'), 'permission' => 'support.view'],
+                            ['route' => 'admin.settings.index', 'label' => __('app.settings'), 'permission' => 'settings.manage'],
+                            ['route' => 'admin.plans.index', 'label' => __('app.plans'), 'permission' => 'plans.manage'],
+                            ['route' => 'admin.audit.index', 'label' => __('platform.activity_log'), 'permission' => 'audit.view'],
+                            ['route' => 'admin.security.index', 'label' => __('platform.platform_security'), 'permission' => 'security.manage'],
+                            ['route' => 'admin.health.index', 'label' => __('System Health'), 'permission' => 'health.view'],
+                            ['route' => 'admin.broadcasts.index', 'label' => __('Broadcasts'), 'permission' => 'broadcast.manage'],
                         ];
+                        $workspaceControlLinks = array_values(array_filter(
+                            $workspaceControlLinks,
+                            fn (array $link): bool => auth()->user()?->platformAdmin?->hasPlatformPermission($link['permission']) === true,
+                        ));
                     @endphp
 
                     @foreach ($workspaceControlLinks as $link)
