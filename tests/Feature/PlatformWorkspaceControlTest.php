@@ -56,8 +56,10 @@ test('platform admin can create update and delete a workspace', function (): voi
     $tenant = Tenant::query()->where('slug', 'platform-created-clinic')->firstOrFail();
     $owner = User::query()->where('email', 'platform-created-owner@example.com')->firstOrFail();
 
+    $profile = $tenant->profile()->withoutGlobalScopes()->firstOrFail();
+
     expect($tenant->status)->toBe(TenantStatus::Active)
-        ->and($tenant->profile->email)->toBe('clinic@example.com')
+        ->and($profile->email)->toBe('clinic@example.com')
         ->and($owner->hasVerifiedEmail())->toBeTrue();
 
     $this->actingAs($admin)
