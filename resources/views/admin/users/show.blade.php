@@ -56,7 +56,7 @@
                 <span class="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold dark:bg-slate-800">{{ $platformAdmin?->roleLabel() ?? __('Not a platform admin') }}</span>
             </div>
 
-            @if(auth()->user()?->platformAdmin?->hasPlatformPermission('security.manage'))
+            @if(auth()->user()?->platformAdmin?->role === 'super_admin')
             <form method="POST" action="{{ route('admin.users.platform-admin-access', $user) }}" class="mt-5 space-y-5">
                 @csrf
                 @method('PATCH')
