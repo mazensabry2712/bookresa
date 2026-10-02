@@ -90,6 +90,21 @@ final class PlatformUserOperationsController
         return back()->with('status', __('User email marked as verified.'));
     }
 
+    public function disableTwoFactor(User $user, AuditLogger $audit): RedirectResponse
+    {
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+
+        $audit->log('platform.user_two_factor_disabled', $user, [
+            'user_id' => (int) $user->getKey(),
+        ]);
+
+        return back()->with('status', __('User two-factor authentication was disabled.'));
+    }
+
     public function revokeSessions(User $user, AuditLogger $audit): RedirectResponse
     {
         $this->revokeSessionsFor($user);
