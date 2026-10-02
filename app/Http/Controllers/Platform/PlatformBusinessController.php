@@ -95,8 +95,11 @@ final class PlatformBusinessController
                 'name' => $data['owner_name'],
                 'email' => $data['owner_email'],
                 'password' => $data['owner_password'],
-                'email_verified_at' => now(),
             ]);
+
+            $owner->forceFill([
+                'email_verified_at' => now(),
+            ])->save();
 
             $tenant = $createBusiness->handle(
                 $owner,
