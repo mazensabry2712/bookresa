@@ -44,6 +44,15 @@ final class PlatformUserController
 
     public function toggleMembership(TenantMembership $membership): RedirectResponse
     {
+        if (
+            $membership->is_primary
+            && $membership->status === MembershipStatus::Active
+        ) {
+            return back()->withErrors([
+                'membership' => __('The workspace owner cannot be suspended. Promote another member first.'),
+            ]);
+        }
+
         $next = $membership->status === MembershipStatus::Active
             ? MembershipStatus::Suspended
             : MembershipStatus::Active;
