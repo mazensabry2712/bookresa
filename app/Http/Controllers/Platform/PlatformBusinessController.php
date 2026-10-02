@@ -20,19 +20,19 @@ use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
-use Spatie\Activitylog\Models\Activity;
-use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
-use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
-use App\Http\Requests\Platform\StoreWorkspaceMemberRequest;
-use App\Http\Requests\Platform\UpdateWorkspaceMemberRequest;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
+use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
+use App\Http\Requests\Platform\StoreWorkspaceMemberRequest;
+use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
+use App\Http\Requests\Platform\UpdateWorkspaceMemberRequest;
 use App\Models\User;
-use Illuminate\Validation\ValidationException;
 use App\Support\AuditLogger;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Spatie\Activitylog\Models\Activity;
 
 final class PlatformBusinessController
 {
@@ -246,7 +246,7 @@ final class PlatformBusinessController
             ->whereHas('module', fn ($query) => $query->where('is_active', true))
             ->get()
             ->sortBy(fn ($tenantModule) => [
-                !(bool) $tenantModule->module?->is_core,
+                ! (bool) $tenantModule->module?->is_core,
                 (int) $tenantModule->module_id,
             ])
             ->values();
@@ -440,7 +440,7 @@ final class PlatformBusinessController
                 ->where($membership->getKeyName(), '!=', $membership->getKey())
                 ->where('is_primary', true)
                 ->update(['is_primary' => false]);
-        } elseif ($membership->is_primary && ! $isPrimary) {
+        } elseif ($membership->is_primary) {
             throw ValidationException::withMessages([
                 'is_primary' => __('The workspace must always have a primary owner.'),
             ]);
