@@ -76,12 +76,13 @@ test('platform admin can create update and delete a workspace', function (): voi
         ])
         ->assertRedirect();
 
-    $tenant->refresh()->load('profile');
+    $tenant->refresh();
+    $updatedProfile = $tenant->profile()->withoutGlobalScopes()->firstOrFail();
 
     expect($tenant->slug)->toBe('updated-clinic')
         ->and($tenant->status)->toBe(TenantStatus::Suspended)
-        ->and(data_get($tenant->profile->name, 'en'))->toBe('Updated Clinic')
-        ->and($tenant->profile->locale)->toBe('ar');
+        ->and(data_get($updatedProfile->name, 'en'))->toBe('Updated Clinic')
+        ->and($updatedProfile->locale)->toBe('ar');
 
     $this->actingAs($admin)
         ->delete(route('admin.businesses.destroy', $tenant))
