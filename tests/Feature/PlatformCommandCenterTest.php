@@ -2,6 +2,9 @@
 
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
+use App\Domain\Booking\Models\Booking;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Enums\MembershipStatus;
@@ -201,4 +204,41 @@ test('a disabled original platform admin cannot reclaim an impersonation session
 
     $this->post(route('platform.impersonation.stop'))
         ->assertForbidden();
+});
+
+test('workspace overview keeps paid booking revenue separated by currency', function (): void {
+    $admin = platformCoreAdmin();
+    $tenant = platformCoreTenant('Multi Currency Clinic');
+
+    Payment::query()->create([
+        'tenant_id' => $tenant->id,
+        'payable_type' => Booking::class,
+        'payable_id' => 1,
+        'reference' => 'PAY-MULTI-EGP-001',
+        'provider' => 'test',
+        'amount_minor' => 12500,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Paid,
+        'paid_at' => now(),
+    ]);
+
+    Payment::query()->create([
+        'tenant_id' => $tenant->id,
+        'payable_type' => Booking::class,
+        'payable_id' => 2,
+        'reference' => 'PAY-MULTI-USD-001',
+        'provider' => 'test',
+        'amount_minor' => 4200,
+        'currency' => 'USD',
+        'status' => PaymentStatus::Paid,
+        'paid_at' => now(),
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.businesses.show', $tenant))
+        ->assertOk()
+        ->assertSee('125.00')
+        ->assertSee('EGP')
+        ->assertSee('42.00')
+        ->assertSee('USD');
 });
