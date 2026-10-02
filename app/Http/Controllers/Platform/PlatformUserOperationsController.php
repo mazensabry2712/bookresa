@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Platform;
 
 use App\Domain\Platform\Models\PlatformAdmin;
-use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Models\User;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -11,9 +10,32 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\View\View;
 
 final class PlatformUserOperationsController
 {
+    public function show(User $user): View
+    {
+        $user->load([
+            'platformAdmin',
+            'tenantMemberships.tenant.profile',
+            'tenantMemberships.tenant.businessType',
+        ]);
+
+        return view('admin.users.show', [
+            'user' => $user,
+            'platformAdmin' => $user->platformAdmin,
+            'platformRoles' => config('platform.roles', []),
+            'platformPermissions' => config('platform.permissions', []),
+            'securityEvents' => \Spatie\Activitylog\Models\Activity::query()
+                ->where('log_name', 'security')
+                ->where('causer_id', $user->getKey())
+                ->latest('id')
+                ->limit(30)
+                ->get(),
+        ]);
+    }
+
     public function updateProfile(Request $request, User $user, AuditLogger $audit): RedirectResponse
     {
         $validated = $request->validate([
