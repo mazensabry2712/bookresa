@@ -164,3 +164,22 @@ The Activity Log console supports filtering by:
 - date range
 
 Audit entries include request context where available, including IP address, route and user-agent, while existing tenant context is attached automatically when a current workspace is active.
+
+
+## Super Admin 2.0 control plane
+
+The platform control plane now also provides:
+
+- Flexible platform administrator roles: Super Admin, Operations Admin, Finance Admin, Support Admin, Security Admin and Read Only.
+- Additive per-admin custom platform permissions.
+- Platform user security operations: profile update, password reset with session revocation, email verification, session revocation and 2FA reset.
+- Finance operations: payment detail inspection, provider verification and full provider refund.
+- Customer operations: platform-level contact updates and VIP state.
+- Workspace lifecycle safety: archive with soft delete and explicit restore.
+- Full support conversations between workspace members and BookResa support.
+- Platform broadcast center for all active workspace members or a selected workspace.
+- System Health center covering database, cache, storage, web OPcache visibility, queue counts, failed jobs, sessions, support backlog and local backup visibility.
+- Audit CSV export with bounded records and spreadsheet-formula injection protection.
+- Global Module Catalog control, with core-module protection and optional-module global activation control.
+
+Platform administrator access changes are restricted to a user with the super_admin role. Other platform administrator roles can manage the capabilities assigned to their operational scope without changing the platform administrator hierarchy.
