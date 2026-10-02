@@ -93,7 +93,7 @@ test('platform admin can view dashboard metrics', function (): void {
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
         ->assertOk()
-        ->assertSee('Admin Dashboard')
+        ->assertSee(__('platform.platform_command_center'))
         ->assertViewHas('metrics', function (array $metrics): bool {
             return $metrics['businesses'] === 2
                 && $metrics['activeBusinesses'] === 1
