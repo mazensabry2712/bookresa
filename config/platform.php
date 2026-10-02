@@ -192,6 +192,8 @@ return [
         'admin.customers.show' => 'customers.view',
         'admin.customers.vip-toggle' => 'customers.manage',
         'admin.users.index' => 'users.view',
+        'admin.users.show' => 'users.view',
+        'admin.users.disable-two-factor' => 'users.manage',
         'admin.users.membership-toggle' => 'users.manage',
         'admin.users.platform-admin-toggle' => 'security.manage',
         'admin.users.platform-admin-access' => 'security.manage',
