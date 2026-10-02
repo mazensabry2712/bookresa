@@ -51,7 +51,7 @@ final class PlatformUserOperationsController
             'email_verified_at' => $emailChanged ? null : $user->email_verified_at,
         ])->save();
 
-        if ($emailChanged && method_exists($user, 'sendEmailVerificationNotification')) {
+        if ($emailChanged) {
             $user->sendEmailVerificationNotification();
             $this->revokeSessionsFor($user);
         }
