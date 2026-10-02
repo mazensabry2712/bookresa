@@ -51,6 +51,11 @@ final class PlatformUserOperationsController
             'email_verified_at' => $emailChanged ? null : $user->email_verified_at,
         ])->save();
 
+        if ($emailChanged && method_exists($user, 'sendEmailVerificationNotification')) {
+            $user->sendEmailVerificationNotification();
+            $this->revokeSessionsFor($user);
+        }
+
         $audit->log('platform.user_profile_updated', $user, [
             'user_id' => (int) $user->getKey(),
             'email_changed' => $emailChanged,
@@ -90,8 +95,13 @@ final class PlatformUserOperationsController
         return back()->with('status', __('User email marked as verified.'));
     }
 
-    public function disableTwoFactor(User $user, AuditLogger $audit): RedirectResponse
+    public function disableTwoFactor(Request $request, User $user, AuditLogger $audit): RedirectResponse
     {
+        if ((int) $request->user()->getKey() === (int) $user->getKey()) {
+            throw ValidationException::withMessages([
+                'user' => __('You cannot disable your own two-factor authentication from platform operations.'),
+            ]);
+        }
         $user->forceFill([
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
@@ -121,6 +131,14 @@ final class PlatformUserOperationsController
         User $user,
         AuditLogger $audit,
     ): RedirectResponse {
+        abort_unless($request->user()?->platformAdmin?->role === 'super_admin', 403);
+
+        if ($user->email_verified_at === null) {
+            throw ValidationException::withMessages([
+                'user' => __('A verified email is required before granting platform administrator access.'),
+            ]);
+        }
+
         $admin = PlatformAdmin::query()->firstOrNew(['user_id' => $user->getKey()]);
         $validated = $request->validate([
             'role' => ['required', 'string', 'in:'.implode(',', array_keys(config('platform.roles', [])))],
