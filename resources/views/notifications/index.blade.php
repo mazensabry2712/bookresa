@@ -25,6 +25,8 @@
             'business_payment_paid' => __('app.notification_ui.payment'),
             'subscription_expiring' => __('app.notification_ui.subscription'),
             'usage_warning' => __('app.notification_ui.usage'),
+            'platform_broadcast' => __('Broadcast'),
+            'support_reply' => __('Support'),
         ];
 
         $typeClasses = [
@@ -40,6 +42,8 @@
             'business_payment_paid' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300',
             'subscription_expiring' => 'bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200',
             'usage_warning' => 'bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200',
+            'platform_broadcast' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
+            'support_reply' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
         ];
     @endphp
 
