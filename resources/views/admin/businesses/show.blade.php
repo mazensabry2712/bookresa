@@ -62,13 +62,31 @@
                 ['label' => __('app.services'), 'value' => $stats['services']],
                 ['label' => __('app.staff'), 'value' => $stats['staff']],
                 ['label' => __('app.active_members'), 'value' => $stats['activeMembers']],
-                ['label' => __('app.paid_revenue'), 'value' => number_format($stats['paidRevenueMinor'] / 100, 2).' '.($latestSubscription?->currency ?? 'EGP')],
             ] as $stat)
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                     <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $stat['label'] }}</p>
                     <p class="mt-2 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">{{ $stat['value'] }}</p>
                 </div>
             @endforeach
+        </section>
+
+        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="font-semibold">{{ __('platform.paid_revenue') }}</h3>
+                    <p class="mt-1 text-sm text-slate-500">{{ __('Revenue is displayed separately by currency.') }}</p>
+                </div>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3">
+                @forelse ($stats['paidRevenueByCurrency'] as $revenue)
+                    <div class="min-w-[10rem] rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $revenue->currency }}</p>
+                        <p class="mt-1 text-xl font-bold">{{ number_format($revenue->total_minor / 100, 2) }}</p>
+                    </div>
+                @empty
+                    <p class="text-sm text-slate-500">{{ __('No paid booking revenue yet.') }}</p>
+                @endforelse
+            </div>
         </section>
 
         <section class="grid gap-6 xl:grid-cols-3">
@@ -336,9 +354,15 @@
                             <p class="text-xs text-slate-500">{{ __('platform.customers') }}</p>
                             <p class="mt-1 text-xl font-bold">{{ number_format($stats['customers']) }}</p>
                         </div>
-                        <div class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60">
+                        <div class="rounded-xl bg-slate-50 p-3 dark:bg-slate-800/60 col-span-2">
                             <p class="text-xs text-slate-500">{{ __('platform.paid_revenue') }}</p>
-                            <p class="mt-1 text-xl font-bold">{{ number_format($stats['paidRevenueMinor'] / 100, 2) }} {{ $latestSubscription?->currency ?? 'EGP' }}</p>
+                            <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                                @forelse ($stats['paidRevenueByCurrency'] as $revenue)
+                                    <span class="text-xl font-bold">{{ number_format($revenue->total_minor / 100, 2) }} {{ $revenue->currency }}</span>
+                                @empty
+                                    <span class="text-sm text-slate-500">{{ __('No paid booking revenue yet.') }}</span>
+                                @endforelse
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -408,18 +432,6 @@
 
                                     <div class="flex flex-wrap items-center gap-2 xl:shrink-0">
                                         @php($membership->user?->loadMissing('platformAdmin'))
-                                        @if ($membership->user && ! $membership->user->platformAdmin?->is_active)
-                                            <form method="POST" action="{{ route('admin.businesses.impersonate', [$tenant, $membership->user]) }}">
-                                                @csrf
-                                                <button type="submit" class="rounded-lg border border-indigo-200 px-3 py-2 text-xs font-bold text-indigo-700 dark:border-indigo-900 dark:text-indigo-300">
-                                                    {{ __('platform.impersonate') }}
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-
-                                    @php($membership->user?->loadMissing('platformAdmin'))
-                                    <div class="flex flex-wrap items-center gap-2 xl:shrink-0">
                                         @if ($membership->user && ! $membership->user->platformAdmin?->is_active)
                                             <form method="POST" action="{{ route('admin.businesses.impersonate', [$tenant, $membership->user]) }}">
                                                 @csrf
