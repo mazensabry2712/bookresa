@@ -9,6 +9,7 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
@@ -20,7 +21,6 @@ use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Http\Requests\Platform\StorePlatformWorkspaceRequest;
 use App\Http\Requests\Platform\StoreWorkspaceMemberRequest;
 use App\Http\Requests\Platform\UpdatePlatformWorkspaceRequest;
@@ -501,7 +501,6 @@ final class PlatformBusinessController
 
         return back()->with('status', __('platform.member_removed'));
     }
-
 
     public function updatePaymentAccount(Request $request, Tenant $tenant): RedirectResponse
     {
