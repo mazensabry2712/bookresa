@@ -20,14 +20,25 @@ final class EnsurePlatformAdmin
         setPermissionsTeamId(null);
         $this->currentTenant->clear();
 
+        $user = $request->user();
+        $platformAdmin = $user?->relationLoaded('platformAdmin')
+            ? $user->platformAdmin
+            : $user?->load('platformAdmin')->platformAdmin;
+
         abort_unless(
-            $request->user() !== null
-                && PlatformAdmin::query()
-                    ->where('user_id', $request->user()->getKey())
-                    ->where('is_active', true)
-                    ->exists(),
+            $user !== null
+                && $platformAdmin instanceof PlatformAdmin
+                && $platformAdmin->is_active,
             Response::HTTP_FORBIDDEN,
             'Platform administrator access is required.',
+        );
+
+        $permission = $this->routePermission($request);
+
+        abort_unless(
+            $permission === null || $platformAdmin->hasPlatformPermission($permission),
+            Response::HTTP_FORBIDDEN,
+            'The current platform administrator role does not allow this operation.',
         );
 
         try {
@@ -36,5 +47,16 @@ final class EnsurePlatformAdmin
             $this->currentTenant->clear();
             setPermissionsTeamId(null);
         }
+    }
+
+    private function routePermission(Request $request): ?string
+    {
+        $routeName = $request->route()?->getName();
+
+        if (! is_string($routeName) || $routeName === '') {
+            return null;
+        }
+
+        return config('platform.route_permissions.'.$routeName);
     }
 }
