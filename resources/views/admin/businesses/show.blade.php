@@ -452,7 +452,9 @@
                                         </select>
                                         <select name="status" class="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs dark:border-slate-700 dark:bg-slate-950">
                                             <option value="active" @selected($membership->status->value === 'active')>{{ __('Active') }}</option>
-                                            <option value="suspended" @selected($membership->status->value === 'suspended')>{{ __('Suspended') }}</option>
+                                            @unless($membership->is_primary)
+                                                <option value="suspended" @selected($membership->status->value === 'suspended')>{{ __('Suspended') }}</option>
+                                            @endunless
                                         </select>
                                         <label class="flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-2 text-xs font-semibold dark:border-slate-700">
                                             <input type="checkbox" name="is_primary" value="1" @checked($membership->is_primary)>
