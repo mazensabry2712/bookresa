@@ -331,8 +331,11 @@ final class PlatformBusinessController
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => $data['password'],
-                'email_verified_at' => now(),
             ]);
+
+            $user->forceFill([
+                'email_verified_at' => now(),
+            ])->save();
         } else {
             if (blank($user->name)) {
                 $user->forceFill(['name' => $data['name']])->save();
