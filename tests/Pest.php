@@ -8,6 +8,9 @@ use Tests\TestCase;
 // in addition to PHPUnit's $_ENV values.
 foreach ([
     'APP_ENV' => 'testing',
+    // Production deployments cache config; use a test-only cache path so
+    // Laravel loads config from the test environment during the suite.
+    'APP_CONFIG_CACHE' => 'bootstrap/cache/config-testing.php',
     'DB_CONNECTION' => 'sqlite',
     'DB_DATABASE' => ':memory:',
     'DB_URL' => '',
