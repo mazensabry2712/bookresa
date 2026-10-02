@@ -157,34 +157,42 @@ final class PlatformBusinessController
     {
         $data = $request->validated();
 
-        $tenant->forceFill([
-            'slug' => $data['slug'],
-            'business_type_id' => $data['business_type_id'],
-            'status' => TenantStatus::from($data['status']),
-        ])->save();
-
         app(CurrentTenant::class)->run($tenant, function () use ($data, $tenant): void {
+            $tenant->forceFill([
+                'slug' => $data['slug'],
+                'business_type_id' => $data['business_type_id'],
+                'status' => TenantStatus::from($data['status']),
+            ])->save();
+
             $profile = BusinessProfile::withoutGlobalScopes()
                 ->where('tenant_id', $tenant->getKey())
-                ->firstOrCreate(
-                    ['tenant_id' => $tenant->getKey()],
-                    [
-                        'name' => ['en' => $data['business_name_en'], 'ar' => $data['business_name_ar'] ?? $data['business_name_en']],
-                        'timezone' => $data['timezone'],
-                        'locale' => $data['locale'],
-                    ],
-                );
+                ->first();
 
-            $profile->forceFill([
-                'name' => [
-                    'en' => $data['business_name_en'],
-                    'ar' => $data['business_name_ar'] ?? $data['business_name_en'],
-                ],
-                'phone' => $data['phone'] ?? null,
-                'email' => $data['email'] ?? null,
-                'timezone' => $data['timezone'],
-                'locale' => $data['locale'],
-            ])->save();
+            if ($profile === null) {
+                $profile = new BusinessProfile;
+                $profile->forceFill([
+                    'tenant_id' => $tenant->getKey(),
+                    'name' => [
+                        'en' => $data['business_name_en'],
+                        'ar' => $data['business_name_ar'] ?? $data['business_name_en'],
+                    ],
+                    'timezone' => $data['timezone'],
+                    'locale' => $data['locale'],
+                ]);
+            } else {
+                $profile->forceFill([
+                    'name' => [
+                        'en' => $data['business_name_en'],
+                        'ar' => $data['business_name_ar'] ?? $data['business_name_en'],
+                    ],
+                    'phone' => $data['phone'] ?? null,
+                    'email' => $data['email'] ?? null,
+                    'timezone' => $data['timezone'],
+                    'locale' => $data['locale'],
+                ]);
+            }
+
+            $profile->save();
         });
 
         app(AuditLogger::class)->log(
