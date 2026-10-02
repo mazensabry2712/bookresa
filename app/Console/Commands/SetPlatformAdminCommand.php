@@ -28,8 +28,19 @@ final class SetPlatformAdminCommand extends Command
 
         $admin = PlatformAdmin::query()->firstOrNew(['user_id' => $user->getKey()]);
         $admin->is_active = ! $this->option('revoke');
-        $admin->role = (string) $this->option('role');
-        $admin->permissions = $admin->permissions ?? [];
+
+        if (! $this->option('revoke')) {
+            $role = (string) $this->option('role');
+
+            if (! array_key_exists($role, config('platform.roles', []))) {
+                $this->error('Unsupported platform admin role.');
+
+                return self::FAILURE;
+            }
+
+            $admin->role = $role;
+            $admin->permissions = $admin->permissions ?? [];
+        }
         $admin->save();
 
         app(AuditLogger::class)->log(
