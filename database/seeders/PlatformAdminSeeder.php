@@ -33,7 +33,7 @@ class PlatformAdminSeeder extends Seeder
 
         PlatformAdmin::query()->updateOrCreate(
             ['user_id' => $user->getKey()],
-            ['is_active' => true],
+            ['is_active' => true, 'role' => 'super_admin', 'permissions' => []],
         );
 
         $this->command?->info("Super Admin ready: {$email}");
