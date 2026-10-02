@@ -79,12 +79,13 @@ final class SupportTicketController
         ]);
 
         $status = SupportTicketStatus::from($validated['status']);
+        $priority = SupportTicketPriority::from($validated['priority']);
         $tenant = $ticket->tenant()->withoutGlobalScopes()->firstOrFail();
 
         app(CurrentTenant::class)->run($tenant, function () use ($ticket, $status, $validated, $auditLogger): void {
             $ticket->update([
                 'status' => $status,
-                'priority' => SupportTicketPriority::from($validated['priority']),
+                'priority' => $priority,
                 'admin_notes' => $validated['admin_notes'] ?? null,
                 'resolved_at' => in_array($status, [
                     SupportTicketStatus::Resolved,
@@ -94,7 +95,7 @@ final class SupportTicketController
 
             $auditLogger->log('Platform support ticket updated', $ticket, [
                 'status' => $status->value,
-                'priority' => $ticket->priority->value,
+                'priority' => $priority->value,
             ]);
         });
 
