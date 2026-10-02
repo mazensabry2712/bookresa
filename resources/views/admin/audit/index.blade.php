@@ -7,7 +7,7 @@
     <div class="space-y-6">
         <section>
             <p class="text-sm text-slate-500">{{ __('platform.activity_log_help') }}</p>
-            <h2 class="mt-1 text-2xl font-bold tracking-tight">{{ __('platform.activity_log') }}</h2>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 class="mt-1 text-2xl font-bold tracking-tight">{{ __('platform.activity_log') }}</h2></div><a href="{{ route('admin.audit.export', request()->query()) }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('Export CSV') }}</a></div>
         </section>
 
         <form method="GET" class="grid gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800 sm:grid-cols-2 xl:grid-cols-5">
