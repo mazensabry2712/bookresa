@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Enums\PaymentStatus;
@@ -201,6 +202,57 @@ test('public deposit booking charges the configured deposit amount', function ()
 
     expect($payment->amount_minor)->toBe(5000)
         ->and($payment->status)->toBe(PaymentStatus::Processing);
+});
+
+test('failed checkout initialization cancels the pending public booking', function (): void {
+    $tenant = paidBookingTenant('paid-gateway-failure');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+    ]);
+
+    config([
+        'bookresa.payments.kashier' => [
+            'mode' => 'test',
+            'base_url' => 'https://test-api.kashier.io',
+            'merchant_id' => 'MID-123',
+            'api_key' => 'api-key',
+            'secret_key' => 'secret-key',
+            'merchant_redirect' => null,
+            'server_webhook' => 'https://example.test/webhooks/kashier',
+            'max_failure_attempts' => 3,
+            'allowed_methods' => 'card,wallet',
+            'display' => 'en',
+            'expire_minutes' => 30,
+            'enable_3ds' => true,
+        ],
+    ]);
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions' => Http::response([
+            'message' => 'temporarily unavailable',
+        ], 503),
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ])->assertSessionHasErrors('booking');
+
+    $booking = Booking::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    expect($booking->status)->toBe(BookingStatus::Cancelled);
 });
 
 test('online paid booking requires customer email', function (): void {
