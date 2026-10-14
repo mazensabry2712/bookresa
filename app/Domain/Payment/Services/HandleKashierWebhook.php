@@ -43,9 +43,15 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
-        $signatureKeys = is_array($data['signatureKeys'] ?? null)
-            ? array_map(static fn ($key): string => (string) $key, $data['signatureKeys'])
-            : [];
+        $signatureKeys = $data['signatureKeys'] ?? null;
+
+        if (
+            ! is_array($signatureKeys)
+            || ! array_is_list($signatureKeys)
+            || array_filter($signatureKeys, static fn ($key): bool => ! is_string($key)) !== []
+        ) {
+            throw new RuntimeException('Kashier webhook signature keys are invalid.');
+        }
 
         if (array_diff(['amount', 'currency', 'orderReference', 'status', 'transactionId'], $signatureKeys) !== []) {
             throw new RuntimeException('Kashier webhook signature is missing required payment fields.');
