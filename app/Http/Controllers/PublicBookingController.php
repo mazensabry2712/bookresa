@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Booking\Actions\CreateBooking;
+use App\Domain\Booking\Actions\UpdateBookingStatus;
+use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
 use App\Domain\Payment\Models\TenantPaymentAccount;
@@ -93,11 +95,12 @@ class PublicBookingController
         CurrentTenant $currentTenant,
         CreateBooking $createBooking,
         StartBookingPayment $startBookingPayment,
+        UpdateBookingStatus $updateBookingStatus,
     ): RedirectResponse {
         $this->ensurePublicTenant($tenant);
 
         try {
-            return $currentTenant->run($tenant, function () use ($request, $createBooking, $startBookingPayment, $tenant): RedirectResponse {
+            return $currentTenant->run($tenant, function () use ($request, $createBooking, $startBookingPayment, $updateBookingStatus, $tenant): RedirectResponse {
                 $service = Service::query()->findOrFail($request->integer('service_id'));
                 $staff = $request->filled('staff_id')
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
@@ -140,10 +143,22 @@ class PublicBookingController
                 );
 
                 if ($paymentRequired) {
-                    $payment = $startBookingPayment->handle($booking);
+                    try {
+                        $payment = $startBookingPayment->handle($booking);
 
-                    if ($payment->checkout_url === null) {
-                        throw new RuntimeException('Payment checkout could not be started.');
+                        if (blank($payment->checkout_url)) {
+                            throw new RuntimeException('Payment checkout could not be started.');
+                        }
+                    } catch (\Throwable $exception) {
+                        report($exception);
+
+                        $updateBookingStatus->handle(
+                            $booking,
+                            BookingStatus::Cancelled,
+                            'Online payment initialization failed.',
+                        );
+
+                        throw new RuntimeException('Online payment could not be started. Please try booking again.');
                     }
 
                     return redirect()->away($payment->checkout_url);
