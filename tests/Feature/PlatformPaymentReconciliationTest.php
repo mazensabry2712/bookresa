@@ -92,7 +92,7 @@ test('platform payment verification and refund synchronize booking payment statu
         'role' => 'super_admin',
     ]);
 
-    $this->app->instance(PaymentGateway::class, new FakePaymentGateway());
+    $this->app->instance(PaymentGateway::class, new FakePaymentGateway);
 
     $this->actingAs($admin)
         ->post(route('admin.payments.verify', ['paymentId' => $payment->id]))
