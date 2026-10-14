@@ -195,6 +195,41 @@ test('due subscriptions are expired atomically', function (): void {
         ->and($subscription->fresh()->status)->toBe(SubscriptionStatus::Expired);
 });
 
+test('expiry command processes due subscriptions across tenants without a selected tenant', function (): void {
+    $at = CarbonImmutable::parse('2026-11-01 00:00:00', 'UTC');
+    $plan = lifecyclePlan();
+
+    $tenantA = lifecycleTenant('expire-global-a');
+    $dueA = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+    $dueA->forceFill(['end_at' => $at->subSecond()])->save();
+
+    $tenantB = lifecycleTenant('expire-global-b');
+    $dueB = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+    $dueB->forceFill(['end_at' => $at->subSecond()])->save();
+
+    $tenantC = lifecycleTenant('expire-global-future');
+    $future = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-15 00:00:00', 'UTC'),
+    );
+    $future->forceFill(['end_at' => $at->addDay()])->save();
+
+    app(CurrentTenant::class)->clear();
+
+    $count = app(ExpireDueSubscriptions::class)->handle($at);
+
+    expect($count)->toBe(2)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($dueA->id)->status)->toBe(SubscriptionStatus::Expired)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($dueB->id)->status)->toBe(SubscriptionStatus::Expired)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($future->id)->status)->toBe(SubscriptionStatus::Active);
+});
+
 test('renewal applies the scheduled next plan and resets payment to pending', function (): void {
     lifecycleTenant('renew-subscription');
     $current = lifecyclePlan([
