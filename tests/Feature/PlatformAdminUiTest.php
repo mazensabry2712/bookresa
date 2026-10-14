@@ -120,7 +120,6 @@ test('platform admin shell renders Arabic navigation labels', function (): void 
         ->assertSee('<html lang="ar" dir="rtl">', false);
 });
 
-
 test('platform admin shell exposes the mobile responsive system', function (): void {
     $admin = platformUiAdmin();
 
