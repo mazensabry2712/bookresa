@@ -25,7 +25,7 @@ class KashierWebhookController
         }
 
         return $processed
-            ? response()->noContent()
+            ? response()->noContent(200)
             : response()->noContent(409);
     }
 }
