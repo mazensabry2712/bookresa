@@ -128,7 +128,7 @@ test('platform admin shell exposes the mobile responsive system', function (): v
         ->get(route('admin.dashboard'))
         ->assertOk()
         ->assertSee('br-admin-shell', false)
-        ->assertSee('br-data-table', false)
-        ->assertSee('br-admin-actions', false)
+        ->assertSee('data-bookresa-sidebar-backdrop', false)
+        ->assertSee('data-bookresa-sidebar-close', false)
         ->assertSee('data-bookresa-sidebar-toggle', false);
 });
