@@ -18,8 +18,7 @@ final class CreateSubscription
         private readonly CurrentTenant $currentTenant,
         private readonly BillingCycle $billingCycle,
         private readonly PlanPricingSnapshot $pricingSnapshots,
-    ) {
-    }
+    ) {}
 
     public function handle(Plan $plan, ?CarbonImmutable $startAt = null): Subscription
     {
@@ -63,7 +62,9 @@ final class CreateSubscription
                 'start_at' => $startAt,
                 'end_at' => $endAt,
                 'status' => $status,
-                'payment_status' => PaymentStatus::Pending,
+                'payment_status' => $trialDays === 0 && (int) $plan->price_minor === 0
+                    ? PaymentStatus::Paid
+                    : PaymentStatus::Pending,
                 'price_minor' => (int) $plan->price_minor,
                 'currency' => $plan->currency,
                 'billing_period' => $plan->billing_period,

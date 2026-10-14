@@ -96,8 +96,7 @@ function webhookPayload(string $reference, string $transactionId = 'TX-WEBHOOK-0
         'event' => 'pay',
         'data' => [
             'merchantOrderId' => 'MERCHANT-001',
-            'kashierOrderId' => 'KASHIER-001',
-            'merchantId' => 'MID-WEBHOOK',
+            'kashierOrderId' => 'session-webhook-001',
             'orderReference' => $reference,
             'transactionId' => $transactionId,
             'status' => $status,
@@ -112,7 +111,6 @@ function webhookPayload(string $reference, string $transactionId = 'TX-WEBHOOK-0
                 'channel',
                 'currency',
                 'kashierOrderId',
-                'merchantId',
                 'merchantOrderId',
                 'method',
                 'orderReference',
@@ -136,7 +134,7 @@ test('signed Kashier success webhook marks payment and booking as paid', functio
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -156,13 +154,37 @@ test('duplicate Kashier webhook is acknowledged without double processing', func
 
     $headers = ['x-kashier-signature' => $signature];
 
-    $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertNoContent();
+    $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertOk();
     $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertStatus(409);
 
     app(CurrentTenant::class)->set($tenant);
 
     expect(PaymentWebhookEvent::query()->count())->toBe(1)
         ->and($payment->fresh()->status)->toBe(PaymentStatus::Paid);
+});
+
+test('Kashier webhook requires signed order reference, amount, and currency fields', function (): void {
+    $tenant = webhookTenant('webhook-unsigned-fields');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+
+    $payload = webhookPayload($payment->reference);
+    $payload['data']['signatureKeys'] = array_values(array_filter(
+        $payload['data']['signatureKeys'],
+        static fn (string $key): bool => $key !== 'orderReference',
+    ));
+
+    $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertStatus(422);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Processing)
+        ->and(PaymentWebhookEvent::query()->count())->toBe(0);
 });
 
 test('invalid Kashier webhook signature is rejected', function (): void {
@@ -215,7 +237,7 @@ test('failed Kashier refund does not regress a paid payment', function (): void 
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
         ->and($payment->fresh()->metadata)->toMatchArray([

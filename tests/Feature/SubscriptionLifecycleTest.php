@@ -6,6 +6,7 @@ use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CancelSubscription;
 use App\Domain\Billing\Services\ClearPlanChange;
+use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Billing\Services\ExpireDueSubscriptions;
 use App\Domain\Billing\Services\ReactivateSubscription;
 use App\Domain\Billing\Services\RenewSubscription;
@@ -59,7 +60,7 @@ function lifecyclePlan(array $overrides = []): Plan
 
 test('active subscription is not usable until its payment is paid', function (): void {
     lifecycleTenant('usable-pending');
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -75,7 +76,7 @@ test('active subscription is not usable until its payment is paid', function ():
 test('trial subscription is usable while trial is active', function (): void {
     lifecycleTenant('usable-trial');
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(['trial_days' => 14]),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -88,7 +89,7 @@ test('trial subscription is usable while trial is active', function (): void {
 test('subscription is not usable after its end time before expiry command runs', function (): void {
     lifecycleTenant('usable-end-time');
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(),
         CarbonImmutable::now('UTC')->subHour(),
     );
@@ -103,7 +104,7 @@ test('subscription is not usable after its end time before expiry command runs',
 
 test('cancellation is scheduled for the current billing boundary', function (): void {
     lifecycleTenant('cancel-subscription');
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(['trial_days' => 0]),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -118,7 +119,7 @@ test('cancellation is scheduled for the current billing boundary', function (): 
 test('suspended subscription cancellation fails with a domain exception', function (): void {
     lifecycleTenant('cancel-suspended');
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -131,7 +132,7 @@ test('suspended subscription cancellation fails with a domain exception', functi
 
 test('scheduled cancellation can be reactivated before the boundary', function (): void {
     lifecycleTenant('reactivate-subscription');
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -152,7 +153,7 @@ test('plan change is scheduled at the end of the current period', function (): v
         'included_customer_limit' => 50,
     ]);
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         $current,
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -168,7 +169,7 @@ test('scheduled plan change can be cleared', function (): void {
     $current = lifecyclePlan();
     $next = lifecyclePlan(['price_minor' => 39900]);
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         $current,
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -182,7 +183,7 @@ test('scheduled plan change can be cleared', function (): void {
 
 test('due subscriptions are expired atomically', function (): void {
     lifecycleTenant('expire-subscription');
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -193,6 +194,41 @@ test('due subscriptions are expired atomically', function (): void {
 
     expect($count)->toBe(1)
         ->and($subscription->fresh()->status)->toBe(SubscriptionStatus::Expired);
+});
+
+test('expiry command processes due subscriptions across tenants without a selected tenant', function (): void {
+    $at = CarbonImmutable::parse('2026-11-01 00:00:00', 'UTC');
+    $plan = lifecyclePlan();
+
+    $tenantA = lifecycleTenant('expire-global-a');
+    $dueA = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+    $dueA->forceFill(['end_at' => $at->subSecond()])->save();
+
+    $tenantB = lifecycleTenant('expire-global-b');
+    $dueB = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+    $dueB->forceFill(['end_at' => $at->subSecond()])->save();
+
+    $tenantC = lifecycleTenant('expire-global-future');
+    $future = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-15 00:00:00', 'UTC'),
+    );
+    $future->forceFill(['end_at' => $at->addDay()])->save();
+
+    app(CurrentTenant::class)->clear();
+
+    $count = app(ExpireDueSubscriptions::class)->handle($at);
+
+    expect($count)->toBe(2)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($dueA->id)->status)->toBe(SubscriptionStatus::Expired)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($dueB->id)->status)->toBe(SubscriptionStatus::Expired)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($future->id)->status)->toBe(SubscriptionStatus::Active);
 });
 
 test('renewal applies the scheduled next plan and resets payment to pending', function (): void {
@@ -207,7 +243,7 @@ test('renewal applies the scheduled next plan and resets payment to pending', fu
         'included_customer_limit' => 50,
     ]);
 
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         $current,
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -230,7 +266,7 @@ test('renewal applies the scheduled next plan and resets payment to pending', fu
 
 test('renewal is blocked while subscription is still active', function (): void {
     lifecycleTenant('renew-blocked');
-    $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
+    $subscription = app(CreateSubscription::class)->handle(
         lifecyclePlan(),
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
@@ -240,7 +276,6 @@ test('renewal is blocked while subscription is still active', function (): void 
         CarbonImmutable::parse('2026-10-15 00:00:00', 'UTC'),
     ))->toThrow(RuntimeException::class);
 });
-
 
 test('subscription expiry artisan command is available', function (): void {
     $this->artisan('subscriptions:expire')->assertExitCode(0);

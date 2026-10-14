@@ -7,8 +7,8 @@ use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Support\AuditLogger;
 use App\Notifications\SupportReplyNotification;
+use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -82,7 +82,7 @@ final class SupportTicketController
         $priority = SupportTicketPriority::from($validated['priority']);
         $tenant = $ticket->tenant()->withoutGlobalScopes()->firstOrFail();
 
-        app(CurrentTenant::class)->run($tenant, function () use ($ticket, $status, $validated, $auditLogger): void {
+        app(CurrentTenant::class)->run($tenant, function () use ($ticket, $status, $priority, $validated, $auditLogger): void {
             $ticket->update([
                 'status' => $status,
                 'priority' => $priority,

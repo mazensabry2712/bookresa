@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Platform;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Payment\Services\PaymentService;
+use App\Domain\Payment\Services\SyncBookingPaymentStatus;
+use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +30,9 @@ final class PlatformPaymentController
         int $paymentId,
         PaymentGateway $gateway,
         CurrentTenant $currentTenant,
+        PaymentService $payments,
+        SyncBookingPaymentStatus $bookingPaymentSync,
+        SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
         AuditLogger $audit,
     ): RedirectResponse {
         $payment = Payment::withoutGlobalScopes()->findOrFail($paymentId);
@@ -43,8 +49,16 @@ final class PlatformPaymentController
             return back()->withErrors(['payment' => $e->getMessage()]);
         }
 
-        $currentTenant->run($tenant, function () use ($payment, $result): void {
-            app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
+        $currentTenant->run($tenant, function () use (
+            $payment,
+            $result,
+            $payments,
+            $bookingPaymentSync,
+            $subscriptionPaymentSync,
+        ): void {
+            $updated = $payments->applyResult($payment, $result);
+            $bookingPaymentSync->handle($updated, $updated->status);
+            $subscriptionPaymentSync->handle($updated, $updated->status);
         });
 
         $audit->log('platform.payment_verified', $payment, [
@@ -60,6 +74,9 @@ final class PlatformPaymentController
         int $paymentId,
         PaymentGateway $gateway,
         CurrentTenant $currentTenant,
+        PaymentService $payments,
+        SyncBookingPaymentStatus $bookingPaymentSync,
+        SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
         AuditLogger $audit,
     ): RedirectResponse {
         $payment = Payment::withoutGlobalScopes()->findOrFail($paymentId);
@@ -84,8 +101,16 @@ final class PlatformPaymentController
             return back()->withErrors(['payment' => $e->getMessage()]);
         }
 
-        $currentTenant->run($tenant, function () use ($payment, $result): void {
-            app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
+        $currentTenant->run($tenant, function () use (
+            $payment,
+            $result,
+            $payments,
+            $bookingPaymentSync,
+            $subscriptionPaymentSync,
+        ): void {
+            $updated = $payments->applyResult($payment, $result);
+            $bookingPaymentSync->handle($updated, $updated->status);
+            $subscriptionPaymentSync->handle($updated, $updated->status);
         });
 
         $audit->log('platform.payment_refunded', $payment, [

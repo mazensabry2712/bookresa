@@ -5,8 +5,6 @@ namespace App\Domain\Payment\Services;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
-use App\Domain\Payment\Models\PaymentWebhookEvent;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
 use Carbon\CarbonImmutable;
@@ -25,13 +23,13 @@ final class HandleKashierWebhook
     ) {}
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     public function handle(array $payload, string $signature): bool
     {
         $data = $payload['data'] ?? null;
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             throw new RuntimeException('Invalid Kashier webhook payload.');
         }
 
@@ -40,13 +38,27 @@ final class HandleKashierWebhook
         $orderReference = (string) ($data['orderReference'] ?? '');
         $status = strtoupper((string) ($data['status'] ?? ''));
 
-        if ($event === '' || $transactionId === '' || $orderReference === '' || !in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
+        if ($event === '' || $transactionId === '' || $orderReference === '' || ! in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
+        }
+
+        $signatureKeys = $data['signatureKeys'] ?? null;
+
+        if (
+            ! is_array($signatureKeys)
+            || ! array_is_list($signatureKeys)
+            || array_filter($signatureKeys, static fn ($key): bool => ! is_string($key)) !== []
+        ) {
+            throw new RuntimeException('Kashier webhook signature keys are invalid.');
+        }
+
+        if (array_diff(['amount', 'currency', 'orderReference', 'status', 'transactionId'], $signatureKeys) !== []) {
+            throw new RuntimeException('Kashier webhook signature is missing required payment fields.');
         }
 
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
 
-        if (!$this->verifier->verify($data, $signature, $apiKey)) {
+        if (! $this->verifier->verify($data, $signature, $apiKey)) {
             throw new LogicException('Invalid Kashier webhook signature.');
         }
 
@@ -65,15 +77,6 @@ final class HandleKashierWebhook
 
         if (strtoupper((string) ($data['currency'] ?? '')) !== strtoupper((string) $payment->currency)) {
             throw new RuntimeException('Kashier webhook currency does not match the payment.');
-        }
-
-        $merchantId = trim((string) ($data['merchantId'] ?? ''));
-        $expectedMerchantId = $payment->payable_type === Subscription::class
-            ? (string) config('bookresa.payments.kashier.merchant_id')
-            : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
-
-        if ($merchantId === '' || $expectedMerchantId === '' || $merchantId !== $expectedMerchantId) {
-            throw new RuntimeException('Kashier webhook merchant account does not match the payment.');
         }
 
         $tenant = $payment->tenant;
@@ -116,7 +119,7 @@ final class HandleKashierWebhook
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function mapResult(
         Payment $payment,
@@ -159,7 +162,7 @@ final class HandleKashierWebhook
     {
         $value = trim((string) $amount);
 
-        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
+        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
             throw new RuntimeException('Kashier webhook amount is invalid.');
         }
 
@@ -170,7 +173,7 @@ final class HandleKashierWebhook
 
     private function parseDate(mixed $value): ?CarbonImmutable
     {
-        if (!is_string($value) || trim($value) === '') {
+        if (! is_string($value) || trim($value) === '') {
             return null;
         }
 

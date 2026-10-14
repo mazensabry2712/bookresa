@@ -372,7 +372,7 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
@@ -427,6 +427,56 @@ test('stale subscription payment does not unlock the current billing cycle', fun
         ->handle($payment->fresh(), PaymentStatus::Paid);
 
     expect($subscription->fresh()->payment_status)->toBe(PaymentStatus::Pending);
+});
+
+test('authorized owner is redirected to checkout after paid subscription renewal', function (): void {
+    $tenant = subscriptionPaymentTenant('subscription-renewal-checkout');
+    $user = subscriptionPaymentUser($tenant, 'renewal-checkout@example.com');
+    $subscription = app(CreateSubscription::class)->handle(
+        subscriptionPaymentPlan(),
+        CarbonImmutable::parse('2026-09-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill([
+        'status' => SubscriptionStatus::Expired,
+        'end_at' => CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+        'payment_status' => PaymentStatus::Paid,
+    ])->save();
+
+    $gateway = new FakeSubscriptionGateway;
+    $this->app->instance(PaymentGateway::class, $gateway);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('billing.subscription.renew', [
+            'tenant' => $tenant->slug,
+            'subscription' => $subscription->id,
+        ]))
+        ->assertRedirect('https://payments.example.test/session/001');
+
+    $renewed = Subscription::withoutGlobalScopes()->findOrFail($subscription->id);
+    $payment = Payment::withoutGlobalScopes()
+        ->where('payable_type', $subscription->getMorphClass())
+        ->where('payable_id', $subscription->id)
+        ->firstOrFail();
+
+    expect($renewed->status)->toBe(SubscriptionStatus::Active)
+        ->and($renewed->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($payment->status)->toBe(PaymentStatus::Processing)
+        ->and($gateway->createCalls)->toBe(1);
+});
+
+test('a non-trial free plan is immediately usable without a payment gateway', function (): void {
+    subscriptionPaymentTenant('subscription-free-plan');
+
+    $subscription = app(CreateSubscription::class)->handle(
+        subscriptionPaymentPlan(['price_minor' => 0]),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    expect($subscription->status)->toBe(SubscriptionStatus::Active)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->isUsable())->toBeTrue();
 });
 
 test('renewed subscription does not reuse a paid payment from the previous cycle', function (): void {

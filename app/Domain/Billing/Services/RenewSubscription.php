@@ -3,7 +3,6 @@
 namespace App\Domain\Billing\Services;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
-use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -18,8 +17,7 @@ final class RenewSubscription
         private readonly CurrentTenant $currentTenant,
         private readonly BillingCycle $billingCycle,
         private readonly PlanPricingSnapshot $pricingSnapshots,
-    ) {
-    }
+    ) {}
 
     public function handle(Subscription $subscription, ?CarbonImmutable $startAt = null): Subscription
     {
@@ -56,7 +54,9 @@ final class RenewSubscription
                 'start_at' => $startAt,
                 'end_at' => $endAt,
                 'status' => SubscriptionStatus::Active,
-                'payment_status' => PaymentStatus::Pending,
+                'payment_status' => (int) $plan->price_minor > 0
+                    ? PaymentStatus::Pending
+                    : PaymentStatus::Paid,
                 'price_minor' => (int) $plan->price_minor,
                 'currency' => $plan->currency,
                 'billing_period' => $plan->billing_period,

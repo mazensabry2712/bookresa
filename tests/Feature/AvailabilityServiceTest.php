@@ -16,7 +16,6 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
-use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
@@ -29,6 +28,8 @@ use Illuminate\Support\Facades\DB;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-10-01 08:00:00', 'Africa/Cairo'));
+
     $this->seed([
         ModuleSeeder::class,
         BusinessTypeSeeder::class,
@@ -36,6 +37,7 @@ beforeEach(function (): void {
 });
 
 afterEach(function (): void {
+    CarbonImmutable::setTestNow();
     app(CurrentTenant::class)->clear();
     setPermissionsTeamId(null);
 });
@@ -236,7 +238,6 @@ test('scheduling actions reject invalid time and date ranges', function (): void
         'ends_at' => '15:00',
     ]))->toThrow(InvalidArgumentException::class);
 });
-
 
 test('assigned staff availability uses batched scheduling queries', function (): void {
     $tenant = availabilityTenant('Availability Query Budget');
