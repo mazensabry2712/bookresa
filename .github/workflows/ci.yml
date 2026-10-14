@@ -61,7 +61,8 @@ jobs:
             exit 0
           fi
 
-          vendor/bin/pint --test --format agent "${php_files[@]}"
+          vendor/bin/pint --format agent "${php_files[@]}"
+          git diff -- "${php_files[@]}"
 
       - name: Setup Node
         uses: actions/setup-node@v7
