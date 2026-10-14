@@ -959,6 +959,8 @@ return [
         'trial_active' => 'Your trial subscription is active.',
         'payment_already_completed' => 'Subscription payment is already completed.',
         'renewed' => 'Subscription renewed successfully. Continue to payment to activate the new period.',
+        'free_plan_active' => 'Your subscription is active. No payment is required for this plan.',
+        'free_plan_renewed' => 'Subscription renewed successfully. This plan does not require payment.',
         'plan_change_scheduled' => 'Plan change scheduled for the next billing boundary.',
         'cancellation_scheduled_flash' => 'Subscription cancellation scheduled for the billing boundary.',
         'reactivated' => 'Subscription cancellation was reactivated.',
