@@ -43,6 +43,14 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
+        $signatureKeys = is_array($data['signatureKeys'] ?? null)
+            ? array_map(static fn ($key): string => (string) $key, $data['signatureKeys'])
+            : [];
+
+        if (array_diff(['amount', 'currency', 'orderReference', 'status', 'transactionId'], $signatureKeys) !== []) {
+            throw new RuntimeException('Kashier webhook signature is missing required payment fields.');
+        }
+
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
 
         if (!$this->verifier->verify($data, $signature, $apiKey)) {
@@ -66,17 +74,6 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook currency does not match the payment.');
         }
 
-        // Kashier's documented payment webhook payload does not include a signed merchantId.
-        // Bind the signed event to the exact session created for this payment instead.
-        $sessionId = trim((string) ($data['kashierOrderId'] ?? ''));
-
-        if (
-            $sessionId === ''
-            || blank($payment->provider_reference)
-            || ! hash_equals((string) $payment->provider_reference, $sessionId)
-        ) {
-            throw new RuntimeException('Kashier webhook session does not match the payment.');
-        }
 
         $tenant = $payment->tenant;
 
