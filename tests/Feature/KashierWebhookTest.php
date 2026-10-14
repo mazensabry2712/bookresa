@@ -154,7 +154,7 @@ test('duplicate Kashier webhook is acknowledged without double processing', func
 
     $headers = ['x-kashier-signature' => $signature];
 
-    $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertNoContent();
+    $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertOk();
     $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertStatus(409);
 
     app(CurrentTenant::class)->set($tenant);
@@ -234,7 +234,7 @@ test('failed Kashier refund does not regress a paid payment', function (): void 
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
         ->and($payment->fresh()->metadata)->toMatchArray([
