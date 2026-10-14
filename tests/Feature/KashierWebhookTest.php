@@ -163,13 +163,16 @@ test('duplicate Kashier webhook is acknowledged without double processing', func
         ->and($payment->fresh()->status)->toBe(PaymentStatus::Paid);
 });
 
-test('signed Kashier webhook must match the stored payment session', function (): void {
-    $tenant = webhookTenant('webhook-session-mismatch');
+test('Kashier webhook requires signed order reference, amount, and currency fields', function (): void {
+    $tenant = webhookTenant('webhook-unsigned-fields');
     $booking = webhookBooking($tenant);
     $payment = webhookPayment($tenant, $booking);
 
     $payload = webhookPayload($payment->reference);
-    $payload['data']['kashierOrderId'] = 'another-session';
+    $payload['data']['signatureKeys'] = array_values(array_filter(
+        $payload['data']['signatureKeys'],
+        static fn (string $key): bool => $key !== 'orderReference',
+    ));
 
     $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
     config(['bookresa.payments.kashier.api_key' => 'api-key']);
