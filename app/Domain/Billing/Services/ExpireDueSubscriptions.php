@@ -13,8 +13,7 @@ final class ExpireDueSubscriptions
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    ) {}
 
     public function handle(?CarbonImmutable $at = null): int
     {
