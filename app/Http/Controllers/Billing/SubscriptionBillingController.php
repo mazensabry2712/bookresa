@@ -75,6 +75,11 @@ final class SubscriptionBillingController
                     ->with('status', __('app.billing_ui.trial_active'));
             }
 
+            if ((int) $subscription->price_minor <= 0) {
+                return to_route('billing.subscription', ['tenant' => $tenant->slug])
+                    ->with('status', __('app.billing_ui.free_plan_active'));
+            }
+
             $payment = $startPayment->handle($subscription);
 
             if (blank($payment->checkout_url)) {
@@ -114,11 +119,23 @@ final class SubscriptionBillingController
         Tenant $tenant,
         Subscription $subscription,
         RenewSubscription $renewSubscription,
+        StartSubscriptionPayment $startPayment,
     ): RedirectResponse {
         try {
-            $renewSubscription->handle($subscription);
+            $renewed = $renewSubscription->handle($subscription);
 
-            return to_route('billing.subscription', ['tenant' => $tenant->slug])->with('status', __('app.billing_ui.renewed'));
+            if ((int) $renewed->price_minor <= 0) {
+                return to_route('billing.subscription', ['tenant' => $tenant->slug])
+                    ->with('status', __('app.billing_ui.free_plan_renewed'));
+            }
+
+            $payment = $startPayment->handle($renewed);
+
+            if (blank($payment->checkout_url)) {
+                throw new RuntimeException('Payment checkout could not be started.');
+            }
+
+            return redirect()->away($payment->checkout_url);
         } catch (RuntimeException $exception) {
             return back()->withErrors(['billing' => $exception->getMessage()]);
         }
