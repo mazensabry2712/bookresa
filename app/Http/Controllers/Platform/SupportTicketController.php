@@ -82,7 +82,7 @@ final class SupportTicketController
         $priority = SupportTicketPriority::from($validated['priority']);
         $tenant = $ticket->tenant()->withoutGlobalScopes()->firstOrFail();
 
-        app(CurrentTenant::class)->run($tenant, function () use ($ticket, $status, $validated, $auditLogger): void {
+        app(CurrentTenant::class)->run($tenant, function () use ($ticket, $status, $priority, $validated, $auditLogger): void {
             $ticket->update([
                 'status' => $status,
                 'priority' => $priority,
