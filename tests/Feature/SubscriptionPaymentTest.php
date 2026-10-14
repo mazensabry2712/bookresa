@@ -372,7 +372,7 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
