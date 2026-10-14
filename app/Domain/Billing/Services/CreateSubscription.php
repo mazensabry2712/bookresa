@@ -18,8 +18,7 @@ final class CreateSubscription
         private readonly CurrentTenant $currentTenant,
         private readonly BillingCycle $billingCycle,
         private readonly PlanPricingSnapshot $pricingSnapshots,
-    ) {
-    }
+    ) {}
 
     public function handle(Plan $plan, ?CarbonImmutable $startAt = null): Subscription
     {
