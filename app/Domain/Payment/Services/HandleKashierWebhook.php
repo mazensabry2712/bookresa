@@ -6,7 +6,6 @@ use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Models\PaymentWebhookEvent;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
 use Carbon\CarbonImmutable;
@@ -67,13 +66,16 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook currency does not match the payment.');
         }
 
-        $merchantId = trim((string) ($data['merchantId'] ?? ''));
-        $expectedMerchantId = $payment->payable_type === Subscription::class
-            ? (string) config('bookresa.payments.kashier.merchant_id')
-            : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
+        // Kashier's documented payment webhook payload does not include a signed merchantId.
+        // Bind the signed event to the exact session created for this payment instead.
+        $sessionId = trim((string) ($data['kashierOrderId'] ?? ''));
 
-        if ($merchantId === '' || $expectedMerchantId === '' || $merchantId !== $expectedMerchantId) {
-            throw new RuntimeException('Kashier webhook merchant account does not match the payment.');
+        if (
+            $sessionId === ''
+            || blank($payment->provider_reference)
+            || ! hash_equals((string) $payment->provider_reference, $sessionId)
+        ) {
+            throw new RuntimeException('Kashier webhook session does not match the payment.');
         }
 
         $tenant = $payment->tenant;
