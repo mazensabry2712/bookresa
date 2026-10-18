@@ -8,6 +8,7 @@ use App\Domain\Booking\Models\Booking;
 use App\Notifications\BookingNotification;
 use App\Notifications\BusinessBookingNotification;
 use App\Domain\Customer\Actions\FindOrCreateCustomer;
+use App\Domain\Customer\Models\Customer;
 use App\Domain\Service\Models\Service;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Staff\Enums\StaffStatus;
@@ -37,11 +38,16 @@ final class CreateBooking
         CarbonImmutable $startsAt,
         ?StaffProfile $requestedStaff = null,
         ?string $notes = null,
+        ?Customer $existingCustomer = null,
     ): Booking {
         $tenantId = $this->currentTenant->idOrFail();
 
         if ((int) $service->tenant_id !== $tenantId) {
             throw new LogicException('Service must belong to the current tenant.');
+        }
+
+        if ($existingCustomer !== null && (int) $existingCustomer->tenant_id !== $tenantId) {
+            throw new LogicException('Customer must belong to the current tenant.');
         }
 
         $timezone = $this->timezone();
@@ -81,6 +87,7 @@ final class CreateBooking
             $assignedStaff,
             $notes,
             $tenantId,
+            $existingCustomer,
         ): Booking {
             if ($assignedStaff->isEmpty()) {
                 $this->lockScope($tenantId, null, $localStart);
@@ -98,6 +105,7 @@ final class CreateBooking
                     $localStart,
                     $selectedStaff,
                     $notes,
+                    $existingCustomer,
                 );
             }
 
@@ -118,6 +126,7 @@ final class CreateBooking
                         $localStart,
                         $staff,
                         $notes,
+                        $existingCustomer,
                     );
                 }
             }
@@ -145,8 +154,9 @@ final class CreateBooking
         CarbonImmutable $localStart,
         ?StaffProfile $staff,
         ?string $notes,
+        ?Customer $existingCustomer = null,
     ): Booking {
-        $customer = $this->customers->handle($customerName, $phone, $email);
+        $customer = $existingCustomer ?? $this->customers->handle($customerName, $phone, $email);
         $duration = (int) $service->duration_minutes;
         $buffer = (int) $service->buffer_minutes;
 
@@ -156,6 +166,11 @@ final class CreateBooking
             'customer_id' => $customer->getKey(),
             'service_id' => $service->getKey(),
             'staff_id' => $staff?->getKey(),
+            'service_name_snapshot' => $service->name,
+            'service_price_minor_snapshot' => (int) $service->price_minor,
+            'service_currency_snapshot' => (string) $service->currency,
+            'service_duration_minutes_snapshot' => $duration,
+            'service_buffer_minutes_snapshot' => $buffer,
             'starts_at' => $localStart->setTimezone('UTC'),
             'ends_at' => $localEnd->setTimezone('UTC'),
             'block_ends_at' => $localEnd->addMinutes($buffer)->setTimezone('UTC'),
