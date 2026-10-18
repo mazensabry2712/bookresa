@@ -9,6 +9,7 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Notifications\BookingNotification;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Collection;
 use Throwable;
@@ -87,7 +88,7 @@ final class SendBookingReminders extends Command
         return self::SUCCESS;
     }
 
-    private function releaseClaim(Booking $booking, Tenant $tenant, mixed $claimedAt): void
+    private function releaseClaim(Booking $booking, Tenant $tenant, CarbonInterface $claimedAt): void
     {
         Booking::withoutGlobalScopes()
             ->whereKey($booking->getKey())

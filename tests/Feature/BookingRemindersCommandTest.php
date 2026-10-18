@@ -8,7 +8,6 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Models\User;
 use App\Notifications\BookingNotification;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Notifications\Dispatcher;
@@ -81,7 +80,7 @@ test('booking reminder is marked sent only after notification dispatch and does 
     $this->artisan('bookresa:send-booking-reminders')
         ->assertExitCode(0);
 
-    expect($booking->fresh()->reminder_sent_at)->not->toBeNull();
+    expect(Booking::withoutGlobalScopes()->findOrFail($booking->getKey())->reminder_sent_at)->not->toBeNull();
 
     Notification::assertSentTo($customer, BookingNotification::class);
 
@@ -104,5 +103,5 @@ test('failed booking reminder dispatch releases the claim for a later retry', fu
     $this->artisan('bookresa:send-booking-reminders')
         ->assertExitCode(0);
 
-    expect($booking->fresh()->reminder_sent_at)->toBeNull();
+    expect(Booking::withoutGlobalScopes()->findOrFail($booking->getKey())->reminder_sent_at)->toBeNull();
 });
