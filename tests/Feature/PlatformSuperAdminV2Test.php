@@ -7,14 +7,16 @@ use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
+use App\Domain\Module\Models\Module;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
-use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Platform\Models\PlatformBroadcast;
+use App\Domain\Support\Enums\SupportTicketPriority;
+use App\Domain\Support\Enums\SupportTicketStatus;
 use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Enums\MembershipStatus;
@@ -311,26 +313,19 @@ test('platform finance can verify and refund a payment through the provider cont
         ]);
     });
 
-    $fakeGateway = new class implements PaymentGateway {
-        public function createPayment(PaymentRequest $request): PaymentGatewayResult
-        {
-            return new PaymentGatewayResult(PaymentStatus::Processing, 'new-provider');
-        }
-
-        public function verifyPayment(string $providerReference): PaymentGatewayResult
-        {
-            return new PaymentGatewayResult(PaymentStatus::Paid, $providerReference);
-        }
-
-        public function refundPayment(string $providerReference, int $amountMinor): PaymentGatewayResult
-        {
-            return new PaymentGatewayResult(
-                PaymentStatus::Refunded,
-                $providerReference,
-                metadata: ['refunded_amount_minor' => $amountMinor],
-            );
-        }
-    };
+    $fakeGateway = Mockery::mock(PaymentGateway::class);
+    $fakeGateway->shouldReceive('verifyPayment')
+        ->once()
+        ->with('PROVIDER-1')
+        ->andReturn(new PaymentGatewayResult(PaymentStatus::Paid, 'PROVIDER-1'));
+    $fakeGateway->shouldReceive('refundPayment')
+        ->once()
+        ->with('PROVIDER-1', 5000)
+        ->andReturn(new PaymentGatewayResult(
+            PaymentStatus::Refunded,
+            'PROVIDER-1',
+            metadata: ['refunded_amount_minor' => 5000],
+        ));
 
     $this->app->instance(PaymentGateway::class, $fakeGateway);
 
@@ -366,8 +361,8 @@ test('audit export returns a bounded CSV report', function (): void {
 
 test('super admin can control the global module catalog while protecting core modules', function (): void {
     $admin = v2Admin();
-    $payments = App\Domain\Module\Models\Module::query()->where('key', 'payments')->firstOrFail();
-    $appointments = App\Domain\Module\Models\Module::query()->where('key', 'appointments')->firstOrFail();
+    $payments = Module::query()->where('key', 'payments')->firstOrFail();
+    $appointments = Module::query()->where('key', 'appointments')->firstOrFail();
 
     $this->actingAs($admin)
         ->put(route('admin.modules.update', $payments), [
@@ -404,8 +399,8 @@ test('tenant cannot reply to a closed support ticket', function (): void {
         'requester_user_id' => $owner->getKey(),
         'subject' => 'Closed ticket',
         'message' => 'This ticket is closed.',
-        'status' => App\Domain\Support\Enums\SupportTicketStatus::Closed,
-        'priority' => App\Domain\Support\Enums\SupportTicketPriority::Normal,
+        'status' => SupportTicketStatus::Closed,
+        'priority' => SupportTicketPriority::Normal,
     ]);
 
     $this->actingAs($owner)
@@ -502,30 +497,15 @@ test('platform finance refunds only the outstanding balance after a partial refu
         ]);
     });
 
-    $fakeGateway = new class implements PaymentGateway {
-        public int $lastRefundAmount = 0;
-
-        public function createPayment(PaymentRequest $request): PaymentGatewayResult
-        {
-            return new PaymentGatewayResult(PaymentStatus::Processing, 'new-provider');
-        }
-
-        public function verifyPayment(string $providerReference): PaymentGatewayResult
-        {
-            return new PaymentGatewayResult(PaymentStatus::Paid, $providerReference);
-        }
-
-        public function refundPayment(string $providerReference, int $amountMinor): PaymentGatewayResult
-        {
-            $this->lastRefundAmount = $amountMinor;
-
-            return new PaymentGatewayResult(
-                PaymentStatus::Refunded,
-                $providerReference,
-                metadata: ['refunded_amount_minor' => $amountMinor],
-            );
-        }
-    };
+    $fakeGateway = Mockery::mock(PaymentGateway::class);
+    $fakeGateway->shouldReceive('refundPayment')
+        ->once()
+        ->with('PROVIDER-REMAINDER-1', 3000)
+        ->andReturn(new PaymentGatewayResult(
+            PaymentStatus::Refunded,
+            'PROVIDER-REMAINDER-1',
+            metadata: ['refunded_amount_minor' => 3000],
+        ));
 
     $this->app->instance(PaymentGateway::class, $fakeGateway);
 
@@ -533,7 +513,6 @@ test('platform finance refunds only the outstanding balance after a partial refu
         ->post(route('admin.payments.refund', $payment->getKey()))
         ->assertRedirect();
 
-    expect($fakeGateway->lastRefundAmount)->toBe(3000)
-        ->and($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
         ->and($payment->fresh()->refunded_amount_minor)->toBe(5000);
 });
