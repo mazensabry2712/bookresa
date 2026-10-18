@@ -872,7 +872,7 @@ return [
         'status_failed' => 'فشل',
         'status_cancelled' => 'ملغي',
         'status_refunded' => 'مسترد',
-        'refunded_amount' => 'المبلغ المسترد'
+        'refunded_amount' => 'المبلغ المسترد',
         'status_expired' => 'منتهي',
     ],
     'public_booking_ui' => [
