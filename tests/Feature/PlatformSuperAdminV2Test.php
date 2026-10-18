@@ -1,5 +1,9 @@
 <?php
 
+use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Payment\Contracts\PaymentGateway;
@@ -7,6 +11,7 @@ use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Platform\Models\PlatformBroadcast;
 use App\Domain\Support\Models\SupportTicket;
@@ -14,10 +19,12 @@ use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
+use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use App\Notifications\PlatformBroadcastNotification;
 use App\Notifications\SupportReplyNotification;
 use App\Support\AuditLogger;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -357,7 +364,6 @@ test('audit export returns a bounded CSV report', function (): void {
         ->toContain('platform.super_admin_v2_test');
 });
 
-
 test('super admin can control the global module catalog while protecting core modules', function (): void {
     $admin = v2Admin();
     $payments = App\Domain\Module\Models\Module::query()->where('key', 'payments')->firstOrFail();
@@ -409,4 +415,69 @@ test('tenant cannot reply to a closed support ticket', function (): void {
         ->assertStatus(422);
 
     expect(SupportTicketMessage::query()->where('support_ticket_id', $ticket->getKey())->count())->toBe(0);
+});
+
+test('platform suspension restores a trial and payment webhooks cannot bypass the suspension', function (): void {
+    $admin = v2Admin();
+    $tenant = v2Tenant();
+    $currentTenant = app(CurrentTenant::class);
+    $currentTenant->set($tenant);
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Trial Starter', 'ar' => 'الخطة التجريبية'],
+        'description' => ['en' => 'Trial starter'],
+        'price_minor' => 19900,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 10,
+        'additional_customer_price_minor' => 500,
+        'trial_days' => 14,
+        'is_active' => true,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::now('UTC')->subHour(),
+    );
+
+    $currentTenant->clear();
+
+    $this->actingAs($admin)
+        ->patch(route('admin.subscriptions.toggle-status', $subscription->getKey()))
+        ->assertRedirect();
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Suspended)
+        ->and(data_get($subscription->fresh()->metadata, 'platform_suspended_from_status'))->toBe(SubscriptionStatus::Trial->value);
+
+    $currentTenant->set($tenant);
+
+    $payment = Payment::query()->create([
+        'tenant_id' => $tenant->getKey(),
+        'payable_type' => $subscription->getMorphClass(),
+        'payable_id' => $subscription->getKey(),
+        'reference' => 'PAY-PLATFORM-SUSPENDED-TRIAL',
+        'provider' => 'kashier',
+        'amount_minor' => $subscription->price_minor,
+        'currency' => $subscription->currency,
+        'status' => PaymentStatus::Processing,
+        'idempotency_key' => 'platform-suspended-trial',
+        'metadata' => ['subscription_start' => $subscription->start_at->toIso8601String()],
+    ]);
+
+    app(SyncSubscriptionPaymentStatus::class)->handle($payment, PaymentStatus::Paid);
+
+    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Suspended)
+        ->and($subscription->fresh()->payment_status)->toBe(PaymentStatus::Paid);
+
+    $currentTenant->clear();
+
+    $this->actingAs($admin)
+        ->patch(route('admin.subscriptions.toggle-status', $subscription->getKey()))
+        ->assertRedirect();
+
+    $restored = $subscription->fresh();
+
+    expect($restored->status)->toBe(SubscriptionStatus::Trial)
+        ->and($restored->isUsable())->toBeTrue()
+        ->and(data_get($restored->metadata, 'platform_suspended_from_status'))->toBeNull();
 });

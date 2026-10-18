@@ -2,8 +2,10 @@
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Enums\UsagePeriodStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
@@ -215,6 +217,23 @@ test('platform report aggregates all tenants independently', function (): void {
         'pricing_snapshot' => ['price_minor' => 99900],
     ]);
 
+    UsagePeriod::query()->create([
+        'tenant_id' => $tenantA->id,
+        'subscription_id' => $subscription->id,
+        'period_start' => $subscription->start_at,
+        'period_end' => $subscription->end_at,
+        'unique_customer_count' => 25,
+        'included_customer_limit' => 20,
+        'additional_customer_count' => 5,
+        'additional_customer_price_minor' => 2500,
+        'base_price_minor' => 99900,
+        'usage_charge_minor' => 12500,
+        'total_charge_minor' => 112400,
+        'currency' => 'EGP',
+        'status' => UsagePeriodStatus::Open,
+        'pricing_snapshot' => ['price_minor' => 99900],
+    ]);
+
     Payment::query()->create([
         'tenant_id' => $tenantA->id,
         'payable_type' => $subscription->getMorphClass(),
@@ -241,6 +260,8 @@ test('platform report aggregates all tenants independently', function (): void {
                 && $metrics['bookings'] === 2
                 && $metrics['subscriptionsStarted'] === 1
                 && $metrics['subscriptionRevenueMinor'] === 99900
+                && $metrics['usageRevenueMinor'] === 0
+                && $metrics['outstandingUsageChargesMinor'] === 12500
                 && $metrics['platformRevenueMinor'] === 99900;
         });
 });

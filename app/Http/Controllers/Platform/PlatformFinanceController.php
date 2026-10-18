@@ -35,19 +35,35 @@ final class PlatformFinanceController
     ): RedirectResponse {
         $subscription = Subscription::withoutGlobalScopes()->findOrFail($subscriptionId);
         $from = $subscription->status;
-        $next = in_array($from, [
-            SubscriptionStatus::Trial,
-            SubscriptionStatus::Active,
-        ], true)
-            ? SubscriptionStatus::Suspended
-            : ($from === SubscriptionStatus::Suspended ? SubscriptionStatus::Active : null);
+        $metadata = $subscription->metadata ?? [];
+
+        if (in_array($from, [SubscriptionStatus::Trial, SubscriptionStatus::Active], true)) {
+            $next = SubscriptionStatus::Suspended;
+            $metadata['platform_suspended_from_status'] = $from->value;
+        } elseif ($from === SubscriptionStatus::Suspended) {
+            $previousStatus = (string) data_get($metadata, 'platform_suspended_from_status', '');
+
+            $next = in_array($previousStatus, [
+                SubscriptionStatus::Trial->value,
+                SubscriptionStatus::Active->value,
+            ], true)
+                ? SubscriptionStatus::from($previousStatus)
+                : SubscriptionStatus::Active;
+
+            unset($metadata['platform_suspended_from_status']);
+        } else {
+            $next = null;
+        }
 
         if ($next === null) {
             return back()->withErrors(['subscription' => __('Only active, trial or suspended subscriptions can be toggled by platform admin.')]);
         }
 
         Subscription::withoutEvents(
-            fn (): bool => $subscription->forceFill(['status' => $next])->save(),
+            fn (): bool => $subscription->forceFill([
+                'status' => $next,
+                'metadata' => $metadata,
+            ])->save(),
         );
 
         $audit->log(

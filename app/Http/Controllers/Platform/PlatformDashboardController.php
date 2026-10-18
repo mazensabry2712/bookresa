@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Platform;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Enums\UsagePeriodStatus;
 use App\Domain\Billing\Models\Subscription;
+use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
@@ -121,10 +123,9 @@ final class PlatformDashboardController
                     ->where('provider', config('bookresa.payments.default_provider', 'kashier'))
                     ->where('status', 'active')
                     ->count(),
-                'usageRevenueMinor' => Subscription::withoutGlobalScopes()
-                    ->whereIn('subscriptions.status', $activeSubscriptionStatuses)
-                    ->join('usage_periods', 'subscriptions.id', '=', 'usage_periods.subscription_id')
-                    ->sum('usage_periods.usage_charge_minor'),
+                'usageRevenueMinor' => UsagePeriod::withoutGlobalScopes()
+                    ->where('status', UsagePeriodStatus::Paid->value)
+                    ->sum('usage_charge_minor'),
                 'mrrByCurrency' => $mrrByCurrency,
                 'additionalUsageRevenueByCurrency' => $additionalUsageRevenueByCurrency,
                 'overLimitBusinesses' => $overLimitBusinesses,

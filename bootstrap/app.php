@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\ExpireSubscriptionsCommand;
+use App\Console\Commands\GenerateUsagePeriodsCommand;
 use App\Console\Commands\SendBillingNotifications;
 use App\Console\Commands\SendBookingReminders;
 use App\Console\Commands\SetPlatformAdminCommand;
@@ -24,6 +25,7 @@ use Spatie\Permission\Middleware\PermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         ExpireSubscriptionsCommand::class,
+        GenerateUsagePeriodsCommand::class,
         SetPlatformAdminCommand::class,
         SendBookingReminders::class,
         SendBillingNotifications::class,
@@ -31,6 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('subscriptions:expire')
             ->hourly()
+            ->withoutOverlapping();
+
+        $schedule->command('bookresa:generate-usage-periods')
+            ->hourlyAt(15)
             ->withoutOverlapping();
         $schedule->command('bookresa:send-booking-reminders')
             ->hourly()

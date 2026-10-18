@@ -37,7 +37,10 @@ final class SyncSubscriptionPaymentStatus
         if ($status === PaymentStatus::Paid) {
             $updates['payment_status'] = PaymentStatus::Paid;
 
-            if ($subscription->status === SubscriptionStatus::Suspended) {
+            if (
+                $subscription->status === SubscriptionStatus::Suspended
+                && blank(data_get($subscription->metadata, 'platform_suspended_from_status'))
+            ) {
                 $updates['status'] = SubscriptionStatus::Active;
             }
         } elseif ($status === PaymentStatus::Refunded) {

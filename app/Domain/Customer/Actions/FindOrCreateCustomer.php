@@ -7,6 +7,8 @@ use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Services\CustomerIdentity;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 final class FindOrCreateCustomer
 {
@@ -25,37 +27,41 @@ final class FindOrCreateCustomer
         $normalizedPhone = $this->identity->normalizePhone($phone);
         $normalizedEmail = filled($email) ? strtolower(trim($email)) : null;
 
-        $query = Customer::query();
+        return DB::transaction(function () use ($tenantId, $name, $phone, $email, $normalizedPhone, $normalizedEmail): Customer {
+            $this->usagePolicy->lockTenantForCustomerCreation();
 
-        $customer = $normalizedPhone !== null
-            ? $query->where('normalized_phone', $normalizedPhone)->first()
-            : ($normalizedEmail !== null
-                ? $query->whereRaw('LOWER(email) = ?', [$normalizedEmail])->first()
-                : null);
+            $query = Customer::query();
 
-        if ($customer !== null) {
-            $customer->fill([
+            $customer = $normalizedPhone !== null
+                ? $query->where('normalized_phone', $normalizedPhone)->first()
+                : ($normalizedEmail !== null
+                    ? $query->whereRaw('LOWER(email) = ?', [$normalizedEmail])->first()
+                    : null);
+
+            if ($customer !== null) {
+                $customer->fill([
+                    'name' => $name,
+                    'phone' => $phone,
+                    'email' => $normalizedEmail,
+                    'last_seen_at' => CarbonImmutable::now('UTC'),
+                ])->save();
+
+                return $customer;
+            }
+
+            if (! $this->usagePolicy->allowsCreation()) {
+                throw new RuntimeException('The included customer limit has been reached.');
+            }
+
+            return Customer::query()->create([
+                'tenant_id' => $tenantId,
+                'normalized_phone' => $normalizedPhone,
                 'name' => $name,
                 'phone' => $phone,
                 'email' => $normalizedEmail,
+                'first_seen_at' => CarbonImmutable::now('UTC'),
                 'last_seen_at' => CarbonImmutable::now('UTC'),
-            ])->save();
-
-            return $customer;
-        }
-
-        if (! $this->usagePolicy->allowsCreation()) {
-            throw new \RuntimeException('The included customer limit has been reached.');
-        }
-
-        return Customer::query()->create([
-            'tenant_id' => $tenantId,
-            'normalized_phone' => $normalizedPhone,
-            'name' => $name,
-            'phone' => $phone,
-            'email' => $normalizedEmail,
-            'first_seen_at' => CarbonImmutable::now('UTC'),
-            'last_seen_at' => CarbonImmutable::now('UTC'),
-        ]);
+            ]);
+        });
     }
 }

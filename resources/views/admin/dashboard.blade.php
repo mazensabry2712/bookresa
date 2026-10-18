@@ -78,7 +78,7 @@
 
             <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
                 <div>
-                    <h3 class="font-semibold">{{ __('platform.usage_revenue_by_currency') }}</h3>
+                    <h3 class="font-semibold">{{ __('Estimated usage charges by currency') }}</h3>
                     <p class="mt-1 text-sm text-slate-500">{{ __('platform.currency_totals_help') }}</p>
                 </div>
                 <div class="mt-5 grid gap-3 sm:grid-cols-2">

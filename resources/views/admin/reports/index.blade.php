@@ -39,7 +39,8 @@
                 [__('Active subscriptions'), $metrics['activeSubscriptions']],
                 [__('Over-limit businesses'), $metrics['overLimitBusinesses']],
                 [__('Subscription revenue'), $money($metrics['subscriptionRevenueMinor'])],
-                [__('Usage revenue'), $money($metrics['usageRevenueMinor'])],
+                [__('Collected usage revenue'), $money($metrics['usageRevenueMinor'])],
+                [__('Outstanding usage charges'), $money($metrics['outstandingUsageChargesMinor'])],
                 [__('Total platform revenue'), $money($metrics['platformRevenueMinor'])],
             ] as [$label, $value])
                 <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">

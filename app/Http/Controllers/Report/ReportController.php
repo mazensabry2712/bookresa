@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Report;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Enums\UsagePeriodStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Booking\Enums\BookingStatus;
@@ -104,6 +105,15 @@ final class ReportController
             ->sum(DB::raw('amount_minor - refunded_amount_minor'));
 
         $usageRevenueMinor = UsagePeriod::withoutGlobalScopes()
+            ->where('status', UsagePeriodStatus::Paid->value)
+            ->whereBetween('period_start', [$startUtc, $endUtc])
+            ->sum('usage_charge_minor');
+
+        $outstandingUsageChargesMinor = UsagePeriod::withoutGlobalScopes()
+            ->whereIn('status', [
+                UsagePeriodStatus::Open->value,
+                UsagePeriodStatus::Invoiced->value,
+            ])
             ->whereBetween('period_start', [$startUtc, $endUtc])
             ->sum('usage_charge_minor');
 
@@ -138,6 +148,7 @@ final class ReportController
                 'overLimitBusinesses' => $overLimitBusinesses,
                 'subscriptionRevenueMinor' => (int) $subscriptionRevenueMinor,
                 'usageRevenueMinor' => (int) $usageRevenueMinor,
+                'outstandingUsageChargesMinor' => (int) $outstandingUsageChargesMinor,
                 'platformRevenueMinor' => (int) $subscriptionRevenueMinor + (int) $usageRevenueMinor,
             ],
         ]);

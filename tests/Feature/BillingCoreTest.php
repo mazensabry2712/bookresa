@@ -2,11 +2,13 @@
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
+use App\Domain\Billing\Enums\UsagePeriodStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Billing\Services\CalculateSubscriptionUsage;
 use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Billing\Services\CreateUsagePeriod;
 use App\Domain\Billing\Services\CreateUsagePeriod;
 use App\Domain\Billing\Services\PlanPricingSnapshot;
 use App\Domain\Billing\Services\UpsertPlan;
@@ -306,4 +308,50 @@ test('usage cannot be calculated through another tenant context', function (): v
         ->toThrow(LogicException::class);
 
     expect($tenantA->id)->not->toBe($tenantB->id);
+});
+
+test('expired subscription usage periods are generated automatically and idempotently', function (): void {
+    $tenant = billingTenant('expired-usage-period');
+    $plan = billingPlan([
+        'included_customer_limit' => 1,
+        'additional_customer_price_minor' => 800,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::now('UTC')->subMonths(2),
+    );
+
+    $subscription->forceFill(['status' => SubscriptionStatus::Expired])->save();
+
+    Customer::query()->create([
+        'name' => 'Usage Customer One',
+        'phone' => '01000000111',
+        'normalized_phone' => '201000000111',
+    ]);
+    Customer::query()->create([
+        'name' => 'Usage Customer Two',
+        'phone' => '01000000112',
+        'normalized_phone' => '201000000112',
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->artisan('bookresa:generate-usage-periods')->assertExitCode(0);
+
+    $period = UsagePeriod::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->getKey())
+        ->where('subscription_id', $subscription->getKey())
+        ->firstOrFail();
+
+    expect($period->status)->toBe(UsagePeriodStatus::Open)
+        ->and($period->additional_customer_count)->toBe(1)
+        ->and($period->usage_charge_minor)->toBe(800);
+
+    $this->artisan('bookresa:generate-usage-periods')->assertExitCode(0);
+
+    expect(UsagePeriod::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->getKey())
+        ->where('subscription_id', $subscription->getKey())
+        ->count())->toBe(1);
 });

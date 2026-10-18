@@ -32,6 +32,11 @@ final class CreateSubscription
         $startAt ??= CarbonImmutable::now('UTC');
 
         return DB::transaction(function () use ($plan, $tenantId, $startAt): Subscription {
+            DB::table('tenants')
+                ->where('id', $tenantId)
+                ->lockForUpdate()
+                ->first();
+
             $existing = Subscription::query()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('status', [

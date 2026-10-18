@@ -6,12 +6,28 @@ use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Illuminate\Support\Facades\DB;
+use LogicException;
 
 final class CustomerUsagePolicy
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
     ) {}
+
+    public function lockTenantForCustomerCreation(): void
+    {
+        $tenant = $this->currentTenant->get();
+
+        if ($tenant === null) {
+            throw new LogicException('A tenant is required to create a customer.');
+        }
+
+        DB::table('tenants')
+            ->where('id', $tenant->getKey())
+            ->lockForUpdate()
+            ->first();
+    }
 
     public function allowsCreation(): bool
     {
