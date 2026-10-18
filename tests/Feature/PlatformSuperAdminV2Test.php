@@ -3,6 +3,7 @@
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
@@ -446,8 +447,8 @@ test('platform suspension restores a trial and payment webhooks cannot bypass th
         ->patch(route('admin.subscriptions.toggle-status', $subscription->getKey()))
         ->assertRedirect();
 
-    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Suspended)
-        ->and(data_get($subscription->fresh()->metadata, 'platform_suspended_from_status'))->toBe(SubscriptionStatus::Trial->value);
+    expect(Subscription::withoutGlobalScopes()->findOrFail($subscription->getKey())->status)->toBe(SubscriptionStatus::Suspended)
+        ->and(data_get(Subscription::withoutGlobalScopes()->findOrFail($subscription->getKey())->metadata, 'platform_suspended_from_status'))->toBe(SubscriptionStatus::Trial->value);
 
     $currentTenant->set($tenant);
 
@@ -466,8 +467,8 @@ test('platform suspension restores a trial and payment webhooks cannot bypass th
 
     app(SyncSubscriptionPaymentStatus::class)->handle($payment, PaymentStatus::Paid);
 
-    expect($subscription->fresh()->status)->toBe(SubscriptionStatus::Suspended)
-        ->and($subscription->fresh()->payment_status)->toBe(PaymentStatus::Paid);
+    expect(Subscription::withoutGlobalScopes()->findOrFail($subscription->getKey())->status)->toBe(SubscriptionStatus::Suspended)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($subscription->getKey())->payment_status)->toBe(PaymentStatus::Paid);
 
     $currentTenant->clear();
 
@@ -475,7 +476,7 @@ test('platform suspension restores a trial and payment webhooks cannot bypass th
         ->patch(route('admin.subscriptions.toggle-status', $subscription->getKey()))
         ->assertRedirect();
 
-    $restored = $subscription->fresh();
+    $restored = Subscription::withoutGlobalScopes()->findOrFail($subscription->getKey());
 
     expect($restored->status)->toBe(SubscriptionStatus::Trial)
         ->and($restored->isUsable())->toBeTrue()

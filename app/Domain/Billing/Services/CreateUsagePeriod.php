@@ -80,7 +80,7 @@ final class CreateUsagePeriod
                 ]);
             }
 
-            return $period->fresh('charges');
+            return $period->load('charges');
         });
     }
 }

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
-use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Billing\Services\CreateUsagePeriod;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
