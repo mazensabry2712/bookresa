@@ -2,20 +2,22 @@
 
 namespace App\Domain\Payment\Services;
 
+use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
-use App\Domain\Booking\Models\Booking;
-use App\Notifications\PaymentNotification;
-use App\Notifications\BusinessPaymentNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Notifications\BusinessPaymentNotification;
+use App\Notifications\PaymentNotification;
 use App\Support\AuditLogger;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Str;
 use LogicException;
 use RuntimeException;
+use Throwable;
 
 final class PaymentService
 {
@@ -106,7 +108,7 @@ final class PaymentService
                     'idempotency_key' => $idempotencyKey,
                     'metadata' => $metadata,
                 ]);
-            } catch (\Illuminate\Database\QueryException $e) {
+            } catch (QueryException $e) {
                 if ($idempotencyKey === null || ! in_array((string) $e->getCode(), ['23000', '1062'], true)) {
                     throw $e;
                 }
@@ -148,7 +150,7 @@ final class PaymentService
                 metadata: $metadata,
                 idempotencyKey: $idempotencyKey,
             ));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $payment->forceFill([
                 'metadata' => array_merge($payment->metadata ?? [], [
                     'provider_creation_failed_at' => now()->toIso8601String(),

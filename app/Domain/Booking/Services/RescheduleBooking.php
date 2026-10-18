@@ -19,8 +19,7 @@ final class RescheduleBooking
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly AvailabilityService $availability,
-    ) {
-    }
+    ) {}
 
     public function handle(
         Booking $booking,

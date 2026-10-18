@@ -552,7 +552,8 @@ test('subscription checkout can retry when provider session creation fails', fun
         CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
     );
 
-    $gateway = new class implements PaymentGateway {
+    $gateway = new class implements PaymentGateway
+    {
         public int $createCalls = 0;
 
         public function createPayment(PaymentRequest $request): PaymentGatewayResult

@@ -239,7 +239,7 @@ final class KashierGateway implements PaymentGateway
 
     /**
      * @param array<string, mixed> $config
-     * @param list<string> $required
+     * @param list<string>         $required
      */
     private function assertConfigured(array $config, array $required): void
     {

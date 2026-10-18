@@ -2,11 +2,10 @@
 
 namespace App\Domain\Payment\Services;
 
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
-use App\Domain\Payment\Models\PaymentWebhookEvent;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
 use Carbon\CarbonImmutable;
@@ -31,7 +30,7 @@ final class HandleKashierWebhook
     {
         $data = $payload['data'] ?? null;
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             throw new RuntimeException('Invalid Kashier webhook payload.');
         }
 
@@ -40,13 +39,13 @@ final class HandleKashierWebhook
         $orderReference = (string) ($data['orderReference'] ?? '');
         $status = strtoupper((string) ($data['status'] ?? ''));
 
-        if ($event === '' || $transactionId === '' || $orderReference === '' || !in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
+        if ($event === '' || $transactionId === '' || $orderReference === '' || ! in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
 
-        if (!$this->verifier->verify($data, $signature, $apiKey)) {
+        if (! $this->verifier->verify($data, $signature, $apiKey)) {
             throw new LogicException('Invalid Kashier webhook signature.');
         }
 
@@ -159,7 +158,7 @@ final class HandleKashierWebhook
     {
         $value = trim((string) $amount);
 
-        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
+        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
             throw new RuntimeException('Kashier webhook amount is invalid.');
         }
 
@@ -170,7 +169,7 @@ final class HandleKashierWebhook
 
     private function parseDate(mixed $value): ?CarbonImmutable
     {
-        if (!is_string($value) || trim($value) === '') {
+        if (! is_string($value) || trim($value) === '') {
             return null;
         }
 

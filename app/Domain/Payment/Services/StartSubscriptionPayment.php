@@ -6,6 +6,7 @@ use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Contracts\PaymentGateway;
+use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use LogicException;
@@ -69,11 +70,11 @@ final class StartSubscriptionPayment
             $latestPayment instanceof Payment
             && $this->belongsToCurrentBillingCycle($latestPayment, $subscription)
             && (
-                $latestPayment->status === \App\Domain\Payment\Enums\PaymentStatus::Paid
+                $latestPayment->status === PaymentStatus::Paid
                 || (
                     in_array($latestPayment->status, [
-                        \App\Domain\Payment\Enums\PaymentStatus::Pending,
-                        \App\Domain\Payment\Enums\PaymentStatus::Processing,
+                        PaymentStatus::Pending,
+                        PaymentStatus::Processing,
                     ], true)
                     && filled($latestPayment->checkout_url)
                     && (
@@ -89,7 +90,7 @@ final class StartSubscriptionPayment
         if (
             $latestPayment instanceof Payment
             && $this->belongsToCurrentBillingCycle($latestPayment, $subscription)
-            && $latestPayment->status === \App\Domain\Payment\Enums\PaymentStatus::Pending
+            && $latestPayment->status === PaymentStatus::Pending
             && $latestPayment->provider_reference === null
             && $latestPayment->idempotency_key !== null
             && filled(data_get($latestPayment->metadata, 'provider_creation_failed_at'))

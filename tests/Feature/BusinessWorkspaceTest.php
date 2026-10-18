@@ -4,6 +4,7 @@ use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Actions\CreateBusiness;
+use App\Domain\Business\Actions\UpdateBusinessProfile;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
@@ -310,7 +311,7 @@ test('workspace booking maximum advance days can be cleared back to unlimited', 
 
     app(CurrentTenant::class)->set($tenant);
 
-    $updated = app(\App\Domain\Business\Actions\UpdateBusinessProfile::class)->handle([
+    $updated = app(UpdateBusinessProfile::class)->handle([
         'name_en' => 'Advance Limit Clinic',
         'name_ar' => 'عيادة حد الحجز',
         'description_en' => '',

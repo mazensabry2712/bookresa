@@ -27,7 +27,7 @@ final class UpdateBusinessProfile
 
         $paymentsAvailable = $this->moduleAccess->allows('payments');
 
-        if (!$paymentsAvailable && in_array($paymentMode, ['full', 'deposit'], true)) {
+        if (! $paymentsAvailable && in_array($paymentMode, ['full', 'deposit'], true)) {
             $paymentMode = 'pay_later';
         }
 

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Platform;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
+use App\Domain\Payment\Services\PaymentService;
+use App\Domain\Payment\Services\SyncBookingPaymentStatus;
+use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
 use Illuminate\Http\RedirectResponse;
@@ -44,9 +47,9 @@ final class PlatformPaymentController
         }
 
         $currentTenant->run($tenant, function () use ($payment, $result): void {
-            $updated = app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
-            app(\App\Domain\Payment\Services\SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
-            app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
+            $updated = app(PaymentService::class)->applyResult($payment, $result);
+            app(SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
+            app(SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
         });
 
         $audit->log('platform.payment_verified', $payment, [
@@ -87,9 +90,9 @@ final class PlatformPaymentController
         }
 
         $currentTenant->run($tenant, function () use ($payment, $result): void {
-            $updated = app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
-            app(\App\Domain\Payment\Services\SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
-            app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
+            $updated = app(PaymentService::class)->applyResult($payment, $result);
+            app(SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
+            app(SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
         });
 
         $audit->log('platform.payment_refunded', $payment, [
