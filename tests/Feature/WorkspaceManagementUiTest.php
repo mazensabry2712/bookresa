@@ -105,8 +105,8 @@ test('owner can view and update business profile', function (): void {
             'location' => 'Cairo',
             'address' => '123 Main Street',
             'website' => 'https://example.com',
-            'facebook' => '',
-            'instagram' => '',
+            'facebook' => 'https://facebook.com/elnour',
+            'instagram' => 'https://instagram.com/elnour',
             'timezone' => 'Africa/Cairo',
             'locale' => 'ar',
             'payment_mode' => 'pay_later',
@@ -125,7 +125,23 @@ test('owner can view and update business profile', function (): void {
         ->and($tenant->fresh('profile')->profile->phone)->toBe('01012345678')
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'minimum_notice_minutes'))->toBe(60)
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'maximum_advance_days'))->toBe(90)
-        ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'customer_email_required'))->toBeTrue();
+        ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'customer_email_required'))->toBeTrue()
+        ->and(data_get($tenant->fresh('profile')->profile->social_links, 'website'))->toBe('https://example.com')
+        ->and(data_get($tenant->fresh('profile')->profile->social_links, 'facebook'))->toBe('https://facebook.com/elnour')
+        ->and(data_get($tenant->fresh('profile')->profile->social_links, 'instagram'))->toBe('https://instagram.com/elnour');
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('<option value="ar" selected>', false)
+        ->assertDontSee('<option value="ar" selected">', false);
+
+    $this->get(route('public.booking.canonical.show', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('<html lang="ar" dir="rtl">', false)
+        ->assertSee('https://example.com', false)
+        ->assertSee('https://facebook.com/elnour', false)
+        ->assertSee('https://instagram.com/elnour', false);
 });
 
 test('owner can connect a workspace booking payment merchant', function (): void {
@@ -170,6 +186,33 @@ test('owner can connect a workspace booking payment merchant', function (): void
         ->assertSee(__('app.booking_payment_account', [], 'en'))
         ->assertSee('MID-OWNER-123')
         ->assertSee(__('app.pending_verification', [], 'en'));
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
+            'name_en' => 'Owner Clinic',
+            'name_ar' => 'عيادة المالك',
+            'timezone' => 'Africa/Cairo',
+            'locale' => 'en',
+            'payment_mode' => 'pay_later',
+            'payment_merchant_id' => '',
+            'customer_limit_policy' => 'allow_overage',
+            'minimum_notice_minutes' => 0,
+            'maximum_advance_days' => 90,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('status');
+
+    app(CurrentTenant::class)->set($tenant);
+    $account = $account->fresh();
+
+    expect($account->merchant_id)->toBeNull()
+        ->and($account->status)->toBe(TenantPaymentAccountStatus::Disabled);
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee(__('app.not_connected', [], 'en'))
+        ->assertDontSee('MID-OWNER-123');
 });
 
 test('owner can create and update a service through workspace ui', function (): void {
