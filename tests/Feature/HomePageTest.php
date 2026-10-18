@@ -16,6 +16,8 @@ test('public home page renders the BookResa product home', function (): void {
         ->assertSee('/logo.png')
         ->assertSee('/logodark.png')
         ->assertSee('lg:hidden')
+        ->assertSee('sticky top-0 z-50', false)
+        ->assertSee('scroll-pt-20', false)
         ->assertDontSee('The PHP Framework for Web Artisans');
 });
 
