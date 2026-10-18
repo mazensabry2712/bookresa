@@ -75,10 +75,14 @@ final class EmailVerificationOtpService
         if (! hash_equals($storedDigest, $this->digest($user, $code))) {
             RateLimiter::hit($attemptKey, self::OTP_TTL_MINUTES * 60);
 
+            if (RateLimiter::attempts($attemptKey) >= self::MAX_ATTEMPTS) {
+                throw ValidationException::withMessages([
+                    'code' => __('app.verification_code_too_many_attempts'),
+                ]);
+            }
+
             throw ValidationException::withMessages([
-                'code' => RateLimiter::tooManyAttempts($attemptKey, self::MAX_ATTEMPTS)
-                    ? __('app.verification_code_too_many_attempts')
-                    : __('app.verification_code_invalid'),
+                'code' => __('app.verification_code_invalid'),
             ]);
         }
     }
