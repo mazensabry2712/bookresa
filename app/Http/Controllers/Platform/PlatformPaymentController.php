@@ -77,14 +77,19 @@ final class PlatformPaymentController
             return back()->withErrors(['payment' => __('Payment has no provider reference and cannot be refunded.')]);
         }
 
-        if ($payment->amount_minor <= 0) {
-            return back()->withErrors(['payment' => __('Payment amount is invalid for refund.')]);
+        $remainingRefundMinor = max(
+            (int) $payment->amount_minor - (int) $payment->refunded_amount_minor,
+            0,
+        );
+
+        if ($remainingRefundMinor <= 0) {
+            return back()->withErrors(['payment' => __('This payment has no refundable balance left.')]);
         }
 
         $tenant = $payment->tenant()->withoutGlobalScopes()->firstOrFail();
 
         try {
-            $result = $gateway->refundPayment((string) $payment->provider_reference, (int) $payment->amount_minor);
+            $result = $gateway->refundPayment((string) $payment->provider_reference, $remainingRefundMinor);
         } catch (\Throwable $e) {
             return back()->withErrors(['payment' => $e->getMessage()]);
         }
@@ -98,7 +103,9 @@ final class PlatformPaymentController
         $audit->log('platform.payment_refunded', $payment, [
             'tenant_id' => (int) $tenant->getKey(),
             'payment_id' => (int) $payment->getKey(),
-            'amount_minor' => (int) $payment->amount_minor,
+            'amount_minor' => $remainingRefundMinor,
+            'original_amount_minor' => (int) $payment->amount_minor,
+            'previously_refunded_amount_minor' => (int) $payment->refunded_amount_minor,
             'currency' => $payment->currency,
         ]);
 

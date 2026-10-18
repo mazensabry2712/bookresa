@@ -482,3 +482,60 @@ test('platform suspension restores a trial and payment webhooks cannot bypass th
         ->and($restored->isUsable())->toBeTrue()
         ->and(data_get($restored->metadata, 'platform_suspended_from_status'))->toBeNull();
 });
+
+test('platform finance refunds only the outstanding balance after a partial refund', function (): void {
+    $admin = v2Admin();
+    $owner = User::factory()->create(['email_verified_at' => now()]);
+    $tenant = v2Tenant($owner);
+
+    $payment = app(\App\Domain\Tenant\Services\CurrentTenant::class)->run($tenant, function () use ($tenant, $owner): Payment {
+        return Payment::query()->create([
+            'tenant_id' => $tenant->getKey(),
+            'payable_type' => User::class,
+            'payable_id' => $owner->getKey(),
+            'reference' => 'PAY-REFUND-REMAINDER-001',
+            'provider' => 'test',
+            'provider_reference' => 'PROVIDER-REMAINDER-1',
+            'amount_minor' => 5000,
+            'refunded_amount_minor' => 2000,
+            'currency' => 'EGP',
+            'status' => PaymentStatus::Paid,
+        ]);
+    });
+
+    $fakeGateway = new class implements PaymentGateway
+    {
+        public int $lastRefundAmount = 0;
+
+        public function createPayment(PaymentRequest $request): PaymentGatewayResult
+        {
+            return new PaymentGatewayResult(PaymentStatus::Processing, 'new-provider');
+        }
+
+        public function verifyPayment(string $providerReference): PaymentGatewayResult
+        {
+            return new PaymentGatewayResult(PaymentStatus::Paid, $providerReference);
+        }
+
+        public function refundPayment(string $providerReference, int $amountMinor): PaymentGatewayResult
+        {
+            $this->lastRefundAmount = $amountMinor;
+
+            return new PaymentGatewayResult(
+                PaymentStatus::Refunded,
+                $providerReference,
+                metadata: ['refunded_amount_minor' => $amountMinor],
+            );
+        }
+    };
+
+    $this->app->instance(PaymentGateway::class, $fakeGateway);
+
+    $this->actingAs($admin)
+        ->post(route('admin.payments.refund', $payment->getKey()))
+        ->assertRedirect();
+
+    expect($fakeGateway->lastRefundAmount)->toBe(3000)
+        ->and($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
+        ->and($payment->fresh()->refunded_amount_minor)->toBe(5000);
+});

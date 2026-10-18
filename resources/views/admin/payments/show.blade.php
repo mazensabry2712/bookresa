@@ -9,9 +9,14 @@
         <div><p class="text-sm font-mono text-slate-500">{{ $payment->reference }}</p><h2 class="mt-1 text-2xl font-bold">{{ __('Payment details') }}</h2><p class="mt-1 text-sm text-slate-500">{{ $payment->provider }} · {{ $payment->currency }}</p></div>
         <a href="{{ route('admin.payments.index') }}" class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('Back') }}</a>
     </div>
+    @php
+        $remainingRefundMinor = max((int) $payment->amount_minor - (int) $payment->refunded_amount_minor, 0);
+    @endphp
     <section class="br-panel p-5">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div><p class="text-xs text-slate-500">{{ __('Amount') }}</p><p class="mt-1 text-xl font-bold">{{ number_format($payment->amount_minor / 100, 2) }} {{ $payment->currency }}</p></div>
+            <div><p class="text-xs text-slate-500">{{ __('Refunded so far') }}</p><p class="mt-1 text-xl font-bold">{{ number_format($payment->refunded_amount_minor / 100, 2) }} {{ $payment->currency }}</p></div>
+            <div><p class="text-xs text-slate-500">{{ __('Remaining refundable amount') }}</p><p class="mt-1 text-xl font-bold">{{ number_format($remainingRefundMinor / 100, 2) }} {{ $payment->currency }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('Status') }}</p><p class="mt-1 font-bold">{{ str($payment->status->value)->headline() }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('Provider reference') }}</p><p class="mt-1 break-all font-mono text-sm">{{ $payment->provider_reference ?: '—' }}</p></div>
             <div><p class="text-xs text-slate-500">{{ __('Workspace') }}</p><p class="mt-1 font-semibold">{{ data_get($payment->tenant?->profile?->name, app()->getLocale()) ?? $payment->tenant?->slug }}</p></div>
@@ -20,8 +25,8 @@
             @if($payment->provider_reference && auth()->user()?->platformAdmin?->hasPlatformPermission('finance.manage'))
                 <form method="POST" action="{{ route('admin.payments.verify', $payment->id) }}">@csrf<button class="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold dark:border-slate-700">{{ __('Verify with provider') }}</button></form>
             @endif
-            @if($payment->status === \App\Domain\Payment\Enums\PaymentStatus::Paid)
-                <form method="POST" action="{{ route('admin.payments.refund', $payment->id) }}">@csrf<button onclick="return confirm('{{ __('Refund this full payment?') }}')" class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white">{{ __('Refund full payment') }}</button></form>
+            @if($payment->status === \App\Domain\Payment\Enums\PaymentStatus::Paid && $remainingRefundMinor > 0 && $payment->provider_reference && auth()->user()?->platformAdmin?->hasPlatformPermission('finance.manage'))
+                <form method="POST" action="{{ route('admin.payments.refund', $payment->id) }}">@csrf<button onclick="return confirm('{{ __('Refund the remaining balance?') }}')" class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white">{{ __('Refund remaining balance') }}</button></form>
             @endif
         </div>
     </section>
