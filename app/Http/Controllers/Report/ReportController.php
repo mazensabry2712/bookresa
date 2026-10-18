@@ -37,13 +37,12 @@ final class ReportController
             ->distinct()
             ->count('customer_id');
 
-        $revenueQuery = Payment::query()
+        $revenueByCurrency = DB::table('payments')
+            ->where('tenant_id', $tenant->id)
             ->where('payable_type', (new Booking)->getMorphClass())
-            ->where('status', PaymentStatus::Paid)
+            ->where('status', PaymentStatus::Paid->value)
             ->whereNotNull('paid_at')
-            ->whereBetween('paid_at', [$startUtc, $endUtc]);
-
-        $revenueByCurrency = (clone $revenueQuery)
+            ->whereBetween('paid_at', [$startUtc, $endUtc])
             ->selectRaw('currency, SUM(amount_minor - refunded_amount_minor) as total_minor')
             ->groupBy('currency')
             ->orderBy('currency')
