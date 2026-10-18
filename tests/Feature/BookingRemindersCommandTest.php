@@ -9,6 +9,7 @@ use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Notifications\BookingNotification;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Notifications\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,12 +20,12 @@ uses(RefreshDatabase::class);
 beforeEach(function (): void {
     $now = CarbonImmutable::parse('2026-10-18 12:00:00', 'UTC');
     CarbonImmutable::setTestNow($now);
-    \Carbon\Carbon::setTestNow($now);
+    Carbon::setTestNow($now);
 });
 
 afterEach(function (): void {
     CarbonImmutable::setTestNow();
-    \Carbon\Carbon::setTestNow();
+    Carbon::setTestNow();
     app(CurrentTenant::class)->clear();
 });
 
