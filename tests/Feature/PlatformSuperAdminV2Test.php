@@ -105,7 +105,7 @@ test('platform role matrix limits platform routes and tenant permissions', funct
         ->get(route('admin.security.index'))
         ->assertOk();
 
-    app(\App\Domain\Tenant\Services\CurrentTenant::class)->set($tenant);
+    app(CurrentTenant::class)->set($tenant);
 
     expect(Gate::forUser($operations)->allows('bookings.create'))->toBeTrue()
         ->and(Gate::forUser($operations)->allows('subscription.manage'))->toBeFalse()
@@ -297,7 +297,7 @@ test('platform finance can verify and refund a payment through the provider cont
     $owner = User::factory()->create(['email_verified_at' => now()]);
     $tenant = v2Tenant($owner);
 
-    $payment = app(\App\Domain\Tenant\Services\CurrentTenant::class)->run($tenant, function () use ($tenant, $owner): Payment {
+    $payment = app(CurrentTenant::class)->run($tenant, function () use ($tenant, $owner): Payment {
         return Payment::query()->create([
             'tenant_id' => $tenant->getKey(),
             'payable_type' => User::class,
@@ -488,7 +488,7 @@ test('platform finance refunds only the outstanding balance after a partial refu
     $owner = User::factory()->create(['email_verified_at' => now()]);
     $tenant = v2Tenant($owner);
 
-    $payment = app(\App\Domain\Tenant\Services\CurrentTenant::class)->run($tenant, function () use ($tenant, $owner): Payment {
+    $payment = app(CurrentTenant::class)->run($tenant, function () use ($tenant, $owner): Payment {
         return Payment::query()->create([
             'tenant_id' => $tenant->getKey(),
             'payable_type' => User::class,
