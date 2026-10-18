@@ -3,6 +3,7 @@
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CancelSubscription;
 use App\Domain\Billing\Services\ClearPlanChange;
 use App\Domain\Billing\Services\CreateSubscription;
@@ -243,4 +244,29 @@ test('renewal is blocked while subscription is still active', function (): void 
 
 test('subscription expiry artisan command is available', function (): void {
     $this->artisan('subscriptions:expire')->assertExitCode(0);
+});
+
+test('subscription expiry command processes due subscriptions across all tenants', function (): void {
+    $plan = lifecyclePlan();
+    $startAt = CarbonImmutable::now('UTC')->subMonths(2);
+
+    $tenantA = lifecycleTenant('expire-command-tenant-a');
+    $subscriptionA = app(CreateSubscription::class)->handle($plan, $startAt);
+
+    $tenantB = lifecycleTenant('expire-command-tenant-b');
+    $subscriptionB = app(CreateSubscription::class)->handle($plan, $startAt);
+
+    expect($subscriptionA->tenant_id)->toBe($tenantA->id)
+        ->and($subscriptionB->tenant_id)->toBe($tenantB->id)
+        ->and($subscriptionA->end_at->isPast())->toBeTrue()
+        ->and($subscriptionB->end_at->isPast())->toBeTrue();
+
+    app(CurrentTenant::class)->clear();
+
+    $this->artisan('subscriptions:expire')->assertExitCode(0);
+
+    expect(Subscription::withoutGlobalScopes()->findOrFail($subscriptionA->getKey())->status)
+        ->toBe(SubscriptionStatus::Expired)
+        ->and(Subscription::withoutGlobalScopes()->findOrFail($subscriptionB->getKey())->status)
+        ->toBe(SubscriptionStatus::Expired);
 });
