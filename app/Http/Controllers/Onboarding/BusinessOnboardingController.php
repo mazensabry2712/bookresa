@@ -47,7 +47,7 @@ class BusinessOnboardingController
 
         $request->session()->put('tenant_id', $tenant->getKey());
 
-        return to_route('services.index', ['tenant' => $tenant->slug]);
+        return to_route('dashboard', ['tenant' => $tenant->slug]);
     }
 
 }
