@@ -84,6 +84,14 @@ final class RescheduleBooking
                 ->lockForUpdate()
                 ->firstOrFail();
 
+            if (! in_array($locked->status, [
+                BookingStatus::Pending,
+                BookingStatus::Confirmed,
+                BookingStatus::Rescheduled,
+            ], true)) {
+                throw new RuntimeException('This booking cannot be rescheduled.');
+            }
+
             $from = $locked->status;
             $assignedStaff = $locked->service->staff()
                 ->where('status', StaffStatus::Active->value)

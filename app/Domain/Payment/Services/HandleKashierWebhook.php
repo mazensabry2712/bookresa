@@ -106,8 +106,8 @@ final class HandleKashierWebhook
 
                     $updated = $this->payments->applyResult($payment->fresh(), $mapped);
 
-                    $this->bookingPaymentSync->handle($updated, $mapped->status);
-                    $this->subscriptionPaymentSync->handle($updated, $mapped->status);
+                    $this->bookingPaymentSync->handle($updated, $updated->status);
+                    $this->subscriptionPaymentSync->handle($updated, $updated->status);
 
                     return true;
                 });

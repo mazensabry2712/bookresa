@@ -95,7 +95,7 @@ final class CreateBusiness
                     'tenant_id' => $tenant->getKey(),
                     'user_id' => $owner->getKey(),
                     'status' => MembershipStatus::Active,
-                    'is_primary' => ! $owner->tenantMemberships()->where('is_primary', true)->exists(),
+                    'is_primary' => true,
                 ]);
 
                 $this->roleProvisioner->provisionOwner($tenant, $owner);

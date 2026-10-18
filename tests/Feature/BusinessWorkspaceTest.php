@@ -15,6 +15,7 @@ use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -148,9 +149,20 @@ test('tenant role names are isolated between workspaces', function (): void {
         ['name' => 'Beta Clinic'],
     );
 
+    $membershipA = TenantMembership::query()
+        ->where('tenant_id', $a->id)
+        ->where('user_id', $user->id)
+        ->firstOrFail();
+    $membershipB = TenantMembership::query()
+        ->where('tenant_id', $b->id)
+        ->where('user_id', $user->id)
+        ->firstOrFail();
+
     expect(Role::query()->where('name', 'owner')->where('tenant_id', $a->id)->exists())->toBeTrue()
         ->and(Role::query()->where('name', 'owner')->where('tenant_id', $b->id)->exists())->toBeTrue()
-        ->and($a->id)->not->toBe($b->id);
+        ->and($a->id)->not->toBe($b->id)
+        ->and($membershipA->is_primary)->toBeTrue()
+        ->and($membershipB->is_primary)->toBeTrue();
 });
 
 test('workspace modules are managed outside onboarding', function (): void {
@@ -280,4 +292,40 @@ test('onboarding advances through services working hours and staff stages', func
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk();
+});
+
+test('workspace booking maximum advance days can be cleared back to unlimited', function (): void {
+    $tenant = Tenant::query()->create(['slug' => 'advance-limit-clear']);
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant): void {
+        BusinessProfile::query()->create([
+            'tenant_id' => $tenant->id,
+            'name' => ['en' => 'Advance Limit Clinic', 'ar' => 'عيادة حد الحجز'],
+            'timezone' => 'Africa/Cairo',
+            'booking_settings' => [
+                'payment_mode' => 'pay_later',
+                'maximum_advance_days' => 30,
+            ],
+        ]);
+    });
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $updated = app(\App\Domain\Business\Actions\UpdateBusinessProfile::class)->handle([
+        'name_en' => 'Advance Limit Clinic',
+        'name_ar' => 'عيادة حد الحجز',
+        'description_en' => '',
+        'description_ar' => '',
+        'phone' => '',
+        'email' => 'owner@example.com',
+        'location' => '',
+        'address' => '',
+        'website' => '',
+        'facebook' => '',
+        'instagram' => '',
+        'timezone' => 'Africa/Cairo',
+        'locale' => 'en',
+        'maximum_advance_days' => null,
+    ]);
+
+    expect(data_get($updated->booking_settings, 'maximum_advance_days'))->toBeNull();
 });

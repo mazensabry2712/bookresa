@@ -207,13 +207,18 @@ final class KashierGateway implements PaymentGateway
             throw new RuntimeException('Payment refund failed.');
         }
 
-        $status = match (strtoupper((string) ($response->json('status') ?? 'PENDING'))) {
-            'SUCCESS' => PaymentStatus::Refunded,
-            default => PaymentStatus::Paid,
-        };
+        $status = strtoupper(trim((string) ($response->json('status') ?? '')));
+
+        if ($status !== 'SUCCESS') {
+            throw new RuntimeException(
+                $status === 'PENDING'
+                    ? 'Kashier refund is pending confirmation.'
+                    : 'Kashier did not confirm the payment refund.',
+            );
+        }
 
         return new PaymentGatewayResult(
-            status: $status,
+            status: PaymentStatus::Refunded,
             providerReference: $providerReference,
             metadata: [
                 'kashier_refund_status' => $response->json('status'),

@@ -193,6 +193,10 @@ final class PaymentService
 
         $metadata = array_merge($payment->metadata ?? [], $result->metadata);
 
+        if ($result->providerReference !== null || $result->checkoutUrl !== null) {
+            unset($metadata['provider_creation_failed_at']);
+        }
+
         $payment->forceFill([
             'provider_reference' => $result->providerReference ?? $payment->provider_reference,
             'status' => $result->status,

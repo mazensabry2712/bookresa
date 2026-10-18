@@ -44,7 +44,9 @@ final class PlatformPaymentController
         }
 
         $currentTenant->run($tenant, function () use ($payment, $result): void {
-            app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
+            $updated = app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
+            app(\App\Domain\Payment\Services\SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
+            app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
         });
 
         $audit->log('platform.payment_verified', $payment, [
@@ -85,7 +87,9 @@ final class PlatformPaymentController
         }
 
         $currentTenant->run($tenant, function () use ($payment, $result): void {
-            app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
+            $updated = app(\App\Domain\Payment\Services\PaymentService::class)->applyResult($payment, $result);
+            app(\App\Domain\Payment\Services\SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
+            app(\App\Domain\Payment\Services\SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
         });
 
         $audit->log('platform.payment_refunded', $payment, [
@@ -95,6 +99,6 @@ final class PlatformPaymentController
             'currency' => $payment->currency,
         ]);
 
-        return back()->with('status', __('Payment refund requested successfully.'));
+        return back()->with('status', __('Payment refunded successfully.'));
     }
 }

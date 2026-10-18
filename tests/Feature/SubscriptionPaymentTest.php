@@ -9,6 +9,7 @@ use App\Domain\Billing\Services\RenewSubscription;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
+use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
@@ -542,4 +543,70 @@ test('failed subscription payment can start a fresh payment attempt', function (
         ->and($payment->checkout_url)->toBe('https://payments.example.test/session/001')
         ->and($gateway->createCalls)->toBe(1)
         ->and(Payment::query()->count())->toBe(2);
+});
+
+test('subscription checkout can retry when provider session creation fails', function (): void {
+    subscriptionPaymentTenant('subscription-provider-retry');
+    $subscription = app(CreateSubscription::class)->handle(
+        subscriptionPaymentPlan(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $gateway = new class implements PaymentGateway {
+        public int $createCalls = 0;
+
+        public function createPayment(PaymentRequest $request): PaymentGatewayResult
+        {
+            $this->createCalls++;
+
+            if ($this->createCalls === 1) {
+                throw new RuntimeException('Provider is temporarily unavailable.');
+            }
+
+            return new PaymentGatewayResult(
+                status: PaymentStatus::Processing,
+                providerReference: 'session-recovered',
+                checkoutUrl: 'https://payments.example.test/session/recovered',
+            );
+        }
+
+        public function verifyPayment(string $providerReference): PaymentGatewayResult
+        {
+            return new PaymentGatewayResult(
+                status: PaymentStatus::Paid,
+                providerReference: $providerReference,
+            );
+        }
+
+        public function refundPayment(string $providerReference, int $amountMinor): PaymentGatewayResult
+        {
+            return new PaymentGatewayResult(
+                status: PaymentStatus::Refunded,
+                providerReference: $providerReference,
+            );
+        }
+    };
+
+    $this->app->instance(PaymentGateway::class, $gateway);
+
+    expect(fn () => app(StartSubscriptionPayment::class)->handle($subscription))
+        ->toThrow(RuntimeException::class);
+
+    $failedPayment = Payment::query()
+        ->where('payable_type', $subscription->getMorphClass())
+        ->where('payable_id', $subscription->id)
+        ->firstOrFail();
+
+    expect($failedPayment->status)->toBe(PaymentStatus::Pending)
+        ->and($failedPayment->checkout_url)->toBeNull()
+        ->and(data_get($failedPayment->metadata, 'provider_creation_failed_at'))->not->toBeNull();
+
+    $retried = app(StartSubscriptionPayment::class)->handle($subscription->fresh());
+
+    expect($retried->id)->toBe($failedPayment->id)
+        ->and($retried->status)->toBe(PaymentStatus::Processing)
+        ->and($retried->checkout_url)->toBe('https://payments.example.test/session/recovered')
+        ->and(data_get($retried->metadata, 'provider_creation_failed_at'))->toBeNull()
+        ->and($gateway->createCalls)->toBe(2)
+        ->and(Payment::query()->count())->toBe(1);
 });

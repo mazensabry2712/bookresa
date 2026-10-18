@@ -122,3 +122,37 @@ test('Kashier gateway rejects verification without a secret key', function (): v
     expect(fn () => app(KashierGateway::class)->verifyPayment('session-123'))
         ->toThrow(RuntimeException::class);
 });
+
+test('Kashier gateway marks a refund only after explicit provider success', function (): void {
+    kashierConfig();
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions/session-refund-success/payment' => Http::response([
+            'data' => ['merchantOrderId' => 'PAY-REFUND-SUCCESS'],
+        ]),
+        'https://test-api.kashier.io/v3/payment/refund/PAY-REFUND-SUCCESS' => Http::response([
+            'status' => 'SUCCESS',
+        ]),
+    ]);
+
+    $result = app(KashierGateway::class)->refundPayment('session-refund-success', 12500);
+
+    expect($result->status)->toBe(PaymentStatus::Refunded)
+        ->and($result->metadata['refunded_amount_minor'])->toBe(12500);
+});
+
+test('Kashier gateway does not treat a pending refund as complete', function (): void {
+    kashierConfig();
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions/session-refund-pending/payment' => Http::response([
+            'data' => ['merchantOrderId' => 'PAY-REFUND-PENDING'],
+        ]),
+        'https://test-api.kashier.io/v3/payment/refund/PAY-REFUND-PENDING' => Http::response([
+            'status' => 'PENDING',
+        ]),
+    ]);
+
+    expect(fn () => app(KashierGateway::class)->refundPayment('session-refund-pending', 12500))
+        ->toThrow(RuntimeException::class, 'pending confirmation');
+});

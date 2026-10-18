@@ -49,6 +49,17 @@ final class StartSubscriptionPayment
         }
 
         $provider = (string) config('bookresa.payments.default_provider', 'kashier');
+        $metadata = [
+            'payment_context' => 'subscription',
+            'subscription_id' => $subscription->id,
+            'plan_id' => $subscription->plan_id,
+            'subscription_start' => $subscription->start_at?->toIso8601String(),
+            'subscription_end' => $subscription->end_at?->toIso8601String(),
+            'customer_reference' => 'tenant-'.$subscription->tenant_id,
+            'customer_email' => $profile->email,
+            'merchant_redirect' => route('payments.kashier.return'),
+        ];
+
         $latestPayment = $subscription->payments()
             ->where('provider', $provider)
             ->latest('id')
@@ -64,6 +75,7 @@ final class StartSubscriptionPayment
                         \App\Domain\Payment\Enums\PaymentStatus::Pending,
                         \App\Domain\Payment\Enums\PaymentStatus::Processing,
                     ], true)
+                    && filled($latestPayment->checkout_url)
                     && (
                         $latestPayment->expires_at === null
                         || $latestPayment->expires_at->isFuture()
@@ -72,6 +84,26 @@ final class StartSubscriptionPayment
             )
         ) {
             return $latestPayment;
+        }
+
+        if (
+            $latestPayment instanceof Payment
+            && $this->belongsToCurrentBillingCycle($latestPayment, $subscription)
+            && $latestPayment->status === \App\Domain\Payment\Enums\PaymentStatus::Pending
+            && $latestPayment->provider_reference === null
+            && $latestPayment->idempotency_key !== null
+            && filled(data_get($latestPayment->metadata, 'provider_creation_failed_at'))
+        ) {
+            return $this->payments->start(
+                gateway: $this->gateway,
+                payable: $subscription,
+                amountMinor: (int) $subscription->price_minor,
+                currency: (string) $subscription->currency,
+                provider: $provider,
+                description: 'BookResa subscription - '.$subscription->pricing_snapshot['name']['en'],
+                metadata: $metadata,
+                idempotencyKey: $latestPayment->idempotency_key,
+            );
         }
 
         $attempt = ($subscription->payments()->where('provider', $provider)->count()) + 1;
@@ -83,16 +115,7 @@ final class StartSubscriptionPayment
             currency: (string) $subscription->currency,
             provider: $provider,
             description: 'BookResa subscription - '.$subscription->pricing_snapshot['name']['en'],
-            metadata: [
-                'payment_context' => 'subscription',
-                'subscription_id' => $subscription->id,
-                'plan_id' => $subscription->plan_id,
-                'subscription_start' => $subscription->start_at?->toIso8601String(),
-                'subscription_end' => $subscription->end_at?->toIso8601String(),
-                'customer_reference' => 'tenant-'.$subscription->tenant_id,
-                'customer_email' => $profile->email,
-                'merchant_redirect' => route('payments.kashier.return'),
-            ],
+            metadata: $metadata,
             idempotencyKey: 'subscription-'.$subscription->id.'-'.$provider.'-attempt-'.$attempt,
         );
     }

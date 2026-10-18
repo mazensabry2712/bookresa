@@ -123,8 +123,10 @@ final class UpdateBusinessProfile
                     'customer_email_required' => (bool) ($data['customer_email_required'] ?? false),
                     'customer_limit_policy' => $data['customer_limit_policy'] ?? data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'),
                     'minimum_notice_minutes' => (int) ($data['minimum_notice_minutes'] ?? data_get($profile->booking_settings, 'minimum_notice_minutes', 0)),
-                    'maximum_advance_days' => isset($data['maximum_advance_days']) && $data['maximum_advance_days'] !== ''
-                        ? (int) $data['maximum_advance_days']
+                    'maximum_advance_days' => array_key_exists('maximum_advance_days', $data)
+                        ? ($data['maximum_advance_days'] === null || $data['maximum_advance_days'] === ''
+                            ? null
+                            : (int) $data['maximum_advance_days'])
                         : data_get($profile->booking_settings, 'maximum_advance_days'),
                 ]),
             ])->save();
