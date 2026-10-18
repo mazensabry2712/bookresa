@@ -216,7 +216,9 @@
                     <div class="rounded-xl br-surface-soft px-4 py-3 lg:min-w-56">
                         <p class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ __('app.connection_status') }}</p>
                         <p class="mt-2 text-sm font-bold">
-                            @if ($paymentAccount?->status?->value)
+                            @if (blank($paymentAccount?->merchant_id))
+                                {{ __('app.not_connected') }}
+                            @elseif ($paymentAccount?->status?->value)
                                 {{ match ($paymentAccount->status->value) {
                                     'active' => __('app.active'),
                                     'pending' => __('app.pending_verification'),
@@ -334,7 +336,7 @@
                         </div>
                         <select name="locale" class="mt-4 w-full max-w-xs rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                             @foreach (config('bookresa.locales', ['en', 'ar']) as $locale)
-                                <option value="{{ $locale }}" @selected(old('locale', $profile->locale ?? app()->getLocale()) === $locale)">
+                                <option value="{{ $locale }}" @selected(old('locale', $profile->locale ?? app()->getLocale()) === $locale)>
                                     {{ $locale === 'ar' ? __('app.arabic') : __('app.english') }}
                                 </option>
                             @endforeach
