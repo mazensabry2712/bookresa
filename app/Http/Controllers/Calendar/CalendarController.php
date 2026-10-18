@@ -70,8 +70,8 @@ class CalendarController
             })
             ->when($ownStaffId === null, fn ($query) => $query->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId)))
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->where('starts_at', '>=', $rangeStartUtc)
             ->where('starts_at', '<', $rangeEndUtc)
-            ->where('ends_at', '>', $rangeStartUtc)
             ->orderBy('starts_at')
             ->orderBy('id')
             ->get();
