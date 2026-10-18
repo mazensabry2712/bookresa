@@ -5,12 +5,16 @@
 
 @section('content')
     @php
-        $serviceName = static fn ($service): string => (string) (
-            data_get($service?->name, app()->getLocale())
-            ?? data_get($service?->name, 'en')
-            ?? data_get($service?->name, 'ar')
-            ?? '—'
-        );
+        $serviceName = static function ($serviceOrName): string {
+            $values = is_array($serviceOrName) ? $serviceOrName : data_get($serviceOrName, 'name');
+
+            return (string) (
+                data_get($values, app()->getLocale())
+                ?? data_get($values, 'en')
+                ?? data_get($values, 'ar')
+                ?? '—'
+            );
+        };
 
         $statusLabels = [
             'pending' => __('app.calendar_ui.status_pending'),
@@ -186,7 +190,7 @@
                                                     <span class="h-2 w-2 shrink-0 rounded-full bg-brand-coral" aria-hidden="true"></span>
                                                 </div>
                                                 <p class="mt-1 truncate text-xs font-bold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</p>
-                                                <p class="mt-0.5 truncate text-[11px] text-slate-500">{{ $serviceName($booking->service) }}</p>
+                                                <p class="mt-0.5 truncate text-[11px] text-slate-500">{{ $serviceName($booking->service_name_snapshot ?? $booking->service) }}</p>
                                                 <p class="mt-1 truncate font-mono text-[10px] text-slate-400">{{ $booking->booking_reference }}</p>
                                                 <span class="mt-1.5 inline-flex max-w-full truncate rounded-full border px-2 py-0.5 text-[10px] font-bold {{ $statusClasses[$bookingStatus] ?? $statusClasses['pending'] }}">
                                                     {{ $statusLabels[$bookingStatus] ?? $bookingStatus }}
@@ -238,7 +242,7 @@
                                                 <span class="font-medium text-slate-400">— {{ $booking->ends_at->setTimezone($timezone)->format('H:i') }}</span>
                                             </p>
                                             <p class="mt-2 truncate text-sm font-bold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</p>
-                                            <p class="mt-1 truncate text-xs text-slate-500">{{ $serviceName($booking->service) }}</p>
+                                            <p class="mt-1 truncate text-xs text-slate-500">{{ $serviceName($booking->service_name_snapshot ?? $booking->service) }}</p>
                                             <div class="mt-2 flex flex-wrap gap-1.5">
                                                 <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold {{ $statusClasses[$bookingStatus] ?? $statusClasses['pending'] }}">{{ $statusLabels[$bookingStatus] ?? $bookingStatus }}</span>
                                                 <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-800">{{ $paymentLabels[$booking->payment_status->value] ?? $booking->payment_status->value }}</span>
@@ -280,7 +284,7 @@
                             </div>
                             <div class="min-w-0">
                                 <p class="truncate text-base font-bold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</p>
-                                <p class="mt-1 truncate text-sm text-slate-500">{{ $serviceName($booking->service) }} · {{ $booking->staff?->display_name ?? __('app.calendar_ui.auto_assigned') }}</p>
+                                <p class="mt-1 truncate text-sm text-slate-500">{{ $serviceName($booking->service_name_snapshot ?? $booking->service) }} · {{ $booking->staff?->display_name ?? __('app.calendar_ui.auto_assigned') }}</p>
                                 <p class="mt-1 font-mono text-xs text-slate-400">{{ $booking->booking_reference }}</p>
                             </div>
                         </div>
