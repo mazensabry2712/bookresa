@@ -5,12 +5,16 @@
 
 @section('content')
     @php
-        $serviceName = static fn ($service): string => (string) (
-            data_get($service?->name, app()->getLocale())
-            ?? data_get($service?->name, 'en')
-            ?? data_get($service?->name, 'ar')
-            ?? '—'
-        );
+        $serviceName = static function ($serviceOrName): string {
+            $values = is_array($serviceOrName) ? $serviceOrName : data_get($serviceOrName, 'name');
+
+            return (string) (
+                data_get($values, app()->getLocale())
+                ?? data_get($values, 'en')
+                ?? data_get($values, 'ar')
+                ?? '—'
+            );
+        };
 
         $statusLabels = [
             'pending' => __('app.booking_ui.status_pending'),
@@ -178,7 +182,7 @@
                                     <p class="font-semibold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</p>
                                     <p class="mt-0.5 text-xs text-slate-500">{{ $booking->customer?->phone ?? $booking->customer?->email ?? '—' }}</p>
                                 </td>
-                                <td class="px-5 py-4 font-medium">{{ $serviceName($booking->service) }}</td>
+                                <td class="px-5 py-4 font-medium">{{ $serviceName($booking->service_name_snapshot ?? $booking->service) }}</td>
                                 <td class="px-5 py-4">{{ $booking->staff?->display_name ?? __('app.booking_ui.auto_assigned') }}</td>
                                 <td class="whitespace-nowrap px-5 py-4">
                                     {{ $booking->starts_at?->setTimezone($timezone)->format('d M Y, H:i') }}
@@ -216,7 +220,7 @@
                             <div>
                                 <p class="font-mono text-xs font-bold text-slate-500">{{ $booking->booking_reference }}</p>
                                 <h3 class="mt-1 font-bold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</h3>
-                                <p class="mt-1 text-sm text-slate-500">{{ $serviceName($booking->service) }}</p>
+                                <p class="mt-1 text-sm text-slate-500">{{ $serviceName($booking->service_name_snapshot ?? $booking->service) }}</p>
                             </div>
                             <span class="shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold {{ $statusClasses[$status] ?? $statusClasses['pending'] }}">{{ $statusLabels[$status] ?? $status }}</span>
                         </div>
