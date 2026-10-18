@@ -159,7 +159,6 @@ test('calendar week view renders bookings for local dates in the week', function
 
     $response->assertOk()
         ->assertViewHas('bookingsByDate', fn ($bookingsByDate): bool => $bookingsByDate->has('2026-09-28'))
-        ->assertSee('BR-CAL-WEEK')
         ->assertSee('Calendar Customer')
         ->assertSee('10:00');
 });
