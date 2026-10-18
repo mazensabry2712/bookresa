@@ -9,8 +9,8 @@ use App\Http\Middleware\EnsureTenantModuleEnabled;
 use App\Http\Middleware\EnsureTenantSubscriptionUsable;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SecurityHeaders;
-use App\Http\Middleware\SetLocale;
 use App\Domain\Platform\Models\PlatformAdmin;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -51,7 +51,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('home');
             }
 
-            if (! $user->hasVerifiedEmail()) {
+            if ($user->hasVerifiedEmail() === false) {
                 return route('verification.notice');
             }
 
