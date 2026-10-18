@@ -16,7 +16,6 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
-use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
@@ -236,7 +235,6 @@ test('scheduling actions reject invalid time and date ranges', function (): void
         'ends_at' => '15:00',
     ]))->toThrow(InvalidArgumentException::class);
 });
-
 
 test('assigned staff availability uses batched scheduling queries', function (): void {
     $tenant = availabilityTenant('Availability Query Budget');
