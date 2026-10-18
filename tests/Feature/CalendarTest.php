@@ -110,7 +110,7 @@ function calendarBooking(Tenant $tenant, string $reference, string $localStart):
 test('calendar falls back to the application timezone when the workspace timezone is empty', function (): void {
     $tenant = calendarTenant('calendar-timezone-fallback');
     $profile = BusinessProfile::query()->firstOrFail();
-    $profile->update(['timezone' => null]);
+    $profile->update(['timezone' => '']);
     $user = calendarUser($tenant, 'calendar-timezone-fallback@example.com');
     $expectedTimezone = (string) (config('app.timezone') ?: 'UTC');
 
