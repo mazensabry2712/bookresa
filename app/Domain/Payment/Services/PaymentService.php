@@ -30,7 +30,7 @@ final class PaymentService
     /**
      * Start a provider-neutral payment and persist its local record.
      *
-     * @param array<string, mixed>  $metadata
+     * @param  array<string, mixed>  $metadata
      */
     public function start(
         PaymentGateway $gateway,

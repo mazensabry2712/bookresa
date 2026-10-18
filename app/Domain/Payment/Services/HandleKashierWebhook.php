@@ -24,7 +24,7 @@ final class HandleKashierWebhook
     ) {}
 
     /**
-     * @param array<string, mixed>  $payload
+     * @param  array<string, mixed>  $payload
      */
     public function handle(array $payload, string $signature): bool
     {
@@ -115,7 +115,7 @@ final class HandleKashierWebhook
     }
 
     /**
-     * @param array<string, mixed>  $data
+     * @param  array<string, mixed>  $data
      */
     private function mapResult(
         Payment $payment,
