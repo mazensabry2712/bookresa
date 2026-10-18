@@ -53,12 +53,21 @@
         $subscriptionStatusLabels = [
             'trial' => __('app.dashboard_ui.status_trial'),
             'active' => __('app.dashboard_ui.status_active'),
+            'cancellation_scheduled' => __('app.dashboard_ui.status_cancellation_scheduled'),
         ];
 
         $subscriptionStatusClasses = [
             'trial' => 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
-            'active' => 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-200',
+            'active' => 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300',
+            'cancellation_scheduled' => 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
         ];
+
+        $summaryMetricCount = 3 + (int) $canViewRevenue + (int) $canViewActiveStaff;
+        $summaryGridClass = match ($summaryMetricCount) {
+            5 => 'sm:grid-cols-2 xl:grid-cols-5',
+            4 => 'sm:grid-cols-2 xl:grid-cols-4',
+            default => 'sm:grid-cols-2 xl:grid-cols-3',
+        };
 
         $usagePercent = $attention['usagePercent'] ?? 0;
     @endphp
@@ -132,7 +141,7 @@
             </section>
         @endif
 
-        <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-label="{{ __('app.dashboard_ui.summary') }}">
+        <section class="grid gap-4 {{ $summaryGridClass }}" aria-label="{{ __('app.dashboard_ui.summary') }}">
             <article class="br-panel min-h-[148px] p-5 transition-shadow duration-150 hover:shadow-md">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-brand-indigo dark:bg-indigo-950/40 dark:text-indigo-300" aria-hidden="true">
@@ -144,6 +153,7 @@
                 <p data-dashboard-metric="today-bookings" data-metric-value="{{ $metrics['todayBookings'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['todayBookings']) }}</p>
             </article>
 
+            @if ($canViewRevenue)
             <article class="br-panel min-h-[148px] p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" aria-hidden="true">
@@ -152,8 +162,15 @@
                     <span class="text-xs font-semibold text-slate-400">{{ __('app.dashboard_ui.paid') }}</span>
                 </div>
                 <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.today_revenue') }}</p>
-                <p data-dashboard-metric="today-revenue" data-metric-value="{{ $metrics['todayRevenueMinor'] ?? '—' }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ $money($metrics['todayRevenueMinor']) }}</p>
+                <div data-dashboard-metric="today-revenue" data-metric-value="{{ collect($metrics['todayRevenueByCurrency'])->map(fn ($minor, $currency) => $currency.':'.(int) $minor)->implode('|') }}" class="mt-1 space-y-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">
+                    @forelse ($metrics['todayRevenueByCurrency'] as $currency => $amountMinor)
+                        <p>{{ $money((int) $amountMinor, (string) $currency) }}</p>
+                    @empty
+                        <p aria-label="{{ __('app.dashboard_ui.no_paid_revenue') }}">—</p>
+                    @endforelse
+                </div>
             </article>
+            @endif
 
             <article class="br-panel min-h-[148px] p-5">
                 <div class="flex items-center justify-between gap-4">
@@ -182,6 +199,7 @@
                 </div>
             </article>
 
+            @if ($canViewActiveStaff)
             <article class="br-panel min-h-[148px] p-5">
                 <div class="flex items-center justify-between gap-4">
                     <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-300" aria-hidden="true">
@@ -192,6 +210,7 @@
                 <p class="mt-4 text-sm font-semibold text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.active_staff') }}</p>
                 <p data-dashboard-metric="active-staff" data-metric-value="{{ $metrics['activeStaff'] }}" class="mt-1 text-3xl font-bold tracking-tight text-slate-950 dark:text-white">{{ number_format($metrics['activeStaff']) }}</p>
             </article>
+            @endif
         </section>
 
         @if (
@@ -346,7 +365,8 @@
                                 </div>
 
                                 <div class="text-start lg:text-end">
-                                    <p class="text-sm font-bold text-slate-900 dark:text-white">
+                                    <p class="text-xs font-medium text-slate-400">{{ __('app.dashboard_ui.current_service_price') }}</p>
+                                    <p class="mt-1 text-sm font-bold text-slate-900 dark:text-white">
                                         {{ $money((int) $booking->service?->price_minor, (string) ($booking->service?->currency ?? 'EGP')) }}
                                     </p>
                                 </div>
@@ -370,6 +390,7 @@
             </section>
 
             <aside class="space-y-6">
+                @if ($canViewBilling)
                 <section class="br-panel p-5" aria-labelledby="subscription-title">
                     <div class="flex items-start justify-between gap-4">
                         <div>
@@ -385,9 +406,14 @@
                         <div class="mt-4 grid grid-cols-2 gap-3">
                             <div class="rounded-xl br-surface-soft p-3">
                                 <p class="text-xs font-semibold text-slate-500">{{ __('app.dashboard_ui.subscription_status') }}</p>
+                                @php
+                                    $subscriptionStatusKey = $subscription->cancelled_at !== null
+                                        ? 'cancellation_scheduled'
+                                        : $subscription->status->value;
+                                @endphp
                                 <p class="mt-1">
-                                <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold {{ $subscriptionStatusClasses[$subscription->status->value] ?? 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200' }}">
-                                    {{ $subscriptionStatusLabels[$subscription->status->value] ?? $subscription->status->value }}
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold {{ $subscriptionStatusClasses[$subscriptionStatusKey] ?? 'border-slate-200 bg-slate-100 text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200' }}">
+                                    {{ $subscriptionStatusLabels[$subscriptionStatusKey] ?? $subscription->status->value }}
                                 </span>
                             </p>
                             </div>
@@ -407,6 +433,7 @@
                         </p>
                     @endif
                 </section>
+                @endif
 
                 @can('billing.view')
                 @if ($usageSummary)

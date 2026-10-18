@@ -2,6 +2,7 @@
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
@@ -9,6 +10,7 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Staff\Enums\StaffStatus;
@@ -138,6 +140,14 @@ test('dashboard shows business identity and core operating metrics', function ()
     dashboardCustomer($tenant, 'Customer Two', '01000000222');
     dashboardBooking($tenant, Customer::query()->where('name', 'Customer One')->firstOrFail(), 'BR-DASH-001', BookingStatus::Confirmed->value);
 
+    $activeStaffUser = User::factory()->create(['name' => 'Dashboard Active Staff']);
+    StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $activeStaffUser->id,
+        'display_name' => 'Dashboard Active Staff',
+        'status' => StaffStatus::Active,
+    ]);
+
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard', ['tenant' => $tenant->slug]))
@@ -154,7 +164,66 @@ test('dashboard shows business identity and core operating metrics', function ()
         ->assertSee('Customer One')
         ->assertSee('BR-DASH-001')
         ->assertSee('Dashboard Plan')
+        ->assertSee('data-dashboard-metric="active-staff" data-metric-value="1"', false)
         ->assertSee('10%');
+});
+
+test('dashboard keeps paid revenue separate by currency and subtracts refunds', function (): void {
+    [$user, $tenant] = dashboardWorkspace();
+    $customer = dashboardCustomer($tenant, 'Currency Customer', '01000000991');
+
+    $egpBooking = dashboardBooking($tenant, $customer, 'BR-DASH-REV-EGP', BookingStatus::Confirmed->value);
+    $usdBooking = dashboardBooking($tenant, $customer, 'BR-DASH-REV-USD', BookingStatus::Confirmed->value);
+    $usdBooking->service()->update(['currency' => 'USD']);
+
+    Payment::query()->create([
+        'tenant_id' => $tenant->id,
+        'payable_type' => $egpBooking->getMorphClass(),
+        'payable_id' => $egpBooking->id,
+        'reference' => 'DASH-EGP-001',
+        'provider' => 'test',
+        'amount_minor' => 30000,
+        'refunded_amount_minor' => 5000,
+        'currency' => 'EGP',
+        'status' => PaymentStatus::Paid,
+        'paid_at' => CarbonImmutable::now('UTC'),
+    ]);
+
+    Payment::query()->create([
+        'tenant_id' => $tenant->id,
+        'payable_type' => $usdBooking->getMorphClass(),
+        'payable_id' => $usdBooking->id,
+        'reference' => 'DASH-USD-001',
+        'provider' => 'test',
+        'amount_minor' => 12500,
+        'refunded_amount_minor' => 0,
+        'currency' => 'USD',
+        'status' => PaymentStatus::Paid,
+        'paid_at' => CarbonImmutable::now('UTC'),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('250.00 EGP')
+        ->assertSee('125.00 USD')
+        ->assertDontSee('375.00 EGP');
+});
+
+test('dashboard labels a scheduled subscription cancellation accurately', function (): void {
+    [$user, $tenant] = dashboardWorkspace();
+    $subscription = Subscription::query()->firstOrFail();
+    $subscription->forceFill([
+        'cancelled_at' => $subscription->end_at,
+        'metadata' => array_merge($subscription->metadata ?? [], ['cancel_at_period_end' => true]),
+    ])->save();
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee(__('app.dashboard_ui.status_cancellation_scheduled'));
 });
 
 test('dashboard excludes terminal bookings from upcoming list', function (): void {
@@ -242,7 +311,9 @@ test('staff dashboard is scoped to assigned operations and hides billing metrics
         ->assertSee($assignedBooking->booking_reference)
         ->assertDontSee('BR-DASH-STAFF-002')
         ->assertSee('data-dashboard-metric="customers" data-metric-value="1"', false)
-        ->assertSee('data-dashboard-metric="today-revenue" data-metric-value="—"', false)
+        ->assertDontSee('data-dashboard-metric="today-revenue"', false)
+        ->assertDontSee('data-dashboard-metric="active-staff"', false)
+        ->assertDontSee(__('app.dashboard_ui.no_active_subscription'))
         ->assertDontSee(__('app.dashboard_ui.customer_usage'));
 });
 

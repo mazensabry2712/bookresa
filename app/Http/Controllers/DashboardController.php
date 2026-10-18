@@ -15,7 +15,6 @@ use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class DashboardController
@@ -40,13 +39,15 @@ final class DashboardController
 
         $canViewBilling = auth()->user()?->can('billing.view') ?? false;
         $canViewBookings = auth()->user()?->can('bookings.view') ?? false;
+        $canViewStaff = auth()->user()?->can('staff.view') ?? false;
+        $canViewRevenue = $canViewBilling && $canViewBookings;
 
         $todayStart = CarbonImmutable::now($timezone)->startOfDay();
         $todayEnd = $todayStart->endOfDay();
         $nowUtc = CarbonImmutable::now('UTC');
 
         $todayBookings = 0;
-        $todayRevenueMinor = null;
+        $todayRevenueByCurrency = [];
         $upcomingBookingsCount = 0;
         $upcomingBookings = collect();
 
@@ -57,8 +58,9 @@ final class DashboardController
                 ->when($staffId !== null, fn ($query) => $query->where('staff_id', $staffId))
                 ->count();
 
-            if ($canViewBilling) {
-                $todayRevenueMinor = Payment::query()
+            if ($canViewRevenue) {
+                $todayRevenueByCurrency = Payment::query()
+                    ->where('tenant_id', $tenant->getKey())
                     ->where('payable_type', (new Booking)->getMorphClass())
                     ->where('status', PaymentStatus::Paid)
                     ->whereNotNull('paid_at')
@@ -71,7 +73,17 @@ final class DashboardController
                             fn ($query) => $query->where('staff_id', $staffId),
                         ),
                     )
-                    ->sum(DB::raw('amount_minor - refunded_amount_minor'));
+                    ->select('currency')
+                    ->selectRaw('SUM(amount_minor - refunded_amount_minor) as net_amount_minor')
+                    ->groupBy('currency')
+                    ->orderBy('currency')
+                    ->get()
+                    ->mapWithKeys(
+                        static fn (Payment $payment): array => [
+                            (string) $payment->currency => (int) $payment->net_amount_minor,
+                        ],
+                    )
+                    ->all();
             }
 
             $upcomingBookingsQuery = Booking::query()
@@ -210,6 +222,9 @@ final class DashboardController
         return view('dashboard', [
             'tenant' => $tenant,
             'timezone' => $timezone,
+            'canViewBilling' => $canViewBilling,
+            'canViewRevenue' => $canViewRevenue,
+            'canViewActiveStaff' => $canViewStaff,
             'businessName' => $businessName,
             'todayLabel' => $todayStart->locale(app()->getLocale())->isoFormat('dddd, D MMMM YYYY'),
             'onboarding' => [
@@ -220,13 +235,13 @@ final class DashboardController
             ],
             'metrics' => [
                 'todayBookings' => (int) $todayBookings,
-                'todayRevenueMinor' => $todayRevenueMinor === null ? null : (int) $todayRevenueMinor,
+                'todayRevenueByCurrency' => $todayRevenueByCurrency,
                 'upcomingBookings' => (int) $upcomingBookingsCount,
                 'customers' => (int) $totalCustomers,
                 'newCustomersToday' => (int) $newCustomersToday,
-                'activeStaff' => auth()->user()?->hasRole('staff')
-                    ? 1
-                    : StaffProfile::query()->where('status', StaffStatus::Active)->count(),
+                'activeStaff' => $canViewStaff
+                    ? (int) StaffProfile::query()->where('status', StaffStatus::Active)->count()
+                    : null,
             ],
             'upcomingBookings' => $upcomingBookings,
             'attention' => [
