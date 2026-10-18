@@ -33,6 +33,7 @@ const syncThemeButtons = () => {
         button.classList.toggle('dark:bg-white', active);
         button.classList.toggle('dark:text-slate-900', active);
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        button.querySelector('[data-bookresa-theme-selected]')?.classList.toggle('hidden', !active);
     });
 };
 
@@ -314,8 +315,62 @@ const setupResponsiveAdminUi = () => {
     });
 };
 
+const setupPreferenceDropdowns = () => {
+    const setupDropdown = (root, toggleSelector, panelSelector) => {
+        const toggle = root.querySelector(toggleSelector);
+        const panel = root.querySelector(panelSelector);
+
+        if (!toggle || !panel) {
+            return;
+        }
+
+        const setOpen = (open, restoreFocus = false) => {
+            panel.classList.toggle('hidden', !open);
+            panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+
+            if (!open && restoreFocus) {
+                toggle.focus();
+            }
+        };
+
+        toggle.addEventListener('click', () => {
+            setOpen(panel.classList.contains('hidden'));
+        });
+
+        panel.querySelectorAll('a, button').forEach((control) => {
+            control.addEventListener('click', () => {
+                if (control.tagName === 'A' || control.matches('[data-bookresa-theme]')) {
+                    setOpen(false);
+                }
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!root.contains(event.target)) {
+                setOpen(false);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !panel.classList.contains('hidden')) {
+                setOpen(false, true);
+            }
+        });
+    };
+
+    document.querySelectorAll('[data-bookresa-theme-switcher]').forEach((root) => {
+        setupDropdown(root, '[data-bookresa-theme-toggle]', '[data-bookresa-theme-panel]');
+    });
+
+    document.querySelectorAll('[data-bookresa-language-switcher]').forEach((root) => {
+        setupDropdown(root, '[data-bookresa-language-toggle]', '[data-bookresa-language-panel]');
+    });
+};
+
 const setupUtilities = () => {
     setupTheme();
+    setupPreferenceDropdowns();
     setupSidebar();
     setupResponsiveAdminTables();
     setupResponsiveAdminUi();
