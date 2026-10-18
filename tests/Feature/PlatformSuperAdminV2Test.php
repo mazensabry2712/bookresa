@@ -28,6 +28,8 @@ use App\Notifications\PlatformBroadcastNotification;
 use App\Notifications\SupportReplyNotification;
 use App\Support\AuditLogger;
 use Carbon\CarbonImmutable;
+use Database\Seeders\BusinessTypeSeeder;
+use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -38,8 +40,8 @@ uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->seed([
-        Database\Seeders\ModuleSeeder::class,
-        Database\Seeders\BusinessTypeSeeder::class,
+        ModuleSeeder::class,
+        BusinessTypeSeeder::class,
     ]);
 });
 
