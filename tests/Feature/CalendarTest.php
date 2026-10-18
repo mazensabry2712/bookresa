@@ -122,20 +122,46 @@ test('authorized user can open the monthly calendar', function (): void {
         ->assertSee('Consultation')
         ->assertSee('br-direction-arrow')
         ->assertDontSee('href="'.route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]).'"', false);
+});
 
-    foreach (['day', 'week'] as $viewMode) {
-        $this->actingAs($user)
-            ->withSession(['tenant_id' => $tenant->id])
-            ->get(route('calendar.index', [
-                'tenant' => $tenant->slug,
-                'view' => $viewMode,
-                'date' => '2026-09-28',
-            ]))
-            ->assertOk()
-            ->assertSee('BR-CAL-OPEN')
-            ->assertSee('Calendar Customer')
-            ->assertSee('10:00');
-    }
+test('calendar day view renders the booking for its local start date', function (): void {
+    $tenant = calendarTenant('calendar-day-view');
+    $user = calendarUser($tenant, 'calendar-day-view@example.com');
+    calendarBooking($tenant, 'BR-CAL-DAY', '2026-09-28 10:00');
+
+    $response = $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'day',
+            'date' => '2026-09-28',
+        ]));
+
+    $response->assertOk()
+        ->assertViewHas('bookingsByDate', fn ($bookingsByDate): bool => $bookingsByDate->has('2026-09-28'))
+        ->assertSee('BR-CAL-DAY')
+        ->assertSee('Calendar Customer')
+        ->assertSee('10:00');
+});
+
+test('calendar week view renders bookings for local dates in the week', function (): void {
+    $tenant = calendarTenant('calendar-week-view');
+    $user = calendarUser($tenant, 'calendar-week-view@example.com');
+    calendarBooking($tenant, 'BR-CAL-WEEK', '2026-09-28 10:00');
+
+    $response = $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'week',
+            'date' => '2026-09-28',
+        ]));
+
+    $response->assertOk()
+        ->assertViewHas('bookingsByDate', fn ($bookingsByDate): bool => $bookingsByDate->has('2026-09-28'))
+        ->assertSee('BR-CAL-WEEK')
+        ->assertSee('Calendar Customer')
+        ->assertSee('10:00');
 });
 
 test('calendar filters by service and status', function (): void {
