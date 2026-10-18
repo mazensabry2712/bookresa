@@ -10,6 +10,7 @@ use App\Http\Middleware\EnsureTenantSubscriptionUsable;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
+use App\Domain\Platform\Models\PlatformAdmin;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -43,6 +44,38 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->redirectUsersTo(function (Request $request): string {
+            $user = $request->user();
+
+            if ($user === null) {
+                return route('home');
+            }
+
+            if (! $user->hasVerifiedEmail()) {
+                return route('verification.notice');
+            }
+
+            if (PlatformAdmin::query()
+                ->where('user_id', $user->getKey())
+                ->where('is_active', true)
+                ->exists()) {
+                return route('admin.dashboard');
+            }
+
+            $membership = $user->tenantMemberships()
+                ->where('status', MembershipStatus::Active->value)
+                ->whereHas('tenant', fn ($query) => $query->where('status', TenantStatus::Active->value))
+                ->with('tenant')
+                ->orderByDesc('is_primary')
+                ->orderBy('id')
+                ->first();
+
+            if ($membership?->tenant !== null) {
+                return route('dashboard', ['tenant' => $membership->tenant->slug]);
+            }
+
+            return route('onboarding.business.create');
+        });
         $middleware->web(append: [
             SecurityHeaders::class,
             SetLocale::class,

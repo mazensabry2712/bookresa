@@ -1,5 +1,15 @@
 <?php
 
+use App\Domain\Platform\Models\PlatformAdmin;
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Enums\TenantStatus;
+use App\Domain\Tenant\Models\Tenant;
+use App\Domain\Tenant\Models\TenantMembership;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
+
 test('login page uses the application login view', function (): void {
     $this->get(route('login'))
         ->assertOk()
@@ -32,4 +42,59 @@ test('guest auth pages are not cached with stale csrf tokens', function (): void
             ->assertHeader('Pragma', 'no-cache')
             ->assertHeader('Expires', '0');
     }
+});
+
+test('authenticated users without a workspace are redirected safely from guest auth pages', function (): void {
+    $user = User::factory()->create();
+
+    foreach ([route('login'), route('register')] as $url) {
+        $this->actingAs($user)
+            ->get($url)
+            ->assertRedirect(route('onboarding.business.create'));
+    }
+});
+
+test('authenticated tenant members are redirected to their workspace when opening guest auth pages', function (): void {
+    $user = User::factory()->create();
+    $tenant = Tenant::query()->create([
+        'slug' => 'auth-redirect-workspace',
+        'status' => TenantStatus::Active,
+        'settings' => [
+            'onboarding' => [
+                'completed' => false,
+            ],
+        ],
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'status' => MembershipStatus::Active,
+        'is_primary' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('login'))
+        ->assertRedirect(route('dashboard', ['tenant' => $tenant->slug]));
+});
+
+test('active platform admins are redirected to the platform dashboard when opening guest auth pages', function (): void {
+    $user = User::factory()->create();
+
+    PlatformAdmin::query()->create([
+        'user_id' => $user->getKey(),
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->get(route('register'))
+        ->assertRedirect(route('admin.dashboard'));
+});
+
+test('authenticated unverified users are redirected to email verification from guest auth pages', function (): void {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get(route('login'))
+        ->assertRedirect(route('verification.notice'));
 });
