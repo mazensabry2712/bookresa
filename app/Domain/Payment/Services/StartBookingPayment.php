@@ -3,11 +3,11 @@
 namespace App\Domain\Payment\Services;
 
 use App\Domain\Booking\Models\Booking;
-use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Models\TenantPaymentAccount;
-use App\Domain\Payment\Models\Payment;
-use App\Domain\Tenant\Services\CurrentTenant;
 use App\Domain\Payment\Contracts\PaymentGateway;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
+use App\Domain\Payment\Models\TenantPaymentAccount;
+use App\Domain\Tenant\Services\CurrentTenant;
 use LogicException;
 use RuntimeException;
 
@@ -17,8 +17,7 @@ final class StartBookingPayment
         private readonly CurrentTenant $currentTenant,
         private readonly PaymentService $payments,
         private readonly PaymentGateway $gateway,
-    ) {
-    }
+    ) {}
 
     public function handle(Booking $booking): Payment
     {
