@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $provider
  * @property string|null $provider_reference
  * @property int $amount_minor
+ * @property int $refunded_amount_minor
  * @property string $currency
  * @property PaymentStatus $status
  * @property string|null $method
@@ -42,6 +43,7 @@ class Payment extends Model
         'provider',
         'provider_reference',
         'amount_minor',
+        'refunded_amount_minor',
         'currency',
         'status',
         'method',
@@ -56,6 +58,7 @@ class Payment extends Model
     {
         return [
             'amount_minor' => 'integer',
+            'refunded_amount_minor' => 'integer',
             'status' => PaymentStatus::class,
             'metadata' => 'array',
             'paid_at' => 'immutable_datetime',

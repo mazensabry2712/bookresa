@@ -222,3 +222,69 @@ test('failed Kashier refund does not regress a paid payment', function (): void 
             'kashier_refund_status' => 'FAILURE',
         ]);
 });
+
+test('successful Kashier partial refunds reduce net paid amount and sync booking state', function (): void {
+    $tenant = webhookTenant('webhook-partial-refund');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+    $payment->forceFill(['status' => PaymentStatus::Paid])->save();
+    $booking->forceFill(['payment_status' => BookingPaymentStatus::Paid])->save();
+
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $partial = webhookPayload($payment->reference, 'TX-PARTIAL-REFUND-001', 'SUCCESS');
+    $partial['event'] = 'partial_refund';
+    $partial['data']['amount'] = 50;
+    $partial['data']['creationDate'] = null;
+    $signature = app(KashierWebhookVerifier::class)->sign($partial['data'], 'api-key');
+
+    $this->postJson(route('webhooks.kashier'), $partial, [
+        'x-kashier-signature' => $signature,
+    ])->assertNoContent();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
+        ->and($payment->fresh()->refunded_amount_minor)->toBe(5000)
+        ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::PartiallyPaid);
+
+    $full = webhookPayload($payment->reference, 'TX-PARTIAL-REFUND-002', 'SUCCESS');
+    $full['event'] = 'partial_refund';
+    $full['data']['amount'] = 200;
+    $full['data']['creationDate'] = null;
+    $signature = app(KashierWebhookVerifier::class)->sign($full['data'], 'api-key');
+
+    $this->postJson(route('webhooks.kashier'), $full, [
+        'x-kashier-signature' => $signature,
+    ])->assertNoContent();
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
+        ->and($payment->fresh()->refunded_amount_minor)->toBe(25000)
+        ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Refunded);
+});
+
+test('pending Kashier partial refund does not change the payment balance', function (): void {
+    $tenant = webhookTenant('webhook-partial-refund-pending');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+    $payment->forceFill(['status' => PaymentStatus::Paid])->save();
+    $booking->forceFill(['payment_status' => BookingPaymentStatus::Paid])->save();
+
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $payload = webhookPayload($payment->reference, 'TX-PARTIAL-REFUND-PENDING', 'PENDING');
+    $payload['event'] = 'partial_refund';
+    $payload['data']['amount'] = 50;
+    $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertNoContent();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
+        ->and($payment->fresh()->refunded_amount_minor)->toBe(0)
+        ->and($payment->fresh()->metadata)->toMatchArray(['kashier_refund_status' => 'PENDING'])
+        ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Paid);
+});

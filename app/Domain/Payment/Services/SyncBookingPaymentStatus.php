@@ -24,8 +24,11 @@ final class SyncBookingPaymentStatus
         $booking->loadMissing('service');
 
         $paidMinor = $booking->payments()
-            ->where('status', PaymentStatus::Paid)
-            ->sum('amount_minor');
+            ->whereIn('status', [PaymentStatus::Paid, PaymentStatus::Refunded])
+            ->get(['amount_minor', 'refunded_amount_minor', 'status'])
+            ->sum(fn (Payment $item): int => $item->status === PaymentStatus::Paid
+                ? max((int) $item->amount_minor - (int) $item->refunded_amount_minor, 0)
+                : 0);
 
         if ($status === PaymentStatus::Refunded && $paidMinor <= 0) {
             $booking->forceFill(['payment_status' => BookingPaymentStatus::Refunded])->save();

@@ -34,7 +34,7 @@ final class HandleKashierWebhook
             throw new RuntimeException('Invalid Kashier webhook payload.');
         }
 
-        $event = (string) ($payload['event'] ?? '');
+        $event = strtolower(trim((string) ($payload['event'] ?? '')));
         $transactionId = (string) ($data['transactionId'] ?? '');
         $orderReference = (string) ($data['orderReference'] ?? '');
         $status = strtoupper((string) ($data['status'] ?? ''));
@@ -58,7 +58,13 @@ final class HandleKashierWebhook
             throw new RuntimeException('Payment for Kashier order reference was not found.');
         }
 
-        if ($this->amountToMinor($data['amount'] ?? null) !== (int) $payment->amount_minor) {
+        $eventAmountMinor = $this->amountToMinor($data['amount'] ?? null);
+
+        if ($event === 'partial_refund') {
+            if ($eventAmountMinor <= 0 || $eventAmountMinor > (int) $payment->amount_minor) {
+                throw new RuntimeException('Kashier partial refund amount is invalid.');
+            }
+        } elseif ($eventAmountMinor !== (int) $payment->amount_minor) {
             throw new RuntimeException('Kashier webhook amount does not match the payment.');
         }
 
@@ -83,8 +89,8 @@ final class HandleKashierWebhook
 
         return $this->currentTenant->run(
             $tenant,
-            function () use ($payment, $payload, $data, $event, $transactionId, $status): bool {
-                return DB::transaction(function () use ($payment, $payload, $data, $event, $transactionId, $status): bool {
+            function () use ($payment, $payload, $data, $event, $transactionId, $status, $eventAmountMinor): bool {
+                return DB::transaction(function () use ($payment, $payload, $data, $event, $transactionId, $status, $eventAmountMinor): bool {
                     $inserted = DB::table('payment_webhook_events')->insertOrIgnore([
                         'tenant_id' => $payment->tenant_id,
                         'provider' => 'kashier',
@@ -101,9 +107,22 @@ final class HandleKashierWebhook
                         return false;
                     }
 
-                    $mapped = $this->mapResult($payment, $event, $status, $data);
+                    $lockedPayment = Payment::withoutGlobalScopes()
+                        ->whereKey($payment->getKey())
+                        ->lockForUpdate()
+                        ->firstOrFail();
 
-                    $updated = $this->payments->applyResult($payment->fresh(), $mapped);
+                    if (
+                        $event === 'partial_refund'
+                        && $status === 'SUCCESS'
+                        && $eventAmountMinor > (int) $lockedPayment->amount_minor - (int) $lockedPayment->refunded_amount_minor
+                    ) {
+                        throw new RuntimeException('Kashier partial refund exceeds the remaining refundable amount.');
+                    }
+
+                    $mapped = $this->mapResult($lockedPayment, $event, $status, $data, $eventAmountMinor);
+
+                    $updated = $this->payments->applyResult($lockedPayment, $mapped);
 
                     $this->bookingPaymentSync->handle($updated, $updated->status);
                     $this->subscriptionPaymentSync->handle($updated, $updated->status);
@@ -122,17 +141,26 @@ final class HandleKashierWebhook
         string $event,
         string $status,
         array $data,
+        int $eventAmountMinor,
     ): PaymentGatewayResult {
-        $mappedStatus = match ($event) {
-            'refund' => $status === 'SUCCESS'
-                ? PaymentStatus::Refunded
-                : PaymentStatus::Paid,
-            'partial_refund' => PaymentStatus::Paid,
-            default => match ($status) {
-                'SUCCESS' => PaymentStatus::Paid,
-                'FAILURE' => PaymentStatus::Failed,
-                default => PaymentStatus::Processing,
-            },
+        $isRefundEvent = in_array($event, ['refund', 'partial_refund'], true);
+        $refundSucceeded = $isRefundEvent && $status === 'SUCCESS';
+        $cumulativeRefundMinor = (int) $payment->refunded_amount_minor;
+
+        if ($event === 'refund' && $refundSucceeded) {
+            $cumulativeRefundMinor = (int) $payment->amount_minor;
+        } elseif ($event === 'partial_refund' && $refundSucceeded) {
+            $cumulativeRefundMinor += $eventAmountMinor;
+        }
+
+        $mappedStatus = match (true) {
+            $event === 'refund' && $refundSucceeded => PaymentStatus::Refunded,
+            $event === 'partial_refund' && $refundSucceeded && $cumulativeRefundMinor >= (int) $payment->amount_minor => PaymentStatus::Refunded,
+            $event === 'partial_refund' && $refundSucceeded => PaymentStatus::Paid,
+            $isRefundEvent => $payment->status,
+            $status === 'SUCCESS' => PaymentStatus::Paid,
+            $status === 'FAILURE' => PaymentStatus::Failed,
+            default => PaymentStatus::Processing,
         };
 
         return new PaymentGatewayResult(
@@ -146,9 +174,11 @@ final class HandleKashierWebhook
                 'kashier_merchant_order_id' => $data['merchantOrderId'] ?? null,
                 'kashier_status' => $status,
                 'transaction_response_code' => $data['transactionResponseCode'] ?? null,
-                'kashier_refund_status' => in_array($event, ['refund', 'partial_refund'], true) ? $status : null,
+                'kashier_refund_status' => $isRefundEvent ? $status : null,
+                'refunded_amount_minor' => $cumulativeRefundMinor,
+                'refund_event_amount_minor' => $isRefundEvent ? $eventAmountMinor : null,
             ],
-            paidAt: $mappedStatus === PaymentStatus::Paid
+            paidAt: ! $isRefundEvent && $mappedStatus === PaymentStatus::Paid
                 ? $this->parseDate($data['creationDate'] ?? null) ?? CarbonImmutable::now('UTC')
                 : null,
         );
