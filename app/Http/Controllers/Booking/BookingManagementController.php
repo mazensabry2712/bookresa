@@ -146,9 +146,9 @@ class BookingManagementController
 
             $booking = $createBooking->handle(
                 $service,
-                $existingCustomer?->name ?? $request->string('name')->toString(),
-                $existingCustomer?->phone ?? ($request->filled('phone') ? $request->string('phone')->toString() : null),
-                $existingCustomer?->email ?? ($request->filled('email') ? $request->string('email')->toString() : null),
+                $existingCustomer->name ?? $request->string('name')->toString(),
+                $existingCustomer->phone ?? ($request->filled('phone') ? $request->string('phone')->toString() : null),
+                $existingCustomer->email ?? ($request->filled('email') ? $request->string('email')->toString() : null),
                 $startsAt,
                 $staff,
                 $request->filled('notes') ? $request->string('notes')->toString() : null,
