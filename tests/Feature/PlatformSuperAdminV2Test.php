@@ -311,8 +311,7 @@ test('platform finance can verify and refund a payment through the provider cont
         ]);
     });
 
-    $fakeGateway = new class implements PaymentGateway
-    {
+    $fakeGateway = new class implements PaymentGateway {
         public function createPayment(PaymentRequest $request): PaymentGatewayResult
         {
             return new PaymentGatewayResult(PaymentStatus::Processing, 'new-provider');
@@ -503,8 +502,7 @@ test('platform finance refunds only the outstanding balance after a partial refu
         ]);
     });
 
-    $fakeGateway = new class implements PaymentGateway
-    {
+    $fakeGateway = new class implements PaymentGateway {
         public int $lastRefundAmount = 0;
 
         public function createPayment(PaymentRequest $request): PaymentGatewayResult
