@@ -21,7 +21,6 @@ test('public home page renders the BookResa product home', function (): void {
         ->assertDontSee('The PHP Framework for Web Artisans');
 });
 
-
 test('public home page supports Arabic navigation and copy', function (): void {
     $this->get(route('home').'?locale=ar')
         ->assertOk()
