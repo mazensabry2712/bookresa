@@ -37,8 +37,8 @@ final class StartBookingPayment
         }
 
         $service = $booking->service;
-        $servicePriceMinor = (int) ($booking->service_price_minor_snapshot ?? $service?->price_minor ?? 0);
-        $serviceCurrency = (string) ($booking->service_currency_snapshot ?: ($service?->currency ?? ''));
+        $servicePriceMinor = (int) ($booking->service_price_minor_snapshot ?? $service->price_minor ?? 0);
+        $serviceCurrency = (string) ($booking->service_currency_snapshot ?: ($service->currency ?? ''));
 
         if ($service === null || $servicePriceMinor <= 0) {
             throw new RuntimeException('This booking cannot be paid online.');
