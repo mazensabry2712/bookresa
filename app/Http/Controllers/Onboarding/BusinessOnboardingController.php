@@ -49,5 +49,4 @@ class BusinessOnboardingController
 
         return to_route('dashboard', ['tenant' => $tenant->slug]);
     }
-
 }
