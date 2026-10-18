@@ -7,15 +7,19 @@
     @php
         $statusLabels = [
             'pending' => __('app.payment_ui.status_pending'),
+            'processing' => __('app.payment_ui.status_processing'),
             'paid' => __('app.payment_ui.status_paid'),
             'failed' => __('app.payment_ui.status_failed'),
+            'cancelled' => __('app.payment_ui.status_cancelled'),
             'refunded' => __('app.payment_ui.status_refunded'),
             'expired' => __('app.payment_ui.status_expired'),
         ];
 
         $statusClasses = [
             'pending' => 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
+            'processing' => 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/70 dark:bg-indigo-950/30 dark:text-indigo-200',
             'paid' => 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300',
+            'cancelled' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
             'failed' => 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-300',
             'refunded' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
             'expired' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
@@ -105,7 +109,8 @@
                                 <td class="px-5 py-4">
                                     @if ($booking)
                                         <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}" class="font-bold text-brand-indigo hover:underline">{{ $booking->booking_reference }}</a>
-                                        <p class="mt-0.5 text-xs text-slate-500">{{ $booking?->service?->name[app()->getLocale()] ?? $booking?->service?->name['en'] ?? '—' }}</p>
+                                        @php $serviceNames = $booking?->service_name_snapshot ?? $booking?->service?->name; @endphp
+                                        <p class="mt-0.5 text-xs text-slate-500">{{ data_get($serviceNames, app()->getLocale()) ?? data_get($serviceNames, 'en') ?? data_get($serviceNames, 'ar') ?? '—' }}</p>
                                     @else
                                         —
                                     @endif
