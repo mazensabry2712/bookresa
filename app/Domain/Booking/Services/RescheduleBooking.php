@@ -158,6 +158,8 @@ final class RescheduleBooking
 
             $locked->forceFill([
                 'staff_id' => $selectedStaff?->getKey(),
+                'service_duration_minutes_snapshot' => $duration,
+                'service_buffer_minutes_snapshot' => $buffer,
                 'starts_at' => $localStart->utc(),
                 'ends_at' => $localEnd->utc(),
                 'block_ends_at' => $localEnd->addMinutes($buffer)->utc(),
