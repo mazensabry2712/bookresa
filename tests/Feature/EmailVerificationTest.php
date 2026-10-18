@@ -6,7 +6,7 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use App\Notifications\Auth\EmailVerificationOtpNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
-test('registration redirects to a valid post-registration location', function (): void {
+test('registration sends an email OTP and redirects to a valid post-registration location', function (): void {
     Notification::fake();
 
     $this->post('/register', [
@@ -25,6 +25,12 @@ test('registration redirects to a valid post-registration location', function ()
     ])->assertRedirect(route('verification.notice'));
 
     expect(auth()->check())->toBeTrue();
+
+    $user = User::query()->where('email', 'verified-candidate@example.com')->firstOrFail();
+    Notification::assertSentTo($user, EmailVerificationOtpNotification::class, function ($notification): bool {
+        return $notification instanceof EmailVerificationOtpNotification
+            && preg_match('/\A\d{6}\z/', $notification->code) === 1;
+    });
 });
 
 test('unverified users are redirected to the verification notice before onboarding', function (): void {
@@ -115,7 +121,7 @@ test('unverified users can request another verification email', function (): voi
         ->assertRedirect(route('verification.notice'))
         ->assertSessionHas('status', 'verification-link-sent');
 
-    Notification::assertSentTo($user, VerifyEmail::class);
+    Notification::assertSentTo($user, EmailVerificationOtpNotification::class);
 });
 
 test('verification ignores a stale intended dashboard destination for a new account', function (): void {
@@ -138,4 +144,135 @@ test('verification ignores a stale intended dashboard destination for a new acco
         ->assertRedirect(route('onboarding.business.create').'?verified=1');
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+});
+
+
+test('a valid email verification OTP marks the user verified', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    Event::fake([Verified::class]);
+
+    $user->sendEmailVerificationNotification();
+
+    $code = '';
+    Notification::assertSentTo($user, EmailVerificationOtpNotification::class, function ($notification) use (&$code): bool {
+        if (! $notification instanceof EmailVerificationOtpNotification) {
+            return false;
+        }
+
+        $code = $notification->code;
+
+        return true;
+    });
+
+    expect($code)->toMatch('/\A\d{6}\z/');
+
+    $this->actingAs($user)
+        ->post(route('verification.otp.verify'), ['code' => $code])
+        ->assertRedirect(route('onboarding.business.create').'?verified=1')
+        ->assertSessionHasNoErrors();
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
+    Event::assertDispatched(Verified::class);
+});
+
+test('an incorrect email verification OTP does not verify the user', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    $user->sendEmailVerificationNotification();
+
+    $code = '';
+    Notification::assertSentTo($user, EmailVerificationOtpNotification::class, function ($notification) use (&$code): bool {
+        if (! $notification instanceof EmailVerificationOtpNotification) {
+            return false;
+        }
+
+        $code = $notification->code;
+
+        return true;
+    });
+
+    $wrongCode = str_pad((string) (((int) $code + 1) % 1_000_000), 6, '0', STR_PAD_LEFT);
+
+    $this->actingAs($user)
+        ->from(route('verification.notice'))
+        ->post(route('verification.otp.verify'), ['code' => $wrongCode])
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHasErrors('code');
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+test('email verification OTP expires and cannot be used after its cache entry is gone', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    $user->sendEmailVerificationNotification();
+
+    $code = '';
+    Notification::assertSentTo($user, EmailVerificationOtpNotification::class, function ($notification) use (&$code): bool {
+        if (! $notification instanceof EmailVerificationOtpNotification) {
+            return false;
+        }
+
+        $code = $notification->code;
+
+        return true;
+    });
+
+    \Illuminate\Support\Facades\Cache::flush();
+
+    $this->actingAs($user)
+        ->from(route('verification.notice'))
+        ->post(route('verification.otp.verify'), ['code' => $code])
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHasErrors('code', __('app.verification_code_expired'));
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+test('email verification OTP blocks repeated incorrect attempts', function (): void {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    $user->sendEmailVerificationNotification();
+
+    $code = '';
+    Notification::assertSentTo($user, EmailVerificationOtpNotification::class, function ($notification) use (&$code): bool {
+        if (! $notification instanceof EmailVerificationOtpNotification) {
+            return false;
+        }
+
+        $code = $notification->code;
+
+        return true;
+    });
+
+    $wrongCode = str_pad((string) (((int) $code + 1) % 1_000_000), 6, '0', STR_PAD_LEFT);
+
+    for ($attempt = 1; $attempt < 5; $attempt++) {
+        $this->actingAs($user)
+            ->from(route('verification.notice'))
+            ->post(route('verification.otp.verify'), ['code' => $wrongCode])
+            ->assertRedirect(route('verification.notice'))
+            ->assertSessionHasErrors('code');
+    }
+
+    $this->actingAs($user)
+        ->from(route('verification.notice'))
+        ->post(route('verification.otp.verify'), ['code' => $wrongCode])
+        ->assertRedirect(route('verification.notice'))
+        ->assertSessionHasErrors('code', __('app.verification_code_too_many_attempts'));
+
+    expect($user->fresh()->hasVerifiedEmail())->toBeFalse();
+});
+
+test('verification OTP endpoints require authentication', function (): void {
+    $this->post(route('verification.otp.verify'), ['code' => '123456'])
+        ->assertRedirect(route('login'));
+
+    $this->post(route('verification.otp.resend'))
+        ->assertRedirect(route('login'));
 });

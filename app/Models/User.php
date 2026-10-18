@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
+use App\Domain\Identity\Services\EmailVerificationOtpService;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -31,6 +32,11 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasRoles;
+
+    public function sendEmailVerificationNotification(): void
+    {
+        app(EmailVerificationOtpService::class)->send($this);
+    }
 
     /** @return HasMany<StaffProfile, $this> */
     public function staffProfiles(): HasMany

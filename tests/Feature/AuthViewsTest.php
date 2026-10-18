@@ -98,3 +98,16 @@ test('authenticated unverified users are redirected to email verification from g
         ->get(route('login'))
         ->assertRedirect(route('verification.notice'));
 });
+
+
+test('email verification page asks for a six-digit one-time code', function (): void {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get(route('verification.notice'))
+        ->assertOk()
+        ->assertSee('autocomplete="one-time-code"', false)
+        ->assertSee(route('verification.otp.verify'), false)
+        ->assertSee(route('verification.otp.resend'), false)
+        ->assertSee(__('app.verify_email_code_label'));
+});

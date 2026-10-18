@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Billing\SubscriptionBillingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Auth\EmailVerificationOtpController;
 use App\Http\Controllers\Booking\BookingManagementController;
 use App\Http\Controllers\Business\BusinessProfileController;
 use App\Http\Controllers\Business\BusinessModuleController;
@@ -49,6 +50,14 @@ Route::get('/', function () {
 
 Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots.txt');
+
+Route::middleware(['auth', 'throttle:10,1'])
+    ->post('/email/verify-otp', [EmailVerificationOtpController::class, 'verify'])
+    ->name('verification.otp.verify');
+
+Route::middleware(['auth', 'throttle:6,1'])
+    ->post('/email/verification-code/resend', [EmailVerificationOtpController::class, 'resend'])
+    ->name('verification.otp.resend');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/onboarding/business', [BusinessOnboardingController::class, 'create'])
