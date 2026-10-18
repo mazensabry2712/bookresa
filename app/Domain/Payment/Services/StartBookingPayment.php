@@ -37,8 +37,10 @@ final class StartBookingPayment
         }
 
         $service = $booking->service;
+        $servicePriceMinor = (int) ($booking->service_price_minor_snapshot ?? $service?->price_minor ?? 0);
+        $serviceCurrency = (string) ($booking->service_currency_snapshot ?: ($service?->currency ?? ''));
 
-        if ($service === null || (int) $service->price_minor <= 0) {
+        if ($service === null || $servicePriceMinor <= 0) {
             throw new RuntimeException('This booking cannot be paid online.');
         }
 
@@ -49,7 +51,7 @@ final class StartBookingPayment
             throw new RuntimeException('Online payment is disabled for this workspace.');
         }
 
-        $amountMinor = (int) $service->price_minor;
+        $amountMinor = $servicePriceMinor;
 
         if ($paymentMode === 'deposit') {
             $percent = max(1, min(99, (int) data_get($settings, 'deposit_percent', 50)));
@@ -107,7 +109,7 @@ final class StartBookingPayment
                     gateway: $this->gateway,
                     payable: $booking,
                     amountMinor: $amountMinor,
-                    currency: (string) $service->currency,
+                    currency: $serviceCurrency,
                     provider: $provider,
                     description: 'Booking '.$booking->booking_reference,
                     metadata: $metadata,
@@ -124,7 +126,7 @@ final class StartBookingPayment
             gateway: $this->gateway,
             payable: $booking,
             amountMinor: $amountMinor,
-            currency: (string) $service->currency,
+            currency: $serviceCurrency,
             provider: $provider,
             description: 'Booking '.$booking->booking_reference,
             metadata: $metadata,
