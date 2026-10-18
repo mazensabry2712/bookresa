@@ -53,6 +53,16 @@ final class UpdateBusinessProfile
                     'status' => TenantPaymentAccountStatus::Pending,
                     'metadata' => ['connection_source' => 'workspace_settings'],
                 ]);
+            } elseif ($paymentAccount !== null && $merchantId === '' && filled($paymentAccount->merchant_id)) {
+                $paymentAccount->forceFill([
+                    'merchant_id' => null,
+                    'status' => TenantPaymentAccountStatus::Disabled,
+                    'connected_at' => null,
+                    'metadata' => array_merge($paymentAccount->metadata ?? [], [
+                        'disconnected_at' => now()->toIso8601String(),
+                        'disconnection_source' => 'workspace_settings',
+                    ]),
+                ])->save();
             } elseif ($paymentAccount !== null && $merchantId !== '') {
                 $merchantChanged = $paymentAccount->merchant_id !== $merchantId;
 
