@@ -37,6 +37,15 @@ class BookingManagementController
             ? Customer::query()->findOrFail($request->integer('customer_id'))
             : null;
 
+        $customers = Customer::query()
+            ->latest('last_seen_at')
+            ->limit(50)
+            ->get(['id', 'name', 'phone', 'email']);
+
+        if ($selectedCustomer !== null && ! $customers->contains('id', $selectedCustomer->getKey())) {
+            $customers->prepend($selectedCustomer);
+        }
+
         return view('booking.management.create', [
             'tenant' => $tenant,
             'selectedCustomer' => $selectedCustomer,
@@ -49,15 +58,8 @@ class BookingManagementController
                 ->where('status', 'active')
                 ->orderBy('display_name')
                 ->get(['id', 'display_name']),
-            'customers' => Customer::query()
-                ->latest('last_seen_at')
-                ->limit(50)
-                ->get(['id', 'name', 'phone', 'email']),
-            'timezone' => (string) data_get(
-                $tenant->profile,
-                'timezone',
-                config('app.timezone', 'UTC'),
-            ),
+            'customers' => $customers,
+            'timezone' => $this->timezone($tenant),
         ]);
     }
 
@@ -85,11 +87,7 @@ class BookingManagementController
         ]);
 
         $tenant = $currentTenant->get();
-        $timezone = (string) data_get(
-            $tenant->profile,
-            'timezone',
-            config('app.timezone', 'UTC'),
-        );
+        $timezone = $this->timezone($tenant);
 
         $service = Service::query()->findOrFail((int) $validated['service_id']);
         $staff = ! empty($validated['staff_id'])
@@ -134,12 +132,11 @@ class BookingManagementController
             $staff = $request->filled('staff_id')
                 ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                 : null;
+            $existingCustomer = $request->filled('customer_id')
+                ? Customer::query()->findOrFail($request->integer('customer_id'))
+                : null;
 
-            $timezone = (string) data_get(
-                $tenant->profile,
-                'timezone',
-                config('app.timezone', 'UTC'),
-            );
+            $timezone = $this->timezone($tenant);
 
             $startsAt = CarbonImmutable::createFromFormat(
                 'Y-m-d H:i',
@@ -149,12 +146,13 @@ class BookingManagementController
 
             $booking = $createBooking->handle(
                 $service,
-                $request->string('name')->toString(),
-                $request->filled('phone') ? $request->string('phone')->toString() : null,
-                $request->filled('email') ? $request->string('email')->toString() : null,
+                $existingCustomer?->name ?? $request->string('name')->toString(),
+                $existingCustomer?->phone ?? ($request->filled('phone') ? $request->string('phone')->toString() : null),
+                $existingCustomer?->email ?? ($request->filled('email') ? $request->string('email')->toString() : null),
                 $startsAt,
                 $staff,
                 $request->filled('notes') ? $request->string('notes')->toString() : null,
+                $existingCustomer,
             );
 
             return to_route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking])
@@ -176,12 +174,20 @@ class BookingManagementController
             'search' => ['nullable', 'string', 'max:100'],
             'status' => ['nullable', 'string', 'in:pending,confirmed,completed,cancelled,rescheduled,no_show'],
             'payment_status' => ['nullable', 'string', 'in:unpaid,partially_paid,paid,refunded'],
-            'service_id' => ['nullable', 'integer', 'exists:services,id'],
-            'staff_id' => ['nullable', 'integer', 'exists:staff_profiles,id'],
+            'service_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('services', 'id')->where(fn ($query) => $query->where('tenant_id', $tenant->getKey())),
+            ],
+            'staff_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('staff_profiles', 'id')->where(fn ($query) => $query->where('tenant_id', $tenant->getKey())),
+            ],
             'date' => ['nullable', 'date_format:Y-m-d'],
         ]);
 
-        $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
+        $timezone = $this->timezone($tenant);
         $staffUserId = $request->user()?->hasRole('staff') ? $request->user()->getKey() : null;
         $ownStaffId = $staffUserId === null ? null : StaffProfile::query()->where('user_id', $staffUserId)->value('id');
 
@@ -214,13 +220,12 @@ class BookingManagementController
             })
             ->when($ownStaffId === null, fn ($query) => $query->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId)))
             ->when($validated['date'] ?? null, function ($query, string $date) use ($timezone): void {
-                $start = CarbonImmutable::createFromFormat('Y-m-d H:i:s', $date.' 00:00:00', $timezone);
-                $end = $start->endOfDay();
+                $start = CarbonImmutable::createFromFormat('Y-m-d', $date, $timezone)->startOfDay()->utc();
+                $end = CarbonImmutable::createFromFormat('Y-m-d', $date, $timezone)->addDay()->startOfDay()->utc();
 
-                $start = $start->utc();
-                $end = $end->utc();
-
-                $query->whereBetween('starts_at', [$start, $end]);
+                $query
+                    ->where('starts_at', '>=', $start)
+                    ->where('starts_at', '<', $end);
             })
             ->orderBy('starts_at')
             ->orderBy('id')
@@ -243,7 +248,8 @@ class BookingManagementController
 
     public function show(Tenant $tenant, Booking $booking, CurrentTenant $currentTenant): View
     {
-        abort_unless($currentTenant->get() !== null, 404);
+        $activeTenant = $currentTenant->get();
+        abort_unless($activeTenant !== null, 404);
 
         $this->authorizeStaffBooking($booking);
 
@@ -251,13 +257,14 @@ class BookingManagementController
             'customer',
             'service',
             'staff',
+            'payments' => fn ($query) => $query->latest('id'),
             'statusHistory' => fn ($query) => $query->with('changedBy')->latest('created_at'),
         ]);
 
         return view('booking.management.show', [
-            'tenant' => $currentTenant->get(),
+            'tenant' => $activeTenant,
             'booking' => $booking,
-            'timezone' => (string) data_get($currentTenant->get()->profile, 'timezone', config('app.timezone', 'UTC')),
+            'timezone' => $this->timezone($activeTenant),
             'staffMembers' => StaffProfile::query()->where('status', 'active')->orderBy('display_name')->get(['id', 'display_name']),
         ]);
     }
@@ -273,7 +280,7 @@ class BookingManagementController
 
         try {
             $tenant = $currentTenant->get() ?? $tenant;
-            $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
+            $timezone = $this->timezone($tenant);
             $staff = $request->filled('staff_id')
                 ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                 : null;
@@ -334,5 +341,13 @@ class BookingManagementController
 
         return to_route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking])
             ->with('status', __('app.booking_ui.status_updated'));
+    }
+    private function timezone(Tenant $tenant): string
+    {
+        $profileTimezone = trim((string) data_get($tenant->profile, 'timezone'));
+
+        return $profileTimezone !== ''
+            ? $profileTimezone
+            : (string) (config('app.timezone') ?: 'UTC');
     }
 }
