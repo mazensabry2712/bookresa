@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Enums\PaymentStatus;
@@ -7,6 +8,7 @@ use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
 use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
+use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -222,4 +224,68 @@ test('online paid booking requires customer email', function (): void {
         'name' => 'Ahmed',
         'phone' => '+20 100 123 4567',
     ])->assertSessionHasErrors('booking');
+});
+
+test('failed online payment session creation cancels the pending booking and releases the slot', function (): void {
+    $tenant = paidBookingTenant('checkout-failure');
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+    ]);
+
+    config([
+        'bookresa.payments.kashier' => [
+            'mode' => 'test',
+            'base_url' => 'https://test-api.kashier.io',
+            'merchant_id' => 'MID-123',
+            'api_key' => 'api-key',
+            'secret_key' => 'secret-key',
+            'merchant_redirect' => null,
+            'server_webhook' => 'https://example.test/webhooks/kashier',
+            'max_failure_attempts' => 3,
+            'allowed_methods' => 'card,wallet',
+            'display' => 'en',
+            'expire_minutes' => 30,
+            'enable_3ds' => true,
+        ],
+    ]);
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions' => Http::response([
+            'message' => 'Provider unavailable',
+        ], 503),
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $response = $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ]);
+
+    $response->assertSessionHasErrors('booking');
+
+    $booking = Booking::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($booking->status)->toBe(BookingStatus::Cancelled)
+        ->and($booking->statusHistory()->where('to_status', BookingStatus::Cancelled->value)->exists())->toBeTrue();
+
+    $slots = app(AvailabilityService::class)->slots(
+        $service,
+        CarbonImmutable::parse('2026-09-28 00:00:00', 'Africa/Cairo'),
+    );
+
+    expect(collect($slots)->contains(
+        fn (array $slot): bool => $slot['start']->format('H:i') === '10:00',
+    ))->toBeTrue();
 });
