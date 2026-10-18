@@ -46,6 +46,17 @@
             'availabilityUrl' => route('public.booking.canonical.availability', $tenant->slug),
             'staffByService' => $staffByService,
         ];
+
+        $socialLinks = collect([
+            'website' => __('app.business_ui.website'),
+            'facebook' => __('app.business_ui.facebook'),
+            'instagram' => __('app.business_ui.instagram'),
+        ])->map(fn (string $label, string $key): array => [
+            'label' => $label,
+            'url' => data_get($profile?->social_links, $key),
+        ])->filter(fn (array $link): bool => is_string($link['url'])
+            && preg_match('/^https?:\\/\\/\\S+$/i', $link['url']) === 1)
+            ->values();
     @endphp
 
     <x-seo
@@ -139,6 +150,23 @@
                     <div class="mt-5 overflow-hidden rounded-2xl">
                         <img src="{{ Storage::disk('public')->url($profile->cover_path) }}" alt="{{ $businessName }}" class="h-32 w-full object-cover sm:h-44">
                     </div>
+                @endif
+
+                @if ($socialLinks->isNotEmpty())
+                    <section class="mt-5 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
+                             aria-label="{{ __('app.business_ui.public_presence') }}">
+                        <p class="text-sm font-bold">{{ __('app.business_ui.public_presence') }}</p>
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            @foreach ($socialLinks as $socialLink)
+                                <a href="{{ $socialLink['url'] }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="inline-flex min-h-10 items-center rounded-xl border border-slate-200 px-3.5 py-2 text-sm font-semibold text-brand-indigo hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                                    {{ $socialLink['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </section>
                 @endif
 
                 <form method="POST" action="{{ route('public.booking.canonical.store', $tenant->slug) }}" class="mt-5 space-y-5" data-public-booking>
