@@ -9,13 +9,14 @@ use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Actions\CreateService;
-use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -346,7 +347,6 @@ test('staff account without a profile cannot open the dashboard', function (): v
         ->assertForbidden();
 });
 
-
 test('dashboard canonical URL contains the tenant slug and legacy dashboard redirects to it', function (): void {
     [$user, $tenant] = dashboardWorkspace();
 
@@ -368,7 +368,7 @@ test('workspace dashboard rejects a tenant the authenticated user does not belon
 
     $otherTenant = Tenant::query()->create([
         'slug' => 'other-dashboard-workspace',
-        'status' => \App\Domain\Tenant\Enums\TenantStatus::Active,
+        'status' => TenantStatus::Active,
         'settings' => [
             'onboarding' => [
                 'completed' => true,
@@ -384,7 +384,6 @@ test('workspace dashboard rejects a tenant the authenticated user does not belon
         ->get(route('dashboard', ['tenant' => $otherTenant->slug]))
         ->assertForbidden();
 });
-
 
 test('legacy dashboard subpaths redirect to the tenant canonical workspace path', function (): void {
     [$user, $tenant] = dashboardWorkspace();
