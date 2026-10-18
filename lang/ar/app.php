@@ -660,6 +660,7 @@ return [
         'summary_auto' => 'تعيين تلقائي',
         'summary_help' => 'سيتم التحقق من التوافر مرة أخرى عند إنشاء الحجز.',
         'existing_customer' => 'عميل موجود',
+        'new_customer' => 'عميل جديد',
         'existing_customer_placeholder' => 'ابدأ بكتابة اسم العميل…',
         'existing_customer_help' => 'اختر عميلًا حديثًا لملء بيانات التواصل تلقائيًا، ثم عدّل ما تحتاجه.',
         'creating_booking' => 'جارٍ إنشاء الحجز…',
@@ -866,9 +867,12 @@ return [
         'no_payments' => 'لا توجد مدفوعات عملاء',
         'no_payments_help' => 'ستظهر سجلات الدفع هنا بعد وجود نشاط دفع لحجوزات العملاء.',
         'status_pending' => 'قيد الانتظار',
+        'status_processing' => 'قيد المعالجة',
         'status_paid' => 'مدفوع',
         'status_failed' => 'فشل',
+        'status_cancelled' => 'ملغي',
         'status_refunded' => 'مسترد',
+        'refunded_amount' => 'المبلغ المسترد'
         'status_expired' => 'منتهي',
     ],
     'public_booking_ui' => [
