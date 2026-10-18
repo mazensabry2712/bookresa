@@ -49,6 +49,25 @@
 
         $startsAt = $booking->starts_at?->setTimezone($timezone);
         $endsAt = $booking->ends_at?->setTimezone($timezone);
+        $servicePriceMinor = $booking->service_price_minor_snapshot ?? $booking->service?->price_minor ?? 0;
+        $serviceCurrency = $booking->service_currency_snapshot ?: $booking->service?->currency;
+        $serviceDurationMinutes = $booking->service_duration_minutes_snapshot ?? $booking->service?->duration_minutes;
+        $paymentRecordLabels = [
+            'pending' => __('app.payment_ui.status_pending'),
+            'processing' => __('app.payment_ui.status_processing'),
+            'paid' => __('app.payment_ui.status_paid'),
+            'failed' => __('app.payment_ui.status_failed'),
+            'cancelled' => __('app.payment_ui.status_cancelled'),
+            'refunded' => __('app.payment_ui.status_refunded'),
+        ];
+        $paymentRecordClasses = [
+            'pending' => 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200',
+            'processing' => 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-900/70 dark:bg-indigo-950/30 dark:text-indigo-200',
+            'paid' => 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-200',
+            'failed' => 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200',
+            'cancelled' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
+            'refunded' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
+        ];
     @endphp
 
     <div class="space-y-6">
@@ -85,9 +104,9 @@
                     <div class="flex items-center justify-between gap-4">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.appointment') }}</p>
-                            <h3 class="mt-2 text-xl font-bold text-slate-950 dark:text-white">{{ $localized($booking->service?->name) }}</h3>
+                            <h3 class="mt-2 text-xl font-bold text-slate-950 dark:text-white">{{ $localized($booking->service_name_snapshot ?? $booking->service?->name) }}</h3>
                         </div>
-                        <span class="text-sm font-bold text-slate-500">{{ number_format(($booking->service?->price_minor ?? 0) / 100, 2) }} {{ $booking->service?->currency }}</span>
+                        <span class="text-sm font-bold text-slate-500">{{ number_format(((int) $servicePriceMinor) / 100, 2) }} {{ $serviceCurrency }}</span>
                     </div>
 
                     <dl class="mt-6 grid gap-5 sm:grid-cols-2">
@@ -105,7 +124,7 @@
                         </div>
                         <div>
                             <dt class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.booking_ui.duration') }}</dt>
-                            <dd class="mt-1 font-semibold text-slate-950 dark:text-white">{{ $booking->service?->duration_minutes }} {{ __('app.booking_ui.minutes') }}</dd>
+                            <dd class="mt-1 font-semibold text-slate-950 dark:text-white">{{ $serviceDurationMinutes }} {{ __('app.booking_ui.minutes') }}</dd>
                         </div>
                     </dl>
 
@@ -117,6 +136,45 @@
                     @endif
                 </article>
 
+                <article class="br-panel p-5 sm:p-6">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.payment_ui.payment_records') }}</p>
+                            <h3 class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ __('app.payment_ui.customer_payments') }}</h3>
+                        </div>
+                        @can('billing.view')
+                            <a href="{{ route('payments.index', ['tenant' => $tenant->slug]) }}" class="text-sm font-bold text-brand-indigo hover:underline">{{ __('app.payment_ui.payments') }}</a>
+                        @endcan
+                    </div>
+                    <div class="mt-5 space-y-3">
+                        @forelse ($booking->payments as $payment)
+                            @php $recordStatus = $payment->status->value; @endphp
+                            <div class="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
+                                <div class="flex flex-wrap items-start justify-between gap-3">
+                                    <div class="min-w-0">
+                                        <p class="break-all font-mono text-xs font-bold text-slate-700 dark:text-slate-200">{{ $payment->reference }}</p>
+                                        <p class="mt-1 text-xs text-slate-500">{{ str($payment->provider)->headline() }}@if ($payment->method) · {{ str($payment->method)->headline() }} @endif</p>
+                                    </div>
+                                    <span class="rounded-full border px-2.5 py-1 text-xs font-bold {{ $paymentRecordClasses[$recordStatus] ?? $paymentRecordClasses['pending'] }}">
+                                        {{ $paymentRecordLabels[$recordStatus] ?? str($recordStatus)->headline() }}
+                                    </span>
+                                </div>
+                                <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                                    <p class="font-extrabold text-slate-950 dark:text-white">{{ number_format($payment->amount_minor / 100, 2) }} {{ $payment->currency }}</p>
+                                    <p class="text-xs text-slate-500">{{ ($payment->paid_at ?? $payment->created_at)?->setTimezone($timezone)->format('d M Y, H:i') ?? '—' }}</p>
+                                </div>
+                                @if ((int) $payment->refunded_amount_minor > 0)
+                                    <p class="mt-2 text-xs font-semibold text-slate-500">{{ __('app.payment_ui.refunded_amount') }}: {{ number_format($payment->refunded_amount_minor / 100, 2) }} {{ $payment->currency }}</p>
+                                @endif
+                                @if ($payment->provider_reference)
+                                    <p class="mt-2 break-all font-mono text-xs text-slate-400">{{ $payment->provider_reference }}</p>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="text-sm text-slate-500">{{ __('app.payment_ui.no_payments') }}</p>
+                        @endforelse
+                    </div>
+                </article>
                 <article class="br-panel p-5 sm:p-6">
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.customer') }}</p>
                     <div class="mt-4 flex items-start gap-4">
