@@ -81,7 +81,7 @@ function availabilityStaff(Tenant $tenant, Service $service): StaffProfile
 
 function mondayInCairo(): CarbonImmutable
 {
-    return CarbonImmutable::parse('2026-10-05 00:00:00', 'Africa/Cairo');
+    return CarbonImmutable::now('Africa/Cairo')->next('Monday')->startOfDay();
 }
 
 test('business break is removed from generated service slots', function (): void {
@@ -117,7 +117,7 @@ test('business holiday produces no slots', function (): void {
     ]);
 
     app(UpsertBusinessHoliday::class)->handle([
-        'holiday_date' => '2026-10-05',
+        'holiday_date' => mondayInCairo()->toDateString(),
         'reason' => 'Closed',
     ]);
 
@@ -133,7 +133,7 @@ test('special working hours override regular business hours', function (): void 
     ]);
 
     app(UpsertSpecialWorkingHour::class)->handle([
-        'work_date' => '2026-10-05',
+        'work_date' => mondayInCairo()->toDateString(),
         'opens_at' => '11:00',
         'closes_at' => '13:00',
         'reason' => 'Short day',
@@ -175,7 +175,7 @@ test('explicit staff availability takes precedence over recurring staff hours', 
     ]);
 
     app(AddStaffAvailability::class)->handle($staff, [
-        'available_date' => '2026-10-05',
+        'available_date' => mondayInCairo()->toDateString(),
         'starts_at' => '14:00',
         'ends_at' => '16:00',
     ]);
@@ -200,8 +200,8 @@ test('staff day off produces no slots even when staff is otherwise scheduled', f
     ]);
 
     app(AddStaffDayOff::class)->handle($staff, [
-        'starts_on' => '2026-10-05',
-        'ends_on' => '2026-10-05',
+        'starts_on' => mondayInCairo()->toDateString(),
+        'ends_on' => mondayInCairo()->toDateString(),
         'reason' => 'Leave',
     ]);
 

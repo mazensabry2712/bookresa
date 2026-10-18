@@ -15,7 +15,7 @@
                 <p class="text-sm text-slate-500">{{ __('platform.platform_command_center_help') }}</p>
                 <h2 class="mt-1 text-2xl font-bold tracking-tight">{{ __('platform.platform_command_center') }}</h2>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="br-admin-actions flex flex-wrap gap-2">
                 <a href="{{ route('admin.businesses.index') }}" class="rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white">{{ __('platform.workspaces') }}</a>
                 <a href="{{ route('admin.customers.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 dark:border-slate-700 dark:text-slate-200">{{ __('platform.customer_intelligence') }}</a>
                 <a href="{{ route('admin.audit.index') }}" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 dark:border-slate-700 dark:text-slate-200">{{ __('platform.activity_log') }}</a>
@@ -129,7 +129,7 @@
                 <a href="{{ route('admin.businesses.index') }}" class="text-sm font-semibold underline underline-offset-4">{{ __('platform.view_all') }}</a>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
+                <table class="br-data-table min-w-full text-sm">
                     <thead class="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
                         <tr>
                             <th class="px-5 py-3 text-start">{{ __('platform.workspace') }}</th>

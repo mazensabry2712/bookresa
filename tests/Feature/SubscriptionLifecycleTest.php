@@ -77,7 +77,7 @@ test('trial subscription is usable while trial is active', function (): void {
 
     $subscription = app(\App\Domain\Billing\Services\CreateSubscription::class)->handle(
         lifecyclePlan(['trial_days' => 14]),
-        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+        CarbonImmutable::now('UTC')->subHour(),
     );
 
     expect($subscription->status)->toBe(SubscriptionStatus::Trial)
