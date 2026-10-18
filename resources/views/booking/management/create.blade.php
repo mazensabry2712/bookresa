@@ -140,16 +140,20 @@
                     <div class="mt-6 grid gap-5 md:grid-cols-2">
                         <label class="md:col-span-2">
                             <span class="mb-1.5 block text-sm font-bold text-slate-700 dark:text-slate-200">{{ __('app.booking_ui.existing_customer') }}</span>
-                            <input list="booking-customer-list" type="text" autocomplete="off" value="{{ old('customer_id') ? '' : ($selectedCustomer?->name ?? '') }}" placeholder="{{ __('app.booking_ui.existing_customer_placeholder') }}" data-booking-customer
-                                   class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-indigo-950">
-                            <datalist id="booking-customer-list">
+                            <select name="customer_id" data-booking-customer
+                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:focus:ring-indigo-950">
+                                <option value="">{{ __('app.booking_ui.new_customer') }}</option>
                                 @foreach ($customers as $customer)
-                                    <option value="{{ $customer->name }}"
+                                    <option value="{{ $customer->id }}"
                                             data-phone="{{ $customer->phone }}"
                                             data-email="{{ $customer->email }}"
-                                            data-customer-name="{{ $customer->name }}"></option>
+                                            data-customer-name="{{ $customer->name }}"
+                                            @selected((string) old('customer_id', $selectedCustomer?->id) === (string) $customer->id)>
+                                        {{ $customer->name }} — {{ $customer->phone ?: ($customer->email ?: '#'.$customer->id) }}
+                                    </option>
                                 @endforeach
-                            </datalist>
+                            </select>
+                            @error('customer_id')<p class="mt-1.5 text-sm font-semibold text-rose-600">{{ $message }}</p>@enderror
                             <span class="mt-1.5 block text-xs leading-5 text-slate-500 dark:text-slate-400">{{ __('app.booking_ui.existing_customer_help') }}</span>
                         </label>
 
@@ -255,7 +259,7 @@
             const customerName = form.querySelector('[data-booking-customer-name]');
             const customerPhone = form.querySelector('[data-booking-customer-phone]');
             const customerEmail = form.querySelector('[data-booking-customer-email]');
-            const customerOptions = [...document.querySelectorAll('#booking-customer-list option')];
+            const customerOptions = [...(customerPicker?.options || [])].filter((option) => option.value !== '');
 
             const summaryService = form.querySelector('[data-summary-service]');
             const summaryServiceMeta = form.querySelector('[data-summary-service-meta]');
@@ -290,7 +294,7 @@
 
             const updateSummary = () => {
                 const serviceOption = service.options[service.selectedIndex];
-                const selectedCustomerOption = customerOptions.find((option) => option.value.toLowerCase() === (customerPicker?.value || '').trim().toLowerCase());
+                const selectedCustomerOption = customerOptions.find((option) => option.value === (customerPicker?.value || ''));
 
                 summaryService.textContent = serviceOption?.dataset.serviceName || '—';
 
@@ -417,17 +421,23 @@
                 }
             };
 
-            customerPicker?.addEventListener('input', () => {
-                const match = customerOptions.find((option) => option.value.toLowerCase() === customerPicker.value.trim().toLowerCase());
+            const applyCustomerSelection = (clearWhenNew = false) => {
+                const match = customerOptions.find((option) => option.value === (customerPicker?.value || ''));
 
                 if (match) {
-                    customerName.value = match.dataset.customerName || match.value;
+                    customerName.value = match.dataset.customerName || '';
                     customerPhone.value = match.dataset.phone || '';
                     customerEmail.value = match.dataset.email || '';
+                } else if (clearWhenNew) {
+                    customerName.value = '';
+                    customerPhone.value = '';
+                    customerEmail.value = '';
                 }
 
                 updateSummary();
-            });
+            };
+
+            customerPicker?.addEventListener('change', () => applyCustomerSelection(true));
 
             [customerName, customerPhone, customerEmail].forEach((field) => field?.addEventListener('input', updateSummary));
 
@@ -444,6 +454,7 @@
                 submitLabel.textContent = messages.creating;
             });
 
+            applyCustomerSelection(false);
             updateStaffOptions();
             updateSummary();
             refreshSubmit();
