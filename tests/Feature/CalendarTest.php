@@ -6,6 +6,8 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -118,7 +120,22 @@ test('authorized user can open the monthly calendar', function (): void {
         ->assertSee('Calendar Customer')
         ->assertSee('10:00')
         ->assertSee('Consultation')
-        ->assertSee('br-direction-arrow');
+        ->assertSee('br-direction-arrow')
+        ->assertDontSee('href="'.route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]).'"', false);
+
+    foreach (['day', 'week'] as $viewMode) {
+        $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get(route('calendar.index', [
+                'tenant' => $tenant->slug,
+                'view' => $viewMode,
+                'date' => '2026-09-28',
+            ]))
+            ->assertOk()
+            ->assertSee('BR-CAL-OPEN')
+            ->assertSee('Calendar Customer')
+            ->assertSee('10:00');
+    }
 });
 
 test('calendar filters by service and status', function (): void {
@@ -159,6 +176,94 @@ test('calendar is tenant isolated', function (): void {
         ->assertOk()
         ->assertSee($bookingA->booking_reference)
         ->assertDontSee($bookingB->booking_reference);
+});
+
+test('month navigation advances and retreats by a full month for end-of-month dates', function (): void {
+    $tenant = calendarTenant('calendar-month-navigation');
+    $user = calendarUser($tenant, 'calendar-month-navigation@example.com');
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'month',
+            'date' => '2026-01-31',
+        ]))
+        ->assertOk()
+        ->assertSee(e(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'month',
+            'date' => '2025-12-01',
+        ])), false)
+        ->assertSee(e(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'month',
+            'date' => '2026-02-01',
+        ])), false);
+});
+
+test('calendar navigation preserves active filters', function (): void {
+    $tenant = calendarTenant('calendar-navigation-filters');
+    $user = calendarUser($tenant, 'calendar-navigation-filters@example.com');
+    $booking = calendarBooking($tenant, 'BR-CAL-NAV-FILTER', '2026-09-28 10:00');
+    $today = CarbonImmutable::now('Africa/Cairo')->toDateString();
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'month',
+            'date' => '2026-09-28',
+            'service_id' => $booking->service_id,
+            'status' => 'confirmed',
+        ]))
+        ->assertOk()
+        ->assertSee(e(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'month',
+            'date' => $today,
+            'service_id' => $booking->service_id,
+            'status' => 'confirmed',
+        ])), false)
+        ->assertSee(e(route('calendar.index', [
+            'tenant' => $tenant->slug,
+            'view' => 'day',
+            'date' => '2026-09-28',
+            'service_id' => $booking->service_id,
+            'status' => 'confirmed',
+        ])), false);
+});
+
+test('calendar filters reject service and staff records from another workspace', function (): void {
+    $tenantA = calendarTenant('calendar-filter-scope-a');
+    $userA = calendarUser($tenantA, 'calendar-filter-scope-a@example.com');
+
+    $tenantB = calendarTenant('calendar-filter-scope-b');
+    $foreignBooking = calendarBooking($tenantB, 'BR-CAL-FOREIGN-FILTER', '2026-09-28 10:00');
+    $foreignStaffUser = User::factory()->create(['email' => 'calendar-foreign-staff@example.com']);
+    $foreignStaff = StaffProfile::query()->create([
+        'user_id' => $foreignStaffUser->id,
+        'display_name' => 'Foreign Workspace Staff',
+        'status' => StaffStatus::Active,
+    ]);
+
+    $this->actingAs($userA)
+        ->withSession(['tenant_id' => $tenantA->id])
+        ->get(route('calendar.index', [
+            'tenant' => $tenantA->slug,
+            'date' => '2026-09-28',
+            'service_id' => $foreignBooking->service_id,
+        ]))
+        ->assertSessionHasErrors('service_id');
+
+    $this->actingAs($userA)
+        ->withSession(['tenant_id' => $tenantA->id])
+        ->get(route('calendar.index', [
+            'tenant' => $tenantA->slug,
+            'date' => '2026-09-28',
+            'staff_id' => $foreignStaff->getKey(),
+        ]))
+        ->assertSessionHasErrors('staff_id');
 });
 
 test('calendar requires calendar permission', function (): void {

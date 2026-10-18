@@ -9,6 +9,7 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -24,8 +25,8 @@ class CalendarController
             'view' => ['nullable', 'in:day,week,month'],
             'date' => ['nullable', 'date_format:Y-m-d'],
             'month' => ['nullable', 'date_format:Y-m'],
-            'service_id' => ['nullable', 'integer', 'exists:services,id'],
-            'staff_id' => ['nullable', 'integer', 'exists:staff_profiles,id'],
+            'service_id' => ['nullable', 'integer', Rule::exists('services', 'id')->where('tenant_id', $tenant->getKey())],
+            'staff_id' => ['nullable', 'integer', Rule::exists('staff_profiles', 'id')->where('tenant_id', $tenant->getKey())],
             'status' => ['nullable', 'string', 'in:pending,confirmed,completed,cancelled,rescheduled,no_show'],
         ]);
 
@@ -49,8 +50,8 @@ class CalendarController
         $periodStart = $viewMode === 'month' ? $reference->startOfMonth() : $gridStart;
         $periodEnd = $viewMode === 'month' ? $reference->endOfMonth() : $gridEnd;
 
-        $rangeStartUtc = $gridStart->utc();
-        $rangeEndUtc = $gridEnd->addSecond()->utc();
+        $rangeStartUtc = $gridStart->startOfDay()->utc();
+        $rangeEndUtc = $gridEnd->startOfDay()->addDay()->utc();
         $staffUserId = $request->user()?->hasRole('staff') ? $request->user()->getKey() : null;
         $ownStaffId = $staffUserId === null ? null : StaffProfile::query()->where('user_id', $staffUserId)->value('id');
 
@@ -69,8 +70,8 @@ class CalendarController
             })
             ->when($ownStaffId === null, fn ($query) => $query->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId)))
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
+            ->where('starts_at', '>=', $rangeStartUtc)
             ->where('starts_at', '<', $rangeEndUtc)
-            ->where('ends_at', '>', $rangeStartUtc)
             ->orderBy('starts_at')
             ->orderBy('id')
             ->get();
@@ -98,15 +99,14 @@ class CalendarController
             'previousDate' => match ($viewMode) {
                 'day' => $reference->subDay(),
                 'week' => $reference->subWeek(),
-                default => $reference->subMonth(),
+                default => $reference->startOfMonth()->subMonth()->startOfMonth(),
             },
             'nextDate' => match ($viewMode) {
                 'day' => $reference->addDay(),
                 'week' => $reference->addWeek(),
-                default => $reference->addMonth(),
+                default => $reference->startOfMonth()->addMonth()->startOfMonth(),
             },
             'calendarDays' => $calendarDays,
-            'bookings' => $bookings,
             'bookingsByDate' => $bookingsByDate,
             'statuses' => BookingStatus::cases(),
             'services' => Service::query()->orderBy('id')->get(['id', 'name']),

@@ -92,7 +92,7 @@
                         <span class="br-direction-arrow" aria-hidden="true">←</span>
                         {{ __('app.calendar_ui.previous') }}
                     </a>
-                    <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $viewMode, 'date' => $today]) }}"
+                    <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => $viewMode, 'date' => $today, 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                        class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-navy px-3.5 py-2 text-sm font-bold text-white hover:bg-slate-800">
                         {{ __('app.calendar_ui.today') }}
                     </a>
@@ -103,7 +103,7 @@
                     </a>
                 </div>
 
-                <p class="text-sm font-semibold text-slate-500">{{ $periodStart->format('d M Y') }} — {{ $periodEnd->format('d M Y') }}</p>
+                <p class="text-sm font-semibold text-slate-500">{{ $periodStart->locale(app()->getLocale())->isoFormat('D MMM YYYY') }} — {{ $periodEnd->locale(app()->getLocale())->isoFormat('D MMM YYYY') }}</p>
             </div>
 
             <form method="GET" class="mt-5 grid gap-3 md:grid-cols-4">
@@ -160,10 +160,10 @@
 
                         <div class="grid grid-cols-7">
                             @foreach ($calendarDays as $day)
-                                @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $day->toDateString()); @endphp
+                                @php $dayBookings = $bookingsByDate->get($day->toDateString(), collect()); @endphp
                                 <div class="min-h-40 border-b border-slate-200 p-2.5 dark:border-slate-800 {{ $day->toDateString() === $today ? 'bg-indigo-50/50 dark:bg-indigo-950/20' : '' }}">
                                     <div class="flex items-center justify-between gap-2">
-                                        <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
+                                        <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => 'day', 'date' => $day->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                                            class="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold {{ $day->toDateString() === $today ? 'bg-brand-indigo text-white' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800' }}">
                                             {{ $day->day }}
                                         </a>
@@ -175,8 +175,12 @@
                                     <div class="mt-2 space-y-1.5">
                                         @foreach ($dayBookings->take(4) as $booking)
                                             @php $bookingStatus = $booking->status->value; @endphp
-                                            <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
-                                               class="block rounded-xl border border-slate-200 bg-white px-2.5 py-2 transition hover:border-indigo-200 hover:bg-indigo-50/30 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20">
+                                            @can('bookings.view')
+                                                <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
+                                                   class="block rounded-xl border border-slate-200 bg-white px-2.5 py-2 transition hover:border-indigo-200 hover:bg-indigo-50/30 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20">
+                                            @else
+                                                <div class="block rounded-xl border border-slate-200 bg-white px-2.5 py-2 dark:border-slate-700 dark:bg-slate-900">
+                                            @endcan
                                                 <div class="flex items-center justify-between gap-2">
                                                     <span class="text-[11px] font-extrabold text-brand-indigo">{{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}</span>
                                                     <span class="h-2 w-2 shrink-0 rounded-full bg-brand-coral" aria-hidden="true"></span>
@@ -187,11 +191,15 @@
                                                 <span class="mt-1.5 inline-flex max-w-full truncate rounded-full border px-2 py-0.5 text-[10px] font-bold {{ $statusClasses[$bookingStatus] ?? $statusClasses['pending'] }}">
                                                     {{ $statusLabels[$bookingStatus] ?? $bookingStatus }}
                                                 </span>
-                                            </a>
+                                            @can('bookings.view')
+                                                </a>
+                                            @else
+                                                </div>
+                                            @endcan
                                         @endforeach
 
                                         @if ($dayBookings->count() > 4)
-                                            <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => 'day', 'date' => $day->format('Y-m-d')]) }}"
+                                            <a href="{{ route('calendar.index', ['tenant' => $tenant->slug, 'view' => 'day', 'date' => $day->format('Y-m-d'), 'service_id' => request('service_id'), 'staff_id' => request('staff_id'), 'status' => request('status')]) }}"
                                                class="block px-1 text-[11px] font-bold text-brand-indigo hover:underline">
                                                 +{{ $dayBookings->count() - 4 }} {{ __('app.calendar_ui.more') }}
                                             </a>
@@ -208,19 +216,23 @@
                 <div class="overflow-x-auto">
                     <div class="grid min-w-[1050px] grid-cols-7 divide-x divide-slate-200 dark:divide-slate-800">
                         @foreach ($calendarDays as $day)
-                            @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $day->toDateString()); @endphp
+                            @php $dayBookings = $bookingsByDate->get($day->toDateString(), collect()); @endphp
                             <div class="{{ $day->toDateString() === $today ? 'bg-indigo-50/40 dark:bg-indigo-950/15' : '' }}">
                                 <div class="border-b border-slate-200 px-3 py-4 dark:border-slate-800">
                                     <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ $dayLabels[$day->dayOfWeekIso] }}</p>
                                     <p class="mt-1 text-lg font-bold text-slate-950 dark:text-white">{{ $day->format('d') }}</p>
-                                    <p class="text-xs text-slate-500">{{ $day->format('M') }}</p>
+                                    <p class="text-xs text-slate-500">{{ $day->locale(app()->getLocale())->isoFormat('MMM') }}</p>
                                 </div>
 
                                 <div class="min-h-[28rem] space-y-2 p-2.5">
                                     @forelse ($dayBookings as $booking)
                                         @php $bookingStatus = $booking->status->value; @endphp
-                                        <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
-                                           class="block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-indigo-200 hover:shadow dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900">
+                                        @can('bookings.view')
+                                            <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
+                                               class="block rounded-xl border border-slate-200 bg-white p-3 shadow-sm transition hover:border-indigo-200 hover:shadow dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900">
+                                        @else
+                                            <div class="block rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                                        @endcan
                                             <p class="text-xs font-extrabold text-brand-indigo">
                                                 {{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}
                                                 <span class="font-medium text-slate-400">— {{ $booking->ends_at->setTimezone($timezone)->format('H:i') }}</span>
@@ -231,7 +243,11 @@
                                                 <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold {{ $statusClasses[$bookingStatus] ?? $statusClasses['pending'] }}">{{ $statusLabels[$bookingStatus] ?? $bookingStatus }}</span>
                                                 <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-800">{{ $paymentLabels[$booking->payment_status->value] ?? $booking->payment_status->value }}</span>
                                             </div>
-                                        </a>
+                                        @can('bookings.view')
+                                            </a>
+                                        @else
+                                            </div>
+                                        @endcan
                                     @empty
                                         <p class="py-10 text-center text-xs font-medium text-slate-400">{{ __('app.calendar_ui.no_bookings') }}</p>
                                     @endforelse
@@ -242,7 +258,7 @@
                 </div>
             </section>
         @else
-            @php $dayBookings = $bookings->filter(fn ($booking) => $booking->starts_at->setTimezone($timezone)->toDateString() === $reference->toDateString()); @endphp
+            @php $dayBookings = $bookingsByDate->get($reference->toDateString(), collect()); @endphp
             <section class="br-panel overflow-hidden">
                 <div class="flex flex-col gap-1 border-b border-slate-200 px-5 py-5 dark:border-slate-800">
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.calendar_ui.day_schedule') }}</p>
@@ -251,8 +267,12 @@
 
                 @forelse ($dayBookings as $booking)
                     @php $bookingStatus = $booking->status->value; @endphp
-                    <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
-                       class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 transition last:border-b-0 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:hover:bg-slate-950/30">
+                    @can('bookings.view')
+                        <a href="{{ route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]) }}"
+                           class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 transition last:border-b-0 hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:hover:bg-slate-950/30">
+                    @else
+                        <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+                    @endcan
                         <div class="flex items-start gap-4">
                             <div class="w-16 shrink-0">
                                 <p class="text-sm font-extrabold text-brand-indigo">{{ $booking->starts_at->setTimezone($timezone)->format('H:i') }}</p>
@@ -268,7 +288,11 @@
                             <span class="rounded-full border px-2.5 py-1 text-xs font-bold {{ $statusClasses[$bookingStatus] ?? $statusClasses['pending'] }}">{{ $statusLabels[$bookingStatus] ?? $bookingStatus }}</span>
                             <span class="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">{{ $paymentLabels[$booking->payment_status->value] ?? $booking->payment_status->value }}</span>
                         </div>
-                    </a>
+                    @can('bookings.view')
+                        </a>
+                    @else
+                        </div>
+                    @endcan
                 @empty
                     <div class="px-5 py-14 text-center">
                         <p class="font-bold text-slate-950 dark:text-white">{{ __('app.calendar_ui.no_bookings') }}</p>
