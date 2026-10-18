@@ -80,7 +80,7 @@ final class DashboardController
                     ->get()
                     ->mapWithKeys(
                         static fn (Payment $payment): array => [
-                            (string) $payment->currency => (int) $payment->net_amount_minor,
+                            (string) $payment->currency => (int) $payment->getAttribute('net_amount_minor'),
                         ],
                     )
                     ->all();
