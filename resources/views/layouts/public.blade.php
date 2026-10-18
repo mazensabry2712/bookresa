@@ -72,35 +72,9 @@
             </nav>
 
             <div class="hidden shrink-0 items-center gap-1 lg:flex">
-                <div class="relative">
-                    <button type="button"
-                            class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white"
-                            data-bookresa-utility-menu
-                            aria-expanded="false"
-                            aria-controls="bookresa-utility-panel"
-                            aria-haspopup="true"
-                            aria-label="{{ __('app.language') }} & {{ __('app.theme') }}">
-                        <span class="text-lg font-bold leading-none" aria-hidden="true">•••</span>
-                    </button>
-
-                    <div id="bookresa-utility-panel"
-                         class="invisible absolute end-0 top-[calc(100%+0.6rem)] z-50 w-64 translate-y-1 rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-xl shadow-slate-900/10 transition duration-150 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/25"
-                         data-bookresa-utility-panel
-                         aria-hidden="true">
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.language') }}</p>
-                            <div class="mt-2">
-                                <x-locale-switcher />
-                            </div>
-                        </div>
-
-                        <div class="mt-4 border-t border-slate-100 pt-4 dark:border-slate-800">
-                            <p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.theme') }}</p>
-                            <div class="mt-2">
-                                <x-theme-toggle />
-                            </div>
-                        </div>
-                    </div>
+                <div class="flex items-center gap-1.5">
+                    <x-locale-switcher />
+                    <x-theme-toggle />
                 </div>
 
                 <a href="{{ route('login') }}" class="px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:text-brand-navy dark:text-slate-200 dark:hover:text-white">
@@ -232,48 +206,7 @@
                 });
             }
 
-            const utilityButton = document.querySelector('[data-bookresa-utility-menu]');
-            const utilityPanel = document.querySelector('[data-bookresa-utility-panel]');
 
-            if (utilityButton && utilityPanel) {
-                const setUtilityOpen = (open, restoreFocus = true) => {
-                    utilityPanel.classList.toggle('invisible', !open);
-                    utilityPanel.classList.toggle('opacity-0', !open);
-                    utilityPanel.classList.toggle('translate-y-1', !open);
-                    utilityPanel.classList.toggle('visible', open);
-                    utilityPanel.classList.toggle('translate-y-0', open);
-                    utilityPanel.setAttribute('aria-hidden', open ? 'false' : 'true');
-                    utilityButton.setAttribute('aria-expanded', open ? 'true' : 'false');
-
-                    if (!open && restoreFocus) {
-                        utilityButton.focus();
-                    }
-                };
-
-                utilityButton.addEventListener('click', () => {
-                    setUtilityOpen(utilityPanel.classList.contains('invisible'));
-                });
-
-                utilityPanel.querySelectorAll('a, button').forEach((control) => {
-                    control.addEventListener('click', () => {
-                        if (control.tagName === 'A') {
-                            setUtilityOpen(false, false);
-                        }
-                    });
-                });
-
-                document.addEventListener('click', (event) => {
-                    if (!utilityPanel.contains(event.target) && !utilityButton.contains(event.target)) {
-                        setUtilityOpen(false, false);
-                    }
-                });
-
-                document.addEventListener('keydown', (event) => {
-                    if (event.key === 'Escape' && !utilityPanel.classList.contains('invisible')) {
-                        setUtilityOpen(false);
-                    }
-                });
-            }
         });
     </script>
 </body>
