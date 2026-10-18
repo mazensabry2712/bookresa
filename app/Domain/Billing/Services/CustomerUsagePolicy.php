@@ -15,6 +15,21 @@ final class CustomerUsagePolicy
         private readonly CurrentTenant $currentTenant,
     ) {}
 
+    public function requiresCreationLock(): bool
+    {
+        $tenant = $this->currentTenant->get();
+
+        if ($tenant === null) {
+            throw new LogicException('A tenant is required to create a customer.');
+        }
+
+        return (string) data_get(
+            BusinessProfile::query()->where('tenant_id', $tenant->getKey())->first()?->booking_settings,
+            'customer_limit_policy',
+            'allow_overage',
+        ) === 'block_new_customers';
+    }
+
     public function lockTenantForCustomerCreation(): void
     {
         $tenant = $this->currentTenant->get();

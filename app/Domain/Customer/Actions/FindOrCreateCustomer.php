@@ -27,8 +27,12 @@ final class FindOrCreateCustomer
         $normalizedPhone = $this->identity->normalizePhone($phone);
         $normalizedEmail = filled($email) ? strtolower(trim($email)) : null;
 
-        return DB::transaction(function () use ($tenantId, $name, $phone, $email, $normalizedPhone, $normalizedEmail): Customer {
-            $this->usagePolicy->lockTenantForCustomerCreation();
+        $lockCreationScope = $this->usagePolicy->requiresCreationLock();
+
+        return DB::transaction(function () use ($tenantId, $name, $phone, $normalizedPhone, $normalizedEmail, $lockCreationScope): Customer {
+            if ($lockCreationScope) {
+                $this->usagePolicy->lockTenantForCustomerCreation();
+            }
 
             $query = Customer::query();
 
