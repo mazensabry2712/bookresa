@@ -18,8 +18,7 @@ final class StartSubscriptionPayment
         private readonly CurrentTenant $currentTenant,
         private readonly PaymentService $payments,
         private readonly PaymentGateway $gateway,
-    ) {
-    }
+    ) {}
 
     public function handle(Subscription $subscription): Payment
     {
