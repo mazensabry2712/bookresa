@@ -107,6 +107,21 @@ function calendarBooking(Tenant $tenant, string $reference, string $localStart):
     ]);
 }
 
+test('calendar falls back to the application timezone when the workspace timezone is empty', function (): void {
+    $tenant = calendarTenant('calendar-timezone-fallback');
+    $profile = BusinessProfile::query()->firstOrFail();
+    $profile->update(['timezone' => null]);
+    $user = calendarUser($tenant, 'calendar-timezone-fallback@example.com');
+    $expectedTimezone = (string) (config('app.timezone') ?: 'UTC');
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', ['tenant' => $tenant->slug, 'date' => '2026-09-28']))
+        ->assertOk()
+        ->assertViewHas('timezone', $expectedTimezone)
+        ->assertSee('· '.$expectedTimezone);
+});
+
 test('authorized user can open the monthly calendar', function (): void {
     $tenant = calendarTenant('calendar-open');
     $user = calendarUser($tenant, 'calendar-open@example.com');
