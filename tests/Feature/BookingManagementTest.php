@@ -5,6 +5,8 @@ use App\Domain\Booking\Models\Booking;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -106,6 +108,11 @@ function managementBooking(
         ])->id,
         'service_id' => $service->id,
         'staff_id' => null,
+        'service_name_snapshot' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'service_price_minor_snapshot' => 25000,
+        'service_currency_snapshot' => 'EGP',
+        'service_duration_minutes_snapshot' => 30,
+        'service_buffer_minutes_snapshot' => 0,
         'starts_at' => CarbonImmutable::parse('2026-09-28 10:00', 'Africa/Cairo')->utc(),
         'ends_at' => CarbonImmutable::parse('2026-09-28 10:30', 'Africa/Cairo')->utc(),
         'block_ends_at' => CarbonImmutable::parse('2026-09-28 10:30', 'Africa/Cairo')->utc(),
@@ -196,6 +203,61 @@ test('authorized user can confirm and history is recorded', function (): void {
 
     expect($fresh?->status)->toBe(BookingStatus::Confirmed)
         ->and($fresh?->statusHistory()->count())->toBe(1);
+});
+
+test('booking detail preserves the service terms recorded at booking time', function (): void {
+    $tenant = managementTenant('management-snapshot');
+    $user = managementUser($tenant, 'management-snapshot@example.com');
+    $booking = managementBooking($tenant, 'BR-MGMT-SNAPSHOT');
+
+    app(CurrentTenant::class)->set($tenant);
+    $service = Service::query()->findOrFail($booking->service_id);
+    $service->update([
+        'name' => ['en' => 'New Service Name', 'ar' => 'خدمة جديدة'],
+        'price_minor' => 99000,
+        'duration_minutes' => 90,
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $booking]))
+        ->assertOk()
+        ->assertSee('Consultation')
+        ->assertSee('250.00 EGP')
+        ->assertSee('30 '.__('app.booking_ui.minutes'))
+        ->assertDontSee('New Service Name')
+        ->assertDontSee('990.00 EGP');
+});
+
+test('booking filters reject service and staff IDs from another workspace', function (): void {
+    $tenantA = managementTenant('management-filter-scope-a');
+    $userA = managementUser($tenantA, 'management-filter-scope-a@example.com');
+
+    $tenantB = managementTenant('management-filter-scope-b');
+    $foreignBooking = managementBooking($tenantB, 'BR-MGMT-FOREIGN-FILTER');
+
+    $foreignStaffUser = User::factory()->create(['email' => 'management-foreign-staff@example.com']);
+    $foreignStaff = StaffProfile::query()->create([
+        'user_id' => $foreignStaffUser->id,
+        'display_name' => 'Foreign Workspace Staff',
+        'status' => StaffStatus::Active,
+    ]);
+
+    $this->actingAs($userA)
+        ->withSession(['tenant_id' => $tenantA->id])
+        ->get(route('booking.management.index', [
+            'tenant' => $tenantA->slug,
+            'service_id' => $foreignBooking->service_id,
+        ]))
+        ->assertSessionHasErrors('service_id');
+
+    $this->actingAs($userA)
+        ->withSession(['tenant_id' => $tenantA->id])
+        ->get(route('booking.management.index', [
+            'tenant' => $tenantA->slug,
+            'staff_id' => $foreignStaff->getKey(),
+        ]))
+        ->assertSessionHasErrors('staff_id');
 });
 
 test('user without booking permission is forbidden', function (): void {
