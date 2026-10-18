@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 use LogicException;
 use RuntimeException;
+use Throwable;
 
 class PublicBookingController
 {
@@ -146,10 +147,16 @@ class PublicBookingController
                 if ($paymentRequired) {
                     try {
                         $payment = $startBookingPayment->handle($booking);
-                    } catch (RuntimeException|LogicException $exception) {
+                    } catch (Throwable $exception) {
                         $this->cancelBookingWhenCheckoutWasNotCreated($booking, $updateBookingStatus);
 
-                        throw $exception;
+                        if ($exception instanceof RuntimeException || $exception instanceof LogicException) {
+                            throw $exception;
+                        }
+
+                        report($exception);
+
+                        throw new RuntimeException('Payment checkout could not be started.', previous: $exception);
                     }
 
                     if (blank($payment->checkout_url)) {
