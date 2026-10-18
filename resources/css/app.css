@@ -1051,3 +1051,41 @@
         }
     }
 }
+
+/* BookResa form controls: consistent white fields and dark entered text. */
+:is(
+    input:not([type='checkbox']):not([type='radio']):not([type='button']):not([type='submit']):not([type='reset']):not([type='hidden']):not([type='image']):not([type='range']):not([type='color']),
+    select,
+    textarea
+) {
+    color-scheme: light;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    caret-color: #111827 !important;
+    border-color: #cbd5e1;
+}
+
+:is(
+    input:not([type='checkbox']):not([type='radio']):not([type='button']):not([type='submit']):not([type='reset']):not([type='hidden']):not([type='image']):not([type='range']):not([type='color']),
+    textarea
+)::placeholder {
+    color: #64748b !important;
+    opacity: 1;
+}
+
+select option,
+select optgroup {
+    color: #111827 !important;
+    background-color: #ffffff !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+    -webkit-text-fill-color: #111827 !important;
+    -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+    box-shadow: 0 0 0 1000px #ffffff inset !important;
+}
+
