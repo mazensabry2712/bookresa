@@ -876,7 +876,7 @@ return [
         'status_failed' => 'Failed',
         'status_cancelled' => 'Cancelled',
         'status_refunded' => 'Refunded',
-        'refunded_amount' => 'Refunded amount'
+        'refunded_amount' => 'Refunded amount',
         'status_expired' => 'Expired',
     ],
     'public_booking_ui' => [
