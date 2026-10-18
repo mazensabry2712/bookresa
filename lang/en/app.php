@@ -664,6 +664,7 @@ return [
         'summary_auto' => 'Auto assigned',
         'summary_help' => 'Availability is checked again when the booking is created.',
         'existing_customer' => 'Existing customer',
+        'new_customer' => 'New customer',
         'existing_customer_placeholder' => 'Start typing a customer name…',
         'existing_customer_help' => 'Select a recent customer to prefill the contact details, then adjust anything needed.',
         'creating_booking' => 'Creating booking…',
@@ -870,9 +871,12 @@ return [
         'no_payments' => 'No customer payments found',
         'no_payments_help' => 'Payment records will appear here after customer booking payment activity exists.',
         'status_pending' => 'Pending',
+        'status_processing' => 'Processing',
         'status_paid' => 'Paid',
         'status_failed' => 'Failed',
+        'status_cancelled' => 'Cancelled',
         'status_refunded' => 'Refunded',
+        'refunded_amount' => 'Refunded amount'
         'status_expired' => 'Expired',
     ],
     'public_booking_ui' => [
