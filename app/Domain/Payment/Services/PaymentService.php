@@ -24,8 +24,7 @@ final class PaymentService
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly AuditLogger $audit,
-    ) {
-    }
+    ) {}
 
     /**
      * Start a provider-neutral payment and persist its local record.
