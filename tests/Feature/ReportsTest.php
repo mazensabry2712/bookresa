@@ -134,7 +134,8 @@ test('business report is permission protected and tenant isolated', function ():
     $bookingA = reportBooking($tenantA, 'BR-REPORT-A', '2026-09-28 10:00', BookingStatus::Completed);
     reportBooking($tenantA, 'BR-REPORT-B', '2026-09-28 11:00', BookingStatus::NoShow);
     reportBooking($tenantA, 'BR-REPORT-OUT', '2026-10-05 11:00', BookingStatus::Confirmed);
-    reportPayment($tenantA, $bookingA, 25000, 'PAY-REPORT-A');
+    $payment = reportPayment($tenantA, $bookingA, 25000, 'PAY-REPORT-A');
+    $payment->forceFill(['refunded_amount_minor' => 5000])->save();
 
     $tenantB = reportTenant('report-clinic-b');
     reportBooking($tenantB, 'BR-REPORT-FOREIGN', '2026-09-28 10:00', BookingStatus::Completed);
@@ -146,7 +147,8 @@ test('business report is permission protected and tenant isolated', function ():
         ->assertViewHas('metrics', function (array $metrics): bool {
             return $metrics['bookings'] === 2
                 && $metrics['customers'] === 2
-                && $metrics['revenueMinor'] === 25000
+                && $metrics['revenueMinor'] === 20000
+                && $metrics['revenueByCurrency']->first()->total_minor === 20000
                 && $metrics['cancellations'] === 0
                 && $metrics['noShows'] === 1
                 && $metrics['completed'] === 1;

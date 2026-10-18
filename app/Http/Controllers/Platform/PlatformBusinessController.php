@@ -30,6 +30,7 @@ use App\Support\AuditLogger;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Spatie\Activitylog\Models\Activity;
@@ -266,7 +267,7 @@ final class PlatformBusinessController
                 ->where('tenant_id', $tenantId)
                 ->where('payable_type', Booking::class)
                 ->where('status', PaymentStatus::Paid)
-                ->selectRaw('currency, SUM(amount_minor) as total_minor')
+                ->selectRaw('currency, SUM(amount_minor - refunded_amount_minor) as total_minor')
                 ->groupBy('currency')
                 ->orderBy('currency')
                 ->get(),

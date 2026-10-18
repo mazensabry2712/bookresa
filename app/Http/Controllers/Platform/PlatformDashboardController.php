@@ -12,6 +12,7 @@ use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Spatie\Activitylog\Models\Activity;
 
@@ -68,7 +69,7 @@ final class PlatformDashboardController
         $bookingRevenueByCurrency = Payment::withoutGlobalScopes()
             ->where('payable_type', Booking::class)
             ->where('status', PaymentStatus::Paid)
-            ->selectRaw('currency, SUM(amount_minor) as total_minor, COUNT(*) as payment_count')
+            ->selectRaw('currency, SUM(amount_minor - refunded_amount_minor) as total_minor, COUNT(*) as payment_count')
             ->groupBy('currency')
             ->orderByDesc('total_minor')
             ->get();
@@ -76,7 +77,7 @@ final class PlatformDashboardController
         $subscriptionRevenueByCurrency = Payment::withoutGlobalScopes()
             ->where('payable_type', Subscription::class)
             ->where('status', PaymentStatus::Paid)
-            ->selectRaw('currency, SUM(amount_minor) as total_minor, COUNT(*) as payment_count')
+            ->selectRaw('currency, SUM(amount_minor - refunded_amount_minor) as total_minor, COUNT(*) as payment_count')
             ->groupBy('currency')
             ->orderByDesc('total_minor')
             ->get();
@@ -111,11 +112,11 @@ final class PlatformDashboardController
                 'paidSubscriptionRevenueMinor' => Payment::withoutGlobalScopes()
                     ->where('payable_type', Subscription::class)
                     ->where('status', PaymentStatus::Paid)
-                    ->sum('amount_minor'),
+                    ->sum(DB::raw('amount_minor - refunded_amount_minor')),
                 'bookingRevenueMinor' => Payment::withoutGlobalScopes()
                     ->where('payable_type', Booking::class)
                     ->where('status', PaymentStatus::Paid)
-                    ->sum('amount_minor'),
+                    ->sum(DB::raw('amount_minor - refunded_amount_minor')),
                 'connectedPaymentAccounts' => TenantPaymentAccount::withoutGlobalScopes()
                     ->where('provider', config('bookresa.payments.default_provider', 'kashier'))
                     ->where('status', 'active')

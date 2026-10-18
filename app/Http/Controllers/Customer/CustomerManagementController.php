@@ -2,23 +2,24 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\Domain\Booking\Enums\BookingStatus;
-use App\Domain\Booking\Models\Booking;
-use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Models\Payment;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CalculateSubscriptionUsage;
+use App\Domain\Booking\Enums\BookingStatus;
+use App\Domain\Booking\Models\Booking;
 use App\Domain\Customer\Actions\CreateCustomer;
 use App\Domain\Customer\Actions\UpdateCustomer;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Customer\Services\CustomerIdentity;
+use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\Customer\StoreCustomerRequest;
 use App\Http\Requests\Customer\UpdateCustomerRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -100,7 +101,7 @@ final class CustomerManagementController
                 ->where('payable_type', (new Booking)->getMorphClass())
                 ->whereIn('payable_id', $customerBookingIds)
                 ->where('status', PaymentStatus::Paid)
-                ->sum('amount_minor'),
+                ->sum(DB::raw('amount_minor - refunded_amount_minor')),
         ];
 
         $subscription = Subscription::query()

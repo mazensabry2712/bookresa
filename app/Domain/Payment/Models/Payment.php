@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class Payment extends Model
 {
-    use HasFactory, BelongsToTenant;
+    use BelongsToTenant, HasFactory;
 
     protected $fillable = [
         'tenant_id',

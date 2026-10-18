@@ -5,7 +5,12 @@
 
 @section('content')
     @php
-        $money = static fn (int $minor): string => number_format($minor / 100, 2).' '.$currency;
+        $money = static fn (int $minor, string $currency = 'EGP'): string => number_format($minor / 100, 2).' '.$currency;
+        $revenueDisplay = $metrics['revenueByCurrency']->isEmpty()
+            ? $money(0)
+            : $metrics['revenueByCurrency']
+                ->map(fn ($row): string => $money((int) $row->total_minor, (string) $row->currency))
+                ->implode(' · ');
         $totalBookings = max((int) $metrics['bookings'], 1);
         $statusColors = [
             'pending' => 'bg-amber-400',
@@ -51,7 +56,7 @@
             @foreach ([
                 [__('app.report_ui.bookings'), number_format($metrics['bookings'])],
                 [__('app.report_ui.customers'), number_format($metrics['customers'])],
-                [__('app.report_ui.revenue'), $money($metrics['revenueMinor'])],
+                [__('app.report_ui.revenue'), $revenueDisplay],
                 [__('app.report_ui.completed'), number_format($metrics['completed'])],
                 [__('app.report_ui.cancellations'), number_format($metrics['cancellations'])],
                 [__('app.report_ui.no_shows'), number_format($metrics['noShows'])],

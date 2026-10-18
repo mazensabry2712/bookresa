@@ -43,8 +43,17 @@ final class ReportController
             ->whereNotNull('paid_at')
             ->whereBetween('paid_at', [$startUtc, $endUtc]);
 
-        $revenueMinor = (int) $revenueQuery->sum('amount_minor');
-        $currency = (string) ($revenueQuery->value('currency') ?? 'EGP');
+        $revenueByCurrency = (clone $revenueQuery)
+            ->selectRaw('currency, SUM(amount_minor - refunded_amount_minor) as total_minor')
+            ->groupBy('currency')
+            ->orderBy('currency')
+            ->get();
+        $currency = $revenueByCurrency->count() === 1
+            ? (string) $revenueByCurrency->first()->currency
+            : 'EGP';
+        $revenueMinor = $revenueByCurrency->count() === 1
+            ? (int) $revenueByCurrency->first()->total_minor
+            : 0;
 
         $topServices = (clone $bookings)
             ->select('service_id', DB::raw('COUNT(*) as booking_count'))
@@ -65,6 +74,7 @@ final class ReportController
                 'bookings' => (int) $statusCounts->sum(),
                 'customers' => $customers,
                 'revenueMinor' => (int) $revenueMinor,
+                'revenueByCurrency' => $revenueByCurrency,
                 'cancellations' => (int) $statusCounts->get(BookingStatus::Cancelled->value, 0),
                 'noShows' => (int) $statusCounts->get(BookingStatus::NoShow->value, 0),
                 'completed' => (int) $statusCounts->get(BookingStatus::Completed->value, 0),
@@ -92,7 +102,7 @@ final class ReportController
             ->where('status', PaymentStatus::Paid)
             ->whereNotNull('paid_at')
             ->whereBetween('paid_at', [$startUtc, $endUtc])
-            ->sum('amount_minor');
+            ->sum(DB::raw('amount_minor - refunded_amount_minor'));
 
         $usageRevenueMinor = UsagePeriod::withoutGlobalScopes()
             ->whereBetween('period_start', [$startUtc, $endUtc])

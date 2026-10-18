@@ -15,6 +15,7 @@ use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class DashboardController
@@ -70,7 +71,7 @@ final class DashboardController
                             fn ($query) => $query->where('staff_id', $staffId),
                         ),
                     )
-                    ->sum('amount_minor');
+                    ->sum(DB::raw('amount_minor - refunded_amount_minor'));
             }
 
             $upcomingBookingsQuery = Booking::query()
