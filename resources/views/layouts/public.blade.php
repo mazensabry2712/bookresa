@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
+<html class="scroll-smooth scroll-pt-20" lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +35,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-white text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
-    <header class="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+    <header class="sticky top-0 z-50 border-b border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
         <div class="mx-auto flex min-h-[4.25rem] max-w-7xl items-center gap-3 px-4 py-2 sm:min-h-[4.75rem] sm:gap-4 sm:px-6 lg:min-h-[5rem] lg:gap-5 lg:px-8">
             <a href="{{ route('home') }}"
                class="relative flex h-9 w-[140px] shrink-0 items-center overflow-hidden rounded-lg sm:h-10 sm:w-[170px] md:h-11 md:w-[195px] lg:h-12 lg:w-[220px] xl:h-14 xl:w-[250px]"
