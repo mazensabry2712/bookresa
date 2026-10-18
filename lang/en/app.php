@@ -285,7 +285,7 @@ return [
     'booking_payment_account' => 'Booking payment account',
     'booking_payment_account_help' => 'Connect your own payment merchant so customer booking payments are settled to your business, not to BookResa.',
     'merchant_id' => 'Merchant ID',
-    'merchant_id_help' => 'Your connected merchant must authorize BookResa before online booking payments can be activated.',
+    'merchant_id_help' => 'Enter the merchant ID authorized for BookResa. To disconnect an existing merchant, select Pay later and leave this field blank.',
     'connection_status' => 'Connection status',
     'not_connected' => 'Not connected',
     'pending_verification' => 'Pending verification',
