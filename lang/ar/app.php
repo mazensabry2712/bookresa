@@ -285,7 +285,7 @@ return [
     'booking_payment_account' => 'حساب مدفوعات الحجوزات',
     'booking_payment_account_help' => 'اربط حساب الدفع الخاص بك حتى تذهب مدفوعات عملائك إلى نشاطك وليس إلى BookResa.',
     'merchant_id' => 'معرّف التاجر',
-    'merchant_id_help' => 'يجب أن يوافق حساب التاجر المرتبط على BookResa قبل تفعيل مدفوعات الحجوزات عبر الإنترنت.',
+    'merchant_id_help' => 'أدخل معرّف التاجر المصرّح له باستخدام BookResa. لفصل الحساب الحالي، اختر الدفع لاحقًا واترك الحقل فارغًا.',
     'connection_status' => 'حالة الاتصال',
     'not_connected' => 'غير متصل',
     'pending_verification' => 'في انتظار التحقق',
