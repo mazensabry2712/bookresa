@@ -112,9 +112,19 @@ final class SchedulingManagementController
         CurrentTenant $currentTenant,
     ): RedirectResponse {
         try {
-            $action->handle(array_values($request->validated('hours')));
-
+            $hours = array_values($request->validated('hours'));
             $tenant = $currentTenant->get() ?? $tenant;
+
+            if (
+                ! (bool) data_get($tenant->settings, 'onboarding.completed', false)
+                && collect($hours)->every(fn (array $hour): bool => (bool) ($hour['is_closed'] ?? false))
+            ) {
+                return back()
+                    ->withErrors(['schedule' => __('app.scheduling_ui.at_least_one_open_day')])
+                    ->withInput();
+            }
+
+            $action->handle($hours);
 
             if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
                 $settings = $tenant->settings ?? [];
