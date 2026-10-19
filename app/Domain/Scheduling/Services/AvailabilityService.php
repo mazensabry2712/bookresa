@@ -274,14 +274,12 @@ final class AvailabilityService
 
     private function businessWindows(int $tenantId, CarbonImmutable $date): Collection
     {
-        if (BusinessHoliday::query()->whereDate('holiday_date', $date->toDateString())->exists()) {
-            return collect();
-        }
-
         $special = SpecialWorkingHour::query()
             ->whereDate('work_date', $date->toDateString())
             ->first();
 
+        // An explicit one-off schedule is the most specific rule for that date.
+        // It may intentionally reopen a date that is otherwise marked as a holiday.
         if ($special !== null) {
             if ($special->is_closed || $special->opens_at === null || $special->closes_at === null) {
                 return collect();
@@ -291,6 +289,10 @@ final class AvailabilityService
                 'start' => $special->opens_at,
                 'end' => $special->closes_at,
             ]])->pipe(fn (Collection $windows) => $this->subtractBusinessBreaks($windows, $date));
+        }
+
+        if (BusinessHoliday::query()->whereDate('holiday_date', $date->toDateString())->exists()) {
+            return collect();
         }
 
         $hours = BusinessWorkingHour::query()
