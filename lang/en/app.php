@@ -653,7 +653,7 @@ return [
         'staff_schedule_title' => 'Staff schedules and exceptions',
         'staff_schedule_help' => 'Update several staff schedules in one go, then use individual settings only when needed. Time off and explicit availability remain separate.',
         'bulk_staff_hours_title' => 'Update multiple staff schedules at once',
-        'bulk_staff_hours_help' => 'Select one or more staff members and configure the week once. The weekly hours will be applied to those selected without changing their time off or explicit availability.',
+        'bulk_staff_hours_help' => 'Select one or more staff members and configure the week once. This replaces the current weekly hours for selected staff only; time off, explicit availability, and everyone else’s schedule stay unchanged.',
         'bulk_staff_hours_template_help' => 'The editor starts with the business weekly hours as a template. Keep them or adjust the days and times before applying them to selected staff.',
         'select_staff_for_bulk' => 'Who should receive this schedule?',
         'select_all_active_staff' => 'Select all active staff',

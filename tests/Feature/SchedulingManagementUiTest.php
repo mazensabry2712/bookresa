@@ -203,7 +203,7 @@ test('owner can apply one weekly schedule to multiple staff without changing ind
         expect($savedHours)->toHaveCount(7)
             ->and($openHours->every(fn ($hour): bool => substr((string) $hour->opens_at, 0, 5) === '10:00'))->toBeTrue()
             ->and($openHours->every(fn ($hour): bool => substr((string) $hour->closes_at, 0, 5) === '18:00'))->toBeTrue()
-            ->and($savedHours->where('is_closed', true)->pluck('day_of_week')->values()->all())->toBe([6, 7]);
+            ->and($savedHours->where('is_closed', true)->map(fn ($hour): int => $hour->day_of_week->value)->values()->all())->toBe([6, 7]);
     }
 
     expect(StaffWorkingHour::query()->where('staff_id', $untouchedStaff->id)->count())->toBe(0)
