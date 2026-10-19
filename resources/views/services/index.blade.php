@@ -102,8 +102,11 @@
                             <span class="font-semibold">{{ __('app.service_ui.price') }}</span>
                             <input name="price"
                                    value="{{ old('price', $isEditing ? number_format($editingService->price_minor / 100, 2, '.', '') : '0.00') }}"
+                                   type="number" min="0" max="9999999999.99" step="0.01"
                                    inputmode="decimal" required
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                            <span class="block text-xs leading-5 text-slate-500">{{ __('app.service_ui.price_help') }}</span>
+                            @error('price')<span class="block text-sm text-rose-600">{{ $message }}</span>@enderror
                         </label>
 
                         <label class="space-y-1.5 text-sm">
