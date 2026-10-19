@@ -526,7 +526,7 @@
                         <div class="mt-4 space-y-4">
                             @foreach ($staffMembers as $staffMember)
                                 @php
-                                    $staffHours = $staffMember->workingHours->keyBy(fn (StaffWorkingHour $hour): int => $hour->day_of_week->value);
+                                    $staffHours = $staffMember->workingHours->keyBy(fn ($hour): int => $hour->day_of_week->value);
                                     $isEditingStaffSchedule = old('schedule_form') === 'staff'
                                         && (string) old('staff_schedule_id') === (string) $staffMember->id;
                                 @endphp
