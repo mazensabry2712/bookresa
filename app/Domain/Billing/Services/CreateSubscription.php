@@ -50,6 +50,16 @@ final class CreateSubscription
                 throw new LogicException('The tenant already has an active subscription.');
             }
 
+            $suspendedSubscriptionExists = Subscription::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('status', SubscriptionStatus::Suspended->value)
+                ->where('end_at', '>', $startAt)
+                ->exists();
+
+            if ($suspendedSubscriptionExists) {
+                throw new LogicException('This workspace has a suspended subscription. Contact platform support before starting another plan.');
+            }
+
             $trialDays = (int) $plan->trial_days;
 
             if ($trialDays > 0) {

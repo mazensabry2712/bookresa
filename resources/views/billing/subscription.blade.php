@@ -57,20 +57,25 @@
                     ?? $localized($subscription->plan?->name);
                 $status = $subscription->status->value;
                 $paymentStatus = $subscription->payment_status->value;
+                $isExpiredFreeTrial = $status === 'expired'
+                    && (int) $subscription->price_minor === 0
+                    && (int) data_get($subscription->pricing_snapshot, 'trial_days', 0) > 0;
             @endphp
 
             @if ($status === 'expired')
                 <section class="rounded-2xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/70 dark:bg-amber-950/30">
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">{{ __('app.billing_ui.subscription_expired') }}</p>
-                    <h3 class="mt-2 text-lg font-bold text-amber-950 dark:text-amber-100">{{ __('app.billing_ui.renew_title') }}</h3>
-                    <p class="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-200">{{ __('app.billing_ui.renew_help') }}</p>
+                    <h3 class="mt-2 text-lg font-bold text-amber-950 dark:text-amber-100">{{ $isExpiredFreeTrial ? __('app.billing_ui.trial_expired_title') : __('app.billing_ui.renew_title') }}</h3>
+                    <p class="mt-1 text-sm leading-6 text-amber-800 dark:text-amber-200">{{ $isExpiredFreeTrial ? __('app.billing_ui.trial_expired_help') : __('app.billing_ui.renew_help') }}</p>
                     @can('subscription.manage')
-                        <form method="POST" action="{{ route('billing.subscription.renew', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-4">
-                            @csrf
-                            <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">
-                                {{ __('app.billing_ui.renew') }}
-                            </button>
-                        </form>
+                        @if (! $isExpiredFreeTrial)
+                            <form method="POST" action="{{ route('billing.subscription.renew', ['tenant' => $tenant->slug, 'subscription' => $subscription]) }}" class="mt-4">
+                                @csrf
+                                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-navy px-4 py-2.5 text-sm font-bold text-white hover:bg-slate-800">
+                                    {{ __('app.billing_ui.renew') }}
+                                </button>
+                            </form>
+                        @endif
                     @endcan
                 </section>
             @endif
@@ -252,6 +257,37 @@
                     @endforelse
                 </div>
             </section>
+
+            @if (in_array($status, ['expired', 'cancelled'], true))
+                <section class="br-panel p-5 sm:p-6">
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.billing_ui.choose_plan') }}</p>
+                        <h3 class="mt-2 text-xl font-bold text-slate-950 dark:text-white">{{ __('app.billing_ui.choose_plan_title') }}</h3>
+                        <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">{{ __('app.billing_ui.choose_plan_help') }}</p>
+                    </div>
+
+                    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        @forelse ($plans as $plan)
+                            <article class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
+                                <h4 class="text-lg font-bold text-slate-950 dark:text-white">{{ $localized($plan->name) }}</h4>
+                                <p class="mt-3 text-2xl font-extrabold text-slate-950 dark:text-white">{{ number_format($plan->price_minor / 100, 2) }} {{ $plan->currency }}</p>
+                                <p class="mt-1 text-sm text-slate-500">{{ str($plan->billing_period->value)->replace('_', ' ')->title() }}</p>
+                                @if ($plan->trial_days > 0)
+                                    <p class="mt-3 text-sm font-bold text-emerald-600 dark:text-emerald-300">{{ $plan->trial_days }} {{ __('app.billing_ui.trial_days') }}</p>
+                                @endif
+                                @can('subscription.manage')
+                                    <form method="POST" action="{{ route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]) }}" class="mt-5">
+                                        @csrf
+                                        <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.billing_ui.select_plan') }}</button>
+                                    </form>
+                                @endcan
+                            </article>
+                        @empty
+                            <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">{{ $hasUsedTrial ? __('app.billing_ui.no_eligible_plans') : __('app.billing_ui.no_plans') }}</div>
+                        @endforelse
+                    </div>
+                </section>
+            @endif
         @else
             <section class="br-panel p-5 sm:p-6">
                 <div>
@@ -277,7 +313,7 @@
                             @endcan
                         </article>
                     @empty
-                        <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">{{ __('app.billing_ui.no_plans') }}</div>
+                        <div class="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">{{ $hasUsedTrial ? __('app.billing_ui.no_eligible_plans') : __('app.billing_ui.no_plans') }}</div>
                     @endforelse
                 </div>
             </section>

@@ -229,6 +229,31 @@ test('renewal applies the scheduled next plan and resets payment to pending', fu
         ->and($renewed->next_plan_id)->toBeNull();
 });
 
+test('a suspended subscription cannot be bypassed by creating another subscription', function (): void {
+    lifecycleTenant('subscription-suspended-block');
+
+    $currentPlan = lifecyclePlan();
+    $subscription = app(CreateSubscription::class)->handle(
+        $currentPlan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill([
+        'status' => SubscriptionStatus::Suspended,
+        'end_at' => CarbonImmutable::parse('2026-11-01 00:00:00', 'UTC'),
+    ])->save();
+
+    $nextPlan = lifecyclePlan([
+        'name' => ['en' => 'Business', 'ar' => 'الأعمال'],
+        'price_minor' => 39900,
+    ]);
+
+    expect(fn () => app(CreateSubscription::class)->handle(
+        $nextPlan,
+        CarbonImmutable::parse('2026-10-19 00:00:00', 'UTC'),
+    ))->toThrow(LogicException::class, 'suspended subscription');
+});
+
 test('renewal is blocked while subscription is still active', function (): void {
     lifecycleTenant('renew-blocked');
     $subscription = app(CreateSubscription::class)->handle(

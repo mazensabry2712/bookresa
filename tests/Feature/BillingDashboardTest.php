@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Billing\Services\PlanCatalog;
@@ -92,6 +93,46 @@ test('owner can see live customer usage and estimated billing total', function (
         ->assertSee('199.00 EGP');
 
     expect($subscription->fresh()->isUsable())->toBeFalse();
+});
+
+
+test('expired free trial shows eligible plans and excludes repeat trials', function (): void {
+    $tenant = billingDashboardTenant('expired-trial-options');
+    $user = billingDashboardUser($tenant, 'expired-trial@example.com');
+
+    $trialPlan = billingDashboardPlan([
+        'name' => ['en' => 'Free Trial', 'ar' => 'التجربة المجانية'],
+        'price_minor' => 0,
+        'trial_days' => 14,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $trialPlan,
+        CarbonImmutable::parse('2026-09-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill([
+        'status' => SubscriptionStatus::Expired,
+        'end_at' => CarbonImmutable::parse('2026-09-15 00:00:00', 'UTC'),
+    ])->save();
+
+    $paidPlan = billingDashboardPlan([
+        'name' => ['en' => 'Business', 'ar' => 'الأعمال'],
+        'price_minor' => 29900,
+        'trial_days' => 0,
+    ]);
+
+    app(PlanCatalog::class)->forget();
+
+    $response = $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee(__('app.billing_ui.trial_expired_title'))
+        ->assertSee('Business');
+
+    expect($response->getContent())
+        ->not->toContain('<option value="'.$trialPlan->id.'">Free Trial');
 });
 
 test('owner can schedule a plan change and clear it', function (): void {

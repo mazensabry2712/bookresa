@@ -49,7 +49,24 @@ final class SubscriptionBillingController
                 'status',
                 'created_at',
             ]) ?? collect();
+        $hasUsedTrial = Subscription::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->getKey())
+            ->get(['pricing_snapshot'])
+            ->contains(
+                fn (Subscription $history): bool => (int) data_get(
+                    $history->pricing_snapshot,
+                    'trial_days',
+                    0,
+                ) > 0,
+            );
+
         $plans = $planCatalog->active();
+
+        if ($hasUsedTrial) {
+            $plans = $plans
+                ->reject(fn ($plan): bool => (int) $plan->trial_days > 0)
+                ->values();
+        }
 
         return view('billing.subscription', [
             'tenant' => $tenant->loadMissing('profile'),
@@ -58,6 +75,7 @@ final class SubscriptionBillingController
             'usageSummary' => $usageSummary,
             'usagePeriods' => $usagePeriods,
             'plans' => $plans,
+            'hasUsedTrial' => $hasUsedTrial,
         ]);
     }
 
