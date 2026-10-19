@@ -11,6 +11,7 @@ use App\Domain\Billing\Services\CreateUsagePeriod;
 use App\Domain\Billing\Services\UpsertPlan;
 use App\Domain\Business\Actions\UpdateBusinessProfile;
 use App\Domain\Business\Models\BusinessProfile;
+use App\Domain\Customer\Actions\CreateCustomer;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Module\Models\Module;
 use App\Domain\Payment\Enums\PaymentStatus;
@@ -218,18 +219,18 @@ test('customer limit policy can allow overage or block new customer creation', f
         'customer_limit_policy' => 'block_new_customers',
     ]);
 
-    expect(fn () => app(\App\Domain\Customer\Actions\CreateCustomer::class)->handle([
+    expect(fn () => app(CreateCustomer::class)->handle([
         'name' => 'Customer 3',
         'phone' => '01000000003',
         'email' => null,
     ]))->toThrow(RuntimeException::class);
 
-    $profile = app(\App\Domain\Business\Models\BusinessProfile::class)->firstOrFail();
+    $profile = app(BusinessProfile::class)->firstOrFail();
     $settings = $profile->booking_settings ?? [];
     data_set($settings, 'customer_limit_policy', 'allow_overage');
     $profile->forceFill(['booking_settings' => $settings])->save();
 
-    $created = app(\App\Domain\Customer\Actions\CreateCustomer::class)->handle([
+    $created = app(CreateCustomer::class)->handle([
         'name' => 'Customer 3',
         'phone' => '01000000003',
         'email' => null,
