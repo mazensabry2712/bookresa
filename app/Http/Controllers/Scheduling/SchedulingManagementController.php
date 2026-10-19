@@ -24,6 +24,7 @@ use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Carbon\CarbonImmutable;
 use App\Http\Requests\Scheduling\StoreBusinessBreakRequest;
 use App\Http\Requests\Scheduling\StoreBusinessHolidayRequest;
 use App\Http\Requests\Scheduling\StoreSpecialWorkingHourRequest;
@@ -45,6 +46,10 @@ final class SchedulingManagementController
 
         abort_unless($tenant !== null, 404);
 
+        $timezone = trim((string) data_get($tenant->profile, 'timezone'));
+        $timezone = $timezone !== '' ? $timezone : (string) config('app.timezone', 'UTC');
+        $today = CarbonImmutable::now($timezone)->toDateString();
+
         $staffMembers = StaffProfile::query()
             ->with('user')
             ->orderBy('display_name')
@@ -64,6 +69,8 @@ final class SchedulingManagementController
 
         return view('scheduling.index', [
             'tenant' => $tenant,
+            'today' => $today,
+            'timezone' => $timezone,
             'businessHours' => BusinessWorkingHour::query()
                 ->orderBy('day_of_week')
                 ->get()
@@ -73,12 +80,12 @@ final class SchedulingManagementController
                 ->orderBy('starts_at')
                 ->get(),
             'businessHolidays' => BusinessHoliday::query()
-                ->whereDate('holiday_date', '>=', now()->toDateString())
+                ->whereDate('holiday_date', '>=', $today)
                 ->orderBy('holiday_date')
                 ->limit(30)
                 ->get(),
             'specialWorkingHours' => SpecialWorkingHour::query()
-                ->whereDate('work_date', '>=', now()->toDateString())
+                ->whereDate('work_date', '>=', $today)
                 ->orderBy('work_date')
                 ->limit(30)
                 ->get(),
