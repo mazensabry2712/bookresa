@@ -84,14 +84,27 @@ class PublicBookingController
                 ], 422);
             }
 
-            return response()->json([
-                'data' => collect($slots)->map(fn (array $slot): array => [
-                    'date' => $slot['start']->toDateString(),
-                    'time' => $slot['start']->format('H:i'),
-                    'end_time' => $slot['end']->format('H:i'),
-                    'staff_id' => $slot['staff_id'],
-                ])->values(),
-            ]);
+            $availableSlots = collect($slots)
+                ->groupBy(fn (array $slot): string => $slot['start']->format('H:i'))
+                ->map(function ($sameTimeSlots) use ($staff): array {
+                    $slot = $sameTimeSlots->first();
+                    $staffCount = $sameTimeSlots
+                        ->pluck('staff_id')
+                        ->filter()
+                        ->unique()
+                        ->count();
+
+                    return [
+                        'date' => $slot['start']->toDateString(),
+                        'time' => $slot['start']->format('H:i'),
+                        'end_time' => $slot['end']->format('H:i'),
+                        'staff_id' => $staff?->getKey(),
+                        'available_staff_count' => $staffCount > 0 ? $staffCount : null,
+                    ];
+                })
+                ->values();
+
+            return response()->json(['data' => $availableSlots]);
         });
     }
 
