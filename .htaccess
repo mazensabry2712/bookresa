@@ -1,6 +1,5 @@
 <IfModule mod_alias.c>
     # Redirect the physical public directory before Apache adds its trailing slash.
-    RewriteEngine Off
     RedirectMatch 301 ^/public/?$ /
     RedirectMatch 301 ^/public/(.*)$ /$1
 </IfModule>
