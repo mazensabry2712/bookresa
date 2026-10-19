@@ -6,6 +6,7 @@ use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Service\Actions\CreateService;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Models\BusinessBreak;
 use App\Domain\Scheduling\Models\BusinessHoliday;
@@ -143,6 +144,14 @@ test('owner can view and manage business scheduling', function (): void {
 
 test('onboarding requires at least one open business day before continuing to staff setup', function (): void {
     [$owner, $tenant] = schedulingUiWorkspace();
+    app(CurrentTenant::class)->set($tenant);
+    app(CreateService::class)->handle([
+        'name' => ['en' => 'Onboarding consultation', 'ar' => 'استشارة الإعداد'],
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
 
     $settings = $tenant->settings ?? [];
     data_set($settings, 'onboarding.completed', false);
@@ -185,6 +194,33 @@ test('onboarding requires at least one open business day before continuing to st
     expect(BusinessWorkingHour::query()->count())->toBe(7)
         ->and(BusinessWorkingHour::query()->where('is_closed', false)->count())->toBe(1)
         ->and(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('staff')
+        ->and((bool) data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeFalse();
+});
+
+test('saving business hours before creating a service returns onboarding to services', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', false);
+    data_set($settings, 'onboarding.step', 'hours');
+    $tenant->forceFill(['settings' => $settings])->save();
+
+    $configuredHours = collect(range(1, 7))->map(fn (int $day): array => $day === 1
+        ? ['day_of_week' => $day, 'opens_at' => '09:00', 'closes_at' => '17:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), [
+            'hours' => $configuredHours,
+        ])
+        ->assertRedirect(route('services.index', ['tenant' => $tenant->slug]));
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(BusinessWorkingHour::query()->where('is_closed', false)->count())->toBe(1)
+        ->and(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('services')
         ->and((bool) data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeFalse();
 });
 
