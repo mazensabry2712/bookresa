@@ -287,3 +287,33 @@ test('closed tickets do not accept a workspace reply', function (): void {
     expect($ticket->messages()->count())->toBe(1)
         ->and($ticket->fresh()->status)->toBe(SupportTicketStatus::Closed);
 });
+
+test('workspace replies reopen resolved tickets and notify the configured support inbox', function (): void {
+    app()->setLocale('en');
+    Notification::fake();
+    app(PlatformSettings::class)->put(['support_email' => 'support@example.test']);
+
+    $tenant = tenantSupportPageTenant('support-page-reply');
+    $owner = tenantSupportPageUser($tenant, 'support-page-reply@example.test');
+    $ticket = tenantSupportPageTicket(
+        $tenant,
+        $owner,
+        'Resolved availability request',
+        SupportTicketStatus::Resolved,
+    );
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->getKey()])
+        ->from(route('support.show', ['tenant' => $tenant->slug, 'ticket' => $ticket->getKey()]))
+        ->post(route('support.reply', ['tenant' => $tenant->slug, 'ticket' => $ticket->getKey()]), [
+            'message' => 'The problem has returned; please reopen this request.',
+        ])
+        ->assertRedirect(route('support.show', ['tenant' => $tenant->slug, 'ticket' => $ticket->getKey()]));
+
+    expect($ticket->fresh()->status)->toBe(SupportTicketStatus::Open)
+        ->and($ticket->fresh()->resolved_at)->toBeNull()
+        ->and($ticket->messages()->count())->toBe(2);
+
+    Notification::assertSentOnDemand(TenantSupportActivityNotification::class);
+});
+
