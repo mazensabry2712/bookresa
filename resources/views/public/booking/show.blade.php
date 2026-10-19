@@ -351,6 +351,7 @@
                 chooseTime: @js($locale === 'ar' ? 'اختر أحد الأوقات المتاحة للمتابعة.' : 'Please choose an available time to continue.'),
                 emptyAvailability: @js($locale === 'ar' ? 'لا توجد أوقات متاحة في هذا اليوم. جرّب تاريخًا آخر.' : 'No times are available on this date. Try another date.'),
                 emptyStaffAvailability: @js(__('app.public_booking_ui.empty_staff_availability')),
+                noActiveStaff: @js(__('app.public_booking_ui.no_active_staff_available')),
                 serviceDate: @js(__('app.public_booking_ui.select_service_date')),
                 loading: @js(__('app.public_booking_ui.loading_slots')),
                 availabilityError: @js(__('app.public_booking_ui.availability_error')),
@@ -580,7 +581,9 @@
                     let restored = false;
 
                     if (!available.length) {
-                        setSlotsMessage(staffSelect.value ? messages.emptyStaffAvailability : messages.emptyAvailability);
+                        setSlotsMessage(responsePayload.reason === 'no_active_staff'
+                            ? messages.noActiveStaff
+                            : (staffSelect.value ? messages.emptyStaffAvailability : messages.emptyAvailability));
                         timeInput.value = '';
                         return;
                     }
