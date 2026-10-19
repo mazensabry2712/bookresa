@@ -368,8 +368,39 @@ const setupPreferenceDropdowns = () => {
     });
 };
 
+const setupBookingReferenceCopy = () => {
+    document.querySelectorAll('[data-booking-reference-copy]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const reference = button.dataset.bookingReference ?? '';
+            const container = button.closest('[data-booking-reference-container]');
+            const status = container?.querySelector('[data-booking-reference-status]');
+
+            if (reference === '') {
+                return;
+            }
+
+            try {
+                if (!navigator.clipboard?.writeText) {
+                    throw new Error('Clipboard API unavailable');
+                }
+
+                await navigator.clipboard.writeText(reference);
+
+                if (status) {
+                    status.textContent = button.dataset.copiedMessage ?? '';
+                }
+            } catch {
+                if (status) {
+                    status.textContent = button.dataset.copyFailedMessage ?? '';
+                }
+            }
+        });
+    });
+};
+
 const setupUtilities = () => {
     setupTheme();
+    setupBookingReferenceCopy();
     setupPreferenceDropdowns();
     setupSidebar();
     setupResponsiveAdminTables();
