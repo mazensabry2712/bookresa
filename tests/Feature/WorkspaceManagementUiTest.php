@@ -234,6 +234,33 @@ test('owner can create and update a service through workspace ui', function (): 
         ->and($service->fresh()->duration_minutes)->toBe(45);
 });
 
+test('creating the first service during onboarding opens scheduling next', function (): void {
+    [$user, $tenant] = workspaceOwner();
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', false);
+    data_set($settings, 'onboarding.step', 'services');
+    $tenant->forceFill(['settings' => $settings])->save();
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('services.store', ['tenant' => $tenant->slug]), [
+            'name_en' => 'Onboarding consultation',
+            'name_ar' => 'استشارة الإعداد',
+            'description_en' => 'First service',
+            'description_ar' => 'أول خدمة',
+            'price' => '100.00',
+            'currency' => 'EGP',
+            'duration_minutes' => 30,
+            'buffer_minutes' => 0,
+            'is_active' => 1,
+        ])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
+
+    expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('hours')
+        ->and((bool) data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeFalse();
+});
+
 test('service price validation rejects excessive precision and unsafe amounts', function (): void {
     [$user, $tenant] = workspaceOwner();
 
