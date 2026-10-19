@@ -164,16 +164,28 @@
                 @can('settings.manage')
                     <form method="POST" action="{{ route('scheduling.breaks.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
-                        <select name="day_of_week" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                            @foreach ($days as $day)
-                                <option value="{{ $day->value }}">{{ __($day->name) }}</option>
-                            @endforeach
-                        </select>
+                        <label class="block text-xs font-semibold text-slate-500">
+                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.day_of_week') }}</span>
+                            <select name="day_of_week" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                @foreach ($days as $day)
+                                    <option value="{{ $day->value }}" @selected((string) old('day_of_week', $days[0]->value) === (string) $day->value)>{{ __($day->name) }}</option>
+                                @endforeach
+                            </select>
+                        </label>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" name="starts_at" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                            <input type="time" name="ends_at" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            <label class="block text-xs font-semibold text-slate-500">
+                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.starts_at') }}</span>
+                                <input type="time" name="starts_at" required value="{{ old('starts_at') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            </label>
+                            <label class="block text-xs font-semibold text-slate-500">
+                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.ends_at') }}</span>
+                                <input type="time" name="ends_at" required value="{{ old('ends_at') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            </label>
                         </div>
-                        <input name="label" placeholder="{{ __('app.scheduling_ui.label_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <label class="block text-xs font-semibold text-slate-500">
+                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.label_optional') }}</span>
+                            <input name="label" value="{{ old('label') }}" placeholder="{{ __('app.scheduling_ui.label_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.add_break') }}</button>
                     </form>
                 @endcan
@@ -217,8 +229,14 @@
                 @can('settings.manage')
                     <form method="POST" action="{{ route('scheduling.holidays.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
-                        <input type="date" name="holiday_date" required min="{{ $today }}" value="{{ old('holiday_date', $today) }}" aria-label="{{ __('app.scheduling_ui.holiday_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                        <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <label class="block text-xs font-semibold text-slate-500">
+                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.holiday_date') }}</span>
+                            <input type="date" name="holiday_date" required min="{{ $today }}" value="{{ old('holiday_date', $today) }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        </label>
+                        <label class="block text-xs font-semibold text-slate-500">
+                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.reason_optional') }}</span>
+                            <input name="reason" value="{{ old('reason') }}" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.save_holiday') }}</button>
                     </form>
                 @endcan
@@ -259,12 +277,24 @@
                 @can('settings.manage')
                     <form method="POST" action="{{ route('scheduling.special-hours.store', ['tenant' => $tenant->slug]) }}" data-special-hours-form class="mt-5 space-y-3">
                         @csrf
-                        <input type="date" name="work_date" required min="{{ $today }}" value="{{ old('work_date', $today) }}" aria-label="{{ __('app.scheduling_ui.work_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <label class="block text-xs font-semibold text-slate-500">
+                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.work_date') }}</span>
+                            <input type="date" name="work_date" required min="{{ $today }}" value="{{ old('work_date', $today) }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        </label>
                         <div class="grid grid-cols-2 gap-3">
-                            <input data-special-time type="time" name="opens_at" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                            <input data-special-time type="time" name="closes_at" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            <label class="block text-xs font-semibold text-slate-500">
+                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.opens') }}</span>
+                                <input data-special-time type="time" name="opens_at" value="{{ old('opens_at') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            </label>
+                            <label class="block text-xs font-semibold text-slate-500">
+                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.closes') }}</span>
+                                <input data-special-time type="time" name="closes_at" value="{{ old('closes_at') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            </label>
                         </div>
-                        <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <label class="block text-xs font-semibold text-slate-500">
+                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.reason_optional') }}</span>
+                            <input name="reason" value="{{ old('reason') }}" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        </label>
                         <label class="flex items-center gap-2 text-sm">
                             <input data-special-closed type="checkbox" name="is_closed" value="1" class="rounded border-slate-300">
                             <span>{{ __('app.scheduling_ui.closed_all_day') }}</span>
@@ -310,8 +340,8 @@
 
                 @if ($staffMembers->isNotEmpty())
                     <form method="GET" action="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}" class="w-full sm:w-72">
-                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.staff_member') }}</label>
-                        <select name="staff" onchange="this.form.submit()" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <label for="scheduling-staff-select" class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.staff_member') }}</label>
+                        <select id="scheduling-staff-select" name="staff" onchange="this.form.submit()" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                             @foreach ($staffMembers as $staffMember)
                                 <option value="{{ $staffMember->id }}" @selected($selectedStaff?->id === $staffMember->id)>{{ $staffMember->display_name }}</option>
                             @endforeach
