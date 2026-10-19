@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Service;
 
+use App\Domain\Scheduling\Models\BusinessWorkingHour;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Actions\DeleteService;
 use App\Domain\Service\Actions\UpdateService;
@@ -83,13 +84,17 @@ final class ServiceManagementController
         ]);
 
         $tenant = $currentTenant->get() ?? $tenant;
+        $onboardingCompleted = (bool) data_get($tenant->settings, 'onboarding.completed', false);
 
-        if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+        if ($onboardingCompleted === false) {
+            $hasOpenHours = BusinessWorkingHour::query()->where('is_closed', false)->exists();
             $settings = $tenant->settings ?? [];
-            data_set($settings, 'onboarding.step', 'hours');
+            data_set($settings, 'onboarding.step', $hasOpenHours ? 'staff' : 'hours');
             $tenant->forceFill(['settings' => $settings])->save();
 
-            return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'));
+            return $hasOpenHours
+                ? to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'))
+                : to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'));
         }
 
         return to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.service_ui.created'));
