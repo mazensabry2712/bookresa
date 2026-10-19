@@ -62,6 +62,9 @@
                                    placeholder="{{ __('app.staff_ui.email_placeholder') }}"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-indigo-950">
                             <span class="block text-xs leading-5 text-slate-500">{{ __('app.staff_ui.account_email_help') }}</span>
+                            @error('email')
+                                <span class="block text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</span>
+                            @enderror
                         </label>
 
                         <label class="space-y-1.5 text-sm">
