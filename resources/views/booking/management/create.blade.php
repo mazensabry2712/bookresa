@@ -84,7 +84,8 @@
                                 <option value="">{{ __('app.booking_ui.select_service') }}</option>
                                 @foreach ($services as $service)
                                     <option value="{{ $service->id }}"
-                                            data-staff-ids="{{ $service->staff->pluck('id')->join(',') }}"
+                                            data-staff-ids="{{ $service->staff->filter(fn ($member) => $member->status->value === 'active')->pluck('id')->join(',') }}"
+                                            data-has-staff-assignments="{{ $service->staff->isNotEmpty() ? 'true' : 'false' }}"
                                             data-service-name="{{ $serviceName($service) }}"
                                             data-duration="{{ $service->duration_minutes }}"
                                             data-price="{{ $money((int) $service->price_minor, $service->currency) }}"
@@ -297,6 +298,8 @@
                 loading: @json(__('app.booking_ui.loading_availability')),
                 noTimes: @json(__('app.booking_ui.no_available_times')),
                 noStaffTimes: @json(__('app.booking_ui.no_staff_times')),
+                staffInactiveHelp: @json(__('app.booking_ui.staff_inactive_help')),
+                noActiveStaff: @json(__('app.booking_ui.no_active_staff_available')),
                 available: @json(__('app.booking_ui.available_times')),
                 autoAssigned: @json(__('app.booking_ui.auto_assigned')),
                 staffAutoHelp: @json(__('app.booking_ui.staff_auto_help')),
@@ -357,22 +360,25 @@
             const updateStaffOptions = () => {
                 const option = service.options[service.selectedIndex];
                 const ids = new Set((option?.dataset.staffIds || '').split(',').filter(Boolean));
+                const hasStaffAssignments = option?.dataset.hasStaffAssignments === 'true';
 
                 staffOptions.forEach((item) => {
-                    item.hidden = ids.size > 0 && !ids.has(item.value);
+                    item.hidden = !ids.has(item.value);
                 });
 
-                if (staff.value && ids.size > 0 && !ids.has(staff.value)) {
+                if (staff.value && !ids.has(staff.value)) {
                     staff.value = '';
                 }
 
                 staff.disabled = ids.size === 0;
-                staffHelp.textContent = ids.size === 0 ? messages.staffAutoHelp : messages.staffSelectHelp;
+                staffHelp.textContent = ids.size === 0
+                    ? (hasStaffAssignments ? messages.staffInactiveHelp : messages.staffAutoHelp)
+                    : messages.staffSelectHelp;
                 refreshAutoAssignAlternative();
                 updateSummary();
             };
 
-            const renderSlots = (available, preferredTime = '') => {
+            const renderSlots = (available, preferredTime = '', reason = null) => {
                 slots.innerHTML = '';
 
                 const restoredTime = available.some((slot) => slot.time === preferredTime) ? preferredTime : '';
@@ -385,7 +391,9 @@
                     time.value = '';
                     selectedTime.textContent = messages.chooseTime;
                     slotCount.textContent = '';
-                    showState(staff.value ? messages.noStaffTimes : messages.noTimes);
+                    showState(reason === 'no_active_staff'
+                        ? messages.noActiveStaff
+                        : (staff.value ? messages.noStaffTimes : messages.noTimes));
                     refreshSubmit();
                     updateSummary();
                     return;
@@ -474,7 +482,7 @@
                         throw new Error(payload.message || messages.availabilityError);
                     }
 
-                    renderSlots(Array.isArray(payload.data) ? payload.data : [], preferredTime);
+                    renderSlots(Array.isArray(payload.data) ? payload.data : [], preferredTime, payload.reason);
                     refreshSubmit();
                     updateSummary();
                 } catch (requestError) {
