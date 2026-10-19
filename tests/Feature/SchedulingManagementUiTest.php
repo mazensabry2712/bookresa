@@ -141,6 +141,138 @@ test('owner can view and manage business scheduling', function (): void {
         ->and(BusinessWorkingHour::query()->where('day_of_week', DayOfWeek::Monday->value)->first()->opens_at)->toBe('09:00');
 });
 
+test('onboarding requires at least one open business day before continuing to staff setup', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', false);
+    data_set($settings, 'onboarding.step', 'hours');
+    $tenant->forceFill(['settings' => $settings])->save();
+
+    $closedHours = collect(range(1, 7))->map(fn (int $day): array => [
+        'day_of_week' => $day,
+        'is_closed' => 1,
+    ])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), [
+            'hours' => $closedHours,
+        ])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->assertSessionHasErrors('schedule');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(BusinessWorkingHour::query()->count())->toBe(0)
+        ->and((bool) data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeFalse();
+
+    $configuredHours = collect(range(1, 7))->map(fn (int $day): array => $day === 1
+        ? ['day_of_week' => $day, 'opens_at' => '09:00', 'closes_at' => '17:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), [
+            'hours' => $configuredHours,
+        ])
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]));
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(BusinessWorkingHour::query()->count())->toBe(7)
+        ->and(BusinessWorkingHour::query()->where('is_closed', false)->count())->toBe(1)
+        ->and(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('staff')
+        ->and((bool) data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeFalse();
+});
+
+test('recurring schedule requires valid times on open days and permits closed days without times', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+
+    $invalidHours = collect(range(1, 7))->map(fn (int $day): array => $day === 1
+        ? ['day_of_week' => $day, 'opens_at' => '09:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), [
+            'hours' => $invalidHours,
+        ])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->assertSessionHasErrors(['hours.0.opens_at', 'hours.0.closes_at']);
+
+    $closedHours = collect(range(1, 7))->map(fn (int $day): array => [
+        'day_of_week' => $day,
+        'is_closed' => 1,
+    ])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->put(route('scheduling.business-hours.update', ['tenant' => $tenant->slug]), [
+            'hours' => $closedHours,
+        ])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]));
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(BusinessWorkingHour::query()->count())->toBe(7)
+        ->and(BusinessWorkingHour::query()->where('is_closed', true)->count())->toBe(7);
+});
+
+test('scheduling one-off and staff availability dates cannot be saved in the past', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+    app(CurrentTenant::class)->set($tenant);
+
+    $staffUser = User::factory()->create(['email' => 'schedule-past-date@example.com']);
+    $staff = app(AddStaffMember::class)->handle($staffUser, 'staff');
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('scheduling.holidays.store', ['tenant' => $tenant->slug]), [
+            'holiday_date' => '2020-01-01',
+            'reason' => 'Past holiday',
+        ])
+        ->assertSessionHasErrors('holiday_date');
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('scheduling.special-hours.store', ['tenant' => $tenant->slug]), [
+            'work_date' => '2020-01-02',
+            'opens_at' => '10:00',
+            'closes_at' => '12:00',
+        ])
+        ->assertSessionHasErrors('work_date');
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $staff]), [
+            'available_date' => '2020-01-03',
+            'starts_at' => '10:00',
+            'ends_at' => '12:00',
+        ])
+        ->assertSessionHasErrors('available_date');
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $staff]), [
+            'starts_on' => '2020-01-04',
+            'ends_on' => '2020-01-05',
+            'reason' => 'Past time off',
+        ])
+        ->assertSessionHasErrors('starts_on');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(BusinessHoliday::query()->count())->toBe(0)
+        ->and(SpecialWorkingHour::query()->count())->toBe(0)
+        ->and(StaffAvailability::query()->count())->toBe(0)
+        ->and(StaffDayOff::query()->count())->toBe(0);
+});
+
 test('owner can manage a selected staff schedule', function (): void {
     [$owner, $tenant] = schedulingUiWorkspace('Staff Scheduling Workspace');
     app(CurrentTenant::class)->set($tenant);
