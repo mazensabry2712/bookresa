@@ -610,7 +610,7 @@ return [
         'work_date' => 'تاريخ ساعات العمل الخاصة',
         'starts_on' => 'تبدأ في',
         'ends_on' => 'تنتهي في',
-        'available_date' => 'تاريخ التوافر'
+        'available_date' => 'تاريخ التوافر',
         'save_holiday' => 'حفظ الإجازة',
         'business_closed' => 'النشاط مغلق',
         'no_holidays' => 'لا توجد إجازات قادمة مضافة.',
