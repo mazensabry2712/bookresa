@@ -299,6 +299,7 @@
                 noTimes: @json(__('app.booking_ui.no_available_times')),
                 noStaffTimes: @json(__('app.booking_ui.no_staff_times')),
                 staffInactiveHelp: @json(__('app.booking_ui.staff_inactive_help')),
+                staffAvailableCount: @json(__('app.booking_ui.staff_available_count')),
                 noActiveStaff: @json(__('app.booking_ui.no_active_staff_available')),
                 available: @json(__('app.booking_ui.available_times')),
                 autoAssigned: @json(__('app.booking_ui.auto_assigned')),
@@ -407,7 +408,20 @@
                     button.type = 'button';
                     button.className = 'min-h-11 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 focus-visible:ring-2 focus-visible:ring-indigo-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30';
                     button.dataset.bookingSlot = slot.time;
-                    button.textContent = slot.time;
+                    if (!staff.value && Number(slot.available_staff_count) > 0) {
+                        button.classList.add('flex', 'flex-col', 'justify-center', 'gap-0.5');
+
+                        const timeLabel = document.createElement('span');
+                        timeLabel.textContent = slot.time;
+
+                        const providersLabel = document.createElement('span');
+                        providersLabel.className = 'text-[10px] font-semibold text-slate-500 dark:text-slate-400';
+                        providersLabel.textContent = messages.staffAvailableCount.replace(':count', String(slot.available_staff_count));
+
+                        button.append(timeLabel, providersLabel);
+                    } else {
+                        button.textContent = slot.time;
+                    }
 
                     if (slot.time === time.value) {
                         button.classList.add('border-brand-indigo', 'bg-indigo-50', 'text-brand-indigo', 'dark:border-indigo-800', 'dark:bg-indigo-950/30', 'dark:text-indigo-300');
