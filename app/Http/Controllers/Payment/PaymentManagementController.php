@@ -8,6 +8,7 @@ use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use DateTimeImmutable;
 use DateTimeZone;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -39,20 +40,27 @@ final class PaymentManagementController
         try {
             new DateTimeZone($timezone);
         } catch (\Throwable) {
-            $timezone = (string) (config('app.timezone') ?: 'UTC');
+            $timezone = 'UTC';
         }
+
+        $fromBoundary = $from !== null
+            ? CarbonImmutable::parse($from, $timezone)->startOfDay()->utc()->toDateTimeString()
+            : null;
+        $toExclusiveBoundary = $to !== null
+            ? CarbonImmutable::parse($to, $timezone)->addDay()->startOfDay()->utc()->toDateTimeString()
+            : null;
 
         $paymentsQuery = Payment::query()
             ->where('payable_type', (new Booking)->getMorphClass())
             ->with(['payable.customer', 'payable.service', 'payable.staff'])
             ->when($status !== '', fn (Builder $query) => $query->where('payments.status', $status))
-            ->when($from !== null, fn (Builder $query) => $query->whereRaw(
-                'DATE(COALESCE(payments.paid_at, payments.created_at)) >= ?',
-                [$from],
+            ->when($fromBoundary !== null, fn (Builder $query) => $query->whereRaw(
+                'COALESCE(payments.paid_at, payments.created_at) >= ?',
+                [$fromBoundary],
             ))
-            ->when($to !== null, fn (Builder $query) => $query->whereRaw(
-                'DATE(COALESCE(payments.paid_at, payments.created_at)) <= ?',
-                [$to],
+            ->when($toExclusiveBoundary !== null, fn (Builder $query) => $query->whereRaw(
+                'COALESCE(payments.paid_at, payments.created_at) < ?',
+                [$toExclusiveBoundary],
             ));
 
         if ($search !== '') {
