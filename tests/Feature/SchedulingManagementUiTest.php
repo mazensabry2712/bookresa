@@ -95,7 +95,12 @@ test('owner can view and manage business scheduling', function (): void {
         ->assertSee('Business working hours')
         ->assertSee('Quickly set working hours')
         ->assertSee('Apply to open days only')
-        ->assertSee('Apply to all 7 days');
+        ->assertSee('Apply to all 7 days')
+        ->assertSee('id="business-hours"', false)
+        ->assertSee('id="business-exceptions"', false)
+        ->assertSee('id="staff-schedule"', false)
+        ->assertSee('data-business-hours-form', false)
+        ->assertSee('businessHoursRows.filter(', false);
 
     $hours = collect(range(1, 7))->map(fn (int $day): array => [
         'day_of_week' => $day,
