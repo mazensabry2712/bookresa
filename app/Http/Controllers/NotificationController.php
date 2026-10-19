@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Carbon\CarbonImmutable;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +17,14 @@ final class NotificationController
         $tenant = $currentTenant->get();
 
         abort_unless($tenant !== null, 404);
+
+        $timezone = (string) ($tenant->profile?->timezone ?: config('app.timezone', 'UTC'));
+
+        try {
+            CarbonImmutable::now($timezone);
+        } catch (\\Throwable) {
+            $timezone = (string) (config('app.timezone') ?: 'UTC');
+        }
 
         /** @var User $user */
         $user = request()->user();
@@ -36,6 +46,7 @@ final class NotificationController
             'tenant' => $tenant,
             'notifications' => $notifications,
             'unreadCount' => $unreadCount,
+            'timezone' => $timezone,
         ]);
     }
 
@@ -64,14 +75,54 @@ final class NotificationController
             $record->markAsRead();
         }
 
-        $target = data_get($record->data, 'booking_id');
+        $type = (string) data_get($record->data, 'type', '');
+        $moduleAccess = app(TenantModuleAccess::class);
+        $bookingId = data_get($record->data, 'booking_id');
 
-        if ($target !== null && $user->can('bookings.view')) {
-            return to_route('booking.management.show', ['tenant' => $tenant->slug, 'booking' => $target]);
+        if ($bookingId !== null && $user->can('bookings.view')) {
+            if ($moduleAccess->allows('appointments')) {
+                return to_route('booking.management.show', [
+                    'tenant' => $tenant->slug,
+                    'booking' => $bookingId,
+                ]);
+            }
+
+            if (
+                $user->can('billing.view')
+                && $moduleAccess->requiresSubscription('appointments')
+                && ! $moduleAccess->hasUsableSubscription()
+            ) {
+                return to_route('billing.subscription', ['tenant' => $tenant->slug]);
+            }
+        }
+
+        $ticketId = data_get($record->data, 'ticket_id');
+
+        if ($type === 'support_reply' && $ticketId !== null && $user->can('support.view')) {
+            return to_route('support.show', [
+                'tenant' => $tenant->slug,
+                'ticket' => $ticketId,
+            ]);
         }
 
         if (
-            in_array(data_get($record->data, 'type'), ['subscription_expiring', 'usage_warning'], true)
+            in_array($type, ['payment_paid', 'payment_failed', 'business_payment_paid'], true)
+            && $user->can('billing.view')
+        ) {
+            if ($moduleAccess->allows('payments')) {
+                return to_route('payments.index', ['tenant' => $tenant->slug]);
+            }
+
+            if (
+                $moduleAccess->requiresSubscription('payments')
+                && ! $moduleAccess->hasUsableSubscription()
+            ) {
+                return to_route('billing.subscription', ['tenant' => $tenant->slug]);
+            }
+        }
+
+        if (
+            in_array($type, ['subscription_expiring', 'usage_warning'], true)
             && $user->can('billing.view')
         ) {
             return to_route('billing.subscription', ['tenant' => $tenant->slug]);
