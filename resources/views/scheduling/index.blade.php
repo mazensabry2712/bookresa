@@ -437,8 +437,14 @@
                                 <form method="POST" action="{{ route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
                                     <div class="grid grid-cols-2 gap-3">
-                                        <input type="date" name="starts_on" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.starts_on') }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                        <input type="date" name="ends_on" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.ends_on') }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        <label class="block text-xs font-semibold text-slate-500">
+                                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.starts_on') }}</span>
+                                            <input type="date" name="starts_on" required min="{{ $today }}" value="{{ old('starts_on') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        </label>
+                                        <label class="block text-xs font-semibold text-slate-500">
+                                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.ends_on') }}</span>
+                                            <input type="date" name="ends_on" required min="{{ $today }}" value="{{ old('ends_on') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        </label>
                                     </div>
                                     <input name="reason" value="{{ old('reason') }}" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <button type="submit" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.scheduling_ui.add_day_off') }}</button>
@@ -478,10 +484,19 @@
                             @can('settings.manage')
                                 <form method="POST" action="{{ route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
-                                    <input type="date" name="available_date" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.available_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    <label class="block text-xs font-semibold text-slate-500">
+                                        <span class="mb-1.5 block">{{ __('app.scheduling_ui.available_date') }}</span>
+                                        <input type="date" name="available_date" required min="{{ $today }}" value="{{ old('available_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    </label>
                                     <div class="grid grid-cols-2 gap-3">
-                                        <input type="time" name="starts_at" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                        <input type="time" name="ends_at" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        <label class="block text-xs font-semibold text-slate-500">
+                                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.starts_at') }}</span>
+                                            <input type="time" name="starts_at" required value="{{ old('starts_at') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        </label>
+                                        <label class="block text-xs font-semibold text-slate-500">
+                                            <span class="mb-1.5 block">{{ __('app.scheduling_ui.ends_at') }}</span>
+                                            <input type="time" name="ends_at" required value="{{ old('ends_at') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        </label>
                                     </div>
                                     <button type="submit" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.scheduling_ui.add_availability') }}</button>
                                 </form>
