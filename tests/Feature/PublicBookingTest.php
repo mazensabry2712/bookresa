@@ -60,7 +60,12 @@ test('public business page is available without authentication', function (): vo
     $this->get(route('public.booking.canonical.show', $tenant->slug))
         ->assertOk()
         ->assertSee('Public booking business')
-        ->assertSee('Consultation');
+        ->assertSee('Consultation')
+        ->assertSee('data-step-panel="1"', false)
+        ->assertSee('data-step-panel="2"', false)
+        ->assertSee('data-step-panel="3"', false)
+        ->assertSee('data-booking-service-card', false)
+        ->assertSee('data-wizard-next', false);
 });
 
 test('public availability is tenant scoped and returns slots', function (): void {
