@@ -1,6 +1,9 @@
 <?php
 
 use App\Domain\Business\Models\BusinessProfile;
+use App\Domain\Support\Enums\SupportTicketPriority;
+use App\Domain\Support\Enums\SupportTicketStatus;
+use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Tenant\Enums\MembershipStatus;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -140,9 +143,21 @@ test('opening a support reply marks it read and opens the workspace ticket', fun
     $tenant = workspaceNotificationsTenant('notification-page-support');
     $user = workspaceNotificationsUser($tenant, 'notification-page-support@example.test');
 
+    app(CurrentTenant::class)->set($tenant);
+
+    $ticket = SupportTicket::query()->create([
+        'tenant_id' => $tenant->getKey(),
+        'requester_user_id' => $user->getKey(),
+        'subject' => 'Notification navigation test ticket',
+        'message' => 'Test ticket used to verify support notification navigation.',
+        'status' => SupportTicketStatus::Open,
+        'priority' => SupportTicketPriority::Normal,
+        'last_replied_at' => now(),
+    ]);
+
     $notification = workspaceNotificationRecord($user, $tenant, [
         'type' => 'support_reply',
-        'ticket_id' => 456,
+        'ticket_id' => $ticket->getKey(),
         'title' => ['en' => 'New support reply', 'ar' => 'رد دعم جديد'],
         'message' => ['en' => 'The support team replied.', 'ar' => 'رد فريق الدعم.'],
     ]);
@@ -155,7 +170,7 @@ test('opening a support reply marks it read and opens the workspace ticket', fun
         ]))
         ->assertRedirect(route('support.show', [
             'tenant' => $tenant->slug,
-            'ticket' => 456,
+            'ticket' => $ticket->getKey(),
         ]));
 
     expect($notification->fresh()->read_at)->not->toBeNull();
