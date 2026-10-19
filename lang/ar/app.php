@@ -309,6 +309,8 @@ return [
         'branding_help' => 'استخدم شعارًا وصورة غلاف واضحة لصفحة الحجز العامة.',
         'logo' => 'الشعار',
         'logo_help' => 'JPG أو PNG أو WebP بحجم أقصى 4 ميجابايت.',
+        'choose_file' => 'اختر ملفًا',
+        'no_file_chosen' => 'لم يتم اختيار ملف',
         'remove_logo' => 'إزالة الشعار الحالي',
         'cover_image' => 'صورة الغلاف',
         'cover_help' => 'JPG أو PNG أو WebP بحجم أقصى 6 ميجابايت.',
