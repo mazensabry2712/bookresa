@@ -47,6 +47,13 @@
             'paid' => 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-200',
             'refunded' => 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300',
         ];
+
+        $dateSummary = match (true) {
+            request()->filled('from_date') && request()->filled('to_date') => request('from_date').' — '.request('to_date'),
+            request()->filled('from_date') => __('app.booking_ui.from').' '.request('from_date'),
+            request()->filled('to_date') => __('app.booking_ui.to').' '.request('to_date'),
+            default => __('app.booking_ui.all_dates'),
+        };
     @endphp
 
     <div class="space-y-6">
@@ -73,7 +80,7 @@
             </article>
             <article class="br-panel p-5">
                 <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.date_filter') }}</p>
-                <p class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ request('date') ?: __('app.booking_ui.all_dates') }}</p>
+                <p class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $dateSummary }}</p>
                 <p class="mt-1 text-xs text-slate-500">{{ $timezone }}</p>
             </article>
             <article class="br-panel p-5">
@@ -85,7 +92,7 @@
 
         <section class="br-panel p-4 sm:p-5">
             <form method="GET" class="space-y-4">
-                <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-7">
+                <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-8">
                     <label class="lg:col-span-2">
                         <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.search') }}</span>
                         <input name="search" value="{{ request('search') }}"
@@ -137,8 +144,14 @@
                     </label>
 
                     <label>
-                        <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.date') }}</span>
-                        <input type="date" name="date" value="{{ request('date') }}"
+                        <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.from') }}</span>
+                        <input type="date" name="from_date" value="{{ request('from_date') }}"
+                               class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
+                    </label>
+
+                    <label>
+                        <span class="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.booking_ui.to') }}</span>
+                        <input type="date" name="to_date" value="{{ request('to_date') }}"
                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                     </label>
                 </div>
@@ -220,6 +233,7 @@
                             <div>
                                 <p class="font-mono text-xs font-bold text-slate-500">{{ $booking->booking_reference }}</p>
                                 <h3 class="mt-1 font-bold text-slate-950 dark:text-white">{{ $booking->customer?->name ?? '—' }}</h3>
+                                <p class="mt-0.5 text-xs text-slate-500">{{ $booking->customer?->phone ?? $booking->customer?->email ?? '—' }}</p>
                                 <p class="mt-1 text-sm text-slate-500">{{ $serviceName($booking->service_name_snapshot ?? $booking->service) }}</p>
                             </div>
                             <span class="shrink-0 rounded-full border px-2.5 py-1 text-xs font-bold {{ $statusClasses[$status] ?? $statusClasses['pending'] }}">{{ $statusLabels[$status] ?? $status }}</span>
@@ -229,6 +243,10 @@
                             <div class="rounded-xl br-surface-soft p-3">
                                 <span class="block font-semibold text-slate-400">{{ __('app.booking_ui.starts') }}</span>
                                 <span class="mt-1 block font-bold text-slate-900 dark:text-white">{{ $booking->starts_at?->setTimezone($timezone)->format('d M, H:i') }}</span>
+                            </div>
+                            <div class="rounded-xl br-surface-soft p-3">
+                                <span class="block font-semibold text-slate-400">{{ __('app.booking_ui.staff') }}</span>
+                                <span class="mt-1 block font-bold text-slate-900 dark:text-white">{{ $booking->staff?->display_name ?? __('app.booking_ui.auto_assigned') }}</span>
                             </div>
                             <div class="rounded-xl br-surface-soft p-3">
                                 <span class="block font-semibold text-slate-400">{{ __('app.booking_ui.payment') }}</span>

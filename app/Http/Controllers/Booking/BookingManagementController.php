@@ -184,7 +184,27 @@ class BookingManagementController
                 'integer',
                 Rule::exists('staff_profiles', 'id')->where(fn ($query) => $query->where('tenant_id', $tenant->getKey())),
             ],
-            'date' => ['nullable', 'date_format:Y-m-d'],
+            'from_date' => ['nullable', 'date_format:Y-m-d'],
+            'to_date' => [
+                'nullable',
+                'date_format:Y-m-d',
+                function (string $attribute, mixed $value, \Closure $fail) use ($request): void {
+                    $fromDate = $request->input('from_date');
+
+                    if (
+                        ! is_string($fromDate)
+                        || ! is_string($value)
+                        || preg_match('/^\d{4}-\d{2}-\d{2}$/', $fromDate) !== 1
+                        || preg_match('/^\d{4}-\d{2}-\d{2}$/', $value) !== 1
+                    ) {
+                        return;
+                    }
+
+                    if ($value < $fromDate) {
+                        $fail(__('app.booking_ui.date_range_invalid'));
+                    }
+                },
+            ],
         ]);
 
         $timezone = $this->timezone($tenant);
@@ -198,15 +218,26 @@ class BookingManagementController
                 'staff:id,display_name',
             ])
             ->when($validated['search'] ?? null, function ($query, string $search): void {
-                $query->where(function ($query) use ($search): void {
+                $pattern = '%'.$search.'%';
+
+                $query->where(function ($query) use ($pattern): void {
                     $query
-                        ->where('booking_reference', 'like', '%'.$search.'%')
-                        ->orWhereHas('customer', function ($query) use ($search): void {
+                        ->where('booking_reference', 'like', $pattern)
+                        ->orWhere('notes', 'like', $pattern)
+                        ->orWhere('service_name_snapshot->en', 'like', $pattern)
+                        ->orWhere('service_name_snapshot->ar', 'like', $pattern)
+                        ->orWhereHas('customer', function ($query) use ($pattern): void {
                             $query
-                                ->where('name', 'like', '%'.$search.'%')
-                                ->orWhere('phone', 'like', '%'.$search.'%')
-                                ->orWhere('email', 'like', '%'.$search.'%');
-                        });
+                                ->where('name', 'like', $pattern)
+                                ->orWhere('phone', 'like', $pattern)
+                                ->orWhere('email', 'like', $pattern);
+                        })
+                        ->orWhereHas('service', function ($query) use ($pattern): void {
+                            $query
+                                ->where('name->en', 'like', $pattern)
+                                ->orWhere('name->ar', 'like', $pattern);
+                        })
+                        ->orWhereHas('staff', fn ($query) => $query->where('display_name', 'like', $pattern));
                 });
             })
             ->when($validated['status'] ?? null, fn ($query, string $status) => $query->where('status', $status))
@@ -219,13 +250,15 @@ class BookingManagementController
                 }
             })
             ->when($ownStaffId === null, fn ($query) => $query->when($validated['staff_id'] ?? null, fn ($query, int $staffId) => $query->where('staff_id', $staffId)))
-            ->when($validated['date'] ?? null, function ($query, string $date) use ($timezone): void {
+            ->when($validated['from_date'] ?? null, function ($query, string $date) use ($timezone): void {
                 $start = CarbonImmutable::createFromFormat('Y-m-d', $date, $timezone)->startOfDay()->utc();
+
+                $query->where('starts_at', '>=', $start);
+            })
+            ->when($validated['to_date'] ?? null, function ($query, string $date) use ($timezone): void {
                 $end = CarbonImmutable::createFromFormat('Y-m-d', $date, $timezone)->addDay()->startOfDay()->utc();
 
-                $query
-                    ->where('starts_at', '>=', $start)
-                    ->where('starts_at', '<', $end);
+                $query->where('starts_at', '<', $end);
             })
             ->orderBy('starts_at')
             ->orderBy('id')

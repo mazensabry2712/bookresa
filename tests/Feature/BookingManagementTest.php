@@ -153,6 +153,76 @@ test('booking list can filter by payment status', function (): void {
         ->assertDontSee($unpaid->booking_reference);
 });
 
+test('booking search matches service snapshot, staff and notes', function (): void {
+    $tenant = managementTenant('management-expanded-search');
+    $user = managementUser($tenant, 'management-expanded-search@example.com');
+    $booking = managementBooking($tenant, 'BR-MGMT-SEARCH-EXTRA', 'Searchable Customer', '01000000877');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $booking->update([
+        'service_name_snapshot' => ['en' => 'Premium Haircut', 'ar' => 'قص شعر مميز'],
+        'notes' => 'VIP customer requests a quiet room',
+    ]);
+
+    $staffUser = User::factory()->create(['email' => 'management-search-staff@example.com']);
+    $staff = StaffProfile::query()->create([
+        'user_id' => $staffUser->id,
+        'display_name' => 'Mona Stylist',
+        'status' => StaffStatus::Active,
+    ]);
+    $booking->update(['staff_id' => $staff->getKey()]);
+
+    foreach (['Premium Haircut', 'Mona Stylist', 'quiet room', '01000000877'] as $term) {
+        $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get(route('booking.management.index', [
+                'tenant' => $tenant->slug,
+                'search' => $term,
+            ]))
+            ->assertOk()
+            ->assertSee($booking->booking_reference);
+    }
+});
+
+test('booking list supports an inclusive local date range and rejects reversed ranges', function (): void {
+    $tenant = managementTenant('management-date-range');
+    $user = managementUser($tenant, 'management-date-range@example.com');
+    $included = managementBooking($tenant, 'BR-MGMT-IN-RANGE', 'Included Customer', '01000000876');
+    $excluded = managementBooking($tenant, 'BR-MGMT-OUT-RANGE', 'Excluded Customer', '01000000875');
+
+    $included->update([
+        'starts_at' => CarbonImmutable::parse('2026-10-02 23:45', 'Africa/Cairo')->utc(),
+        'ends_at' => CarbonImmutable::parse('2026-10-03 00:15', 'Africa/Cairo')->utc(),
+        'block_ends_at' => CarbonImmutable::parse('2026-10-03 00:15', 'Africa/Cairo')->utc(),
+    ]);
+    $excluded->update([
+        'starts_at' => CarbonImmutable::parse('2026-10-03 00:15', 'Africa/Cairo')->utc(),
+        'ends_at' => CarbonImmutable::parse('2026-10-03 00:45', 'Africa/Cairo')->utc(),
+        'block_ends_at' => CarbonImmutable::parse('2026-10-03 00:45', 'Africa/Cairo')->utc(),
+    ]);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.index', [
+            'tenant' => $tenant->slug,
+            'from_date' => '2026-10-02',
+            'to_date' => '2026-10-02',
+        ]))
+        ->assertOk()
+        ->assertSee($included->booking_reference)
+        ->assertDontSee($excluded->booking_reference);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.index', [
+            'tenant' => $tenant->slug,
+            'from_date' => '2026-10-03',
+            'to_date' => '2026-10-02',
+        ]))
+        ->assertSessionHasErrors('to_date');
+});
+
 test('booking management is tenant isolated', function (): void {
     $tenantA = managementTenant('management-a');
     $userA = managementUser($tenantA, 'management-a@example.com');
