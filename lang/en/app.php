@@ -302,6 +302,7 @@ return [
         'open_booking_page' => 'Open booking page',
         'basic_information' => 'Basic information',
         'basic_information_help' => 'Keep the public business identity clear in English and Arabic.',
+        'read_only_help' => 'You can view these business settings, but your workspace role does not allow changes. Ask an owner or manager to update them.',
         'name_english' => 'Name (English)',
         'name_arabic' => 'Name (Arabic)',
         'description_english' => 'Description (English)',
