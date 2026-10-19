@@ -8,17 +8,17 @@ use App\Domain\Support\Models\SupportTicket;
 use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Notifications\TenantSupportActivityNotification;
 use App\Support\AuditLogger;
 use App\Support\PlatformSettings;
-use App\Notifications\TenantSupportActivityNotification;
-use Illuminate\Support\Facades\Notification;
-use Throwable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\View\View;
+use Throwable;
 
 final class TenantSupportController
 {
