@@ -24,7 +24,6 @@ use App\Domain\Scheduling\Models\StaffWorkingHour;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
-use Carbon\CarbonImmutable;
 use App\Http\Requests\Scheduling\StoreBusinessBreakRequest;
 use App\Http\Requests\Scheduling\StoreBusinessHolidayRequest;
 use App\Http\Requests\Scheduling\StoreSpecialWorkingHourRequest;
@@ -32,6 +31,7 @@ use App\Http\Requests\Scheduling\StoreStaffAvailabilityRequest;
 use App\Http\Requests\Scheduling\StoreStaffDayOffRequest;
 use App\Http\Requests\Scheduling\UpdateBusinessWorkingHoursRequest;
 use App\Http\Requests\Scheduling\UpdateStaffWorkingHoursRequest;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -114,11 +114,10 @@ final class SchedulingManagementController
         try {
             $hours = array_values($request->validated('hours'));
             $tenant = $currentTenant->get() ?? $tenant;
+            $onboardingCompleted = (bool) data_get($tenant->settings, 'onboarding.completed', false);
+            $allDaysClosed = collect($hours)->every(fn (array $hour): bool => (bool) ($hour['is_closed'] ?? false));
 
-            if (
-                ! (bool) data_get($tenant->settings, 'onboarding.completed', false)
-                && collect($hours)->every(fn (array $hour): bool => (bool) ($hour['is_closed'] ?? false))
-            ) {
+            if ($onboardingCompleted === false && $allDaysClosed) {
                 return back()
                     ->withErrors(['schedule' => __('app.scheduling_ui.at_least_one_open_day')])
                     ->withInput();
@@ -126,7 +125,7 @@ final class SchedulingManagementController
 
             $action->handle($hours);
 
-            if (! (bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            if ($onboardingCompleted === false) {
                 $settings = $tenant->settings ?? [];
                 data_set($settings, 'onboarding.step', 'staff');
                 $tenant->forceFill(['settings' => $settings])->save();
