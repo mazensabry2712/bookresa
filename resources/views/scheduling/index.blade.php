@@ -94,8 +94,11 @@
                         @foreach ($days as $day)
                             @php
                                 $hour = $businessHours->get($day->value);
-                                $open = $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '';
-                                $close = $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
+                                $open = old('hours.'.$loop->index.'.opens_at', $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '');
+                                $close = old('hours.'.$loop->index.'.closes_at', $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '');
+                                $isClosed = session()->hasOldInput()
+                                    ? (bool) old('hours.'.$loop->index.'.is_closed', false)
+                                    : ($hour?->is_closed ?? true);
                             @endphp
 
                             <div data-hours-row class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
@@ -119,7 +122,7 @@
                                 </label>
 
                                 <label class="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-800">
-                                    <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($hour?->is_closed ?? true)>
+                                    <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($isClosed)>
                                     <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
                                 </label>
                             </div>
@@ -296,7 +299,7 @@
                             <input name="reason" value="{{ old('reason') }}" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         </label>
                         <label class="flex items-center gap-2 text-sm">
-                            <input data-special-closed type="checkbox" name="is_closed" value="1" class="rounded border-slate-300">
+                            <input data-special-closed type="checkbox" name="is_closed" value="1" @checked((bool) old('is_closed', false)) class="rounded border-slate-300">
                             <span>{{ __('app.scheduling_ui.closed_all_day') }}</span>
                         </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.save_special_hours') }}</button>
@@ -375,17 +378,26 @@
                             @foreach ($days as $day)
                                 @php
                                     $hour = $selectedStaffHours->get($day->value);
-                                    $open = $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '';
-                                    $close = $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
+                                    $open = old('hours.'.$loop->index.'.opens_at', $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '');
+                                    $close = old('hours.'.$loop->index.'.closes_at', $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '');
+                                    $isClosed = session()->hasOldInput()
+                                        ? (bool) old('hours.'.$loop->index.'.is_closed', false)
+                                        : ($hour?->is_closed ?? true);
                                 @endphp
 
                                 <div data-hours-row class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
                                     <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
                                     <p class="text-sm font-bold text-slate-950 dark:text-white">{{ __($day->name) }}</p>
-                                    <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                    <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    <label class="block text-xs font-semibold text-slate-500">
+                                        <span class="mb-1.5 block">{{ __('app.scheduling_ui.opens') }}</span>
+                                        <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    </label>
+                                    <label class="block text-xs font-semibold text-slate-500">
+                                        <span class="mb-1.5 block">{{ __('app.scheduling_ui.closes') }}</span>
+                                        <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    </label>
                                     <label class="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-800">
-                                        <input type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($hour?->is_closed ?? true)>
+                                        <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($isClosed)>
                                         <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
                                     </label>
                                 </div>
@@ -428,7 +440,7 @@
                                         <input type="date" name="starts_on" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.starts_on') }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                         <input type="date" name="ends_on" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.ends_on') }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     </div>
-                                    <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    <input name="reason" value="{{ old('reason') }}" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <button type="submit" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.scheduling_ui.add_day_off') }}</button>
                                 </form>
                             @endcan
