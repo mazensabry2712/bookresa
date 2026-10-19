@@ -10,6 +10,7 @@ use App\Domain\Payment\Enums\PaymentStatus as PaymentRecordStatus;
 use App\Domain\Payment\Services\StartBookingPayment;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -66,6 +67,8 @@ class PublicBookingController
 
         return $currentTenant->run($tenant, function () use ($request, $availability, $tenant): JsonResponse {
             $service = Service::query()->findOrFail($request->integer('service_id'));
+            $hasStaffAssignments = $service->staff()->exists();
+            $hasActiveStaffAssignments = $service->staff()->where('status', StaffStatus::Active->value)->exists();
             $staff = $request->filled('staff_id')
                 ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                 : null;
@@ -104,7 +107,12 @@ class PublicBookingController
                 })
                 ->values();
 
-            return response()->json(['data' => $availableSlots]);
+            return response()->json([
+                'data' => $availableSlots,
+                'reason' => $availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments
+                    ? 'no_active_staff'
+                    : null,
+            ]);
         });
     }
 
