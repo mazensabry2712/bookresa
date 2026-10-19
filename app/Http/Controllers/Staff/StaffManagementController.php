@@ -119,13 +119,18 @@ final class StaffManagementController
                         : to_route('billing.subscription', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'));
                 }
 
+                $nextStep = $hasServices === false ? 'services' : ($hasHours === false ? 'hours' : 'staff');
                 $settings = $tenant->settings ?? [];
-                data_set(
-                    $settings,
-                    'onboarding.step',
-                    $hasServices === false ? 'services' : ($hasHours === false ? 'hours' : 'staff'),
-                );
+                data_set($settings, 'onboarding.step', $nextStep);
                 $tenant->forceFill(['settings' => $settings])->save();
+
+                if ($hasServices === false) {
+                    return to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'));
+                }
+
+                if ($hasHours === false) {
+                    return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'));
+                }
             }
 
             return to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.added'));
