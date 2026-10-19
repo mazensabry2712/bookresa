@@ -56,6 +56,8 @@ final class CreateBooking
             throw new RuntimeException('Bookings must be scheduled in the future.');
         }
 
+        $hasStaffAssignments = $service->staff()->exists();
+
         /** @var Collection<int, StaffProfile> $assignedStaff */
         $assignedStaff = $service->staff()
             ->where('status', StaffStatus::Active->value)
@@ -67,13 +69,23 @@ final class CreateBooking
                 throw new LogicException('Staff must belong to the current tenant.');
             }
 
-            if ($assignedStaff->isNotEmpty() && ! $assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff))) {
-                throw new LogicException('Selected staff member is not assigned to this service.');
+            if ($requestedStaff->status !== StaffStatus::Active) {
+                throw new RuntimeException(__('app.booking_ui.no_staff_available_at_time'));
             }
 
-            if ($assignedStaff->isEmpty()) {
+            if (! $hasStaffAssignments) {
                 throw new LogicException('This service does not use staff assignments.');
             }
+
+            if (! $assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff))) {
+                throw new LogicException('Selected staff member is not assigned to this service.');
+            }
+        }
+
+        // A service configured for staff must never fall back to an unassigned booking
+        // just because all of its assigned staff are currently inactive.
+        if ($requestedStaff === null && $assignedStaff->isEmpty() && $hasStaffAssignments) {
+            throw new RuntimeException(__('app.booking_ui.no_active_staff_assigned'));
         }
 
         $booking = DB::transaction(function () use (
@@ -93,7 +105,7 @@ final class CreateBooking
                 $selectedStaff = null;
 
                 if (! $this->availability->isAvailable($service, $localStart, null)) {
-                    throw new RuntimeException('The selected time is no longer available.');
+                    throw new RuntimeException(__('app.booking_ui.selected_time_unavailable'));
                 }
 
                 return $this->persistBooking(
@@ -130,7 +142,7 @@ final class CreateBooking
                 }
             }
 
-            throw new RuntimeException('No staff member is available at the selected time.');
+            throw new RuntimeException(__('app.booking_ui.no_staff_available_at_time'));
         }, 3);
 
         $booking->customer?->notify(new BookingNotification($booking, 'created'));
