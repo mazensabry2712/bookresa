@@ -420,6 +420,7 @@ return [
         'add_help' => 'The person must already have a BookResa account. Add their workspace role and the services they can deliver.',
         'account_email' => 'Account email',
         'account_email_help' => 'Use the email of an existing BookResa account.',
+        'already_staff' => 'This account is already a staff member in this workspace. Edit the existing entry or change its status to reactivate it.',
         'email_placeholder' => 'staff@example.com',
         'display_name' => 'Display name',
         'display_name_placeholder' => 'e.g. Dr. Ahmed',
