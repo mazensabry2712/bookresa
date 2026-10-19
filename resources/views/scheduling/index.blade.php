@@ -64,7 +64,7 @@
             <button id="scheduling-tab-business-exceptions" type="button" role="tab" aria-controls="business-exceptions" aria-selected="{{ $activeSchedulePanel === 'business-exceptions' ? 'true' : 'false' }}" data-schedule-tab="business-exceptions" data-active="{{ $activeSchedulePanel === 'business-exceptions' ? 'true' : 'false' }}" class="flex min-h-11 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold transition {{ $activeSchedulePanel === 'business-exceptions' ? 'bg-white text-indigo-700 shadow-sm dark:bg-slate-800 dark:text-indigo-300' : 'text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800' }}">{{ __('app.scheduling_ui.exceptions') }}</button>
             <button id="scheduling-tab-staff-schedule" type="button" role="tab" aria-controls="staff-schedule" aria-selected="{{ $activeSchedulePanel === 'staff-schedule' ? 'true' : 'false' }}" data-schedule-tab="staff-schedule" data-active="{{ $activeSchedulePanel === 'staff-schedule' ? 'true' : 'false' }}" class="flex min-h-11 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold transition {{ $activeSchedulePanel === 'staff-schedule' ? 'bg-white text-indigo-700 shadow-sm dark:bg-slate-800 dark:text-indigo-300' : 'text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800' }}">{{ __('app.scheduling_ui.staff_schedule') }}</button>
         </nav>
-        <section id="business-hours" data-schedule-panel="business-hours" role="tabpanel" aria-labelledby="scheduling-tab-business-hours" class="br-panel overflow-hidden scroll-mt-6">
+        <section id="business-hours" data-schedule-panel="business-hours" @if ($activeSchedulePanel !== 'business-hours') hidden @endif role="tabpanel" aria-labelledby="scheduling-tab-business-hours" class="br-panel overflow-hidden scroll-mt-6">
             <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.base_schedule') }}</p>
@@ -186,8 +186,8 @@
             @endcan
         </section>
 
-        <details id="business-exceptions" data-schedule-panel="business-exceptions" role="tabpanel" aria-labelledby="scheduling-tab-business-exceptions" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
+        <details id="business-exceptions" data-schedule-panel="business-exceptions" @if ($activeSchedulePanel !== 'business-exceptions') hidden @endif @if ($activeSchedulePanel === 'business-exceptions') open @endif role="tabpanel" aria-labelledby="scheduling-tab-business-exceptions" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <summary @if ($activeSchedulePanel === 'business-exceptions') hidden @endif class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
                 <span class="flex min-w-0 items-start gap-3">
                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">02</span>
                     <span class="min-w-0">
@@ -391,8 +391,8 @@
             </div>
         </details>
 
-        <details id="staff-schedule" data-schedule-panel="staff-schedule" role="tabpanel" aria-labelledby="scheduling-tab-staff-schedule" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
+        <details id="staff-schedule" data-schedule-panel="staff-schedule" @if ($activeSchedulePanel !== 'staff-schedule') hidden @endif @if ($activeSchedulePanel === 'staff-schedule') open @endif role="tabpanel" aria-labelledby="scheduling-tab-staff-schedule" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <summary @if ($activeSchedulePanel === 'staff-schedule') hidden @endif class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
                 <span class="flex min-w-0 items-start gap-3">
                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">03</span>
                     <span class="min-w-0">
