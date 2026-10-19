@@ -97,11 +97,15 @@ test('owner can view and manage business scheduling', function (): void {
         ->assertSee('Apply to open days only')
         ->assertSee('Apply to all 7 days')
         ->assertSee('id="business-hours"', false)
-        ->assertSee('<details id="business-exceptions"', false)
-        ->assertSee('<details id="staff-schedule"', false)
+        ->assertSee('role="tablist"', false)
+        ->assertSee('data-schedule-tab="business-hours"', false)
+        ->assertSee('data-schedule-tab="business-exceptions"', false)
+        ->assertSee('data-schedule-tab="staff-schedule"', false)
+        ->assertSee('<details id="business-exceptions" data-schedule-panel="business-exceptions"', false)
+        ->assertSee('<details id="staff-schedule" data-schedule-panel="staff-schedule"', false)
         ->assertSee('data-business-hours-form', false)
         ->assertSee('businessHoursRows.filter(', false)
-        ->assertSee('if (target instanceof HTMLDetailsElement) target.open = true;', false);
+        ->assertSee('const activateSchedulePanel = (panelId) => {', false);
 
     $hours = collect(range(1, 7))->map(fn (int $day): array => [
         'day_of_week' => $day,
