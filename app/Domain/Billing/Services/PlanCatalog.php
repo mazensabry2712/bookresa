@@ -24,6 +24,8 @@ final class PlanCatalog
                     'name',
                     'price_minor',
                     'currency',
+                    'billing_period',
+                    'trial_days',
                 ]),
         );
     }

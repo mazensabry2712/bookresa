@@ -39,14 +39,23 @@ final class EnsureTenantModuleEnabled
 
         abort_unless($tenant !== null, Response::HTTP_FORBIDDEN, 'A workspace is required for this feature.');
 
-        return $this->currentTenant->run($tenant, function () use ($request, $next, $moduleKey): Response {
-            abort_unless(
-                $this->access->allows($moduleKey),
+        return $this->currentTenant->run($tenant, function () use ($request, $next, $moduleKey, $tenant): Response {
+            if ($this->access->allows($moduleKey)) {
+                return $next($request);
+            }
+
+            if (
+                $request->user()?->can('billing.view')
+                && $this->access->requiresSubscription($moduleKey)
+                && ! $this->access->hasUsableSubscription()
+            ) {
+                return to_route('billing.subscription', ['tenant' => $tenant->slug]);
+            }
+
+            abort(
                 Response::HTTP_FORBIDDEN,
                 'This feature is not enabled for the current workspace or subscription plan.',
             );
-
-            return $next($request);
         });
     }
 }

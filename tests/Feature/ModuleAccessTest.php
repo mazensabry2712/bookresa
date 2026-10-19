@@ -4,6 +4,7 @@ use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
@@ -282,7 +283,74 @@ test('platform admin bypasses subscription usability gate', function (): void {
         ->assertOk();
 });
 
-test('completed workspace requires a usable subscription for core operations', function (): void {
+
+test('owner can activate the free trial after onboarding and regain core module access', function (): void {
+    [$owner, $tenant] = moduleWorkspace('End-to-End Trial Activation');
+
+    $settings = $tenant->settings ?? [];
+    data_set($settings, 'onboarding.completed', true);
+    data_set($settings, 'onboarding.step', 'ready');
+    app(CurrentTenant::class)->run($tenant, function () use ($tenant, $settings): void {
+        $tenant->forceFill(['settings' => $settings])->save();
+    });
+
+    $plan = Plan::query()->create([
+        'name' => ['en' => 'Free Trial', 'ar' => 'التجربة المجانية'],
+        'description' => ['en' => '14-day trial', 'ar' => 'تجربة لمدة 14 يومًا'],
+        'price_minor' => 0,
+        'currency' => 'EGP',
+        'billing_period' => PlanBillingPeriod::Monthly,
+        'included_customer_limit' => 100,
+        'additional_customer_price_minor' => 0,
+        'trial_days' => 14,
+        'is_active' => true,
+    ]);
+
+    app(PlanCatalog::class)->forget();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', ['tenant' => $tenant->slug]))
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('Free Trial')
+        ->assertSee('Monthly')
+        ->assertSee('14');
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]))
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
+
+    $subscription = \\App\\Domain\\Billing\\Models\\Subscription::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    expect($subscription->status)->toBe(SubscriptionStatus::Trial)
+        ->and($subscription->isUsable())->toBeTrue()
+        ->and($subscription->end_at->greaterThan(CarbonImmutable::now()->addDays(13)))->toBeTrue();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('services.index', ['tenant' => $tenant->slug]))
+        ->assertOk();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('calendar.index', ['tenant' => $tenant->slug]))
+        ->assertOk();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('booking.management.index', ['tenant' => $tenant->slug]))
+        ->assertOk();
+});
+
+test('completed workspace sends an authorized owner to billing when subscription is missing', function (): void {
     [$owner, $tenant] = moduleWorkspace('Subscription Gate');
 
     $settings = $tenant->settings ?? [];
@@ -294,7 +362,7 @@ test('completed workspace requires a usable subscription for core operations', f
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('services.index', ['tenant' => $tenant->slug]))
-        ->assertForbidden();
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 
     $plan = Plan::query()->create([
         'name' => ['en' => 'Core Plan'],

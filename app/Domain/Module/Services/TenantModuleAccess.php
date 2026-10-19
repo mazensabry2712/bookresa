@@ -78,6 +78,50 @@ final class TenantModuleAccess
         return collect(data_get($subscription->pricing_snapshot, 'modules', []))
             ->contains(fn (array $item): bool => ($item['key'] ?? null) === $moduleKey);
     }
+
+    /**
+     * Determine whether the module is otherwise enabled but blocked only because
+     * a completed workspace has no usable subscription.
+     */
+    public function requiresSubscription(string $moduleKey): bool
+    {
+        $tenant = $this->currentTenant->get();
+
+        if (
+            $tenant === null
+            || ! (bool) data_get($tenant->settings, 'onboarding.completed', false)
+        ) {
+            return false;
+        }
+
+        $module = Module::query()->where('key', $moduleKey)->first();
+        $isCore = in_array($moduleKey, config('bookresa.modules.core', []), true);
+
+        if ($module === null) {
+            return $isCore;
+        }
+
+        if (! $module->is_active) {
+            return false;
+        }
+
+        $tenantModule = TenantModule::withoutGlobalScopes()
+            ->where('tenant_id', $tenant->getKey())
+            ->where('module_id', $module->getKey())
+            ->first();
+
+        if ($module->is_core || $isCore) {
+            return $tenantModule?->enabled !== false;
+        }
+
+        return $tenantModule?->enabled === true;
+    }
+
+    public function hasUsableSubscription(): bool
+    {
+        return $this->usableSubscriptionExists($this->currentTenant->idOrFail());
+    }
+
     private function usableSubscriptionExists(int $tenantId): bool
     {
         return Subscription::withoutGlobalScopes()
