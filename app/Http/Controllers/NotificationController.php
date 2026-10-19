@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Tenant\Services\CurrentTenant;
-use Carbon\CarbonImmutable;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -22,7 +22,7 @@ final class NotificationController
 
         try {
             CarbonImmutable::now($timezone);
-        } catch (\\Throwable) {
+        } catch (\Throwable) {
             $timezone = (string) (config('app.timezone') ?: 'UTC');
         }
 
