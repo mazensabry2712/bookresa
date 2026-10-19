@@ -280,8 +280,6 @@ return [
     'payment_processing' => 'جارٍ المعالجة',
     'payment_cancelled' => 'ملغي',
     ],
-    'business_ui' => [
-        'business_profile' => 'ملف النشاط',
     'booking_payment_account' => 'حساب مدفوعات الحجوزات',
     'booking_payment_account_help' => 'اربط حساب الدفع الخاص بك حتى تذهب مدفوعات عملائك إلى نشاطك وليس إلى BookResa.',
     'merchant_id' => 'معرّف التاجر',
@@ -297,6 +295,9 @@ return [
     'platform_subscription_revenue' => 'إيرادات اشتراكات المنصة',
     'workspace_booking_revenue' => 'إيرادات حجوزات مساحات العمل',
     'connected_payment_accounts' => 'حسابات الدفع المتصلة',
+
+    'business_ui' => [
+        'business_profile' => 'ملف النشاط',
         'open_booking_page' => 'فتح صفحة الحجز',
         'basic_information' => 'البيانات الأساسية',
         'basic_information_help' => 'حافظ على هوية النشاط واضحة للعملاء بالعربية والإنجليزية.',
