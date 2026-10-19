@@ -157,7 +157,8 @@ test('public customer can book without an account', function (): void {
     ]));
 
     expect($booking->customer->name)->toBe('Ahmed')
-        ->and($booking->service_id)->toBe($service->id);
+        ->and($booking->service_id)->toBe($service->id)
+        ->and(preg_match('/^BR-\\d{6}$/', $booking->booking_reference))->toBe(1);
 });
 
 test('public booking confirmation requires a signed url', function (): void {
