@@ -10,10 +10,7 @@ use RuntimeException;
 
 final class DeleteService
 {
-    public function __construct(
-        private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    public function __construct(private readonly CurrentTenant $currentTenant) {}
 
     public function handle(Service $service): void
     {
