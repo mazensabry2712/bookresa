@@ -124,6 +124,9 @@
                             </div>
                             <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4" data-booking-slots></div>
                             <div class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-300" data-booking-state>{{ __('app.booking_ui.select_service_date') }}</div>
+                            <button type="button" data-booking-auto-staff class="mt-3 hidden min-h-10 items-center justify-center rounded-lg border border-indigo-200 px-3 py-2 text-sm font-bold text-brand-indigo transition hover:bg-indigo-50 dark:border-indigo-900/60 dark:hover:bg-indigo-950/30">
+                                {{ __('app.booking_ui.show_all_staff_times') }}
+                            </button>
                             <div class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" data-booking-error>
                                 <p>{{ __('app.booking_ui.availability_error') }}</p>
                                 <button type="button" data-booking-retry class="mt-2 inline-flex min-h-9 items-center justify-center rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-bold hover:bg-rose-100 dark:border-rose-800 dark:hover:bg-rose-950">
@@ -271,6 +274,7 @@
             const selectedTime = form.querySelector('[data-booking-selected-time]');
             const slotCount = form.querySelector('[data-booking-slot-count]');
             const retryAvailability = form.querySelector('[data-booking-retry]');
+            const autoAssignAlternative = form.querySelector('[data-booking-auto-staff]');
             const submit = form.querySelector('[data-booking-submit]');
             const submitLabel = form.querySelector('[data-booking-submit-label]');
             const customerPicker = form.querySelector('[data-booking-customer]');
@@ -292,6 +296,7 @@
                 chooseTime: @json(__('app.booking_ui.choose_time')),
                 loading: @json(__('app.booking_ui.loading_availability')),
                 noTimes: @json(__('app.booking_ui.no_available_times')),
+                noStaffTimes: @json(__('app.booking_ui.no_staff_times')),
                 available: @json(__('app.booking_ui.available_times')),
                 autoAssigned: @json(__('app.booking_ui.auto_assigned')),
                 staffAutoHelp: @json(__('app.booking_ui.staff_auto_help')),
@@ -310,6 +315,7 @@
             };
 
             const clearState = () => state.classList.add('hidden');
+            const refreshAutoAssignAlternative = () => autoAssignAlternative?.classList.toggle('hidden', !staff.value || staff.disabled);
 
             const updateSummary = () => {
                 const serviceOption = service.options[service.selectedIndex];
@@ -362,6 +368,7 @@
 
                 staff.disabled = ids.size === 0;
                 staffHelp.textContent = ids.size === 0 ? messages.staffAutoHelp : messages.staffSelectHelp;
+                refreshAutoAssignAlternative();
                 updateSummary();
             };
 
@@ -378,7 +385,7 @@
                     time.value = '';
                     selectedTime.textContent = messages.chooseTime;
                     slotCount.textContent = '';
-                    showState(messages.noTimes);
+                    showState(staff.value ? messages.noStaffTimes : messages.noTimes);
                     refreshSubmit();
                     updateSummary();
                     return;
@@ -516,7 +523,15 @@
             });
 
             date.addEventListener('change', () => loadAvailability());
-            staff.addEventListener('change', () => loadAvailability());
+            staff.addEventListener('change', () => {
+                refreshAutoAssignAlternative();
+                loadAvailability();
+            });
+            autoAssignAlternative?.addEventListener('click', () => {
+                staff.value = '';
+                refreshAutoAssignAlternative();
+                loadAvailability();
+            });
             retryAvailability?.addEventListener('click', () => loadAvailability());
 
             form.addEventListener('submit', () => {
