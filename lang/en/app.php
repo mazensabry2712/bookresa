@@ -381,6 +381,7 @@ return [
         'description_english' => 'Description (English)',
         'description_arabic' => 'Description (Arabic)',
         'price' => 'Price',
+        'price_help' => 'Enter an amount from 0 to 9,999,999,999.99 with up to two decimal places.',
         'currency' => 'Currency',
         'duration' => 'Duration (minutes)',
         'buffer' => 'Buffer (minutes)',
@@ -407,6 +408,7 @@ return [
         'created' => 'Service created successfully.',
         'updated' => 'Service updated successfully.',
         'deleted' => 'Service deleted successfully.',
+        'delete_blocked_booking_history' => 'This service cannot be deleted because it has booking history. Deactivate it instead.'
     ],
     'staff_ui' => [
         'staff' => 'Staff',
