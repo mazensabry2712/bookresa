@@ -118,12 +118,13 @@ class BookingManagementController
             ->unique(fn (array $slot): string => $staff === null ? $slot['time'] : $slot['time'].'|'.($slot['staff_id'] ?? 'auto'))
             ->values();
 
-        return response()->json([
-            'data' => $availableSlots,
-            'reason' => $availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments
-                ? 'no_active_staff'
-                : null,
-        ]);
+        $response = ['data' => $availableSlots];
+
+        if ($availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments) {
+            $response['reason'] = 'no_active_staff';
+        }
+
+        return response()->json($response);
     }
 
     public function store(
