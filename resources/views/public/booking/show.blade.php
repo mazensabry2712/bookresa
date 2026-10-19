@@ -227,6 +227,9 @@
                             <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-booking-slots role="group" aria-label="{{ __('app.available_times') }}">
                                 <p class="col-span-full py-5 text-center text-sm text-slate-500">{{ __('app.public_booking_ui.select_service_date') }}</p>
                             </div>
+                            <button type="button" data-booking-any-staff class="mt-3 hidden min-h-10 items-center justify-center rounded-lg border border-indigo-200 px-3 py-2 text-sm font-bold text-brand-indigo transition hover:bg-indigo-50 dark:border-indigo-900/60 dark:hover:bg-indigo-950/30">
+                                {{ __('app.public_booking_ui.show_all_staff_times') }}
+                            </button>
                             <div data-booking-loading class="mt-3 hidden rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300" role="status" aria-live="polite">{{ __('app.loading_availability') }}</div>
                             <div data-booking-error class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-3 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" role="alert">{{ __('app.public_booking_ui.availability_error') }}</div>
                             <input type="hidden" name="time" value="{{ old('time') }}" data-booking-time>
@@ -347,6 +350,7 @@
                 chooseDate: @js($locale === 'ar' ? 'اختر التاريخ أولًا.' : 'Please choose a date first.'),
                 chooseTime: @js($locale === 'ar' ? 'اختر أحد الأوقات المتاحة للمتابعة.' : 'Please choose an available time to continue.'),
                 emptyAvailability: @js($locale === 'ar' ? 'لا توجد أوقات متاحة في هذا اليوم. جرّب تاريخًا آخر.' : 'No times are available on this date. Try another date.'),
+                emptyStaffAvailability: @js(__('app.public_booking_ui.empty_staff_availability')),
                 serviceDate: @js(__('app.public_booking_ui.select_service_date')),
                 loading: @js(__('app.public_booking_ui.loading_slots')),
                 availabilityError: @js(__('app.public_booking_ui.availability_error')),
@@ -362,6 +366,7 @@
             const dateInput = form.querySelector('[data-booking-date]');
             const staffWrap = form.querySelector('[data-booking-staff-wrap]');
             const staffSelect = form.querySelector('[data-booking-staff]');
+            const anyStaffButton = form.querySelector('[data-booking-any-staff]');
             const slotsContainer = form.querySelector('[data-booking-slots]');
             const loading = form.querySelector('[data-booking-loading]');
             const availabilityError = form.querySelector('[data-booking-error]');
@@ -381,6 +386,7 @@
             const initialStaffId = @js((string) old('staff_id', ''));
 
             const checkedService = () => serviceInputs.find((input) => input.checked) || null;
+            const refreshAnyStaffButton = () => anyStaffButton?.classList.toggle('hidden', !staffSelect.value);
 
             const clearWizardError = () => {
                 wizardError.textContent = '';
@@ -493,6 +499,7 @@
                 if (!staffMembers.length) {
                     staffWrap?.classList.add('hidden');
                     staffSelect.value = '';
+                    refreshAnyStaffButton();
                     return;
                 }
 
@@ -512,6 +519,8 @@
                 if ([...staffSelect.options].some((option) => option.value === String(previousValue))) {
                     staffSelect.value = String(previousValue);
                 }
+
+                refreshAnyStaffButton();
             };
 
             const selectSlot = (button, slotTime) => {
@@ -571,7 +580,7 @@
                     let restored = false;
 
                     if (!available.length) {
-                        setSlotsMessage(messages.emptyAvailability);
+                        setSlotsMessage(staffSelect.value ? messages.emptyStaffAvailability : messages.emptyAvailability);
                         timeInput.value = '';
                         return;
                     }
@@ -632,6 +641,15 @@
 
             staffSelect.addEventListener('change', () => {
                 timeInput.value = '';
+                refreshAnyStaffButton();
+                clearWizardError();
+                loadAvailability();
+            });
+
+            anyStaffButton?.addEventListener('click', () => {
+                staffSelect.value = '';
+                timeInput.value = '';
+                refreshAnyStaffButton();
                 clearWizardError();
                 loadAvailability();
             });
