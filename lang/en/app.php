@@ -614,7 +614,7 @@ return [
         'work_date' => 'Special working date',
         'starts_on' => 'Starts on',
         'ends_on' => 'Ends on',
-        'available_date' => 'Availability date'
+        'available_date' => 'Availability date',
         'save_holiday' => 'Save holiday',
         'business_closed' => 'Business closed',
         'no_holidays' => 'No upcoming holidays configured.',
