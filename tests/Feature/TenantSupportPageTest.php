@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Notifications\TenantSupportActivityNotification;
 use App\Support\PlatformSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -23,6 +24,7 @@ uses(RefreshDatabase::class);
 afterEach(function (): void {
     setPermissionsTeamId(null);
     app(CurrentTenant::class)->clear();
+    Cache::forget('bookresa.platform_settings');
 });
 
 function tenantSupportPageTenant(string $slug): Tenant
@@ -252,7 +254,7 @@ test('users who can view tickets but cannot create them do not see the ticket fo
 
     $tenant = tenantSupportPageTenant('support-page-read-only');
     $viewer = tenantSupportPageUser($tenant, 'support-page-read-only@example.test', ['support.view']);
-    tenantSupportPageTicket($tenant, $viewer, 'Existing support request');
+    $ticket = tenantSupportPageTicket($tenant, $viewer, 'Existing support request');
 
     $this->actingAs($viewer)
         ->withSession(['tenant_id' => $tenant->getKey()])
@@ -261,6 +263,12 @@ test('users who can view tickets but cannot create them do not see the ticket fo
         ->assertSee('Existing support request')
         ->assertDontSee('name="subject"', false)
         ->assertDontSee('support.store');
+
+    $this->actingAs($viewer)
+        ->withSession(['tenant_id' => $tenant->getKey()])
+        ->get(route('support.show', ['tenant' => $tenant->slug, 'ticket' => $ticket->getKey()]))
+        ->assertOk()
+        ->assertDontSee('id="support-reply"', false);
 });
 
 test('closed tickets do not accept a workspace reply', function (): void {
