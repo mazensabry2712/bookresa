@@ -53,7 +53,7 @@ final class SchedulingManagementController
         $today = CarbonImmutable::now($timezone)->toDateString();
 
         $staffMembers = StaffProfile::query()
-            ->with('user')
+            ->with(['user', 'workingHours'])
             ->orderBy('display_name')
             ->get();
 
