@@ -352,6 +352,7 @@
                 emptyAvailability: @js($locale === 'ar' ? 'لا توجد أوقات متاحة في هذا اليوم. جرّب تاريخًا آخر.' : 'No times are available on this date. Try another date.'),
                 emptyStaffAvailability: @js(__('app.public_booking_ui.empty_staff_availability')),
                 noActiveStaff: @js(__('app.public_booking_ui.no_active_staff_available')),
+                staffAvailableCount: @js(__('app.public_booking_ui.staff_available_count')),
                 serviceDate: @js(__('app.public_booking_ui.select_service_date')),
                 loading: @js(__('app.public_booking_ui.loading_slots')),
                 availabilityError: @js(__('app.public_booking_ui.availability_error')),
@@ -593,7 +594,20 @@
                         button.type = 'button';
                         button.className = 'min-h-12 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:focus:ring-indigo-950/60';
                         button.dataset.bookingSlot = slot.time;
-                        button.textContent = slot.time;
+                        if (!staffSelect.value && Number(slot.available_staff_count) > 0) {
+                            button.classList.add('flex', 'flex-col', 'justify-center', 'gap-0.5');
+
+                            const timeLabel = document.createElement('span');
+                            timeLabel.textContent = slot.time;
+
+                            const providersLabel = document.createElement('span');
+                            providersLabel.className = 'text-[10px] font-semibold text-slate-500 dark:text-slate-400';
+                            providersLabel.textContent = messages.staffAvailableCount.replace(':count', String(slot.available_staff_count));
+
+                            button.append(timeLabel, providersLabel);
+                        } else {
+                            button.textContent = slot.time;
+                        }
                         button.setAttribute('aria-pressed', 'false');
                         button.addEventListener('click', () => selectSlot(button, slot.time));
                         slotsContainer.appendChild(button);
