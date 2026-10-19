@@ -133,10 +133,10 @@ final class TenantSupportController
             ->with('status', __('app.support_ui.ticket_created'));
     }
 
-    public function show(CurrentTenant $currentTenant, int $ticketId): View
+    public function show(CurrentTenant $currentTenant, Tenant $routeTenant, int $ticketId): View
     {
         $tenant = $currentTenant->get();
-        abort_unless($tenant !== null, 404);
+        abort_unless($tenant !== null && $routeTenant->is($tenant), 404);
 
         $ticket = SupportTicket::query()
             ->where('tenant_id', $tenant->getKey())
