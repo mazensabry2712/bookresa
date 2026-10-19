@@ -48,7 +48,19 @@
                 <p class="mt-6 text-xs font-bold uppercase tracking-[0.16em] text-brand-indigo">
                     {{ $booking->status->value === 'confirmed' ? __('app.booking_confirmed') : __('app.booking_received') }}
                 </p>
-                <h1 class="mt-2 text-3xl font-extrabold tracking-tight">{{ $booking->booking_reference }}</h1>
+                <p class="mt-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.booking_reference') }}</p>
+                <h1 class="mt-1 text-3xl font-extrabold tracking-tight">{{ $booking->booking_reference }}</h1>
+                <div class="mt-3 flex flex-col items-center justify-center gap-2 sm:flex-row" data-booking-reference-container>
+                    <button type="button"
+                            data-booking-reference-copy
+                            data-booking-reference="{{ $booking->booking_reference }}"
+                            data-copied-message="{{ __('app.public_booking_ui.reference_copied') }}"
+                            data-copy-failed-message="{{ __('app.public_booking_ui.reference_copy_failed') }}"
+                            class="inline-flex min-h-10 items-center justify-center rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                        {{ __('app.public_booking_ui.copy_reference') }}
+                    </button>
+                    <span class="text-sm text-slate-500" data-booking-reference-status aria-live="polite"></span>
+                </div>
                 <p class="mt-3 text-sm leading-6 text-slate-500">{{ __('app.public_booking_ui.confirmation_message') }}</p>
             </div>
 
