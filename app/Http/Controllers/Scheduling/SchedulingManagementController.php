@@ -126,11 +126,15 @@ final class SchedulingManagementController
             $action->handle($hours);
 
             if ($onboardingCompleted === false) {
+                $hasServices = $tenant->services()->exists();
+                $nextStep = $hasServices ? 'staff' : 'services';
                 $settings = $tenant->settings ?? [];
-                data_set($settings, 'onboarding.step', 'staff');
+                data_set($settings, 'onboarding.step', $nextStep);
                 $tenant->forceFill(['settings' => $settings])->save();
 
-                return to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.business_hours_updated'));
+                return $hasServices
+                    ? to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.business_hours_updated'))
+                    : to_route('services.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.business_hours_updated'));
             }
 
             return to_route('scheduling.index', ['tenant' => $tenant->slug])->with('status', __('app.scheduling_ui.business_hours_updated'));
