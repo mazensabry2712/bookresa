@@ -48,7 +48,7 @@
         <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('app.scheduling_ui.summary') }}">
             <article class="br-panel p-5">
                 <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.timezone') }}</p>
-                <p class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $tenant->profile?->timezone ?? 'UTC' }}</p>
+                <p class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $timezone }}</p>
                 <p class="mt-1 text-xs text-slate-500">{{ __('app.scheduling_ui.timezone_help') }}</p>
             </article>
 
