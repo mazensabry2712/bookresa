@@ -8,30 +8,29 @@ use Illuminate\Support\Facades\Cache;
 
 final class PlanCatalog
 {
-    private const ACTIVE_PLANS_CACHE_KEY = 'bookresa:billing:active-plans:v2';
+    // Retained only so deployments can explicitly remove the legacy cached
+    // Collection. Active plans are queried directly to avoid unserializing
+    // stale/incompatible PHP objects from the shared production cache.
+    private const LEGACY_ACTIVE_PLANS_CACHE_KEY = 'bookresa:billing:active-plans:v2';
 
     /** @return Collection<int, Plan> */
     public function active(): Collection
     {
-        return Cache::remember(
-            self::ACTIVE_PLANS_CACHE_KEY,
-            now()->addMinutes(5),
-            fn (): Collection => Plan::query()
-                ->active()
-                ->orderBy('price_minor')
-                ->get([
-                    'id',
-                    'name',
-                    'price_minor',
-                    'currency',
-                    'billing_period',
-                    'trial_days',
-                ]),
-        );
+        return Plan::query()
+            ->active()
+            ->orderBy('price_minor')
+            ->get([
+                'id',
+                'name',
+                'price_minor',
+                'currency',
+                'billing_period',
+                'trial_days',
+            ]);
     }
 
     public function forget(): void
     {
-        Cache::forget(self::ACTIVE_PLANS_CACHE_KEY);
+        Cache::forget(self::LEGACY_ACTIVE_PLANS_CACHE_KEY);
     }
 }
