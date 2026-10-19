@@ -677,6 +677,8 @@ return [
         'no_staff_available_at_time' => 'That time is no longer available with the selected staff member. Choose another time or view times with any available staff member.',
         'selected_time_unavailable' => 'That time is no longer available. Please choose another time.',
         'no_staff_times' => 'This staff member has no available times on this date. Choose another staff member or view times with anyone available.',
+        'staff_inactive_help' => 'All staff assigned to this service are currently inactive.',
+        'no_active_staff_available' => 'No appointments can be offered because all staff assigned to this service are inactive. Activate a staff member or update the service assignments.',
         'show_all_staff_times' => 'View times with any available staff member',
         'phone' => 'Phone',
         'email' => 'Email',
