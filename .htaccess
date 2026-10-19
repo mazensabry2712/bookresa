@@ -1,12 +1,17 @@
-<IfModule mod_alias.c>
-    # Redirect the physical public directory before Apache adds its trailing slash.
-    RedirectMatch 301 ^/public/?$ /
-    RedirectMatch 301 ^/public/(.*)$ /$1
+<IfModule mod_dir.c>
+    # Let mod_rewrite canonicalize /public before mod_dir appends a slash.
+    DirectorySlash Off
 </IfModule>
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Serve the Laravel public directory at the domain root.
+    # Redirect only direct requests whose original URL contains /public.
+    # THE_REQUEST prevents internal rewrites such as /login -> public/login
+    # from being redirected back to the same URL.
+    RewriteCond %{THE_REQUEST} \s/+public(?:[/?]|\s) [NC]
+    RewriteRule ^public(?:/(.*))?$ /$1 [R=301,L,NE]
+
+    # Laravel's public directory is served at the domain root.
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
