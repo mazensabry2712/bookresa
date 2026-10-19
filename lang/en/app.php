@@ -999,6 +999,7 @@ return [
         'trial_days' => 'trial days',
         'no_plans' => 'No active plans are available right now.',
         'trial_active' => 'Your trial subscription is active.',
+        'free_plan_active' => 'Your free plan is active.',
         'payment_already_completed' => 'Subscription payment is already completed.',
         'renewed' => 'Subscription renewed successfully. Continue to payment to activate the new period.',
         'plan_change_scheduled' => 'Plan change scheduled for the next billing boundary.',

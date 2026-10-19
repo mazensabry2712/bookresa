@@ -172,7 +172,8 @@ test('owner can choose a zero-priced permanent plan without starting checkout', 
     $this->actingAs($user)
         ->withSession(['tenant_id' => $tenant->id])
         ->post(route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]))
-        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]))
+        ->assertSessionHas('status', __('app.billing_ui.free_plan_active'));
 
     $subscription = Subscription::withoutGlobalScopes()
         ->where('tenant_id', $tenant->id)

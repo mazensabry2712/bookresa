@@ -77,7 +77,7 @@ final class SubscriptionBillingController
 
             if ((int) $subscription->price_minor === 0) {
                 return to_route('billing.subscription', ['tenant' => $tenant->slug])
-                    ->with('status', __('app.billing_ui.trial_active'));
+                    ->with('status', __('app.billing_ui.free_plan_active'));
             }
 
             $payment = $startPayment->handle($subscription);
