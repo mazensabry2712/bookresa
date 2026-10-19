@@ -590,6 +590,7 @@ return [
         'business_working_hours' => 'Business working hours',
         'business_working_hours_help' => 'These hours form the base schedule used by availability calculations.',
         'configure_hours' => 'Configure your hours',
+        'at_least_one_open_day' => 'Open at least one day with valid opening and closing times before completing business setup.',
         'opens' => 'Opens',
         'closes' => 'Closes',
         'day_of_week' => 'Day of week',
