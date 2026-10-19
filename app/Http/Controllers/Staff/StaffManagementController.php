@@ -95,7 +95,7 @@ final class StaffManagementController
                         ->count() === $coreModuleKeys->count();
 
                 $hasServices = $tenant->services()->exists();
-                $hasHours = BusinessWorkingHour::query()->exists();
+                $hasHours = BusinessWorkingHour::query()->where('is_closed', false)->exists();
 
                 if ($coreModulesReady && $hasServices && $hasHours) {
                     $settings = $tenant->settings ?? [];
