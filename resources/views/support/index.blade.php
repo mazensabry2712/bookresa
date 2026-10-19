@@ -76,7 +76,7 @@
                 <p class="mt-2 text-2xl font-extrabold tabular-nums text-slate-950 dark:text-white">{{ number_format($ticketCounts->get('in_progress', 0)) }}</p>
             </article>
             <article class="br-panel p-4">
-                <p class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ __('app.support_ui.status_resolved') }}</p>
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ __('app.support_ui.status_resolved_closed') }}</p>
                 <p class="mt-2 text-2xl font-extrabold tabular-nums text-slate-950 dark:text-white">{{ number_format($ticketCounts->get('resolved', 0) + $ticketCounts->get('closed', 0)) }}</p>
             </article>
         </section>
