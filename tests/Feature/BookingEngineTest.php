@@ -248,6 +248,97 @@ test('availability rejects an unassigned staff member', function (): void {
     app(\App\Domain\Service\Actions\AssignServiceToStaff::class)->handle($service, $staff);
 });
 
+test('services with only inactive assigned staff cannot fall back to unassigned bookings', function (): void {
+    $tenant = bookingTenant('inactive-service-staff');
+    $service = bookingService();
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    $user = bookingUser($tenant, 'inactive-assigned-staff@example.com');
+    $staff = StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'display_name' => 'Inactive Doctor',
+        'status' => StaffStatus::Active,
+    ]);
+    app(AssignServiceToStaff::class)->handle($service, $staff);
+    $staff->update(['status' => StaffStatus::Inactive]);
+
+    $date = CarbonImmutable::parse('2026-09-28 10:00', 'Africa/Cairo');
+
+    expect(app(AvailabilityService::class)->slots($service, $date->startOfDay()))->toBeEmpty();
+
+    expect(fn () => app(CreateBooking::class)->handle(
+        $service,
+        'Patient',
+        '01000000881',
+        null,
+        $date,
+    ))->toThrow(RuntimeException::class, __('app.booking_ui.no_active_staff_assigned'));
+
+    expect(Booking::query()->where('service_id', $service->id)->count())->toBe(0);
+});
+
+test('a selected unavailable doctor is not silently replaced but automatic assignment can use another doctor', function (): void {
+    $tenant = bookingTenant('chosen-doctor-unavailable');
+    $service = bookingService();
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    $staff = [];
+    foreach ([
+        ['email' => 'doctor-one-fallback@example.com', 'name' => 'Doctor One'],
+        ['email' => 'doctor-two-fallback@example.com', 'name' => 'Doctor Two'],
+    ] as $definition) {
+        $user = bookingUser($tenant, $definition['email']);
+        $member = StaffProfile::query()->create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'display_name' => $definition['name'],
+            'status' => StaffStatus::Active,
+        ]);
+        app(AssignServiceToStaff::class)->handle($service, $member);
+        $staff[] = $member;
+    }
+
+    $start = CarbonImmutable::parse('2026-09-28 10:00', 'Africa/Cairo');
+
+    $first = app(CreateBooking::class)->handle(
+        $service,
+        'First Patient',
+        '01000000882',
+        null,
+        $start,
+        $staff[0],
+    );
+
+    expect($first->staff_id)->toBe($staff[0]->id);
+
+    expect(fn () => app(CreateBooking::class)->handle(
+        $service,
+        'Second Patient',
+        '01000000883',
+        null,
+        $start,
+        $staff[0],
+    ))->toThrow(RuntimeException::class, __('app.booking_ui.no_staff_available_at_time'));
+
+    $automatic = app(CreateBooking::class)->handle(
+        $service,
+        'Third Patient',
+        '01000000884',
+        null,
+        $start,
+    );
+
+    expect($automatic->staff_id)->toBe($staff[1]->id)
+        ->and($automatic->staff_id)->not->toBe($first->staff_id);
+});
+
 test('assigned staff are allocated independently at the same time', function (): void {
     $tenant = bookingTenant('staff-allocation');
     $service = bookingService();
