@@ -10,6 +10,7 @@ use App\Domain\Booking\Services\RescheduleBooking;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
+use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -90,6 +91,8 @@ class BookingManagementController
         $timezone = $this->timezone($tenant);
 
         $service = Service::query()->findOrFail((int) $validated['service_id']);
+        $hasStaffAssignments = $service->staff()->exists();
+        $hasActiveStaffAssignments = $service->staff()->where('status', StaffStatus::Active->value)->exists();
         $staff = ! empty($validated['staff_id'])
             ? StaffProfile::query()->findOrFail((int) $validated['staff_id'])
             : null;
@@ -105,16 +108,21 @@ class BookingManagementController
             return response()->json(['message' => $exception->getMessage()], 422);
         }
 
+        $availableSlots = collect($slots)
+            ->map(fn (array $slot): array => [
+                'date' => $slot['start']->toDateString(),
+                'time' => $slot['start']->format('H:i'),
+                'end_time' => $slot['end']->format('H:i'),
+                'staff_id' => $slot['staff_id'],
+            ])
+            ->unique(fn (array $slot): string => $staff === null ? $slot['time'] : $slot['time'].'|'.($slot['staff_id'] ?? 'auto'))
+            ->values();
+
         return response()->json([
-            'data' => collect($slots)
-                ->map(fn (array $slot): array => [
-                    'date' => $slot['start']->toDateString(),
-                    'time' => $slot['start']->format('H:i'),
-                    'end_time' => $slot['end']->format('H:i'),
-                    'staff_id' => $slot['staff_id'],
-                ])
-                ->unique(fn (array $slot): string => $staff === null ? $slot['time'] : $slot['time'].'|'.($slot['staff_id'] ?? 'auto'))
-                ->values(),
+            'data' => $availableSlots,
+            'reason' => $availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments
+                ? 'no_active_staff'
+                : null,
         ]);
     }
 
