@@ -10,6 +10,7 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Module\Models\Module;
 use App\Domain\Module\Models\TenantModule;
+use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
@@ -95,7 +96,7 @@ test('platform admin can access disabled modules', function (): void {
         'email' => 'module-platform-admin@example.com',
     ]);
 
-    \App\Domain\Platform\Models\PlatformAdmin::query()->create([
+    PlatformAdmin::query()->create([
         'user_id' => $admin->id,
         'is_active' => true,
     ]);
@@ -273,7 +274,7 @@ test('platform admin bypasses subscription usability gate', function (): void {
         'email' => 'subscription-platform-admin@example.com',
     ]);
 
-    \App\Domain\Platform\Models\PlatformAdmin::query()->create([
+    PlatformAdmin::query()->create([
         'user_id' => $admin->id,
         'is_active' => true,
     ]);
@@ -283,7 +284,6 @@ test('platform admin bypasses subscription usability gate', function (): void {
         ->get('/__test/'.$tenant->slug.'/subscription-gated-route')
         ->assertOk();
 });
-
 
 test('owner can activate the free trial after onboarding and regain core module access', function (): void {
     [$owner, $tenant] = moduleWorkspace('End-to-End Trial Activation');
