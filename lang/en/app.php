@@ -309,6 +309,8 @@ return [
         'branding_help' => 'Use a clear logo and cover image for your public booking page.',
         'logo' => 'Logo',
         'logo_help' => 'JPG, PNG or WebP up to 4 MB.',
+        'choose_file' => 'Choose file',
+        'no_file_chosen' => 'No file chosen',
         'remove_logo' => 'Remove current logo',
         'cover_image' => 'Cover image',
         'cover_help' => 'JPG, PNG or WebP up to 6 MB.',
