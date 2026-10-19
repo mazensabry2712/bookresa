@@ -60,6 +60,7 @@ test('platform admin can create and edit a plan with active modules', function (
         ->and($plan->modules->pluck('id')->all())->toBe([$module->id]);
 
     $this->actingAs($user)->patch(route('admin.plans.toggle', $plan))->assertSessionHas('status');
+
     expect($plan->fresh()->is_active)->toBeFalse();
 });
 
