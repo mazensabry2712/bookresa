@@ -669,6 +669,10 @@ return [
     'booking_ui' => [
         'create_help' => 'Create an appointment for a customer from this workspace. Availability is checked again when the booking is saved.',
         'create_appointment_help' => 'Choose the service first, then pick a date and an available time. Staff is optional when automatic assignment is available.',
+        'no_active_services' => 'There are no active services available to book.',
+        'no_active_services_help' => 'Add a service or activate an existing one before creating an appointment.',
+        'manage_services' => 'Manage services',
+        'retry_availability' => 'Reload available times',
         'phone' => 'Phone',
         'email' => 'Email',
         'notes' => 'Notes',
