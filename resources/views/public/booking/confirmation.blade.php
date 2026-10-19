@@ -95,5 +95,72 @@
             </div>
         </section>
     </main>
+    <script>
+        (() => {
+            const button = document.querySelector('[data-booking-reference-copy]');
+
+            if (!button) {
+                return;
+            }
+
+            button.addEventListener('click', async () => {
+                const reference = button.dataset.bookingReference ?? '';
+                const status = button.closest('[data-booking-reference-container]')
+                    ?.querySelector('[data-booking-reference-status]');
+
+                if (reference === '') {
+                    return;
+                }
+
+                const fallbackCopy = () => {
+                    const field = document.createElement('textarea');
+                    field.value = reference;
+                    field.setAttribute('readonly', '');
+                    field.style.position = 'fixed';
+                    field.style.opacity = '0';
+                    document.body.appendChild(field);
+                    field.select();
+
+                    let copied = false;
+
+                    try {
+                        copied = document.execCommand('copy');
+                    } finally {
+                        field.remove();
+                    }
+
+                    return copied;
+                };
+
+                try {
+                    let copied = false;
+
+                    if (navigator.clipboard?.writeText) {
+                        try {
+                            await navigator.clipboard.writeText(reference);
+                            copied = true;
+                        } catch {
+                            copied = fallbackCopy();
+                        }
+                    } else {
+                        copied = fallbackCopy();
+                    }
+
+                    if (!copied) {
+                        throw new Error('Clipboard copy failed');
+                    }
+
+                    if (status) {
+                        status.textContent = button.dataset.copiedMessage ?? '';
+                    }
+                } catch {
+                    if (status) {
+                        status.textContent = button.dataset.copyFailedMessage ?? '';
+                    }
+                }
+            });
+        })();
+    </script>
+
 </body>
 </html>
