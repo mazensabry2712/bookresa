@@ -1,8 +1,10 @@
 <?php
 
 use App\Domain\Billing\Enums\PlanBillingPeriod;
+use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
-use App\Domain\Billing\Services\CreateSubscription;
+use App\Domain\Billing\Models\Subscription;
+use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Actions\UpdateBusinessProfile;
 use App\Domain\Business\Models\BusinessProfile;
@@ -195,7 +197,7 @@ test('workspace modules are managed outside onboarding', function (): void {
     )->toBe($coreModuleIds->count());
 });
 
-test('onboarding advances through services working hours and staff stages', function (): void {
+test('onboarding completes through service, hours, staff, trial activation and workspace access', function (): void {
     $owner = User::factory()->create();
     $staffUser = User::factory()->create(['email' => 'onboarding-staff@example.com']);
     $type = BusinessType::query()->where('slug', 'clinic')->firstOrFail();
@@ -244,50 +246,72 @@ test('onboarding advances through services working hours and staff stages', func
         ])
         ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 
-    expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready');
-
-    $this->actingAs($owner)
-        ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('dashboard', ['tenant' => $tenant->slug]))
-        ->assertOk();
-
-    $this->actingAs($owner)
-        ->withSession(['tenant_id' => $tenant->id])
-        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
-        ->assertOk();
-
     expect(data_get($tenant->fresh()->settings, 'onboarding.step'))->toBe('ready')
         ->and(data_get($tenant->fresh()->settings, 'onboarding.completed'))->toBeTrue();
 
+    foreach ([
+        route('services.index', ['tenant' => $tenant->slug]),
+        route('calendar.index', ['tenant' => $tenant->slug]),
+        route('booking.management.index', ['tenant' => $tenant->slug]),
+    ] as $protectedUrl) {
+        $this->actingAs($owner)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get($protectedUrl)
+            ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
+    }
+
     $plan = Plan::query()->create([
-        'name' => ['en' => 'Onboarding Plan', 'ar' => 'خطة الإعداد'],
-        'description' => ['en' => 'Onboarding test plan', 'ar' => 'خطة اختبار الإعداد'],
+        'name' => ['en' => 'Onboarding Free Trial', 'ar' => 'التجربة المجانية للإعداد'],
+        'description' => ['en' => '14-day onboarding trial', 'ar' => 'تجربة إعداد لمدة 14 يومًا'],
         'price_minor' => 0,
         'currency' => 'EGP',
         'billing_period' => PlanBillingPeriod::Monthly,
         'included_customer_limit' => 100,
         'additional_customer_price_minor' => 0,
-        'trial_days' => 0,
+        'trial_days' => 14,
         'is_active' => true,
     ]);
 
-    app(CurrentTenant::class)->set($tenant);
+    app(PlanCatalog::class)->forget();
 
-    $subscription = app(CreateSubscription::class)->handle(
-        $plan,
-        CarbonImmutable::now(),
-    );
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('Onboarding Free Trial')
+        ->assertSee('14')
+        ->assertSee('Monthly');
 
-    $subscription->forceFill([
-        'payment_status' => PaymentStatus::Paid,
-        'end_at' => CarbonImmutable::now()->addMonth(),
-        'pricing_snapshot' => ['modules' => []],
-    ])->save();
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]))
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]))
+        ->assertSessionHas('status', __('app.billing_ui.trial_active'));
+
+    $subscription = Subscription::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    expect($subscription->status)->toBe(SubscriptionStatus::Trial)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Pending)
+        ->and($subscription->isUsable())->toBeTrue()
+        ->and($subscription->end_at->greaterThan(CarbonImmutable::now()->addDays(13)))->toBeTrue();
 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('dashboard', ['tenant' => $tenant->slug]))
         ->assertOk();
+
+    foreach ([
+        route('services.index', ['tenant' => $tenant->slug]),
+        route('calendar.index', ['tenant' => $tenant->slug]),
+        route('booking.management.index', ['tenant' => $tenant->slug]),
+    ] as $protectedUrl) {
+        $this->actingAs($owner)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->get($protectedUrl)
+            ->assertOk();
+    }
 });
 
 test('workspace booking maximum advance days can be cleared back to unlimited', function (): void {
