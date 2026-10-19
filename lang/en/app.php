@@ -940,6 +940,7 @@ return [
         'availability_help' => 'Available times are calculated from the business and staff schedules.',
         'select_service_date' => 'Select a service and date to see available times.',
         'loading_slots' => 'Finding available times…',
+        'staff_available_count' => 'Available providers: :count',
         'availability_error' => 'We could not load availability. Please try again.',
         'check_form' => 'Please review the highlighted fields and try again.',
         'empty_staff_availability' => 'The selected staff member is unavailable on this date. Choose another staff member or view times with anyone available.',
