@@ -5,6 +5,12 @@
 
     RewriteEngine On
 
+    # Canonicalize direct browser requests that explicitly include /public.
+    # THE_REQUEST stays unchanged during internal Laravel rewrites, so normal
+    # root requests such as /login are not redirected back into a loop.
+    RewriteCond %{THE_REQUEST} \s/+public(?:/|\?|[[:space:]]) [NC]
+    RewriteRule ^(.*)$ /$1 [R=302,L,NE]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
