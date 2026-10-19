@@ -12,8 +12,7 @@ final class TenantModuleAccess
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
-    ) {
-    }
+    ) {}
 
     public function allows(string $moduleKey): bool
     {
@@ -29,7 +28,7 @@ final class TenantModuleAccess
                 return false;
             }
 
-            if (! (bool) data_get($this->currentTenant->get()?->settings, 'onboarding.completed', false)) {
+            if (!(bool) data_get($this->currentTenant->get()?->settings, 'onboarding.completed', false)) {
                 return true;
             }
 
@@ -50,7 +49,7 @@ final class TenantModuleAccess
                 return false;
             }
 
-            if (! (bool) data_get($this->currentTenant->get()?->settings, 'onboarding.completed', false)) {
+            if (!(bool) data_get($this->currentTenant->get()?->settings, 'onboarding.completed', false)) {
                 return true;
             }
 
@@ -89,7 +88,7 @@ final class TenantModuleAccess
 
         if (
             $tenant === null
-            || ! (bool) data_get($tenant->settings, 'onboarding.completed', false)
+            || !(bool) data_get($tenant->settings, 'onboarding.completed', false)
         ) {
             return false;
         }
