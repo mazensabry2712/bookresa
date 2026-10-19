@@ -1128,6 +1128,8 @@ return [
         'payment' => 'دفع',
         'subscription' => 'اشتراك',
         'usage' => 'استخدام',
+        'broadcast' => 'إعلان من المنصة',
+        'support' => 'الدعم',
         'other' => 'إشعار',
         'no_notifications' => 'لا توجد إشعارات بعد',
         'no_notifications_help' => 'ستظهر هنا الأحداث المهمة الخاصة بمساحة العمل.',
