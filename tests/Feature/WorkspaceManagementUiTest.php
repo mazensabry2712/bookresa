@@ -5,6 +5,7 @@ use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
+use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\TenantPaymentAccount;
@@ -12,6 +13,8 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Staff\Models\StaffProfile;
+use App\Domain\Tenant\Enums\MembershipStatus;
+use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use App\Support\PlatformSettings;
@@ -143,6 +146,48 @@ test('owner can view and update business profile', function (): void {
         ->assertSee('https://example.com', false)
         ->assertSee('https://facebook.com/elnour', false)
         ->assertSee('https://instagram.com/elnour', false);
+});
+
+test('workspace members without business update permission see a read-only profile', function (): void {
+    app()->setLocale('en');
+
+    [$owner, $tenant] = workspaceOwner();
+
+    $viewer = User::factory()->create([
+        'name' => 'Read Only Staff',
+        'email_verified_at' => now(),
+    ]);
+
+    TenantMembership::query()->create([
+        'tenant_id' => $tenant->getKey(),
+        'user_id' => $viewer->getKey(),
+        'status' => MembershipStatus::Active,
+        'is_primary' => false,
+    ]);
+
+    setPermissionsTeamId($tenant->getKey());
+    $staffRole = app(TenantRoleProvisioner::class)->provisionRole($tenant, 'staff');
+    $viewer->assignRole($staffRole);
+    setPermissionsTeamId(null);
+
+    $response = $this->actingAs($viewer)
+        ->withSession(['tenant_id' => $tenant->getKey()])
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('data-business-profile-editable="false"', false)
+        ->assertSee(__('app.business_ui.read_only_help'))
+        ->assertDontSee(__('app.business_ui.save_changes'));
+
+    expect(preg_match('/name="name_en"[^>]*\sdisabled(?:\s|>)/', $response->getContent()))->toBe(1);
+
+    $this->actingAs($viewer)
+        ->withSession(['tenant_id' => $tenant->getKey()])
+        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [])
+        ->assertForbidden();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($tenant->fresh('profile')->profile->name['en'])->toBe('Owner Clinic');
 });
 
 test('workspace profile does not configure payment accounts and follows centralized platform policy', function (): void {
