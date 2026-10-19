@@ -5,7 +5,6 @@ use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
-use App\Domain\Module\Services\TenantModuleAccess;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Service\Actions\CreateService;
