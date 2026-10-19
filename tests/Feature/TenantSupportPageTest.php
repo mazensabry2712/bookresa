@@ -202,6 +202,8 @@ test('workspace support filters combine search status and priority and preserve 
 
 test('ticket form preserves input errors and creates the initial message atomically on valid submission', function (): void {
     app()->setLocale('en');
+    Notification::fake();
+    app(PlatformSettings::class)->put(['support_email' => 'support@example.test']);
 
     $tenant = tenantSupportPageTenant('support-page-create');
     $owner = tenantSupportPageUser($tenant, 'support-page-create@example.test');
@@ -238,6 +240,8 @@ test('ticket form preserves input errors and creates the initial message atomica
         ->and($ticket->priority)->toBe(SupportTicketPriority::High)
         ->and($ticket->messages()->count())->toBe(1)
         ->and($ticket->messages()->firstOrFail()->message)->toBe('The morning appointments do not appear for an active service.');
+
+    Notification::assertSentOnDemand(TenantSupportActivityNotification::class);
 });
 
 test('users who can view tickets but cannot create them do not see the ticket form', function (): void {
