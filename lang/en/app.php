@@ -280,8 +280,6 @@ return [
     'payment_processing' => 'Processing',
     'payment_cancelled' => 'Cancelled',
     ],
-    'business_ui' => [
-        'business_profile' => 'Business profile',
     'booking_payment_account' => 'Booking payment account',
     'booking_payment_account_help' => 'Connect your own payment merchant so customer booking payments are settled to your business, not to BookResa.',
     'merchant_id' => 'Merchant ID',
@@ -297,6 +295,9 @@ return [
     'platform_subscription_revenue' => 'Platform subscription revenue',
     'workspace_booking_revenue' => 'Workspace booking revenue',
     'connected_payment_accounts' => 'Connected payment accounts',
+
+    'business_ui' => [
+        'business_profile' => 'Business profile',
         'open_booking_page' => 'Open booking page',
         'basic_information' => 'Basic information',
         'basic_information_help' => 'Keep the public business identity clear in English and Arabic.',
