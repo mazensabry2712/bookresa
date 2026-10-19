@@ -797,10 +797,34 @@
                 });
             };
 
-            scheduleTabs.forEach((tab) => tab.addEventListener('click', () => {
-                const panelId = tab.dataset.scheduleTab;
-                if (panelId) activateSchedulePanel(panelId);
-            }));
+            scheduleTabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                    const panelId = tab.dataset.scheduleTab;
+                    if (panelId) activateSchedulePanel(panelId);
+                });
+
+                tab.addEventListener('keydown', (event) => {
+                    const rtl = document.documentElement.dir === 'rtl';
+                    let nextIndex = null;
+
+                    if (event.key === (rtl ? 'ArrowLeft' : 'ArrowRight') || event.key === 'ArrowDown') {
+                        nextIndex = (index + 1) % scheduleTabs.length;
+                    } else if (event.key === (rtl ? 'ArrowRight' : 'ArrowLeft') || event.key === 'ArrowUp') {
+                        nextIndex = (index - 1 + scheduleTabs.length) % scheduleTabs.length;
+                    } else if (event.key === 'Home') {
+                        nextIndex = 0;
+                    } else if (event.key === 'End') {
+                        nextIndex = scheduleTabs.length - 1;
+                    }
+
+                    if (nextIndex === null) return;
+
+                    event.preventDefault();
+                    scheduleTabs[nextIndex].focus();
+                    const panelId = scheduleTabs[nextIndex].dataset.scheduleTab;
+                    if (panelId) activateSchedulePanel(panelId);
+                });
+            });
             activateSchedulePanel(@js($activeSchedulePanel));
 
             const syncHoursRow = (row) => {
