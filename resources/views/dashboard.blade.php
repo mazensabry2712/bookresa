@@ -72,7 +72,7 @@
         $usagePercent = $attention['usagePercent'] ?? 0;
         $bookingUrl = route('public.booking.canonical.show', ['tenant' => $tenant->slug]);
         $bookingLogoUrl = $tenant->profile?->logo_path
-            ? \\Illuminate\\Support\\Facades\\Storage::disk('public')->url($tenant->profile->logo_path)
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($tenant->profile->logo_path)
             : '';
     @endphp
 
