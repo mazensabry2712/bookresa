@@ -3,6 +3,7 @@
 namespace App\Domain\Payment\Models;
 
 use App\Domain\Customer\Models\Customer;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -43,6 +44,12 @@ class BookingCommission extends Model
             'workspace_net_minor' => 'integer',
             'metadata' => 'array',
         ];
+    }
+
+    /** @return BelongsTo<Tenant, $this> */
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
     }
 
     /** @return BelongsTo<Payment, $this> */

@@ -19,13 +19,13 @@ final class PlatformCommissionController
     {
         $this->authorizeFinance();
 
-        $earned = BookingCommission::withoutGlobalScopes()
+        $earned = DB::table('booking_commissions')
             ->selectRaw('tenant_id, currency, SUM(commission_amount_minor) as commission_minor, SUM(workspace_net_minor) as workspace_net_minor')
             ->groupBy('tenant_id', 'currency')
             ->orderBy('tenant_id')
             ->get();
 
-        $reservedPayouts = WorkspacePayout::query()
+        $reservedPayouts = DB::table('workspace_payouts')
             ->whereIn('status', ['pending', 'paid'])
             ->selectRaw('tenant_id, currency, SUM(amount_minor) as reserved_minor')
             ->groupBy('tenant_id', 'currency')
@@ -35,19 +35,28 @@ final class PlatformCommissionController
             $tenant = Tenant::withoutGlobalScopes()
                 ->with(['profile' => fn ($query) => $query->withoutGlobalScopes()])
                 ->find($row->tenant_id);
-            $reserved = (int) ($reservedPayouts->first(
+            $reservedRow = $reservedPayouts->first(
                 fn (object $payout): bool => (int) $payout->tenant_id === (int) $row->tenant_id
                     && $payout->currency === $row->currency,
-            )?->reserved_minor ?? 0);
+            );
+            $reserved = (int) ($reservedRow?->reserved_minor ?? 0);
             $workspaceNet = (int) $row->workspace_net_minor;
+            $tenantName = (string) $row->tenant_id;
+            $tenantSlug = '';
+
+            if ($tenant !== null) {
+                $tenantName = (string) (
+                    data_get($tenant->profile?->name, app()->getLocale())
+                    ?? data_get($tenant->profile?->name, 'en')
+                    ?? $tenant->slug
+                );
+                $tenantSlug = $tenant->slug;
+            }
 
             return [
                 'tenant_id' => (int) $row->tenant_id,
-                'tenant_name' => data_get($tenant?->profile?->name, app()->getLocale())
-                    ?? data_get($tenant?->profile?->name, 'en')
-                    ?? $tenant?->slug
-                    ?? (string) $row->tenant_id,
-                'slug' => (string) ($tenant?->slug ?? ''),
+                'tenant_name' => $tenantName,
+                'slug' => $tenantSlug,
                 'currency' => (string) $row->currency,
                 'commission_minor' => (int) $row->commission_minor,
                 'workspace_net_minor' => $workspaceNet,
