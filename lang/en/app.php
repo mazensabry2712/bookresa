@@ -447,7 +447,7 @@ return [
         'status' => 'Status',
         'assigned_service_count' => '{0} No assigned services|{1} :count assigned service|[2,*] :count assigned services',
         'assigned_services' => 'Assigned services',
-        'edit_below' => 'Edit details below',
+        'edit_below' => 'Edit staff details',
         'availability_help' => 'Business hours and staff-specific availability are configured from Scheduling.',
         'save_changes' => 'Save changes',
         'view_only' => 'You have view-only access to staff members.',

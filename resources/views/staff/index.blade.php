@@ -24,6 +24,8 @@
             'active' => __('app.staff_ui.active'),
             'inactive' => __('app.staff_ui.inactive'),
         ];
+
+        $createFormOld = old('_form') === 'staff-create';
     @endphp
 
     <div class="space-y-6">
@@ -43,22 +45,28 @@
         </section>
 
         @can('staff.manage')
-            <section class="br-panel p-5 sm:p-6">
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div>
+            <details class="br-panel p-5 sm:p-6 group" @if (($staffMembers->total() === 0 && $search === '' && $statusFilter === '') || $createFormOld) open @endif>
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
+                    <div class="min-w-0 flex-1">
                         <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.staff_ui.new_member') }}</p>
                         <h3 class="mt-2 text-xl font-bold text-slate-950 dark:text-white">{{ __('app.staff_ui.add_staff_member') }}</h3>
                         <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.staff_ui.add_help') }}</p>
                     </div>
-                </div>
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-indigo text-white" aria-hidden="true">
+                        <svg class="h-5 w-5 transition-transform group-open:rotate-45" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" d="M12 5v14M5 12h14"/>
+                        </svg>
+                    </span>
+                </summary>
 
                 <form method="POST" action="{{ route('staff.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-5">
                     @csrf
+                    <input type="hidden" name="_form" value="staff-create">
 
                     <div class="grid gap-4 lg:grid-cols-2">
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.staff_ui.account_email') }}</span>
-                            <input name="email" type="email" value="{{ old('email') }}" required
+                            <input name="email" type="email" value="{{ $createFormOld ? old('email') : '' }}" required
                                    placeholder="{{ __('app.staff_ui.email_placeholder') }}"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-indigo-950">
                             <span class="block text-xs leading-5 text-slate-500">{{ __('app.staff_ui.account_email_help') }}</span>
@@ -69,20 +77,20 @@
 
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.staff_ui.display_name') }}</span>
-                            <input name="display_name" value="{{ old('display_name') }}"
+                            <input name="display_name" value="{{ $createFormOld ? old('display_name') : '' }}"
                                    placeholder="{{ __('app.staff_ui.display_name_placeholder') }}"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-indigo-950">
                         </label>
 
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.staff_ui.phone') }}</span>
-                            <input name="phone" type="tel" value="{{ old('phone') }}" inputmode="tel"
+                            <input name="phone" type="tel" value="{{ $createFormOld ? old('phone') : '' }}" inputmode="tel"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-indigo-950">
                         </label>
 
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.staff_ui.job_title') }}</span>
-                            <input name="job_title" value="{{ old('job_title') }}"
+                            <input name="job_title" value="{{ $createFormOld ? old('job_title') : '' }}"
                                    placeholder="{{ __('app.staff_ui.job_title_placeholder') }}"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 outline-none transition focus:border-brand-indigo focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-indigo-950">
                         </label>
@@ -92,7 +100,7 @@
                             <select name="role" required
                                     class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                                 @foreach ($roles as $role)
-                                    <option value="{{ $role }}" @selected(old('role', 'staff') === $role)>
+                                    <option value="{{ $role }}" @selected(($createFormOld ? old('role', 'staff') : 'staff') === $role)>
                                         {{ $roleLabels[$role] ?? str($role)->headline() }}
                                     </option>
                                 @endforeach
@@ -116,7 +124,7 @@
                                 @foreach ($services as $service)
                                     <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-3 text-sm transition hover:border-indigo-300 dark:border-slate-800 dark:hover:border-indigo-800">
                                         <input type="checkbox" name="services[]" value="{{ $service->id }}"
-                                               @checked(collect(old('services', []))->map(fn ($id) => (int) $id)->contains($service->id))
+                                               @checked(collect($createFormOld ? old('services', []) : [])->map(fn ($id) => (int) $id)->contains((int) $service->id))
                                                class="mt-0.5 rounded border-slate-300">
                                         <span class="min-w-0">
                                             <span class="block truncate font-semibold text-slate-900 dark:text-white">{{ $localized($service->name) }}</span>
@@ -132,6 +140,16 @@
                                 @endforeach
                             </div>
                         @endif
+
+                        @if ($createFormOld)
+                            @foreach ($errors->getMessages() as $field => $messages)
+                                @if ($field === 'services' || str_starts_with($field, 'services.'))
+                                    @foreach ($messages as $message)
+                                        <p class="mt-2 text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</p>
+                                    @endforeach
+                                @endif
+                            @endforeach
+                        @endif
                     </div>
 
                     <div class="flex justify-end">
@@ -141,7 +159,7 @@
                         </button>
                     </div>
                 </form>
-            </section>
+            </details>
         @endcan
 
         <section class="br-panel overflow-hidden">
@@ -183,6 +201,9 @@
                     @php
                         $currentRole = $staffMember->user->getRoleNames()->first() ?? 'staff';
                         $status = $staffMember->status->value;
+                        $staffFormKey = 'staff-update-'.$staffMember->id;
+                        $staffFormOld = old('_form') === $staffFormKey;
+                        $assignedServiceIds = $staffMember->services->pluck('id')->map(fn ($id) => (int) $id)->all();
                     @endphp
 
                     <article class="p-5 sm:p-6">
@@ -218,42 +239,68 @@
                                 </div>
                             </div>
 
-                            @can('staff.manage')
-                                <span class="text-xs font-semibold text-slate-400">{{ __('app.staff_ui.edit_below') }}</span>
-                            @endcan
                         </div>
 
                         @can('staff.manage')
-                            <form method="POST" action="{{ route('staff.update', ['tenant' => $tenant->slug, 'staff' => $staffMember]) }}" class="mt-5 space-y-5 border-t border-slate-200 pt-5 dark:border-slate-800">
+                            <details class="group mt-4 border-t border-slate-200 pt-4 dark:border-slate-800" @if ($staffFormOld && $errors->any()) open @endif>
+                                <summary class="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-brand-indigo hover:text-indigo-700 [&::-webkit-details-marker]:hidden">
+                                    <span>{{ __('app.staff_ui.edit_below') }}</span>
+                                    <svg class="h-4 w-4 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
+                                    </svg>
+                                </summary>
+
+                            <form method="POST" action="{{ route('staff.update', ['tenant' => $tenant->slug, 'staff' => $staffMember]) }}" class="mt-5 space-y-5">
                                 @csrf
                                 @method('PUT')
+                                <input type="hidden" name="_form" value="{{ $staffFormKey }}">
 
                                 <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                                     <label class="space-y-1.5 text-sm">
                                         <span class="font-semibold">{{ __('app.staff_ui.display_name') }}</span>
-                                        <input name="display_name" type="text" value="{{ $staffMember->display_name }}" required
+                                        <input name="display_name" type="text" value="{{ $staffFormOld ? old('display_name', $staffMember->display_name) : $staffMember->display_name }}" required
                                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                                        @if ($staffFormOld)
+                                            @error('display_name')
+                                                <span class="block text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</span>
+                                            @enderror
+                                        @endif
                                     </label>
 
                                     <label class="space-y-1.5 text-sm">
                                         <span class="font-semibold">{{ __('app.staff_ui.phone') }}</span>
-                                        <input name="phone" type="tel" value="{{ $staffMember->phone }}"
+                                        <input name="phone" type="tel" value="{{ $staffFormOld ? old('phone', $staffMember->phone) : $staffMember->phone }}"
                                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                                        @if ($staffFormOld)
+                                            @error('phone')
+                                                <span class="block text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</span>
+                                            @enderror
+                                        @endif
                                     </label>
 
                                     <label class="space-y-1.5 text-sm">
                                         <span class="font-semibold">{{ __('app.staff_ui.job_title') }}</span>
-                                        <input name="job_title" value="{{ $staffMember->job_title }}"
+                                        <input name="job_title" value="{{ $staffFormOld ? old('job_title', $staffMember->job_title) : $staffMember->job_title }}"
                                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                                        @if ($staffFormOld)
+                                            @error('job_title')
+                                                <span class="block text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</span>
+                                            @enderror
+                                        @endif
                                     </label>
 
                                     <label class="space-y-1.5 text-sm">
                                         <span class="font-semibold">{{ __('app.staff_ui.role') }}</span>
                                         <select name="role" required class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                                             @foreach ($roles as $role)
-                                                <option value="{{ $role }}" @selected($currentRole === $role)>{{ $roleLabels[$role] ?? str($role)->headline() }}</option>
+                                                <option value="{{ $role }}" @selected(($staffFormOld ? old('role', $currentRole) : $currentRole) === $role)>{{ $roleLabels[$role] ?? str($role)->headline() }}</option>
                                             @endforeach
                                         </select>
+                                        @if ($staffFormOld)
+                                            @error('role')
+                                                <span class="block text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</span>
+                                            @enderror
+                                        @endif
                                     </label>
                                 </div>
 
@@ -262,9 +309,14 @@
                                         <span class="font-semibold">{{ __('app.staff_ui.status') }}</span>
                                         <select name="status" required class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                                             @foreach ($statusLabels as $value => $label)
-                                                <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
+                                                <option value="{{ $value }}" @selected(($staffFormOld ? old('status', $status) : $status) === $value)>{{ $label }}</option>
                                             @endforeach
                                         </select>
+                                        @if ($staffFormOld)
+                                            @error('status')
+                                                <span class="block text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</span>
+                                            @enderror
+                                        @endif
                                     </label>
 
                                     <div>
@@ -273,7 +325,7 @@
                                             @foreach ($services as $service)
                                                 <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-3 text-sm dark:border-slate-800">
                                                     <input type="checkbox" name="services[]" value="{{ $service->id }}"
-                                                           @checked($staffMember->services->contains('id', $service->id))
+                                                           @checked(collect($staffFormOld ? old('services', $assignedServiceIds) : $assignedServiceIds)->map(fn ($id) => (int) $id)->contains((int) $service->id))
                                                            class="mt-0.5 rounded border-slate-300">
                                                     <span class="min-w-0">
                                                         <span class="block truncate font-semibold">{{ $localized($service->name) }}</span>
@@ -297,7 +349,17 @@
                                         {{ __('app.staff_ui.save_changes') }}
                                     </button>
                                 </div>
+                                @if ($staffFormOld)
+                                    @foreach ($errors->getMessages() as $field => $messages)
+                                        @if ($field === 'services' || str_starts_with($field, 'services.'))
+                                            @foreach ($messages as $message)
+                                                <p class="mt-2 text-xs font-semibold text-rose-700 dark:text-rose-300">{{ $message }}</p>
+                                            @endforeach
+                                        @endif
+                                    @endforeach
+                                @endif
                             </form>
+                            </details>
                         @else
                             <p class="mt-5 border-t border-slate-200 pt-4 text-sm leading-6 text-slate-500 dark:border-slate-800">{{ __('app.staff_ui.view_only') }}</p>
                         @endcan

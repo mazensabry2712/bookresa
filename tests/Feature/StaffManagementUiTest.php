@@ -319,3 +319,49 @@ test('staff management paginates large staff lists', function (): void {
         ->assertOk()
         ->assertSee('Pagination Staff 1');
 });
+
+test('failed staff updates keep attempted values in the correct editor only', function (): void {
+    [$owner, $tenant] = staffWorkspaceOwner('Staff Form Owner');
+    $staffUser = User::factory()->create(['email' => 'form-target@example.com']);
+
+    app(CurrentTenant::class)->set($tenant);
+    $staff = app(AddStaffMember::class)->handle($staffUser, 'staff', [
+        'display_name' => 'Original Staff Name',
+        'job_title' => 'Original title',
+    ]);
+
+    [$otherOwner, $otherTenant] = staffWorkspaceOwner('Other Staff Form Owner');
+    $foreignService = staffService($otherTenant, 'Foreign service');
+
+    $response = $this->followingRedirects()
+        ->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('staff.index', ['tenant' => $tenant->slug]))
+        ->put(route('staff.update', ['tenant' => $tenant->slug, 'staff' => $staff]), [
+            '_form' => 'staff-update-'.$staff->id,
+            'display_name' => 'Attempted Staff Name',
+            'phone' => '01000000000',
+            'job_title' => 'Attempted title',
+            'role' => 'staff',
+            'status' => 'inactive',
+            'services' => [$foreignService->id],
+        ]);
+
+    $response->assertOk()->assertSee('value="Attempted Staff Name"', false);
+
+    $html = $response->getContent();
+    $editorMarker = strpos($html, 'value="staff-update-'.$staff->id.'"');
+    $attemptedValue = strpos($html, 'value="Attempted Staff Name"');
+
+    expect(is_int($editorMarker))->toBeTrue()
+        ->and(is_int($attemptedValue))->toBeTrue()
+        ->and($attemptedValue)->toBeGreaterThan($editorMarker)
+        ->and(substr_count($html, 'value="Attempted Staff Name"'))->toBe(1);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($staff->fresh()->display_name)->toBe('Original Staff Name')
+        ->and($staff->fresh()->status->value)->toBe('active');
+
+    unset($otherOwner);
+});
