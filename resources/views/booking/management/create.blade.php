@@ -55,11 +55,11 @@
                 @endif
 
                 @if ($services->isEmpty())
-                    <section role="status" class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
+                    <section role="status" class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-800 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-200">
                         <p class="font-bold">{{ __('app.booking_ui.no_active_services') }}</p>
                         <p class="mt-1 leading-6">{{ __('app.booking_ui.no_active_services_help') }}</p>
                         @can('services.view')
-                            <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}" class="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl border border-amber-300 px-3.5 py-2 text-sm font-bold hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-950">
+                            <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}" class="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl border border-amber-200 px-3.5 py-2 text-sm font-bold dark:border-amber-900/70">
                                 {{ __('app.booking_ui.manage_services') }}
                             </a>
                         @endcan
