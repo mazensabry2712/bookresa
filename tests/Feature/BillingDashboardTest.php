@@ -95,7 +95,6 @@ test('owner can see live customer usage and estimated billing total', function (
     expect($subscription->fresh()->isUsable())->toBeFalse();
 });
 
-
 test('expired free trial shows eligible plans and excludes repeat trials', function (): void {
     $tenant = billingDashboardTenant('expired-trial-options');
     $user = billingDashboardUser($tenant, 'expired-trial@example.com');
