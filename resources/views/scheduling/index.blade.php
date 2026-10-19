@@ -408,7 +408,9 @@
             </summary>
             <div class="border-t border-slate-200 dark:border-slate-800">
                 @can('settings.manage')
-                    <section class="border-b border-slate-200 p-4 sm:p-5 dark:border-slate-800" aria-labelledby="bulk-staff-hours-heading">
+                    <details class="m-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.bulk_staff_hours_optional_title') }}</summary>
+                    <section class="border-t border-slate-200 p-4 sm:p-5 dark:border-slate-800" aria-labelledby="bulk-staff-hours-heading">
                         <div class="max-w-3xl">
                             <h4 id="bulk-staff-hours-heading" class="text-base font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.bulk_staff_hours_title') }}</h4>
                             <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ __('app.scheduling_ui.bulk_staff_hours_help') }}</p>
@@ -471,9 +473,11 @@
                                     @foreach ($days as $day)
                                         @php
                                             $baseHour = $businessHours->get($day->value);
-                                            $bulkOpen = old('hours.'.$loop->index.'.opens_at', $baseHour && ! $baseHour->is_closed && $baseHour->opens_at ? substr((string) $baseHour->opens_at, 0, 5) : '');
-                                            $bulkClose = old('hours.'.$loop->index.'.closes_at', $baseHour && ! $baseHour->is_closed && $baseHour->closes_at ? substr((string) $baseHour->closes_at, 0, 5) : '');
-                                            $bulkClosed = session()->hasOldInput()
+                                            $bulkSavedOpen = $baseHour && ! $baseHour->is_closed && $baseHour->opens_at ? substr((string) $baseHour->opens_at, 0, 5) : '';
+                                            $bulkOpen = old('schedule_form') === 'bulk' ? old('hours.'.$loop->index.'.opens_at', $bulkSavedOpen) : $bulkSavedOpen;
+                                            $bulkSavedClose = $baseHour && ! $baseHour->is_closed && $baseHour->closes_at ? substr((string) $baseHour->closes_at, 0, 5) : '';
+                                            $bulkClose = old('schedule_form') === 'bulk' ? old('hours.'.$loop->index.'.closes_at', $bulkSavedClose) : $bulkSavedClose;
+                                            $bulkClosed = old('schedule_form') === 'bulk'
                                                 ? (bool) old('hours.'.$loop->index.'.is_closed', false)
                                                 : ($baseHour?->is_closed ?? true);
                                         @endphp
@@ -509,10 +513,122 @@
                             </div>
                         </form>
                     </section>
+                    </details>
                 @endcan
 
+                <section class="border-b border-slate-200 p-4 sm:p-5 dark:border-slate-800" aria-labelledby="individual-staff-schedules-heading">
+                    <div class="max-w-3xl">
+                        <h4 id="individual-staff-schedules-heading" class="text-base font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.weekly_schedule') }}</h4>
+                        <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ __('app.scheduling_ui.staff_schedule_help') }}</p>
+                    </div>
+
+                    @if ($staffMembers->isNotEmpty())
+                        <div class="mt-4 space-y-4">
+                            @foreach ($staffMembers as $staffMember)
+                                @php
+                                    $staffHours = $staffMember->workingHours->keyBy(fn (StaffWorkingHour $hour): int => $hour->day_of_week->value);
+                                    $isEditingStaffSchedule = old('schedule_form') === 'staff'
+                                        && (string) old('staff_schedule_id') === (string) $staffMember->id;
+                                @endphp
+
+                                <article data-doctor-schedule class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                                    <div class="flex flex-col gap-3 border-b border-slate-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+                                        <div class="flex min-w-0 items-center gap-3">
+                                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-sm font-extrabold text-brand-navy dark:bg-slate-800 dark:text-indigo-300">
+                                                {{ str($staffMember->display_name)->substr(0, 1)->upper() }}
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h5 class="truncate font-bold text-slate-950 dark:text-white">{{ $staffMember->display_name }}</h5>
+                                                <p class="mt-0.5 truncate text-xs text-slate-500">{{ $staffMember->user?->email }}</p>
+                                            </div>
+                                        </div>
+                                        <span class="inline-flex w-fit rounded-full border {{ $staffMember->status->value === 'active' ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300' }} px-2.5 py-1 text-xs font-bold">
+                                            {{ $staffMember->status->value === 'active' ? __('app.scheduling_ui.active') : __('app.scheduling_ui.inactive') }}
+                                        </span>
+                                    </div>
+
+                                    @can('settings.manage')
+                                        <form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $staffMember]) }}" class="p-3 sm:p-4">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="schedule_form" value="staff">
+                                            <input type="hidden" name="staff_schedule_id" value="{{ $staffMember->id }}">
+                                    @endcan
+
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+                                            <thead class="bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-950 dark:text-slate-400">
+                                                <tr>
+                                                    <th scope="col" class="whitespace-nowrap px-3 py-3 text-start">{{ __('app.scheduling_ui.day_of_week') }}</th>
+                                                    <th scope="col" class="whitespace-nowrap px-3 py-3 text-start">{{ __('app.scheduling_ui.opens') }}</th>
+                                                    <th scope="col" class="whitespace-nowrap px-3 py-3 text-start">{{ __('app.scheduling_ui.closes') }}</th>
+                                                    <th scope="col" class="whitespace-nowrap px-3 py-3 text-start">{{ __('app.scheduling_ui.closed') }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                                @foreach ($days as $day)
+                                                    @php
+                                                        $hour = $staffHours->get($day->value);
+                                                        $savedOpen = $hour && ! $hour->is_closed && $hour->opens_at ? substr((string) $hour->opens_at, 0, 5) : '';
+                                                        $savedClose = $hour && ! $hour->is_closed && $hour->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
+                                                        $open = $isEditingStaffSchedule ? old('hours.'.$loop->index.'.opens_at', $savedOpen) : $savedOpen;
+                                                        $close = $isEditingStaffSchedule ? old('hours.'.$loop->index.'.closes_at', $savedClose) : $savedClose;
+                                                        $isClosed = $isEditingStaffSchedule
+                                                            ? (bool) old('hours.'.$loop->index.'.is_closed', false)
+                                                            : ($hour?->is_closed ?? true);
+                                                    @endphp
+                                                    <tr data-hours-row>
+                                                        <th scope="row" class="whitespace-nowrap px-3 py-3 text-start font-semibold text-slate-800 dark:text-slate-200">{{ __($day->name) }}</th>
+                                                        @can('settings.manage')
+                                                            <td class="min-w-36 px-3 py-2">
+                                                                <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
+                                                                <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}" aria-label="{{ __($day->name) }} — {{ __('app.scheduling_ui.opens') }}" class="w-full min-w-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                                                            </td>
+                                                            <td class="min-w-36 px-3 py-2">
+                                                                <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}" aria-label="{{ __($day->name) }} — {{ __('app.scheduling_ui.closes') }}" class="w-full min-w-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                                                            </td>
+                                                            <td class="px-3 py-2">
+                                                                <label class="flex min-h-10 items-center gap-2 whitespace-nowrap rounded-lg px-2 text-sm">
+                                                                    <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($isClosed) class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                                                    <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
+                                                                </label>
+                                                            </td>
+                                                        @else
+                                                            <td class="whitespace-nowrap px-3 py-3 text-slate-600 dark:text-slate-300">{{ $isClosed ? '—' : ($open ?: '—') }}</td>
+                                                            <td class="whitespace-nowrap px-3 py-3 text-slate-600 dark:text-slate-300">{{ $isClosed ? '—' : ($close ?: '—') }}</td>
+                                                            <td class="whitespace-nowrap px-3 py-3 text-slate-500 dark:text-slate-400">{{ $isClosed ? __('app.scheduling_ui.closed') : '—' }}</td>
+                                                        @endcan
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    @can('settings.manage')
+                                            @if ($isEditingStaffSchedule && $errors->any())
+                                                <div class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-200" role="alert">
+                                                    @foreach ($errors->all() as $error)
+                                                        <p>{{ $error }}</p>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                            <div class="mt-4 flex justify-end">
+                                                <button type="submit" class="inline-flex min-h-10 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-600">
+                                                    {{ __('app.scheduling_ui.save_staff_hours') }}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    @endcan
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="mt-4 rounded-xl border border-dashed border-slate-300 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700">{{ __('app.scheduling_ui.add_staff_first') }}</div>
+                    @endif
+                </section>
+
                 <details class="m-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.individual_staff_hours_title') }}</summary>
+                    <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.manage_staff_exceptions_title') }}</summary>
                     <div class="border-t border-slate-200 dark:border-slate-800">
                         <div class="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-5">
 
@@ -531,77 +647,10 @@
 
             @if ($selectedStaff)
                 <div class="p-5 sm:p-6">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-base font-extrabold text-brand-navy dark:bg-slate-800 dark:text-indigo-300">
-                                {{ str($selectedStaff->display_name)->substr(0, 1)->upper() }}
-                            </div>
-                            <div>
-                                <p class="font-bold text-slate-950 dark:text-white">{{ $selectedStaff->display_name }}</p>
-                                <p class="mt-0.5 text-xs text-slate-500">{{ $selectedStaff->user?->email }}</p>
-                            </div>
-                        </div>
-                        <span class="inline-flex w-fit rounded-full border {{ $selectedStaff->status->value === 'active' ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300' }} px-2.5 py-1 text-xs font-bold">
-                            {{ $selectedStaff->status->value === 'active' ? __('app.scheduling_ui.active') : __('app.scheduling_ui.inactive') }}
-                        </span>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950">
+                        <h4 class="font-bold text-slate-950 dark:text-white">{{ $selectedStaff->display_name }}</h4>
+                        <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.staff_exceptions_help') }}</p>
                     </div>
-
-                    @can('settings.manage')
-                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
-                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.individual_staff_hours_title') }}</summary>
-<form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-2">
-                            @csrf
-                            @method('PUT')
-
-                            @foreach ($days as $day)
-                                @php
-                                    $hour = $selectedStaffHours->get($day->value);
-                                    $open = old('hours.'.$loop->index.'.opens_at', $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '');
-                                    $close = old('hours.'.$loop->index.'.closes_at', $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '');
-                                    $isClosed = session()->hasOldInput()
-                                        ? (bool) old('hours.'.$loop->index.'.is_closed', false)
-                                        : ($hour?->is_closed ?? true);
-                                @endphp
-
-                                <div data-hours-row class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
-                                    <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
-                                    <p class="text-sm font-bold text-slate-950 dark:text-white">{{ __($day->name) }}</p>
-                                    <label class="block text-xs font-semibold text-slate-500">
-                                        <span class="mb-1.5 block">{{ __('app.scheduling_ui.opens') }}</span>
-                                        <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                    </label>
-                                    <label class="block text-xs font-semibold text-slate-500">
-                                        <span class="mb-1.5 block">{{ __('app.scheduling_ui.closes') }}</span>
-                                        <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                    </label>
-                                    <label class="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-800">
-                                        <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($isClosed)>
-                                        <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
-                                    </label>
-                                </div>
-                            @endforeach
-
-                            <div class="flex justify-end pt-3">
-                                <button type="submit" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
-                                    {{ __('app.scheduling_ui.save_staff_hours') }}
-                                </button>
-                            </div>
-                        </form>
-                    </details>
-                
-                    @else
-                        <div class="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                            @foreach ($days as $day)
-                                @php $hour = $selectedStaffHours->get($day->value); @endphp
-                                <div class="rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-                                    <p class="text-xs font-bold text-slate-500">{{ __($day->name) }}</p>
-                                    <p class="mt-1 text-sm font-semibold text-slate-950 dark:text-white">
-                                        {{ $hour?->is_closed ? __('app.scheduling_ui.closed') : (($hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '—').' — '.($hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '—')) }}
-                                    </p>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endcan
 
                     <div class="mt-7 grid gap-5 lg:grid-cols-2">
                         <article class="rounded-2xl border border-slate-200 p-5 dark:border-slate-800">
