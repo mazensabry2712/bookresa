@@ -507,3 +507,67 @@ test('staff creation rejects service assignments from another workspace before c
 
     unset($otherOwner);
 });
+
+
+test('staff updates reject foreign-workspace services without changing status or current assignments', function (): void {
+    [$owner, $tenant] = workspaceOwner('Staff Update Tenant A');
+    [$otherOwner, $otherTenant] = workspaceOwner('Staff Update Tenant B');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $currentService = app(CreateService::class)->handle([
+        'name' => ['en' => 'Current service', 'ar' => 'الخدمة الحالية'],
+        'price_minor' => 12000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    $staffUser = User::factory()->create([
+        'name' => 'Workspace Staff',
+        'email' => 'workspace.staff.update@example.com',
+    ]);
+
+    $staff = app(AddStaffMember::class)->handle($staffUser, 'staff', [
+        'display_name' => 'Workspace Staff',
+        'job_title' => 'Specialist',
+    ]);
+
+    $staff->services()->syncWithPivotValues(
+        [$currentService->id],
+        ['tenant_id' => $tenant->id],
+    );
+
+    app(CurrentTenant::class)->set($otherTenant);
+
+    $foreignService = app(CreateService::class)->handle([
+        'name' => ['en' => 'Foreign service', 'ar' => 'خدمة خارجية'],
+        'price_minor' => 9000,
+        'currency' => 'EGP',
+        'duration_minutes' => 20,
+        'buffer_minutes' => 0,
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('staff.index', ['tenant' => $tenant->slug]))
+        ->put(route('staff.update', ['tenant' => $tenant->slug, 'staff' => $staff]), [
+            'display_name' => 'Changed Name',
+            'phone' => '01000000000',
+            'job_title' => 'Changed title',
+            'role' => 'receptionist',
+            'status' => 'inactive',
+            'services' => [$foreignService->id],
+        ])
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]))
+        ->assertSessionHasErrors('services.0');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($staff->fresh()->status->value)->toBe('active')
+        ->and($staff->fresh()->display_name)->toBe('Workspace Staff')
+        ->and($staff->fresh()->job_title)->toBe('Specialist')
+        ->and($staff->fresh()->services->pluck('id')->map(fn ($id): int => (int) $id)->all())->toBe([$currentService->id]);
+
+    unset($otherOwner);
+});
