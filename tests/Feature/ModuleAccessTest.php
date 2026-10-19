@@ -222,7 +222,7 @@ test('enabled optional module requires subscription entitlement', function (): v
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get('/__test/optional-payments-module')
-        ->assertForbidden();
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 
     $plan = Plan::query()->create([
         'name' => ['en' => 'Payments Plan'],
@@ -434,7 +434,7 @@ test('expired subscription blocks core operations after onboarding completion', 
     $this->actingAs($owner)
         ->withSession(['tenant_id' => $tenant->id])
         ->get(route('services.index', ['tenant' => $tenant->slug]))
-        ->assertForbidden();
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 });
 
 test('inactive global module blocks tenant access even when tenant module is enabled', function (): void {

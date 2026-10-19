@@ -117,11 +117,6 @@ final class TenantModuleAccess
         return $tenantModule?->enabled === true;
     }
 
-    public function hasUsableSubscription(): bool
-    {
-        return $this->usableSubscriptionExists($this->currentTenant->idOrFail());
-    }
-
     private function usableSubscriptionExists(int $tenantId): bool
     {
         return Subscription::withoutGlobalScopes()

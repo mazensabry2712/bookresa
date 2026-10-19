@@ -47,7 +47,6 @@ final class EnsureTenantModuleEnabled
             if (
                 $request->user()?->can('billing.view')
                 && $this->access->requiresSubscription($moduleKey)
-                && ! $this->access->hasUsableSubscription()
             ) {
                 return to_route('billing.subscription', ['tenant' => $tenant->slug]);
             }
