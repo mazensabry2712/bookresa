@@ -24,7 +24,7 @@ final class DeleteService
         }
 
         if (Booking::query()->where('service_id', $service->getKey())->exists()) {
-            throw new RuntimeException('This service cannot be deleted because it has booking history. Deactivate it instead.');
+            throw new RuntimeException(__('app.service_ui.delete_blocked_booking_history'));
         }
 
         $service->delete();
