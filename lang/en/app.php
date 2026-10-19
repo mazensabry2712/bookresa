@@ -574,6 +574,8 @@ return [
         'scheduling' => 'Scheduling',
         'workspace_operations' => 'Workspace operations',
         'page_help' => 'Set the rules that decide when your business and staff can accept appointments.',
+        'onboarding_hours_title' => 'Set your regular opening hours',
+        'onboarding_hours_help' => 'These are your business-wide hours, not the duration of an individual service. Service duration and buffer are set on the Services page. Save this schedule to continue to staff setup.
         'review_services' => 'Review services',
         'summary' => 'Scheduling summary',
         'timezone' => 'Business timezone',
@@ -604,6 +606,11 @@ return [
         'holidays' => 'Holidays',
         'holidays_help' => 'Dates when the whole business is closed.',
         'reason_optional' => 'Reason (optional)',
+        'holiday_date' => 'Holiday date',
+        'work_date' => 'Special working date',
+        'starts_on' => 'Starts on',
+        'ends_on' => 'Ends on',
+        'available_date' => 'Availability date'
         'save_holiday' => 'Save holiday',
         'business_closed' => 'Business closed',
         'no_holidays' => 'No upcoming holidays configured.',
