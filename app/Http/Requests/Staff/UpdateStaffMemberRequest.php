@@ -3,12 +3,15 @@
 namespace App\Http\Requests\Staff;
 
 use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Validation\Rule;
 
 final class UpdateStaffMemberRequest extends StoreStaffMemberRequest
 {
     public function rules(): array
     {
+        $tenantId = app(CurrentTenant::class)->idOrFail();
+
         return [
             'display_name' => ['required', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:40'],
@@ -16,7 +19,7 @@ final class UpdateStaffMemberRequest extends StoreStaffMemberRequest
             'role' => ['required', Rule::in($this->staffRoles())],
             'status' => ['required', Rule::enum(StaffStatus::class)],
             'services' => ['nullable', 'array'],
-            'services.*' => ['integer', 'min:1'],
+            'services.*' => ['integer', 'min:1', 'distinct', Rule::exists('services', 'id')->where('tenant_id', $tenantId)],
         ];
     }
 
