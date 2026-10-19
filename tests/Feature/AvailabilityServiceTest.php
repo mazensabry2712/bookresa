@@ -123,6 +123,34 @@ test('business holiday produces no slots', function (): void {
     expect(app(AvailabilityService::class)->slots($service, mondayInCairo()))->toBe([]);
 });
 
+test('explicit special hours can reopen a date marked as a business holiday', function (): void {
+    $tenant = availabilityTenant('Availability Holiday Override');
+    $service = availabilityService($tenant);
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    $date = mondayInCairo();
+
+    app(UpsertBusinessHoliday::class)->handle([
+        'holiday_date' => $date->toDateString(),
+        'reason' => 'Public holiday',
+    ]);
+
+    app(UpsertSpecialWorkingHour::class)->handle([
+        'work_date' => $date->toDateString(),
+        'opens_at' => '11:00',
+        'closes_at' => '13:00',
+        'reason' => 'Special opening',
+    ]);
+
+    $slots = app(AvailabilityService::class)->slots($service, $date);
+
+    expect(collect($slots)->pluck('start')->map(fn (CarbonImmutable $value): string => $value->format('H:i'))->all())
+        ->toBe(['11:00', '11:15', '11:30', '11:45', '12:00']);
+});
+
 test('special working hours override regular business hours', function (): void {
     $tenant = availabilityTenant('Availability Special');
     $service = availabilityService($tenant);
