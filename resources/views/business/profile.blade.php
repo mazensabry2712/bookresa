@@ -118,8 +118,17 @@
                                 @endif
                             </div>
                             <div class="min-w-0 flex-1">
-                                <input type="file" name="logo" accept="image/jpeg,image/png,image/webp"
-                                       class="block w-full rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm dark:border-slate-700">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <input id="business-logo-upload" type="file" name="logo" accept="image/jpeg,image/png,image/webp"
+                                           data-bookresa-file-input data-file-name-target="business-logo-file-name"
+                                           data-no-file-text="{{ __('app.business_ui.no_file_chosen') }}"
+                                           class="peer sr-only">
+                                    <label for="business-logo-upload"
+                                           class="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-semibold hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-indigo dark:border-slate-700 dark:hover:bg-slate-800">
+                                        {{ __('app.business_ui.choose_file') }}
+                                    </label>
+                                    <span id="business-logo-file-name" class="break-all text-sm text-slate-500" aria-live="polite">{{ __('app.business_ui.no_file_chosen') }}</span>
+                                </div>
                                 <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('app.business_ui.logo_help') }}</p>
                             </div>
                         </div>
@@ -140,8 +149,17 @@
                                 <div class="flex h-28 items-center justify-center text-sm font-medium text-slate-500">{{ __('app.business_ui.no_cover') }}</div>
                             @endif
                         </div>
-                        <input type="file" name="cover" accept="image/jpeg,image/png,image/webp"
-                               class="mt-3 block w-full rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm dark:border-slate-700">
+                        <div class="mt-3 flex flex-wrap items-center gap-3">
+                            <input id="business-cover-upload" type="file" name="cover" accept="image/jpeg,image/png,image/webp"
+                                   data-bookresa-file-input data-file-name-target="business-cover-file-name"
+                                   data-no-file-text="{{ __('app.business_ui.no_file_chosen') }}"
+                                   class="peer sr-only">
+                            <label for="business-cover-upload"
+                                   class="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-semibold hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-indigo dark:border-slate-700 dark:hover:bg-slate-800">
+                                {{ __('app.business_ui.choose_file') }}
+                            </label>
+                            <span id="business-cover-file-name" class="break-all text-sm text-slate-500" aria-live="polite">{{ __('app.business_ui.no_file_chosen') }}</span>
+                        </div>
                         <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('app.business_ui.cover_help') }}</p>
                         @if ($profile->cover_path)
                             <label class="mt-3 flex items-center gap-2 text-sm">
@@ -416,6 +434,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-bookresa-file-input]').forEach((fileInput) => {
+                const fileName = document.getElementById(fileInput.dataset.fileNameTarget || '');
+
+                if (!fileName) {
+                    return;
+                }
+
+                fileInput.addEventListener('change', () => {
+                    fileName.textContent = fileInput.files?.[0]?.name || fileInput.dataset.noFileText || '';
+                });
+            });
+
             const button = document.querySelector('[data-bookresa-copy-booking-url]');
             const input = document.querySelector('[data-bookresa-booking-url]');
             const feedback = document.querySelector('[data-bookresa-copy-feedback]');
