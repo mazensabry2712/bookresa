@@ -107,12 +107,13 @@ class PublicBookingController
                 })
                 ->values();
 
-            return response()->json([
-                'data' => $availableSlots,
-                'reason' => $availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments
-                    ? 'no_active_staff'
-                    : null,
-            ]);
+            $response = ['data' => $availableSlots];
+
+            if ($availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments) {
+                $response['reason'] = 'no_active_staff';
+            }
+
+            return response()->json($response);
         });
     }
 
