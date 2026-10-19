@@ -83,7 +83,9 @@ final class StaffManagementController
 
             $tenant = $currentTenant->get() ?? $tenantRoute;
 
-            if (!(bool) data_get($tenant->settings, 'onboarding.completed', false)) {
+            $onboardingCompleted = (bool) data_get($tenant->settings, 'onboarding.completed', false);
+
+            if ($onboardingCompleted === false) {
                 $coreModuleKeys = collect(config('bookresa.modules.core', []))
                     ->filter()
                     ->values();
@@ -121,7 +123,7 @@ final class StaffManagementController
                 data_set(
                     $settings,
                     'onboarding.step',
-                    ! $hasServices ? 'services' : (! $hasHours ? 'hours' : 'staff'),
+                    $hasServices === false ? 'services' : ($hasHours === false ? 'hours' : 'staff'),
                 );
                 $tenant->forceFill(['settings' => $settings])->save();
             }
