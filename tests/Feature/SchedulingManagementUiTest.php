@@ -92,7 +92,10 @@ test('owner can view and manage business scheduling', function (): void {
         ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('Scheduling')
-        ->assertSee('Business working hours');
+        ->assertSee('Business working hours')
+        ->assertSee('Quickly set working hours')
+        ->assertSee('Apply to open days only')
+        ->assertSee('Apply to all 7 days');
 
     $hours = collect(range(1, 7))->map(fn (int $day): array => [
         'day_of_week' => $day,
