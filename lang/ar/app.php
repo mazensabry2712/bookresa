@@ -420,6 +420,7 @@ return [
         'add_help' => 'يجب أن يكون الشخص لديه حساب BookResa بالفعل. أضف دوره في مساحة العمل والخدمات التي يقدمها.',
         'account_email' => 'بريد الحساب',
         'account_email_help' => 'استخدم بريد حساب موجود على BookResa.',
+        'already_staff' => 'هذا الحساب مُضاف بالفعل كموظف في مساحة العمل. عدّل سجل الموظف الحالي أو غيّر حالته لإعادة تفعيله.',
         'email_placeholder' => 'staff@example.com',
         'display_name' => 'اسم العرض',
         'display_name_placeholder' => 'مثال: د. أحمد',
