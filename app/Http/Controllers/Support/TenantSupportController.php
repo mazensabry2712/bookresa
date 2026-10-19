@@ -9,6 +9,10 @@ use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
+use App\Support\PlatformSettings;
+use App\Notifications\TenantSupportActivityNotification;
+use Illuminate\Support\Facades\Notification;
+use Throwable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -24,14 +28,12 @@ final class TenantSupportController
         abort_unless($tenant !== null, 404);
 
         $statusInput = $request->query('status');
-        $status = is_string($statusInput)
-            ? SupportTicketStatus::tryFrom($statusInput)?->value ?? ''
-            : '';
+        $statusEnum = is_string($statusInput) ? SupportTicketStatus::tryFrom($statusInput) : null;
+        $status = $statusEnum?->value ?? '';
 
         $priorityInput = $request->query('priority');
-        $priority = is_string($priorityInput)
-            ? SupportTicketPriority::tryFrom($priorityInput)?->value ?? ''
-            : '';
+        $priorityEnum = is_string($priorityInput) ? SupportTicketPriority::tryFrom($priorityInput) : null;
+        $priority = $priorityEnum?->value ?? '';
 
         $searchInput = $request->query('q');
         $search = is_string($searchInput) ? mb_substr(trim($searchInput), 0, 120) : '';
@@ -89,7 +91,7 @@ final class TenantSupportController
         ]);
     }
 
-    public function store(Request $request, CurrentTenant $currentTenant, AuditLogger $audit): RedirectResponse
+    public function store(Request $request, CurrentTenant $currentTenant, AuditLogger $audit, PlatformSettings $settings): RedirectResponse
     {
         $tenant = $currentTenant->get();
         abort_unless($tenant !== null, 404);
@@ -125,6 +127,7 @@ final class TenantSupportController
             'tenant_id' => (int) $tenant->getKey(),
             'ticket_id' => (int) $ticket->getKey(),
         ]);
+        $this->notifySupportInbox($settings, $ticket, (string) $ticket->message, 'created');
 
         return to_route('support.show', ['tenant' => $tenant->slug, 'ticket' => $ticket->getKey()])
             ->with('status', __('app.support_ui.ticket_created'));
@@ -155,7 +158,7 @@ final class TenantSupportController
         ]);
     }
 
-    public function reply(Request $request, CurrentTenant $currentTenant, Tenant $tenant, int $ticketId, AuditLogger $audit): RedirectResponse
+    public function reply(Request $request, CurrentTenant $currentTenant, Tenant $tenant, int $ticketId, AuditLogger $audit, PlatformSettings $settings): RedirectResponse
     {
         $validated = $request->validate([
             'message' => ['required', 'string', 'min:2', 'max:10000'],
@@ -193,7 +196,29 @@ final class TenantSupportController
             'tenant_id' => (int) $tenant->getKey(),
             'ticket_id' => (int) $ticket->getKey(),
         ]);
+        $this->notifySupportInbox($settings, $ticket, trim($validated['message']), 'reply');
 
         return back()->with('status', __('app.support_ui.reply_sent'));
+    }
+
+    private function notifySupportInbox(
+        PlatformSettings $settings,
+        SupportTicket $ticket,
+        string $message,
+        string $activity,
+    ): void {
+        $supportEmail = trim((string) $settings->get('support_email', ''));
+
+        if ($supportEmail === '' || filter_var($supportEmail, FILTER_VALIDATE_EMAIL) === false) {
+            return;
+        }
+
+        try {
+            Notification::route('mail', $supportEmail)->notify(
+                new TenantSupportActivityNotification($ticket, $message, $activity),
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 }
