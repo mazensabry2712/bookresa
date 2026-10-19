@@ -8,8 +8,6 @@ use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
-use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\StartBookingPayment;
@@ -20,6 +18,7 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Support\PlatformSettings;
 use App\Models\User;
 
 uses(RefreshDatabase::class);
@@ -200,11 +199,10 @@ test('booking payment creates a new attempt after a failed payment', function ()
     $this->app->instance(PaymentGateway::class, $gateway);
     config(['bookresa.payments.default_provider' => 'fake']);
 
-    TenantPaymentAccount::query()->create([
-        'provider' => 'fake',
-        'merchant_id' => 'MID-FAKE-123',
-        'status' => TenantPaymentAccountStatus::Active,
-        'connected_at' => now(),
+    app(PlatformSettings::class)->put([
+        'centralized_booking_payments_enabled' => '1',
+        'commission_free_customer_limit' => '1000',
+        'booking_commission_rate_basis_points' => '500',
     ]);
 
     $first = app(StartBookingPayment::class)->handle($booking);
@@ -384,11 +382,10 @@ test('expired booking payment session creates a fresh attempt', function (): voi
     $this->app->instance(PaymentGateway::class, $gateway);
     config(['bookresa.payments.default_provider' => 'fake']);
 
-    TenantPaymentAccount::query()->create([
-        'provider' => 'fake',
-        'merchant_id' => 'MID-FAKE-123',
-        'status' => TenantPaymentAccountStatus::Active,
-        'connected_at' => now(),
+    app(PlatformSettings::class)->put([
+        'centralized_booking_payments_enabled' => '1',
+        'commission_free_customer_limit' => '1000',
+        'booking_commission_rate_basis_points' => '500',
     ]);
 
     $fresh = app(StartBookingPayment::class)->handle($booking->fresh());

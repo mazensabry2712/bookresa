@@ -26,8 +26,9 @@ final class CalculateSubscriptionUsage
         $uniqueCustomers = Customer::query()->count();
         $included = (int) $subscription->included_customer_limit;
         $additional = max($uniqueCustomers - $included, 0);
-        $unitPrice = (int) $subscription->additional_customer_price_minor;
-        $usageCharge = $additional * $unitPrice;
+        // Additional customer profiles are monetized through booking commissions, not a second usage surcharge.
+        $unitPrice = 0;
+        $usageCharge = 0;
         $base = (int) $subscription->price_minor;
 
         return new UsageSummary(

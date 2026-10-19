@@ -29,6 +29,7 @@ use App\Http\Controllers\Platform\PlatformSecurityController;
 use App\Http\Controllers\Platform\PlatformFinanceController;
 use App\Http\Controllers\Platform\PlatformModuleController;
 use App\Http\Controllers\Platform\PlatformSettingsController;
+use App\Http\Controllers\Platform\PlatformCommissionController;
 use App\Http\Controllers\Platform\PlatformUserController;
 use App\Http\Controllers\Platform\SupportTicketController;
 use App\Http\Controllers\PublicBookingController;
@@ -373,6 +374,10 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::patch('/subscriptions/{subscription}/toggle-status', [PlatformFinanceController::class, 'toggleSubscriptionStatus'])
             ->name('subscriptions.toggle-status');
         Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
+        Route::get('/commissions', [PlatformCommissionController::class, 'index'])->name('commissions.index');
+        Route::post('/commissions/payouts', [PlatformCommissionController::class, 'storePayout'])->name('commissions.payouts.store');
+        Route::patch('/commissions/payouts/{payout}/paid', [PlatformCommissionController::class, 'markPayoutPaid'])->name('commissions.payouts.paid');
+        Route::patch('/commissions/payouts/{payout}/cancel', [PlatformCommissionController::class, 'cancelPayout'])->name('commissions.payouts.cancel');
         Route::get('/payments/{paymentId}', [PlatformPaymentController::class, 'show'])->name('payments.show');
         Route::post('/payments/{paymentId}/verify', [PlatformPaymentController::class, 'verify'])->name('payments.verify');
         Route::post('/payments/{paymentId}/refund', [PlatformPaymentController::class, 'refund'])->name('payments.refund');
@@ -389,9 +394,6 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
         Route::patch('/support/{ticket}', [SupportTicketController::class, 'update'])->name('support.update');
         Route::post('/support/{ticketId}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
-        Route::patch('/businesses/{tenant}/payment-account', [PlatformBusinessController::class, 'updatePaymentAccount'])
-            ->name('businesses.payment-account.update');
-
         Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
             ->name('businesses.toggle-status');
         Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');

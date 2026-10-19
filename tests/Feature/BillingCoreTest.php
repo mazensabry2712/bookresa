@@ -154,8 +154,8 @@ test('subscription usage counts unique customers rather than bookings', function
 
     expect($summary->uniqueCustomerCount)->toBe(27)
         ->and($summary->additionalCustomerCount)->toBe(7)
-        ->and($summary->usageChargeMinor)->toBe(10500)
-        ->and($summary->totalChargeMinor)->toBe(40400)
+        ->and($summary->usageChargeMinor)->toBe(0)
+        ->and($summary->totalChargeMinor)->toBe(29900)
         ->and($summary->currency)->toBe('EGP');
 });
 
@@ -257,9 +257,9 @@ test('usage period is immutable and idempotent for the same subscription window'
         ->and(UsagePeriod::query()->count())->toBe(1)
         ->and($first->unique_customer_count)->toBe(3)
         ->and($first->additional_customer_count)->toBe(1)
-        ->and($first->usage_charge_minor)->toBe(1000)
-        ->and($first->total_charge_minor)->toBe(30900)
-        ->and($first->charges)->toHaveCount(1);
+        ->and($first->usage_charge_minor)->toBe(0)
+        ->and($first->total_charge_minor)->toBe(29900)
+        ->and($first->charges)->toHaveCount(0);
 });
 
 test('historical pricing snapshot does not change when the plan is edited', function (): void {
@@ -345,7 +345,7 @@ test('expired subscription usage periods are generated automatically and idempot
 
     expect($period->status)->toBe(UsagePeriodStatus::Open)
         ->and($period->additional_customer_count)->toBe(1)
-        ->and($period->usage_charge_minor)->toBe(800);
+        ->and($period->usage_charge_minor)->toBe(0);
 
     $this->artisan('bookresa:generate-usage-periods')->assertExitCode(0);
 

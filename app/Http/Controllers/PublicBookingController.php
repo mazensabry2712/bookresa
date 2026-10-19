@@ -7,8 +7,6 @@ use App\Domain\Booking\Actions\UpdateBookingStatus;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus as PaymentRecordStatus;
-use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
-use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Payment\Services\StartBookingPayment;
 use App\Domain\Scheduling\Services\AvailabilityService;
 use App\Domain\Service\Models\Service;
@@ -16,6 +14,7 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\PlatformSettings;
 use App\Http\Requests\PublicBookingAvailabilityRequest;
 use App\Http\Requests\StorePublicBookingRequest;
 use Carbon\CarbonImmutable;
@@ -29,13 +28,17 @@ use Throwable;
 
 class PublicBookingController
 {
-    public function show(Tenant $tenant, CurrentTenant $currentTenant): View
+    public function show(Tenant $tenant, CurrentTenant $currentTenant, PlatformSettings $platformSettings): View
     {
         $this->ensurePublicTenant($tenant);
 
-        return $currentTenant->run($tenant, function () use ($tenant): View {
+        return $currentTenant->run($tenant, function () use ($tenant, $platformSettings): View {
             $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
-            $paymentMode = (string) data_get($bookingSettings, 'payment_mode', 'pay_later');
+            $centralizedPaymentsEnabled = filter_var(
+                $platformSettings->get('centralized_booking_payments_enabled', false),
+                FILTER_VALIDATE_BOOL,
+            );
+            $paymentMode = $centralizedPaymentsEnabled ? 'full' : 'pay_later';
 
             return view('public.booking.show', [
                 'tenant' => $tenant->load('profile'),
@@ -46,8 +49,9 @@ class PublicBookingController
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
                 'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
                 'paymentMode' => $paymentMode,
-                'depositPercent' => (int) data_get(data_get($tenant->profile, 'booking_settings', []), 'deposit_percent', 50),
-                'customerEmailRequired' => (bool) data_get(data_get($tenant->profile, 'booking_settings', []), 'customer_email_required', false),
+                'depositPercent' => 0,
+                'customerEmailRequired' => $centralizedPaymentsEnabled
+                    || (bool) data_get(data_get($tenant->profile, 'booking_settings', []), 'customer_email_required', false),
             ]);
         });
     }
@@ -98,33 +102,24 @@ class PublicBookingController
         CreateBooking $createBooking,
         UpdateBookingStatus $updateBookingStatus,
         StartBookingPayment $startBookingPayment,
+        PlatformSettings $platformSettings,
     ): RedirectResponse {
         $this->ensurePublicTenant($tenant);
 
         try {
-            return $currentTenant->run($tenant, function () use ($request, $createBooking, $updateBookingStatus, $startBookingPayment, $tenant): RedirectResponse {
+            return $currentTenant->run($tenant, function () use ($request, $createBooking, $updateBookingStatus, $startBookingPayment, $tenant, $platformSettings): RedirectResponse {
                 $service = Service::query()->findOrFail($request->integer('service_id'));
                 $staff = $request->filled('staff_id')
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                     : null;
 
-                $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
-                $paymentMode = (string) data_get($bookingSettings, 'payment_mode', 'pay_later');
-                $paymentRequired = (bool) data_get($bookingSettings, 'payment_required', false)
-                    || in_array($paymentMode, ['full', 'deposit'], true);
+                $paymentRequired = filter_var(
+                    $platformSettings->get('centralized_booking_payments_enabled', false),
+                    FILTER_VALIDATE_BOOL,
+                );
 
-                if ($paymentRequired) {
-                    $paymentAccount = TenantPaymentAccount::query()
-                        ->where('provider', (string) config('bookresa.payments.default_provider', 'kashier'))
-                        ->first();
-
-                    if ($paymentAccount === null || $paymentAccount->status !== TenantPaymentAccountStatus::Active || blank($paymentAccount->merchant_id)) {
-                        throw new RuntimeException('Online booking payments are not connected for this workspace yet.');
-                    }
-
-                    if ($request->filled('email') === false) {
-                        throw new RuntimeException('Customer email is required for online payment.');
-                    }
+                if ($paymentRequired && $request->filled('email') === false) {
+                    throw new RuntimeException('Customer email is required for online payment.');
                 }
 
                 $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));

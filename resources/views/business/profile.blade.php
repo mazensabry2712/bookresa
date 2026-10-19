@@ -12,11 +12,7 @@
             ?? '—'
         );
 
-        $paymentMode = data_get($profile->booking_settings, 'payment_mode', 'pay_later');
         $customerLimitPolicy = data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage');
-        $paymentsEnabled = $tenant->modules->contains('key', 'payments')
-            && $tenant->modules->firstWhere('key', 'payments')?->pivot?->enabled;
-
         $bookingUrl = route('public.booking.canonical.show', ['tenant' => $tenant->slug]);
     @endphp
 
@@ -215,89 +211,11 @@
 
             <section class="br-panel p-5 sm:p-6">
                 <div>
-                    <h3 class="font-semibold text-slate-950 dark:text-white">{{ __('app.booking_payment_account') }}</h3>
-                    <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.booking_payment_account_help') }}</p>
-                </div>
-
-                <div class="mt-5 grid gap-4 lg:grid-cols-[1fr_auto]">
-                    <label class="space-y-1.5 text-sm">
-                        <span class="font-semibold">{{ __('app.merchant_id') }}</span>
-                        <input name="payment_merchant_id"
-                               value="{{ old('payment_merchant_id', $paymentAccount?->merchant_id) }}"
-                               placeholder="MID-..."
-                               pattern="MID-[A-Z0-9-]+"
-                               maxlength="80"
-                               class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
-                        <span class="block text-xs leading-5 text-slate-500">{{ __('app.merchant_id_help') }}</span>
-                    </label>
-
-                    <div class="rounded-xl br-surface-soft px-4 py-3 lg:min-w-56">
-                        <p class="text-xs font-bold uppercase tracking-wide text-slate-400">{{ __('app.connection_status') }}</p>
-                        <p class="mt-2 text-sm font-bold">
-                            @if (blank($paymentAccount?->merchant_id))
-                                {{ __('app.not_connected') }}
-                            @elseif ($paymentAccount?->status?->value)
-                                {{ match ($paymentAccount->status->value) {
-                                    'active' => __('app.active'),
-                                    'pending' => __('app.pending_verification'),
-                                    'disabled' => __('app.suspended'),
-                                    default => str($paymentAccount->status->value)->headline(),
-                                } }}
-                            @else
-                                {{ __('app.not_connected') }}
-                            @endif
-                        </p>
-                        @if ($paymentAccount?->merchant_id)
-                            <p class="mt-1 text-xs text-slate-500">{{ $paymentAccount->merchant_id }}</p>
-                        @endif
-                    </div>
-                </div>
-            </section>
-
-            <section class="br-panel p-5 sm:p-6">
-                <div>
                     <h3 class="font-semibold text-slate-950 dark:text-white">{{ __('app.business_ui.booking_settings') }}</h3>
                     <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.business_ui.booking_settings_help') }}</p>
                 </div>
 
                 <div class="mt-5 space-y-6">
-                    <div>
-                        <p class="text-sm font-semibold">{{ __('app.business_ui.payment_mode') }}</p>
-                        @if ($paymentsEnabled)
-                            <div class="mt-3 grid gap-3 sm:grid-cols-3">
-                                @foreach ([
-                                    'full' => ['title' => __('app.business_ui.full_payment'), 'help' => __('app.business_ui.full_payment_help')],
-                                    'deposit' => ['title' => __('app.business_ui.deposit'), 'help' => __('app.business_ui.deposit_help')],
-                                    'pay_later' => ['title' => __('app.business_ui.pay_later'), 'help' => __('app.business_ui.pay_later_help')],
-                                ] as $value => $option)
-                                    <label class="cursor-pointer rounded-xl border p-4 transition hover:border-brand-indigo {{ $paymentMode === $value ? 'border-brand-indigo bg-indigo-50/70 dark:bg-indigo-950/30' : 'border-slate-200 dark:border-slate-800' }}">
-                                        <span class="flex items-start gap-3">
-                                            <input type="radio" name="payment_mode" value="{{ $value }}" @checked($paymentMode === $value) class="mt-0.5">
-                                            <span>
-                                                <span class="block text-sm font-bold">{{ $option['title'] }}</span>
-                                                <span class="mt-1 block text-xs leading-5 text-slate-500">{{ $option['help'] }}</span>
-                                            </span>
-                                        </span>
-                                    </label>
-                                @endforeach
-                            </div>
-
-                            <div class="mt-4 max-w-xs">
-                                <label class="space-y-1.5 text-sm">
-                                    <span class="font-semibold">{{ __('app.business_ui.deposit_percent') }}</span>
-                                    <input type="number" name="deposit_percent" min="1" max="99"
-                                           value="{{ old('deposit_percent', data_get($profile->booking_settings, 'deposit_percent', 50)) }}"
-                                           class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
-                                </label>
-                            </div>
-                        @else
-                            <input type="hidden" name="payment_mode" value="pay_later">
-                            <p class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300">
-                                {{ __('app.business_ui.payments_module_disabled') }}
-                            </p>
-                        @endif
-                    </div>
-
                     <div class="grid gap-4 sm:grid-cols-2">
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.business_ui.minimum_notice') }}</span>
@@ -318,15 +236,23 @@
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        <label class="flex items-start gap-3 rounded-xl br-surface-soft p-4 text-sm">
-                            <input type="checkbox" name="customer_email_required" value="1"
-                                   @checked(data_get($profile->booking_settings, 'customer_email_required', false))
-                                   class="mt-0.5 rounded border-slate-300">
-                            <span>
-                                <span class="block font-semibold">{{ __('app.business_ui.require_email') }}</span>
-                                <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('app.business_ui.require_email_help') }}</span>
-                            </span>
-                        </label>
+                        @if ($centralizedPaymentsEnabled)
+                            <div class="rounded-xl br-surface-soft p-4 text-sm">
+                                <p class="font-semibold">{{ __('Customer email required') }}</p>
+                                <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('A valid customer email is required for secure online payment and payment receipts.') }}</p>
+                                <input type="hidden" name="customer_email_required" value="1">
+                            </div>
+                        @else
+                            <label class="flex items-start gap-3 rounded-xl br-surface-soft p-4 text-sm">
+                                <input type="checkbox" name="customer_email_required" value="1"
+                                       @checked(data_get($profile->booking_settings, 'customer_email_required', false))
+                                       class="mt-0.5 rounded border-slate-300">
+                                <span>
+                                    <span class="block font-semibold">{{ __('app.business_ui.require_email') }}</span>
+                                    <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('app.business_ui.require_email_help') }}</span>
+                                </span>
+                            </label>
+                        @endif
 
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.business_ui.customer_limit_policy') }}</span>

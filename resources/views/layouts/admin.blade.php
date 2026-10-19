@@ -46,6 +46,7 @@
                             ['route' => 'admin.subscriptions.index', 'label' => __('app.subscriptions'), 'permission' => 'finance.view'],
                             ['route' => 'admin.payments.index', 'label' => __('app.payments'), 'permission' => 'finance.view'],
                             ['route' => 'admin.usage.index', 'label' => __('app.usage'), 'permission' => 'finance.view'],
+                            ['route' => 'admin.commissions.index', 'label' => __('Booking commissions & settlements'), 'permission' => 'finance.manage'],
                             ['route' => 'admin.reports.index', 'label' => __('app.reports'), 'permission' => 'reports.view'],
                             ['route' => 'admin.support.index', 'label' => __('app.support'), 'permission' => 'support.view'],
                             ['route' => 'admin.settings.index', 'label' => __('app.settings'), 'permission' => 'settings.manage'],

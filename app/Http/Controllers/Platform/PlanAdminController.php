@@ -111,7 +111,6 @@ final class PlanAdminController
             'currency' => ['required', 'string', 'size:3'],
             'billing_period' => ['required', Rule::in(array_map(fn (PlanBillingPeriod $period): string => $period->value, PlanBillingPeriod::cases()))],
             'included_customer_limit' => ['required', 'integer', 'min:0'],
-            'additional_customer_price' => ['required', 'regex:/^\d+(?:\.\d{1,2})?$/'],
             'trial_days' => ['required', 'integer', 'min:0', 'max:3650'],
             'is_active' => ['nullable', 'boolean'],
             'module_ids' => ['nullable', 'array'],
@@ -135,7 +134,7 @@ final class PlanAdminController
             'currency' => strtoupper(trim((string) $validated['currency'])),
             'billing_period' => $validated['billing_period'],
             'included_customer_limit' => (int) $validated['included_customer_limit'],
-            'additional_customer_price_minor' => $this->moneyToMinor((string) $validated['additional_customer_price']),
+            'additional_customer_price_minor' => 0,
             'trial_days' => (int) $validated['trial_days'],
             'is_active' => (bool) ($validated['is_active'] ?? false),
         ];

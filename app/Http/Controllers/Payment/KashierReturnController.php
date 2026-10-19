@@ -81,7 +81,9 @@ final class KashierReturnController
                 }
 
                 if ($result !== null) {
-                    $expectedMerchantId = $payment->payable_type === Subscription::class
+                    $usesCentralPlatformMerchant = $payment->payable_type === Subscription::class
+                        || filter_var(data_get($payment->metadata, 'centralized_payment', false), FILTER_VALIDATE_BOOL);
+                    $expectedMerchantId = $usesCentralPlatformMerchant
                         ? (string) config('bookresa.payments.kashier.merchant_id')
                         : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
 

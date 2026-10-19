@@ -7,7 +7,6 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
 use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
@@ -18,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Support\PlatformSettings;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
@@ -144,96 +144,47 @@ test('owner can view and update business profile', function (): void {
         ->assertSee('https://instagram.com/elnour', false);
 });
 
-test('owner can connect a workspace booking payment merchant', function (): void {
+test('workspace profile does not configure payment accounts and follows centralized platform policy', function (): void {
     [$user, $tenant] = workspaceOwner();
 
-    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
-            'name_en' => 'Owner Clinic',
-            'name_ar' => 'عيادة المالك',
-            'description_en' => '',
-            'description_ar' => '',
-            'phone' => '',
-            'email' => 'clinic@example.com',
-            'location' => '',
-            'address' => '',
-            'website' => '',
-            'facebook' => '',
-            'instagram' => '',
-            'timezone' => 'Africa/Cairo',
-            'locale' => 'en',
-            'payment_mode' => 'full',
-            'payment_merchant_id' => 'MID-OWNER-123',
-            'deposit_percent' => 50,
-            'customer_email_required' => true,
-            'customer_limit_policy' => 'allow_overage',
-            'minimum_notice_minutes' => 0,
-            'maximum_advance_days' => 90,
-        ])
-        ->assertRedirect()
-        ->assertSessionHas('status');
-
-    app(CurrentTenant::class)->set($tenant);
-
-    $account = TenantPaymentAccount::query()->firstOrFail();
-
-    expect($account->merchant_id)->toBe('MID-OWNER-123')
-        ->and($account->status)->toBe(TenantPaymentAccountStatus::Pending);
-
-    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'en']))
-        ->assertOk()
-        ->assertSee('Booking payment account')
-        ->assertSee('Connect your own payment merchant so customer booking payments are settled to your business, not to BookResa.')
-        ->assertSee('Merchant ID')
-        ->assertSee('Choose file')
-        ->assertSee('No file chosen')
-        ->assertSee('Connection status')
-        ->assertSee('MID-OWNER-123')
-        ->assertSee('Pending verification')
-        ->assertDontSee('app.booking_payment_account')
-        ->assertDontSee('app.merchant_id');
-
-    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'ar']))
-        ->assertOk()
-        ->assertSee('حساب مدفوعات الحجوزات')
-        ->assertSee('اربط حساب الدفع الخاص بك حتى تذهب مدفوعات عملائك إلى نشاطك وليس إلى BookResa.')
-        ->assertSee('معرّف التاجر')
-        ->assertSee('اختر ملفًا')
-        ->assertSee('لم يتم اختيار ملف')
-        ->assertSee('حالة الاتصال')
-        ->assertSee('في انتظار التحقق')
-        ->assertDontSee('app.booking_payment_account')
-        ->assertDontSee('app.connection_status');
-
-    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
-            'name_en' => 'Owner Clinic',
-            'name_ar' => 'عيادة المالك',
-            'timezone' => 'Africa/Cairo',
-            'locale' => 'en',
-            'payment_mode' => 'pay_later',
-            'payment_merchant_id' => '',
-            'customer_limit_policy' => 'allow_overage',
-            'minimum_notice_minutes' => 0,
-            'maximum_advance_days' => 90,
-        ])
-        ->assertRedirect()
-        ->assertSessionHas('status');
-
-    app(CurrentTenant::class)->set($tenant);
-    $account = $account->fresh();
-
-    expect($account->merchant_id)->toBeNull()
-        ->and($account->status)->toBe(TenantPaymentAccountStatus::Disabled);
+    app(PlatformSettings::class)->put([
+        'centralized_booking_payments_enabled' => '1',
+        'commission_free_customer_limit' => '1000',
+        'booking_commission_rate_basis_points' => '500',
+    ]);
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id, 'locale' => 'en'])
         ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'en']))
         ->assertOk()
-        ->assertSee('Not connected')
-        ->assertDontSee('app.not_connected')
-        ->assertDontSee('MID-OWNER-123');
+        ->assertSee('Business profile')
+        ->assertSee('A valid customer email is required for secure online payment and payment receipts.')
+        ->assertDontSee('payment_merchant_id')
+        ->assertDontSee('name="payment_mode"')
+        ->assertDontSee('Booking payment account')
+        ->assertDontSee('app.merchant_id');
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
+            'name_en' => 'Central Clinic',
+            'name_ar' => 'عيادة مركزية',
+            'description_en' => 'Central payments enabled',
+            'description_ar' => 'الدفع المركزي مفعل',
+            'timezone' => 'Africa/Cairo',
+            'locale' => 'en',
+            'customer_limit_policy' => 'allow_overage',
+            'minimum_notice_minutes' => 0,
+            'maximum_advance_days' => 90,
+        ])
+        ->assertRedirect()
+        ->assertSessionHas('status');
+
+    app(CurrentTenant::class)->set($tenant);
+    $settings = $tenant->fresh('profile')->profile->booking_settings;
+
+    expect(data_get($settings, 'payment_required'))->toBeTrue()
+        ->and(data_get($settings, 'payment_mode'))->toBe('full')
+        ->and(data_get($settings, 'customer_email_required'))->toBeTrue()
+        ->and(TenantPaymentAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->exists())->toBeFalse();
 });
 
 test('owner can create and update a service through workspace ui', function (): void {

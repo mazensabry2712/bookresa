@@ -4,8 +4,6 @@ use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
-use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Services\AvailabilityService;
@@ -16,6 +14,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use App\Support\PlatformSettings;
 
 uses(RefreshDatabase::class);
 
@@ -50,12 +49,10 @@ function paidBookingTenant(string $slug): Tenant
         ],
     ]);
 
-    TenantPaymentAccount::query()->create([
-        'tenant_id' => $tenant->id,
-        'provider' => 'kashier',
-        'merchant_id' => 'MID-'.strtoupper($slug),
-        'status' => TenantPaymentAccountStatus::Active,
-        'connected_at' => now(),
+    app(PlatformSettings::class)->put([
+        'centralized_booking_payments_enabled' => '1',
+        'commission_free_customer_limit' => '1000',
+        'booking_commission_rate_basis_points' => '500',
     ]);
 
     app(SetBusinessWorkingHours::class)->handle([
@@ -130,12 +127,13 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
     Http::assertSent(function ($request): bool {
         return $request['customer']['email'] === 'ahmed@example.com'
             && str_starts_with((string) $request['customer']['reference'], 'customer-')
+            && $request['merchantId'] === 'MID-123'
             && $request['merchantRedirect'] === route('payments.kashier.return')
-            && $request['connectedAccount'] === 'MID-PAID-CLINIC';
+            && ! array_key_exists('connectedAccount', $request->data());
     });
 });
 
-test('public deposit booking charges the configured deposit amount', function (): void {
+test('centralized booking checkout collects full price regardless of legacy workspace deposit settings', function (): void {
     $tenant = paidBookingTenant('deposit-clinic');
 
     $tenant->profile()->update([
@@ -201,7 +199,7 @@ test('public deposit booking charges the configured deposit amount', function ()
 
     $payment = $booking->payments()->firstOrFail();
 
-    expect($payment->amount_minor)->toBe(5000)
+    expect($payment->amount_minor)->toBe(20000)
         ->and($payment->status)->toBe(PaymentStatus::Processing);
 });
 

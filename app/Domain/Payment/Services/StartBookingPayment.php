@@ -6,8 +6,8 @@ use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
-use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\PlatformSettings;
 use LogicException;
 use RuntimeException;
 
@@ -17,6 +17,8 @@ final class StartBookingPayment
         private readonly CurrentTenant $currentTenant,
         private readonly PaymentService $payments,
         private readonly PaymentGateway $gateway,
+        private readonly BookingCommissionPolicy $commissionPolicy,
+        private readonly PlatformSettings $platformSettings,
     ) {}
 
     public function handle(Booking $booking): Payment
@@ -43,37 +45,28 @@ final class StartBookingPayment
             throw new RuntimeException('This booking cannot be paid online.');
         }
 
-        $settings = data_get($this->currentTenant->get()?->profile, 'booking_settings', []);
-        $paymentMode = (string) data_get($settings, 'payment_mode', 'full');
+        $centralizedPaymentsEnabled = filter_var(
+            $this->platformSettings->get('centralized_booking_payments_enabled', false),
+            FILTER_VALIDATE_BOOL,
+        );
 
-        if ($paymentMode === 'pay_later') {
-            throw new RuntimeException('Online payment is disabled for this workspace.');
-        }
-
-        $amountMinor = $servicePriceMinor;
-
-        if ($paymentMode === 'deposit') {
-            $percent = max(1, min(99, (int) data_get($settings, 'deposit_percent', 50)));
-            $amountMinor = max(1, (int) ceil($amountMinor * ($percent / 100)));
+        if (! $centralizedPaymentsEnabled) {
+            throw new RuntimeException('Online booking payments are not enabled for this platform yet.');
         }
 
         $provider = (string) config('bookresa.payments.default_provider', 'kashier');
-        $paymentAccount = TenantPaymentAccount::query()
-            ->where('provider', $provider)
-            ->first();
+        $commissionSnapshot = $this->commissionPolicy->snapshot($booking);
 
-        if ($paymentAccount === null || ! $paymentAccount->isActive()) {
-            throw new RuntimeException('Online booking payments are not connected for this workspace yet.');
-        }
-
+        // Centralized checkout always charges the entire booking amount.
+        $amountMinor = $servicePriceMinor;
         $metadata = [
             'booking_reference' => $booking->booking_reference,
             'customer_reference' => 'customer-'.$booking->customer_id,
             'customer_email' => $email,
-            'payment_mode' => $paymentMode,
-            'deposit_percent' => $paymentMode === 'deposit' ? (int) data_get($settings, 'deposit_percent', 50) : null,
+            'payment_mode' => 'full',
+            'centralized_payment' => true,
+            'commission_snapshot' => $commissionSnapshot,
             'merchant_redirect' => route('payments.kashier.return'),
-            'connected_account_merchant_id' => $paymentAccount->merchant_id,
         ];
 
         $latestPayment = $booking->payments()

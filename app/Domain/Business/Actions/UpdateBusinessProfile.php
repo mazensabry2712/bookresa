@@ -3,10 +3,8 @@
 namespace App\Domain\Business\Actions;
 
 use App\Domain\Business\Models\BusinessProfile;
-use App\Domain\Module\Services\TenantModuleAccess;
-use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
-use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\PlatformSettings;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,22 +14,19 @@ final class UpdateBusinessProfile
 {
     public function __construct(
         private readonly CurrentTenant $currentTenant,
-        private readonly TenantModuleAccess $moduleAccess,
+        private readonly PlatformSettings $platformSettings,
     ) {}
 
     public function handle(array $data): BusinessProfile
     {
         $tenantId = $this->currentTenant->idOrFail();
+        $centralizedPaymentsEnabled = filter_var(
+            $this->platformSettings->get('centralized_booking_payments_enabled', false),
+            FILTER_VALIDATE_BOOL,
+        );
+        $paymentMode = $centralizedPaymentsEnabled ? 'full' : 'pay_later';
 
-        $paymentMode = (string) ($data['payment_mode'] ?? data_get($this->currentTenant->get()?->profile, 'booking_settings.payment_mode', 'pay_later'));
-
-        $paymentsAvailable = $this->moduleAccess->allows('payments');
-
-        if (! $paymentsAvailable && in_array($paymentMode, ['full', 'deposit'], true)) {
-            $paymentMode = 'pay_later';
-        }
-
-        return DB::transaction(function () use ($data, $tenantId, $paymentMode): BusinessProfile {
+        return DB::transaction(function () use ($data, $tenantId, $paymentMode, $centralizedPaymentsEnabled): BusinessProfile {
             $profile = BusinessProfile::query()->first();
 
             if ($profile === null) {
@@ -40,41 +35,6 @@ final class UpdateBusinessProfile
 
             if ((int) $profile->tenant_id !== $tenantId) {
                 throw new LogicException('Business profile must belong to the current tenant.');
-            }
-
-            $merchantId = trim((string) ($data['payment_merchant_id'] ?? ''));
-            $paymentAccount = TenantPaymentAccount::query()->first();
-
-            if ($paymentAccount === null && $merchantId !== '') {
-                TenantPaymentAccount::query()->create([
-                    'tenant_id' => $tenantId,
-                    'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
-                    'merchant_id' => $merchantId,
-                    'status' => TenantPaymentAccountStatus::Pending,
-                    'metadata' => ['connection_source' => 'workspace_settings'],
-                ]);
-            } elseif ($paymentAccount !== null && $merchantId === '' && filled($paymentAccount->merchant_id)) {
-                $paymentAccount->forceFill([
-                    'merchant_id' => null,
-                    'status' => TenantPaymentAccountStatus::Disabled,
-                    'connected_at' => null,
-                    'metadata' => array_merge($paymentAccount->metadata ?? [], [
-                        'disconnected_at' => now()->toIso8601String(),
-                        'disconnection_source' => 'workspace_settings',
-                    ]),
-                ])->save();
-            } elseif ($paymentAccount !== null && $merchantId !== '') {
-                $merchantChanged = $paymentAccount->merchant_id !== $merchantId;
-
-                $paymentAccount->forceFill([
-                    'merchant_id' => $merchantId,
-                    'status' => $merchantChanged
-                        ? TenantPaymentAccountStatus::Pending
-                        : $paymentAccount->status,
-                    'connected_at' => $merchantChanged
-                        ? null
-                        : $paymentAccount->connected_at,
-                ])->save();
             }
 
             $logoPath = $profile->logo_path;
@@ -128,9 +88,9 @@ final class UpdateBusinessProfile
                 'locale' => $data['locale'],
                 'booking_settings' => array_merge($profile->booking_settings ?? [], [
                     'payment_mode' => $paymentMode,
-                    'payment_required' => in_array($paymentMode, ['full', 'deposit'], true),
-                    'deposit_percent' => $paymentMode === 'deposit' ? (int) ($data['deposit_percent'] ?? data_get($profile->booking_settings, 'deposit_percent', 50)) : null,
-                    'customer_email_required' => (bool) ($data['customer_email_required'] ?? false),
+                    'payment_required' => $centralizedPaymentsEnabled,
+                    'deposit_percent' => null,
+                    'customer_email_required' => $centralizedPaymentsEnabled || (bool) ($data['customer_email_required'] ?? false),
                     'customer_limit_policy' => $data['customer_limit_policy'] ?? data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'),
                     'minimum_notice_minutes' => (int) ($data['minimum_notice_minutes'] ?? data_get($profile->booking_settings, 'minimum_notice_minutes', 0)),
                     'maximum_advance_days' => array_key_exists('maximum_advance_days', $data)

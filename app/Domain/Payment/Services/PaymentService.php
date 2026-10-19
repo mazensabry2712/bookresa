@@ -24,6 +24,7 @@ final class PaymentService
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly AuditLogger $audit,
+        private readonly SyncBookingCommission $bookingCommissionSync,
     ) {}
 
     /**
@@ -220,6 +221,13 @@ final class PaymentService
             'paid_at' => $result->paidAt ?? ($result->status === PaymentStatus::Paid ? $payment->paid_at ?? now() : $payment->paid_at),
             'expires_at' => $result->expiresAt ?? $payment->expires_at,
         ])->save();
+
+        if (
+            $payment->payable_type === (new Booking)->getMorphClass()
+            && in_array($result->status, [PaymentStatus::Paid, PaymentStatus::Refunded], true)
+        ) {
+            $this->bookingCommissionSync->handle($payment->fresh());
+        }
 
         if ($currentStatus !== $result->status) {
             $this->audit->log(

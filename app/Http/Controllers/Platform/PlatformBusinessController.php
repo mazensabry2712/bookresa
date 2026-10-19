@@ -12,9 +12,7 @@ use App\Domain\Customer\Models\Customer;
 use App\Domain\Identity\Services\TenantRoleProvisioner;
 use App\Domain\Module\Models\TenantModule;
 use App\Domain\Payment\Enums\PaymentStatus;
-use App\Domain\Payment\Enums\TenantPaymentAccountStatus;
 use App\Domain\Payment\Models\Payment;
-use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\MembershipStatus;
@@ -46,8 +44,7 @@ final class PlatformBusinessController
             ->with([
                 'profile' => fn ($query) => $query->withoutGlobalScopes(),
                 'businessType',
-                'paymentAccount' => fn ($query) => $query->withoutGlobalScopes(),
-            ])
+                ])
             ->withCount([
                 'memberships' => fn ($query) => $query->withoutGlobalScopes(),
                 'services' => fn ($query) => $query->withoutGlobalScopes(),
@@ -502,51 +499,6 @@ final class PlatformBusinessController
         $membership->delete();
 
         return back()->with('status', __('platform.member_removed'));
-    }
-
-    public function updatePaymentAccount(Request $request, Tenant $tenant): RedirectResponse
-    {
-        $validated = $request->validate([
-            'merchant_id' => ['required', 'regex:/^MID-[A-Z0-9-]+$/', 'max:80'],
-            'status' => ['required', 'in:pending,active,disabled'],
-        ]);
-
-        $account = TenantPaymentAccount::withoutGlobalScopes()
-            ->where('tenant_id', $tenant->getKey())
-            ->first();
-
-        if ($account === null) {
-            $account = new TenantPaymentAccount;
-            $account->forceFill([
-                'tenant_id' => $tenant->getKey(),
-                'provider' => (string) config('bookresa.payments.default_provider', 'kashier'),
-                'merchant_id' => $validated['merchant_id'],
-                'status' => $validated['status'],
-                'connected_at' => $validated['status'] === TenantPaymentAccountStatus::Active->value ? now() : null,
-                'metadata' => ['connection_source' => 'platform_admin'],
-            ]);
-            $account->saveQuietly();
-        } else {
-            abort_unless((int) $account->tenant_id === (int) $tenant->getKey(), 409);
-
-            $account->forceFill([
-                'merchant_id' => $validated['merchant_id'],
-                'status' => $validated['status'],
-                'connected_at' => $validated['status'] === TenantPaymentAccountStatus::Active->value ? now() : null,
-            ])->saveQuietly();
-        }
-
-        app(AuditLogger::class)->log(
-            'platform.workspace_payment_account_updated',
-            $account,
-            [
-                'tenant_id' => (int) $tenant->getKey(),
-                'merchant_id' => $account->merchant_id,
-                'status' => $account->status->value,
-            ],
-        );
-
-        return back()->with('status', __('Workspace payment account updated successfully.'));
     }
 
     public function toggleStatus(Tenant $tenant): RedirectResponse

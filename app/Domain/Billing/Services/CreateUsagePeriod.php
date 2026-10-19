@@ -2,7 +2,6 @@
 
 namespace App\Domain\Billing\Services;
 
-use App\Domain\Billing\Enums\UsageChargeType;
 use App\Domain\Billing\Enums\UsagePeriodStatus;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Models\UsagePeriod;
@@ -64,21 +63,6 @@ final class CreateUsagePeriod
                     'additional_customer_price_minor' => $subscription->additional_customer_price_minor,
                 ],
             ]);
-
-            if ($summary->additionalCustomerCount > 0) {
-                $period->charges()->create([
-                    'tenant_id' => $subscription->tenant_id,
-                    'type' => UsageChargeType::AdditionalCustomers,
-                    'units' => $summary->additionalCustomerCount,
-                    'unit_price_minor' => $summary->additionalCustomerPriceMinor,
-                    'amount_minor' => $summary->usageChargeMinor,
-                    'pricing_snapshot' => [
-                        'included_customer_limit' => $summary->includedCustomerLimit,
-                        'customer_count' => $summary->uniqueCustomerCount,
-                        'unit_price_minor' => $summary->additionalCustomerPriceMinor,
-                    ],
-                ]);
-            }
 
             return $period->load('charges');
         });
