@@ -17,6 +17,7 @@ use App\Http\Requests\Staff\UpdateStaffMemberRequest;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -73,13 +74,21 @@ final class StaffManagementController
         $user = User::query()->where('email', $data['email'])->firstOrFail();
 
         try {
-            $staff = $addStaffMember->handle($user, $data['role'], [
-                'display_name' => $data['display_name'] ?: $user->name,
-                'phone' => $data['phone'] ?: null,
-                'job_title' => $data['job_title'] ?: null,
-            ]);
+            if (StaffProfile::query()->where('user_id', $user->getKey())->exists()) {
+                return back()
+                    ->withErrors(['email' => __('app.staff_ui.already_staff')])
+                    ->withInput();
+            }
 
-            $syncServiceAssignments->handle($staff, $data['services'] ?? []);
+            $staff = DB::transaction(function () use ($addStaffMember, $syncServiceAssignments, $user, $data): StaffProfile {
+                $staff = $addStaffMember->handle($user, $data['role'], [
+                    'display_name' => $data['display_name'] ?: $user->name,
+                    'phone' => $data['phone'] ?: null,
+                    'job_title' => $data['job_title'] ?: null,
+                ]);
+
+                return $syncServiceAssignments->handle($staff, $data['services'] ?? []);
+            });
 
             $tenant = $currentTenant->get() ?? $tenantRoute;
 
@@ -171,8 +180,13 @@ final class StaffManagementController
         SyncServiceAssignments $syncServiceAssignments,
     ): RedirectResponse {
         try {
-            $staff = $updateStaffMember->handle($staff, $request->validated());
-            $syncServiceAssignments->handle($staff, $request->validated('services') ?? []);
+            $data = $request->validated();
+
+            DB::transaction(function () use ($updateStaffMember, $syncServiceAssignments, $staff, $data): void {
+                $staff = $updateStaffMember->handle($staff, $data);
+
+                $syncServiceAssignments->handle($staff, $data['services'] ?? []);
+            });
 
             return to_route('staff.index', ['tenant' => $tenant->slug])->with('status', __('app.staff_ui.updated'));
         } catch (RuntimeException $exception) {
