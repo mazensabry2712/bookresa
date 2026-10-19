@@ -87,6 +87,23 @@ function workspaceOwner(string $name = 'Workspace Owner'): array
     return [$user, $tenant];
 }
 
+test('dashboard presents a shareable booking link and a branded QR image download', function (): void {
+    [$user, $tenant] = workspaceOwner('Booking QR Owner');
+
+    $bookingUrl = route('public.booking.canonical.show', ['tenant' => $tenant->slug]);
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('dashboard', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee($bookingUrl)
+        ->assertSee(__('app.dashboard_ui.booking_share_title'))
+        ->assertSee(__('app.dashboard_ui.copy_booking_link'))
+        ->assertSee(__('app.dashboard_ui.download_booking_poster'))
+        ->assertSee('data-bookresa-dashboard-booking-qr', false)
+        ->assertSee('data-bookresa-download-booking-poster', false)
+        ->assertSee('js/qrcode.min.js');
+});
+
 test('owner can view and update business profile', function (): void {
     [$user, $tenant] = workspaceOwner();
 

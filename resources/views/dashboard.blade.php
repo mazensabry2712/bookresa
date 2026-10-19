@@ -70,6 +70,10 @@
         };
 
         $usagePercent = $attention['usagePercent'] ?? 0;
+        $bookingUrl = route('public.booking.canonical.show', ['tenant' => $tenant->slug]);
+        $bookingLogoUrl = $tenant->profile?->logo_path
+            ? \\Illuminate\\Support\\Facades\\Storage::disk('public')->url($tenant->profile->logo_path)
+            : '';
     @endphp
 
     <div class="space-y-6">
@@ -106,6 +110,298 @@
                 </a>
             </div>
         </section>
+
+
+        <section class="br-panel overflow-hidden" aria-labelledby="booking-share-title" data-bookresa-booking-share>
+            <div class="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+                <div class="min-w-0">
+                    <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.dashboard_ui.booking_share_eyebrow') }}</p>
+                    <h3 id="booking-share-title" class="mt-2 text-xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-2xl">
+                        {{ __('app.dashboard_ui.booking_share_title') }}
+                    </h3>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 dark:text-slate-400">
+                        {{ __('app.dashboard_ui.booking_share_help') }}
+                    </p>
+
+                    <label for="dashboard-booking-url" class="mt-5 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                        {{ __('app.dashboard_ui.booking_link') }}
+                    </label>
+                    <input id="dashboard-booking-url" type="url" value="{{ $bookingUrl }}" readonly
+                           data-bookresa-dashboard-booking-url
+                           class="mt-2 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200"
+                           aria-label="{{ __('app.dashboard_ui.booking_link') }}">
+
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button type="button" data-bookresa-dashboard-copy-url
+                                class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-600">
+                            {{ __('app.dashboard_ui.copy_booking_link') }}
+                        </button>
+                        <a href="{{ $bookingUrl }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">
+                            {{ __('app.dashboard_ui.view_booking_page') }}
+                        </a>
+                    </div>
+                    <p class="mt-2 min-h-5 text-sm text-slate-500 dark:text-slate-400" data-bookresa-dashboard-copy-feedback aria-live="polite"></p>
+                </div>
+
+                <div class="rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 text-center dark:border-indigo-900/50 dark:bg-indigo-950/20 sm:p-5">
+                    <div class="flex items-center justify-center gap-2">
+                        <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-white text-brand-indigo shadow-sm dark:bg-slate-900" aria-hidden="true">
+                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1"/><path stroke-linecap="round" d="M14 14h2v2h-2zM18 14h2.5M18 18h2.5M14 20.5h2"/></svg>
+                        </span>
+                        <h4 class="font-bold text-slate-950 dark:text-white">{{ __('app.dashboard_ui.qr_code') }}</h4>
+                    </div>
+
+                    <div class="mt-4 flex min-h-[17rem] items-center justify-center rounded-xl bg-white p-3 shadow-sm dark:bg-slate-950">
+                        <div data-bookresa-dashboard-booking-qr
+                             data-booking-url="{{ $bookingUrl }}"
+                             data-business-name="{{ $businessName }}"
+                             data-business-logo="{{ $bookingLogoUrl }}"
+                             data-business-slug="{{ $tenant->slug }}"
+                             data-locale="{{ app()->getLocale() }}"
+                             class="flex min-h-60 min-w-60 items-center justify-center"
+                             aria-label="{{ __('app.dashboard_ui.qr_code') }}"></div>
+                    </div>
+
+                    <button type="button" data-bookresa-download-booking-poster disabled
+                            class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm font-bold text-indigo-700 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-indigo-900 dark:bg-slate-950 dark:text-indigo-300 dark:hover:bg-indigo-950/40">
+                        {{ __('app.dashboard_ui.download_booking_poster') }}
+                    </button>
+                    <p class="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">{{ __('app.dashboard_ui.qr_poster_help') }}</p>
+                    <p class="mt-2 min-h-5 text-xs text-indigo-700 dark:text-indigo-300" data-bookresa-dashboard-poster-feedback aria-live="polite"></p>
+                </div>
+            </div>
+        </section>
+
+        <script src="{{ asset('js/qrcode.min.js') }}"></script>
+        <script>
+            (() => {
+                const qrBox = document.querySelector('[data-bookresa-dashboard-booking-qr]');
+                if (!qrBox) return;
+
+                const bookingUrl = qrBox.dataset.bookingUrl || '';
+                const businessName = qrBox.dataset.businessName || 'BookResa';
+                const businessLogoUrl = qrBox.dataset.businessLogo || '';
+                const businessSlug = qrBox.dataset.businessSlug || 'workspace';
+                const locale = qrBox.dataset.locale || 'en';
+                const isArabic = locale === 'ar';
+                const urlInput = document.querySelector('[data-bookresa-dashboard-booking-url]');
+                const copyButton = document.querySelector('[data-bookresa-dashboard-copy-url]');
+                const copyFeedback = document.querySelector('[data-bookresa-dashboard-copy-feedback]');
+                const downloadButton = document.querySelector('[data-bookresa-download-booking-poster]');
+                const posterFeedback = document.querySelector('[data-bookresa-dashboard-poster-feedback]');
+
+                const messages = {
+                    copied: @json(__('app.dashboard_ui.booking_link_copied')),
+                    copyFallback: @json(__('app.dashboard_ui.booking_link_copy_fallback')),
+                    qrError: @json(__('app.dashboard_ui.qr_poster_error')),
+                    posterError: @json(__('app.dashboard_ui.qr_poster_download_error')),
+                    posterDownloaded: @json(__('app.dashboard_ui.qr_poster_downloaded')),
+                    scanCaption: @json(__('app.dashboard_ui.qr_scan_caption')),
+                    posterHeading: @json(__('app.dashboard_ui.qr_poster_heading'))
+                };
+
+                try {
+                    new QRCode(qrBox, {
+                        text: bookingUrl,
+                        width: 240,
+                        height: 240,
+                        colorDark: '#1E2A44',
+                        colorLight: '#FFFFFF',
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+                    if (downloadButton) downloadButton.disabled = false;
+                } catch (error) {
+                    if (posterFeedback) posterFeedback.textContent = messages.qrError;
+                }
+
+                if (copyButton && urlInput && copyFeedback) {
+                    copyButton.addEventListener('click', async () => {
+                        try {
+                            if (navigator.clipboard && window.isSecureContext) {
+                                await navigator.clipboard.writeText(bookingUrl);
+                            } else {
+                                throw new Error('Clipboard API unavailable');
+                            }
+                            copyFeedback.textContent = messages.copied;
+                        } catch (error) {
+                            urlInput.focus();
+                            urlInput.select();
+                            let copied = false;
+                            try {
+                                copied = document.execCommand('copy');
+                            } catch (copyError) {
+                                copied = false;
+                            }
+                            copyFeedback.textContent = copied ? messages.copied : messages.copyFallback;
+                        }
+                    });
+                }
+
+                function roundedRect(context, x, y, width, height, radius) {
+                    const r = Math.min(radius, width / 2, height / 2);
+                    context.beginPath();
+                    context.moveTo(x + r, y);
+                    context.lineTo(x + width - r, y);
+                    context.quadraticCurveTo(x + width, y, x + width, y + r);
+                    context.lineTo(x + width, y + height - r);
+                    context.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+                    context.lineTo(x + r, y + height);
+                    context.quadraticCurveTo(x, y + height, x, y + height - r);
+                    context.lineTo(x, y + r);
+                    context.quadraticCurveTo(x, y, x + r, y);
+                    context.closePath();
+                }
+
+                async function loadLogo() {
+                    if (!businessLogoUrl) return null;
+                    return new Promise((resolve) => {
+                        const image = new Image();
+                        image.onload = () => resolve(image);
+                        image.onerror = () => resolve(null);
+                        image.src = businessLogoUrl;
+                        if (image.complete && image.naturalWidth > 0) resolve(image);
+                    });
+                }
+
+                async function getQrCanvas() {
+                    const existingCanvas = qrBox.querySelector('canvas');
+                    if (existingCanvas && existingCanvas.width > 0) return existingCanvas;
+
+                    const image = qrBox.querySelector('img');
+                    if (!image) throw new Error('QR drawing not available');
+                    if (!image.complete) {
+                        await new Promise((resolve, reject) => {
+                            image.onload = resolve;
+                            image.onerror = reject;
+                        });
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = image.naturalWidth || 240;
+                    canvas.height = image.naturalHeight || 240;
+                    const context = canvas.getContext('2d');
+                    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                    return canvas;
+                }
+
+                async function downloadPoster() {
+                    if (!bookingUrl || !qrBox.querySelector('canvas, img')) {
+                        posterFeedback.textContent = messages.qrError;
+                        return;
+                    }
+
+                    try {
+                        const qrCanvas = await getQrCanvas();
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 1200;
+                        canvas.height = 1500;
+                        const context = canvas.getContext('2d');
+                        if (!context) throw new Error('Canvas unavailable');
+
+                        context.fillStyle = '#F3F5FB';
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+                        context.strokeStyle = '#DEE5F2';
+                        context.lineWidth = 4;
+                        roundedRect(context, 24, 24, 1152, 1452, 44);
+                        context.stroke();
+
+                        const headerGradient = context.createLinearGradient(60, 60, 1140, 370);
+                        headerGradient.addColorStop(0, '#1E2A44');
+                        headerGradient.addColorStop(1, '#4F46E5');
+                        context.fillStyle = headerGradient;
+                        roundedRect(context, 60, 60, 1080, 320, 42);
+                        context.fill();
+
+                        const logo = await loadLogo();
+                        if (logo) {
+                            context.save();
+                            roundedRect(context, 540, 82, 120, 120, 28);
+                            context.clip();
+                            context.drawImage(logo, 540, 82, 120, 120);
+                            context.restore();
+                        } else {
+                            context.fillStyle = '#FFFFFF';
+                            roundedRect(context, 540, 82, 120, 120, 30);
+                            context.fill();
+                            context.fillStyle = '#1E2A44';
+                            context.font = '700 70px Arial, Tahoma, sans-serif';
+                            context.textAlign = 'center';
+                            context.direction = isArabic ? 'rtl' : 'ltr';
+                            context.fillText(Array.from(businessName.trim())[0] || 'B', 600, 163, 98);
+                        }
+
+                        context.textAlign = 'center';
+                        context.direction = isArabic ? 'rtl' : 'ltr';
+                        context.fillStyle = '#FFFFFF';
+                        context.font = '700 54px Arial, Tahoma, sans-serif';
+                        context.fillText(businessName, 600, 260, 990);
+                        context.font = '500 27px Arial, Tahoma, sans-serif';
+                        context.fillStyle = '#E6E9FF';
+                        context.fillText(messages.posterHeading, 600, 315, 990);
+
+                        context.shadowColor = 'rgba(30,42,68,0.10)';
+                        context.shadowBlur = 28;
+                        context.shadowOffsetY = 10;
+                        context.fillStyle = '#FFFFFF';
+                        roundedRect(context, 170, 410, 860, 720, 38);
+                        context.fill();
+                        context.shadowColor = 'transparent';
+                        context.shadowBlur = 0;
+                        context.shadowOffsetY = 0;
+
+                        context.fillStyle = '#FFFFFF';
+                        roundedRect(context, 330, 445, 540, 540, 24);
+                        context.fill();
+                        context.imageSmoothingEnabled = false;
+                        context.drawImage(qrCanvas, 360, 475, 480, 480);
+                        context.imageSmoothingEnabled = true;
+
+                        context.textAlign = 'center';
+                        context.direction = isArabic ? 'rtl' : 'ltr';
+                        context.fillStyle = '#1E2A44';
+                        context.font = '700 34px Arial, Tahoma, sans-serif';
+                        context.fillText(messages.scanCaption, 600, 1025, 780);
+                        context.fillStyle = '#536079';
+                        context.font = '500 20px Arial, Tahoma, sans-serif';
+                        context.direction = 'ltr';
+                        context.fillText(bookingUrl, 600, 1070, 790);
+
+                        context.fillStyle = '#1E2A44';
+                        context.font = '700 29px Arial, Tahoma, sans-serif';
+                        context.fillText('BookResa', 600, 1210);
+                        context.fillStyle = '#6B7489';
+                        context.font = '500 20px Arial, Tahoma, sans-serif';
+                        context.fillText(bookingUrl.replace(/^https?:\/\//i, ''), 600, 1250, 900);
+                        context.fillStyle = '#8891A5';
+                        context.font = '500 18px Arial, Tahoma, sans-serif';
+                        context.fillText('BOOKING QR', 600, 1400);
+
+                        canvas.toBlob((blob) => {
+                            if (!blob) {
+                                posterFeedback.textContent = messages.posterError;
+                                return;
+                            }
+                            const objectUrl = URL.createObjectURL(blob);
+                            const anchor = document.createElement('a');
+                            const safeSlug = businessSlug.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'workspace';
+                            anchor.href = objectUrl;
+                            anchor.download = 'bookresa-booking-qr-' + safeSlug + '.png';
+                            document.body.appendChild(anchor);
+                            anchor.click();
+                            anchor.remove();
+                            window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+                            posterFeedback.textContent = messages.posterDownloaded;
+                        }, 'image/png');
+                    } catch (error) {
+                        posterFeedback.textContent = messages.posterError;
+                    }
+                }
+
+                if (downloadButton) {
+                    downloadButton.addEventListener('click', downloadPoster);
+                }
+            })();
+        </script>
 
         @if (! $onboarding['completed'])
             <section class="br-panel overflow-hidden" aria-labelledby="setup-title">
