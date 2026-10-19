@@ -939,6 +939,8 @@ return [
         'loading_slots' => 'Finding available times…',
         'availability_error' => 'We could not load availability. Please try again.',
         'check_form' => 'Please review the highlighted fields and try again.',
+        'empty_staff_availability' => 'The selected staff member is unavailable on this date. Choose another staff member or view times with anyone available.',
+        'show_all_staff_times' => 'View times with any available staff member',
         'your_details' => 'Your details',
         'details_help' => 'No customer account is required. Your details are only used to create and manage this booking.',
         'optional' => 'optional',
