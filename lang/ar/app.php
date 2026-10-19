@@ -917,6 +917,7 @@ return [
         'status_open' => 'مفتوحة',
         'status_in_progress' => 'قيد المعالجة',
         'status_resolved' => 'تم الحل',
+        'status_resolved_closed' => 'تم الحل / مغلقة',
         'status_closed' => 'مغلقة',
         'all_statuses' => 'كل الحالات',
         'all_priorities' => 'كل الأولويات',
