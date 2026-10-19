@@ -4,6 +4,9 @@ use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
+use App\Domain\Service\Actions\AssignServiceToStaff;
+use App\Domain\Staff\Enums\StaffStatus;
+use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
@@ -11,6 +14,7 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
+use App\Models\User;
 
 uses(RefreshDatabase::class);
 
@@ -65,6 +69,7 @@ test('public business page is available without authentication', function (): vo
         ->assertSee('data-step-panel="2"', false)
         ->assertSee('data-step-panel="3"', false)
         ->assertSee('data-booking-service-card', false)
+        ->assertSee('data-booking-any-staff', false)
         ->assertSee('data-wizard-next', false);
 });
 
@@ -89,6 +94,46 @@ test('public availability is tenant scoped and returns slots', function (): void
         ->assertJsonStructure(['data']);
 
     expect($response->json('data'))->not->toBeEmpty();
+});
+
+test('public availability groups a time shared by multiple available staff members', function (): void {
+    $tenant = publicTenant('public-team-availability');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'price_minor' => 20000,
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    foreach ([
+        ['email' => 'public-doctor-one@example.com', 'name' => 'Doctor One'],
+        ['email' => 'public-doctor-two@example.com', 'name' => 'Doctor Two'],
+    ] as $definition) {
+        $user = User::factory()->create(['email' => $definition['email']]);
+        $staff = StaffProfile::query()->create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'display_name' => $definition['name'],
+            'status' => StaffStatus::Active,
+        ]);
+        app(AssignServiceToStaff::class)->handle($service, $staff);
+    }
+
+    app(CurrentTenant::class)->clear();
+
+    $response = $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+    ]));
+
+    $response->assertOk();
+
+    $times = collect($response->json('data'))->pluck('time');
+
+    expect($times)->not->toBeEmpty()
+        ->and($times->unique()->count())->toBe($times->count())
+        ->and($response->json('data.0.available_staff_count'))->toBe(2);
 });
 
 test('inactive services cannot be booked through public availability or direct submission', function (): void {
