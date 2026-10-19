@@ -30,7 +30,7 @@ class StoreServiceRequest extends FormRequest
             'name_ar' => ['nullable', 'string', 'max:160'],
             'description_en' => ['nullable', 'string', 'max:5000'],
             'description_ar' => ['nullable', 'string', 'max:5000'],
-            'price' => ['required', 'regex:/^\\d{1,10}(?:\\.\\d{1,2})?$/'],
+            'price' => ['required', 'regex:/^\d{1,10}(?:\.\d{1,2})?$/'],
             'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
             'duration_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
             'buffer_minutes' => ['required', 'integer', 'min:0', 'max:1440'],
