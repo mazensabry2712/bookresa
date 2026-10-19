@@ -90,10 +90,9 @@
                         data-applied-all-message="{{ __('app.scheduling_ui.bulk_hours_applied_all') }}"
                         data-applied-open-message="{{ __('app.scheduling_ui.bulk_hours_applied_open') }}"
                         class="mt-3"
-                        aria-labelledby="bulk-hours-heading"
+                        aria-label="{{ __('app.scheduling_ui.bulk_hours_title') }}"
                     >
-                        <h4 id="bulk-hours-heading" class="font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.bulk_hours_title') }}</h4>
-                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ __('app.scheduling_ui.bulk_hours_help') }}</p>
+                        <p class="text-sm leading-6 text-slate-600 dark:text-slate-300">{{ __('app.scheduling_ui.bulk_hours_help') }}</p>
 
                         <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
                             <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">
