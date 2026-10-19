@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 final class PlanCatalog
 {
-    private const ACTIVE_PLANS_CACHE_KEY = 'bookresa:billing:active-plans';
+    private const ACTIVE_PLANS_CACHE_KEY = 'bookresa:billing:active-plans:v2';
 
     /** @return Collection<int, Plan> */
     public function active(): Collection
