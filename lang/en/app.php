@@ -711,6 +711,7 @@ return [
         'staff_help' => 'Choose a staff member or let BookResa assign an available staff member.',
         'staff_auto_help' => 'This service has no staff assignments, so the booking will use the business availability.',
         'staff_select_help' => 'Only staff assigned to the selected service can be chosen.',
+        'staff_available_count' => 'Available providers: :count',
         'customer_help' => 'Use the customer details you have. A reusable customer record will be created or matched.',
         'customer_name' => 'Customer name',
         'customer_name_placeholder' => 'e.g. Ahmed Ali',
