@@ -5,16 +5,16 @@ use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Service\Actions\AssignServiceToStaff;
+use App\Domain\Service\Actions\CreateService;
 use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
-use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\URL;
-use App\Models\User;
 
 uses(RefreshDatabase::class);
 
@@ -134,6 +134,39 @@ test('public availability groups a time shared by multiple available staff membe
     expect($times)->not->toBeEmpty()
         ->and($times->unique()->count())->toBe($times->count())
         ->and($response->json('data.0.available_staff_count'))->toBe(2);
+});
+
+test('public availability explains when all assigned staff are inactive', function (): void {
+    $tenant = publicTenant('public-inactive-staff');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'price_minor' => 20000,
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    $user = User::factory()->create(['email' => 'public-inactive-doctor@example.com']);
+    $staff = StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'display_name' => 'Inactive Doctor',
+        'status' => StaffStatus::Active,
+    ]);
+    app(AssignServiceToStaff::class)->handle($service, $staff);
+    $staff->update(['status' => StaffStatus::Inactive]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+    ]))
+        ->assertOk()
+        ->assertExactJson([
+            'data' => [],
+            'reason' => 'no_active_staff',
+        ]);
 });
 
 test('inactive services cannot be booked through public availability or direct submission', function (): void {
