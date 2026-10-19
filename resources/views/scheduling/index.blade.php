@@ -20,6 +20,16 @@
         ];
 
         $openBusinessHours = $businessHours->filter(fn ($hour) => ! $hour->is_closed)->count();
+
+        $submittedHours = collect(old('hours', []));
+        $firstSubmittedOpen = $submittedHours->first(fn ($hours) => is_array($hours)
+            && ! (bool) data_get($hours, 'is_closed', false)
+            && filled(data_get($hours, 'opens_at'))
+            && filled(data_get($hours, 'closes_at')));
+        $firstSavedOpen = $businessHours->first(fn ($hour) => ! $hour->is_closed && $hour->opens_at && $hour->closes_at);
+        $defaultTemplateHours = $firstSubmittedOpen ?? $firstSavedOpen;
+        $templateOpen = old('bulk_hours.opens_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'opens_at'), 0, 5) : '09:00');
+        $templateClose = old('bulk_hours.closes_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'closes_at'), 0, 5) : '17:00');
     @endphp
 
     <div class="space-y-6">
@@ -89,6 +99,44 @@
                 <form method="POST" action="{{ route('scheduling.business-hours.update', ['tenant' => $tenant->slug]) }}" class="p-5 sm:p-6">
                     @csrf
                     @method('PUT')
+
+                    <section
+                        data-hours-bulk-tools
+                        data-invalid-message="{{ __('app.scheduling_ui.bulk_hours_invalid') }}"
+                        data-no-open-days-message="{{ __('app.scheduling_ui.bulk_hours_no_open_days') }}"
+                        data-applied-all-message="{{ __('app.scheduling_ui.bulk_hours_applied_all') }}"
+                        data-applied-open-message="{{ __('app.scheduling_ui.bulk_hours_applied_open') }}"
+                        class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 dark:border-indigo-900/70 dark:bg-indigo-950/20"
+                        aria-labelledby="bulk-hours-heading"
+                    >
+                        <h4 id="bulk-hours-heading" class="font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.bulk_hours_title') }}</h4>
+                        <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ __('app.scheduling_ui.bulk_hours_help') }}</p>
+
+                        <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto] lg:items-end">
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.opens') }}</span>
+                                <input data-bulk-hours-open type="time" name="bulk_hours[opens_at]" value="{{ $templateOpen }}"
+                                       class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                            </label>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.closes') }}</span>
+                                <input data-bulk-hours-close type="time" name="bulk_hours[closes_at]" value="{{ $templateClose }}"
+                                       class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                            </label>
+                            <div class="flex flex-col gap-2 sm:col-span-2 lg:col-span-1">
+                                <button type="button" data-apply-open-days
+                                        class="inline-flex min-h-11 items-center justify-center rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-sm font-bold text-indigo-800 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-200 dark:hover:bg-slate-800">
+                                    {{ __('app.scheduling_ui.bulk_hours_open_days') }}
+                                </button>
+                                <button type="button" data-apply-all-days
+                                        class="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
+                                    {{ __('app.scheduling_ui.bulk_hours_all_days') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <p data-bulk-hours-feedback class="mt-3 text-sm" role="status" aria-live="polite"></p>
+                    </section>
 
                     <div class="space-y-2">
                         @foreach ($days as $day)
@@ -546,19 +594,85 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('[data-hours-row]').forEach((row) => {
+            const hoursRows = [...document.querySelectorAll('[data-hours-row]')];
+
+            const syncHoursRow = (row) => {
                 const closed = row.querySelector('[data-hours-closed]');
                 const times = [...row.querySelectorAll('[data-hours-time]')];
                 if (!closed) return;
 
-                const sync = () => times.forEach((input) => {
+                times.forEach((input) => {
                     input.disabled = closed.checked;
                     input.required = !closed.checked;
                 });
+            };
 
-                closed.addEventListener('change', sync);
-                sync();
+            hoursRows.forEach((row) => {
+                const closed = row.querySelector('[data-hours-closed]');
+                if (!closed) return;
+
+                closed.addEventListener('change', () => syncHoursRow(row));
+                syncHoursRow(row);
             });
+
+            const bulkTools = document.querySelector('[data-hours-bulk-tools]');
+            if (bulkTools) {
+                const opensInput = bulkTools.querySelector('[data-bulk-hours-open]');
+                const closesInput = bulkTools.querySelector('[data-bulk-hours-close]');
+                const feedback = bulkTools.querySelector('[data-bulk-hours-feedback]');
+
+                const readBulkTimes = () => {
+                    const opensAt = opensInput?.value ?? '';
+                    const closesAt = closesInput?.value ?? '';
+
+                    if (!opensAt || !closesAt || closesAt <= opensAt) {
+                        feedback.textContent = bulkTools.dataset.invalidMessage ?? '';
+                        feedback.className = 'mt-3 text-sm font-semibold text-rose-700 dark:text-rose-300';
+
+                        return null;
+                    }
+
+                    return { opensAt, closesAt };
+                };
+
+                const applyTimes = (includeClosedDays) => {
+                    const times = readBulkTimes();
+                    if (!times) return;
+
+                    const targetRows = hoursRows.filter((row) => includeClosedDays || !row.querySelector('[data-hours-closed]')?.checked);
+
+                    if (targetRows.length === 0) {
+                        feedback.textContent = bulkTools.dataset.noOpenDaysMessage ?? '';
+                        feedback.className = 'mt-3 text-sm font-semibold text-amber-700 dark:text-amber-300';
+
+                        return;
+                    }
+
+                    targetRows.forEach((row) => {
+                        const closed = row.querySelector('[data-hours-closed]');
+                        const fields = [...row.querySelectorAll('[data-hours-time]')];
+
+                        if (!closed || fields.length !== 2) return;
+
+                        if (includeClosedDays) closed.checked = false;
+                        syncHoursRow(row);
+                        fields[0].value = times.opensAt;
+                        fields[1].value = times.closesAt;
+                    });
+
+                    feedback.textContent = includeClosedDays
+                        ? (bulkTools.dataset.appliedAllMessage ?? '')
+                        : (bulkTools.dataset.appliedOpenMessage ?? '');
+                    feedback.className = 'mt-3 text-sm font-semibold text-emerald-700 dark:text-emerald-300';
+                };
+
+                bulkTools.querySelector('[data-apply-open-days]')?.addEventListener('click', () => applyTimes(false));
+                bulkTools.querySelector('[data-apply-all-days]')?.addEventListener('click', () => applyTimes(true));
+
+                [opensInput, closesInput].forEach((input) => input?.addEventListener('input', () => {
+                    feedback.textContent = '';
+                }));
+            }
 
             document.querySelectorAll('[data-special-hours-form]').forEach((form) => {
                 const closed = form.querySelector('[data-special-closed]');
