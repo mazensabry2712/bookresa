@@ -234,6 +234,35 @@ test('owner can create and update a service through workspace ui', function (): 
         ->and($service->fresh()->duration_minutes)->toBe(45);
 });
 
+test('service price validation rejects excessive precision and unsafe amounts', function (): void {
+    [$user, $tenant] = workspaceOwner();
+
+    $basePayload = [
+        'name_en' => 'Price validation service',
+        'name_ar' => 'خدمة اختبار السعر',
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+        'is_active' => 1,
+    ];
+
+    foreach (['12.345', '10000000000.00'] as $invalidPrice) {
+        $this->actingAs($user)
+            ->withSession(['tenant_id' => $tenant->id])
+            ->from(route('services.index', ['tenant' => $tenant->slug]))
+            ->post(route('services.store', ['tenant' => $tenant->slug]), [
+                ...$basePayload,
+                'price' => $invalidPrice,
+            ])
+            ->assertRedirect(route('services.index', ['tenant' => $tenant->slug]))
+            ->assertSessionHasErrors('price');
+    }
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(Service::query()->count())->toBe(0);
+});
+
 test('workspace service management stays tenant isolated', function (): void {
     [$user, $tenantA] = workspaceOwner('Tenant A Owner');
     [$otherUser, $tenantB] = workspaceOwner('Tenant B Owner');
