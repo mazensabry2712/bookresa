@@ -657,6 +657,7 @@ return [
         'staff_exceptions_help' => 'These settings apply only to the selected doctor and do not change the recurring weekly schedule.',
         'manage_staff_exceptions_title' => 'Manage one doctor’s time off and extra availability',
         'bulk_staff_hours_title' => 'Update multiple staff schedules at once',
+        'bulk_staff_hours_optional_title' => 'Apply one schedule to multiple doctors (optional)',
         'bulk_staff_hours_help' => 'Select one or more staff members and configure the week once. This replaces the current weekly hours for selected staff only; time off, explicit availability, and everyone else’s schedule stay unchanged.',
         'bulk_staff_hours_template_help' => 'The editor starts with the business weekly hours as a template. Keep them or adjust the days and times before applying them to selected staff.',
         'select_staff_for_bulk' => 'Who should receive this schedule?',
