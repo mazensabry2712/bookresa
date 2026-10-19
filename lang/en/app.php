@@ -575,7 +575,7 @@ return [
         'workspace_operations' => 'Workspace operations',
         'page_help' => 'Set the rules that decide when your business and staff can accept appointments.',
         'onboarding_hours_title' => 'Set your regular opening hours',
-        'onboarding_hours_help' => 'These are your business-wide hours, not the duration of an individual service. Service duration and buffer are set on the Services page. Save this schedule to continue to staff setup.
+        'onboarding_hours_help' => 'These are your business-wide hours, not the duration of an individual service. Service duration and buffer are set on the Services page. Save this schedule to continue to staff setup.',
         'review_services' => 'Review services',
         'summary' => 'Scheduling summary',
         'timezone' => 'Business timezone',
