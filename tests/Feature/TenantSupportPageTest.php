@@ -11,7 +11,10 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Models\TenantMembership;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use App\Notifications\TenantSupportActivityNotification;
+use App\Support\PlatformSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
