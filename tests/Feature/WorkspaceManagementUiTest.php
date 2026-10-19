@@ -11,6 +11,7 @@ use App\Domain\Payment\Models\TenantPaymentAccount;
 use App\Domain\Service\Actions\CreateService;
 use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
+use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use App\Support\PlatformSettings;
@@ -407,4 +408,102 @@ test('service management paginates large service lists', function (): void {
         ->get(route('services.index', ['tenant' => $tenant->slug, 'page' => 2]))
         ->assertOk()
         ->assertSee('Service 1');
+});
+
+
+test('staff creation assigns tenant services and duplicate submission cannot silently reactivate existing staff', function (): void {
+    [$owner, $tenant] = workspaceOwner('Staff Management Owner');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Haircut', 'ar' => 'حلاقة'],
+        'price_minor' => 15000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 5,
+    ]);
+
+    $staffUser = User::factory()->create([
+        'name' => 'Test Staff Member',
+        'email' => 'staff.member@example.com',
+    ]);
+
+    $payload = [
+        'email' => $staffUser->email,
+        'display_name' => 'Test Staff Member',
+        'phone' => '01000000000',
+        'job_title' => 'Barber',
+        'role' => 'staff',
+        'services' => [$service->id],
+    ];
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('staff.store', ['tenant' => $tenant->slug]), $payload)
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]));
+
+    app(CurrentTenant::class)->set($tenant);
+
+    $staff = StaffProfile::query()->where('user_id', $staffUser->getKey())->firstOrFail();
+
+    expect($staff->status->value)->toBe('active')
+        ->and($staff->job_title)->toBe('Barber')
+        ->and($staff->services->pluck('id')->map(fn ($id): int => (int) $id)->all())->toBe([$service->id]);
+
+    $staff->update(['status' => 'inactive']);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('staff.index', ['tenant' => $tenant->slug]))
+        ->post(route('staff.store', ['tenant' => $tenant->slug]), [
+            ...$payload,
+            'display_name' => 'Unexpected overwrite',
+            'job_title' => 'Unexpected role change',
+        ])
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]))
+        ->assertSessionHasErrors('email');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($staff->fresh()->status->value)->toBe('inactive')
+        ->and($staff->fresh()->display_name)->toBe('Test Staff Member')
+        ->and($staff->fresh()->job_title)->toBe('Barber');
+});
+
+test('staff creation rejects service assignments from another workspace before creating membership', function (): void {
+    [$owner, $tenant] = workspaceOwner('Staff Tenant A');
+    [$otherOwner, $otherTenant] = workspaceOwner('Staff Tenant B');
+
+    app(CurrentTenant::class)->set($otherTenant);
+
+    $foreignService = app(CreateService::class)->handle([
+        'name' => ['en' => 'Foreign service', 'ar' => 'خدمة خارجية'],
+        'price_minor' => 10000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    $staffUser = User::factory()->create([
+        'name' => 'Foreign Service Staff',
+        'email' => 'foreign.service.staff@example.com',
+    ]);
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->from(route('staff.index', ['tenant' => $tenant->slug]))
+        ->post(route('staff.store', ['tenant' => $tenant->slug]), [
+            'email' => $staffUser->email,
+            'role' => 'staff',
+            'services' => [$foreignService->id],
+        ])
+        ->assertRedirect(route('staff.index', ['tenant' => $tenant->slug]))
+        ->assertSessionHasErrors('services.0');
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(StaffProfile::query()->where('user_id', $staffUser->getKey())->exists())->toBeFalse();
+
+    unset($otherOwner);
 });
