@@ -131,7 +131,8 @@ test('expired free trial shows eligible plans and excludes repeat trials', funct
         ->assertSee('Business');
 
     expect($response->getContent())
-        ->not->toContain('<option value="'.$trialPlan->id.'">Free Trial');
+        ->not->toContain('14 trial days')
+        ->not->toContain('<form method="POST" action="'.route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $trialPlan]).'"');
 });
 
 test('owner can schedule a plan change and clear it', function (): void {
