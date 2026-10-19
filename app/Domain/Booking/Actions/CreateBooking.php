@@ -16,7 +16,6 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Collection;
 use LogicException;
 use RuntimeException;
@@ -212,7 +211,7 @@ final class CreateBooking
     private function reference(): string
     {
         do {
-            $reference = 'BR-'.strtoupper(Str::random(10));
+            $reference = 'BR-'.(string) random_int(100000, 999999);
         } while (Booking::withoutGlobalScopes()->where('booking_reference', $reference)->exists());
 
         return $reference;
