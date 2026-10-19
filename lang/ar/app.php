@@ -721,7 +721,7 @@ return [
         'status_filter' => 'الحالة',
         'filter_context' => 'استخدم الفلاتر لتضييق قائمة العمل.',
         'search' => 'بحث',
-        'search_placeholder' => 'المرجع أو اسم العميل أو الهاتف أو البريد',
+        'search_placeholder' => 'المرجع أو العميل أو الهاتف أو البريد أو الخدمة أو الموظف أو الملاحظات',
         'status' => 'الحالة',
         'all_statuses' => 'كل الحالات',
         'all_payment_statuses' => 'كل حالات الدفع',

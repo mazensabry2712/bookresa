@@ -722,7 +722,7 @@ return [
         'status_filter' => 'Status',
         'filter_context' => 'Use filters to narrow the work list.',
         'search' => 'Search',
-        'search_placeholder' => 'Reference, customer name, phone or email',
+        'search_placeholder' => 'Reference, customer, phone, email, service, staff or notes',
         'status' => 'Status',
         'all_statuses' => 'All statuses',
         'all_payment_statuses' => 'All payment statuses',
