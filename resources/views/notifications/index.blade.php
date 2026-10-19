@@ -5,12 +5,22 @@
 
 @section('content')
     @php
-        $localized = static fn (?array $values): string => (string) (
-            data_get($values, app()->getLocale())
-            ?? data_get($values, 'en')
-            ?? data_get($values, 'ar')
-            ?? '—'
-        );
+        $localized = static function (mixed $values): string {
+            if (is_string($values)) {
+                return trim($values) !== '' ? $values : '—';
+            }
+
+            if (! is_array($values)) {
+                return '—';
+            }
+
+            return (string) (
+                data_get($values, app()->getLocale())
+                ?? data_get($values, 'en')
+                ?? data_get($values, 'ar')
+                ?? '—'
+            );
+        };
 
         $typeLabels = [
             'booking_created' => __('app.notification_ui.booking'),
@@ -25,8 +35,8 @@
             'business_payment_paid' => __('app.notification_ui.payment'),
             'subscription_expiring' => __('app.notification_ui.subscription'),
             'usage_warning' => __('app.notification_ui.usage'),
-            'platform_broadcast' => __('Broadcast'),
-            'support_reply' => __('Support'),
+            'platform_broadcast' => __('app.notification_ui.broadcast'),
+            'support_reply' => __('app.notification_ui.support'),
         ];
 
         $typeClasses = [
@@ -110,7 +120,7 @@
                                 </div>
 
                                 <time class="shrink-0 text-xs font-semibold text-slate-400" datetime="{{ $notification->created_at?->toIso8601String() }}">
-                                    {{ $notification->created_at?->setTimezone(data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->diffForHumans() }}
+                                    {{ $notification->created_at?->copy()->setTimezone($timezone)->locale(app()->getLocale())->diffForHumans() }}
                                 </time>
                             </div>
 
