@@ -31,6 +31,7 @@
         $templateOpen = old('bulk_hours.opens_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'opens_at'), 0, 5) : '09:00');
         $templateClose = old('bulk_hours.closes_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'closes_at'), 0, 5) : '17:00');
         $selectedBulkStaffIds = collect(old('staff_ids', []))->map(fn ($id) => (string) $id)->all();
+        $businessHoursOld = old('schedule_form') === 'business';
         $activeSchedulePanel = $openBusinessHours > 0 && $staffMembers->isNotEmpty() ? 'staff-schedule' : 'business-hours';
     @endphp
 
@@ -82,6 +83,7 @@
                 <form method="POST" action="{{ route('scheduling.business-hours.update', ['tenant' => $tenant->slug]) }}" data-business-hours-form class="p-5 sm:p-6">
                     @csrf
                     @method('PUT')
+                    <input type="hidden" name="schedule_form" value="business">
 
                     <details class="mb-5 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
                         <summary class="cursor-pointer text-sm font-bold text-indigo-700 marker:text-slate-400 dark:text-indigo-300">{{ __('app.scheduling_ui.bulk_hours_title') }}</summary>
@@ -127,9 +129,11 @@
                         @foreach ($days as $day)
                             @php
                                 $hour = $businessHours->get($day->value);
-                                $open = old('hours.'.$loop->index.'.opens_at', $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '');
-                                $close = old('hours.'.$loop->index.'.closes_at', $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '');
-                                $isClosed = session()->hasOldInput()
+                                $savedOpen = $hour?->opens_at ? substr((string) $hour->opens_at, 0, 5) : '';
+                                $open = $businessHoursOld ? old('hours.'.$loop->index.'.opens_at', $savedOpen) : $savedOpen;
+                                $savedClose = $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
+                                $close = $businessHoursOld ? old('hours.'.$loop->index.'.closes_at', $savedClose) : $savedClose;
+                                $isClosed = $businessHoursOld
                                     ? (bool) old('hours.'.$loop->index.'.is_closed', false)
                                     : ($hour?->is_closed ?? true);
                             @endphp
@@ -417,6 +421,7 @@
                               data-select-staff-message="{{ __('app.scheduling_ui.choose_staff_for_bulk') }}"
                               class="mt-5 space-y-5">
                             @csrf
+                            <input type="hidden" name="schedule_form" value="bulk">
 
                             <fieldset class="space-y-3">
                                 <legend class="mb-2 text-sm font-bold text-slate-800 dark:text-slate-100">{{ __('app.scheduling_ui.select_staff_for_bulk') }}</legend>
