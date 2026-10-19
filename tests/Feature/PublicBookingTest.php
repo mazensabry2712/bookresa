@@ -73,6 +73,27 @@ test('public business page is available without authentication', function (): vo
         ->assertSee('data-wizard-next', false);
 });
 
+test('public booking wizard supports date input events and delegated time-slot selection', function (): void {
+    $tenant = publicTenant('public-booking-wizard-events');
+
+    app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.canonical.show', $tenant->slug))
+        ->assertOk()
+        ->assertSee("dateInput.addEventListener('input', scheduleDateAvailability)", false)
+        ->assertSee("dateInput.addEventListener('change', scheduleDateAvailability)", false)
+        ->assertSee("slotsContainer.addEventListener('click'", false)
+        ->assertSee("target.closest('button[data-booking-slot]')", false);
+});
+
 test('public availability is tenant scoped and returns slots', function (): void {
     $tenant = publicTenant('availability-clinic');
 

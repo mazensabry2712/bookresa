@@ -526,6 +526,8 @@
             };
 
             const selectSlot = (button, slotTime) => {
+                if (!button || !slotTime) return;
+
                 slotsContainer.querySelectorAll('[data-booking-slot]').forEach((item) => {
                     item.classList.remove('border-brand-indigo', 'bg-indigo-50', 'text-brand-indigo', 'ring-2', 'ring-indigo-100', 'dark:border-indigo-700', 'dark:bg-indigo-950/50', 'dark:text-indigo-200');
                     item.setAttribute('aria-pressed', 'false');
@@ -537,6 +539,18 @@
                 refreshSummary();
                 refreshSubmit();
             };
+
+            // Delegate clicks from the slots container so dynamically rebuilt buttons
+            // always remain selectable, including clicks on the time/count text inside.
+            slotsContainer.addEventListener('click', (event) => {
+                const target = event.target;
+                if (!(target instanceof Element)) return;
+
+                const button = target.closest('button[data-booking-slot]');
+                if (!button || !slotsContainer.contains(button)) return;
+
+                selectSlot(button, button.dataset.bookingSlot || '');
+            });
 
             const loadAvailability = async ({ preserveTime = false } = {}) => {
                 const selected = checkedService();
@@ -609,7 +623,6 @@
                             button.textContent = slot.time;
                         }
                         button.setAttribute('aria-pressed', 'false');
-                        button.addEventListener('click', () => selectSlot(button, slot.time));
                         slotsContainer.appendChild(button);
 
                         if (desiredTime && slot.time === desiredTime) {
@@ -649,12 +662,30 @@
                 loadAvailability();
             }));
 
-            dateInput.addEventListener('change', () => {
-                timeInput.value = '';
-                refreshSummary();
-                clearWizardError();
-                loadAvailability();
-            });
+            // Some browsers emit input before change for native date controls; debounce
+            // both events to issue one availability request per actual date change.
+            let dateAvailabilityTimer = null;
+            let requestedDate = dateInput.value;
+            const scheduleDateAvailability = () => {
+                if (dateAvailabilityTimer !== null) {
+                    window.clearTimeout(dateAvailabilityTimer);
+                }
+
+                dateAvailabilityTimer = window.setTimeout(() => {
+                    dateAvailabilityTimer = null;
+                    const nextDate = dateInput.value;
+                    if (nextDate === requestedDate) return;
+
+                    requestedDate = nextDate;
+                    timeInput.value = '';
+                    refreshSummary();
+                    clearWizardError();
+                    loadAvailability();
+                }, 0);
+            };
+
+            dateInput.addEventListener('input', scheduleDateAvailability);
+            dateInput.addEventListener('change', scheduleDateAvailability);
 
             staffSelect.addEventListener('change', () => {
                 timeInput.value = '';
