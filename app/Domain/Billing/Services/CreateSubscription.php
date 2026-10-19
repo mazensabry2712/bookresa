@@ -52,6 +52,23 @@ final class CreateSubscription
             }
 
             $trialDays = (int) $plan->trial_days;
+
+            if ($trialDays > 0) {
+                $trialAlreadyUsed = Subscription::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->get(['pricing_snapshot'])
+                    ->contains(
+                        fn (Subscription $subscription): bool => (int) data_get(
+                            $subscription->pricing_snapshot,
+                            'trial_days',
+                            0,
+                        ) > 0,
+                    );
+
+                if ($trialAlreadyUsed) {
+                    throw new LogicException('This workspace has already used a trial subscription.');
+                }
+            }
             $status = $trialDays > 0
                 ? SubscriptionStatus::Trial
                 : SubscriptionStatus::Active;
@@ -68,7 +85,9 @@ final class CreateSubscription
                 'start_at' => $startAt,
                 'end_at' => $endAt,
                 'status' => $status,
-                'payment_status' => PaymentStatus::Pending,
+                'payment_status' => (int) $plan->price_minor === 0 && $trialDays === 0
+                    ? PaymentStatus::Paid
+                    : PaymentStatus::Pending,
                 'price_minor' => (int) $plan->price_minor,
                 'currency' => $plan->currency,
                 'billing_period' => $plan->billing_period,

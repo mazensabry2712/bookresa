@@ -48,6 +48,10 @@ final class RenewSubscription
                 throw new RuntimeException('The renewal plan is not available.');
             }
 
+            if ((int) $plan->price_minor === 0 && (int) $plan->trial_days > 0) {
+                throw new RuntimeException('A free trial cannot be renewed. Select a regular plan to continue.');
+            }
+
             $snapshot = $this->pricingSnapshots->make($plan);
             $endAt = $this->billingCycle->endAt($startAt, $plan->billing_period);
 
@@ -56,7 +60,7 @@ final class RenewSubscription
                 'start_at' => $startAt,
                 'end_at' => $endAt,
                 'status' => SubscriptionStatus::Active,
-                'payment_status' => PaymentStatus::Pending,
+                'payment_status' => (int) $plan->price_minor === 0 ? PaymentStatus::Paid : PaymentStatus::Pending,
                 'price_minor' => (int) $plan->price_minor,
                 'currency' => $plan->currency,
                 'billing_period' => $plan->billing_period,

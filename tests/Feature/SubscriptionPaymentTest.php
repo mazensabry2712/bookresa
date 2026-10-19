@@ -158,6 +158,33 @@ test('trial subscriptions cannot start a paid checkout', function (): void {
         ->toThrow(RuntimeException::class);
 });
 
+test('owner can choose a zero-priced permanent plan without starting checkout', function (): void {
+    $tenant = subscriptionPaymentTenant('subscription-free-plan');
+    $user = subscriptionPaymentUser($tenant, 'free-plan@example.com');
+    $plan = subscriptionPaymentPlan([
+        'price_minor' => 0,
+        'trial_days' => 0,
+    ]);
+
+    $gateway = new FakeSubscriptionGateway;
+    $this->app->instance(PaymentGateway::class, $gateway);
+
+    $this->actingAs($user)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]))
+        ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
+
+    $subscription = Subscription::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+
+    expect($subscription->status)->toBe(SubscriptionStatus::Active)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->isUsable())->toBeTrue()
+        ->and(Payment::withoutGlobalScopes()->count())->toBe(0)
+        ->and($gateway->createCalls)->toBe(0);
+});
+
 test('subscription billing page requires billing permission', function (): void {
     $tenant = subscriptionPaymentTenant('subscription-forbidden');
     $user = User::factory()->create(['email' => 'forbidden@example.com']);

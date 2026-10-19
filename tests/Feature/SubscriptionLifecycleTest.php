@@ -242,6 +242,54 @@ test('renewal is blocked while subscription is still active', function (): void 
     ))->toThrow(RuntimeException::class);
 });
 
+test('a workspace cannot start another trial after its first trial expires', function (): void {
+    lifecycleTenant('trial-once');
+
+    $plan = lifecyclePlan([
+        'price_minor' => 0,
+        'trial_days' => 14,
+    ]);
+
+    $first = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-09-01 00:00:00', 'UTC'),
+    );
+
+    $first->forceFill([
+        'status' => SubscriptionStatus::Expired,
+        'end_at' => CarbonImmutable::parse('2026-09-15 00:00:00', 'UTC'),
+    ])->save();
+
+    expect(fn () => app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    ))->toThrow(LogicException::class, 'already used a trial');
+});
+
+test('a zero-priced trial cannot be renewed into an unpaid active subscription', function (): void {
+    lifecycleTenant('free-trial-no-renew');
+
+    $plan = lifecyclePlan([
+        'price_minor' => 0,
+        'trial_days' => 14,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-09-01 00:00:00', 'UTC'),
+    );
+
+    $subscription->forceFill([
+        'status' => SubscriptionStatus::Expired,
+        'end_at' => CarbonImmutable::parse('2026-09-15 00:00:00', 'UTC'),
+    ])->save();
+
+    expect(fn () => app(RenewSubscription::class)->handle(
+        $subscription->fresh(),
+        CarbonImmutable::parse('2026-10-01 00:00:00', 'UTC'),
+    ))->toThrow(RuntimeException::class, 'free trial cannot be renewed');
+});
+
 test('subscription expiry artisan command is available', function (): void {
     $this->artisan('subscriptions:expire')->assertExitCode(0);
 });

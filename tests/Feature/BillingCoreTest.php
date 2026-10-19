@@ -116,6 +116,24 @@ test('trial subscription uses trial days and keeps payment pending', function ()
         ->and($subscription->end_at->equalTo($start->addDays(14)))->toBeTrue();
 });
 
+test('a zero-priced plan without a trial is usable without a payment', function (): void {
+    billingTenant('zero-price-plan');
+
+    $plan = billingPlan([
+        'price_minor' => 0,
+        'trial_days' => 0,
+    ]);
+
+    $subscription = app(CreateSubscription::class)->handle(
+        $plan,
+        CarbonImmutable::parse('2026-10-01 10:00:00', 'UTC'),
+    );
+
+    expect($subscription->status)->toBe(SubscriptionStatus::Active)
+        ->and($subscription->payment_status)->toBe(PaymentStatus::Paid)
+        ->and($subscription->isUsable())->toBeTrue();
+});
+
 test('tenant cannot have two overlapping active subscriptions', function (): void {
     billingTenant('duplicate-subscription');
 
