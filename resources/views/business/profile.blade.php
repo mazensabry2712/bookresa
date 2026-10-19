@@ -12,7 +12,8 @@
             ?? '—'
         );
 
-        $customerLimitPolicy = data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage');
+        $customerLimitPolicy = old('customer_limit_policy', data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'));
+        $canUpdateBusiness = auth()->user()?->can('business.update') ?? false;
         $bookingUrl = route('public.booking.canonical.show', ['tenant' => $tenant->slug]);
     @endphp
 
@@ -59,9 +60,15 @@
             </div>
         </section>
 
-        <form method="POST" action="{{ route('business.profile.update', ['tenant' => $tenant->slug]) }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="{{ route('business.profile.update', ['tenant' => $tenant->slug]) }}" enctype="multipart/form-data" class="space-y-6" data-business-profile-editable="{{ $canUpdateBusiness ? 'true' : 'false' }}">
             @csrf
             @method('PUT')
+
+            @cannot('business.update')
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200" role="status">
+                    {{ __('app.business_ui.read_only_help') }}
+                </div>
+            @endcannot
 
             <section class="br-panel p-5 sm:p-6">
                 <div>
@@ -72,25 +79,25 @@
                 <div class="mt-5 grid gap-4 sm:grid-cols-2">
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.business_ui.name_english') }}</span>
-                        <input name="name_en" value="{{ old('name_en', data_get($profile->name, 'en')) }}" required maxlength="160"
+                        <input name="name_en" value="{{ old('name_en', data_get($profile->name, 'en')) }}" required maxlength="160" @disabled(! $canUpdateBusiness)
                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                     </label>
 
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.business_ui.name_arabic') }}</span>
-                        <input name="name_ar" value="{{ old('name_ar', data_get($profile->name, 'ar')) }}" maxlength="160" dir="rtl"
+                        <input name="name_ar" value="{{ old('name_ar', data_get($profile->name, 'ar')) }}" maxlength="160" dir="rtl" @disabled(! $canUpdateBusiness)
                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                     </label>
 
                     <label class="space-y-1.5 text-sm sm:col-span-2">
                         <span class="font-semibold">{{ __('app.business_ui.description_english') }}</span>
-                        <textarea name="description_en" rows="3" maxlength="5000"
+                        <textarea name="description_en" rows="3" maxlength="5000" @disabled(! $canUpdateBusiness)
                                   class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">{{ old('description_en', data_get($profile->description, 'en')) }}</textarea>
                     </label>
 
                     <label class="space-y-1.5 text-sm sm:col-span-2">
                         <span class="font-semibold">{{ __('app.business_ui.description_arabic') }}</span>
-                        <textarea name="description_ar" rows="3" maxlength="5000" dir="rtl"
+                        <textarea name="description_ar" rows="3" maxlength="5000" dir="rtl" @disabled(! $canUpdateBusiness)
                                   class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">{{ old('description_ar', data_get($profile->description, 'ar')) }}</textarea>
                     </label>
                 </div>
@@ -117,7 +124,7 @@
                                 <div class="flex flex-wrap items-center gap-3">
                                     <input id="business-logo-upload" type="file" name="logo" accept="image/jpeg,image/png,image/webp"
                                            data-bookresa-file-input data-file-name-target="business-logo-file-name"
-                                           data-no-file-text="{{ __('app.business_ui.no_file_chosen') }}"
+                                           data-no-file-text="{{ __('app.business_ui.no_file_chosen') }}" @disabled(! $canUpdateBusiness)
                                            class="peer sr-only">
                                     <label for="business-logo-upload"
                                            class="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-semibold hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-indigo dark:border-slate-700 dark:hover:bg-slate-800">
@@ -130,7 +137,7 @@
                         </div>
                         @if ($profile->logo_path)
                             <label class="mt-4 flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="remove_logo" value="1" class="rounded border-slate-300">
+                                <input type="checkbox" name="remove_logo" value="1" @checked(old('remove_logo')) @disabled(! $canUpdateBusiness) class="rounded border-slate-300">
                                 {{ __('app.business_ui.remove_logo') }}
                             </label>
                         @endif
@@ -148,7 +155,7 @@
                         <div class="mt-3 flex flex-wrap items-center gap-3">
                             <input id="business-cover-upload" type="file" name="cover" accept="image/jpeg,image/png,image/webp"
                                    data-bookresa-file-input data-file-name-target="business-cover-file-name"
-                                   data-no-file-text="{{ __('app.business_ui.no_file_chosen') }}"
+                                   data-no-file-text="{{ __('app.business_ui.no_file_chosen') }}" @disabled(! $canUpdateBusiness)
                                    class="peer sr-only">
                             <label for="business-cover-upload"
                                    class="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-semibold hover:bg-slate-50 peer-focus-visible:ring-2 peer-focus-visible:ring-brand-indigo dark:border-slate-700 dark:hover:bg-slate-800">
@@ -159,7 +166,7 @@
                         <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('app.business_ui.cover_help') }}</p>
                         @if ($profile->cover_path)
                             <label class="mt-3 flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="remove_cover" value="1" class="rounded border-slate-300">
+                                <input type="checkbox" name="remove_cover" value="1" @checked(old('remove_cover')) @disabled(! $canUpdateBusiness) class="rounded border-slate-300">
                                 {{ __('app.business_ui.remove_cover') }}
                             </label>
                         @endif
@@ -176,25 +183,25 @@
                 <div class="mt-5 grid gap-4 sm:grid-cols-2">
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.business_ui.phone') }}</span>
-                        <input name="phone" value="{{ old('phone', $profile->phone) }}" maxlength="40" inputmode="tel"
+                        <input name="phone" value="{{ old('phone', $profile->phone) }}" maxlength="40" inputmode="tel" @disabled(! $canUpdateBusiness)
                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                     </label>
 
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.business_ui.email') }}</span>
-                        <input type="email" name="email" value="{{ old('email', $profile->email) }}" maxlength="255"
+                        <input type="email" name="email" value="{{ old('email', $profile->email) }}" maxlength="255" @disabled(! $canUpdateBusiness)
                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                     </label>
 
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.business_ui.location') }}</span>
-                        <input name="location" value="{{ old('location', $profile->location) }}" maxlength="255"
+                        <input name="location" value="{{ old('location', $profile->location) }}" maxlength="255" @disabled(! $canUpdateBusiness)
                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                     </label>
 
                     <label class="space-y-1.5 text-sm">
                         <span class="font-semibold">{{ __('app.business_ui.timezone') }}</span>
-                        <select name="timezone" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                        <select name="timezone" required @disabled(! $canUpdateBusiness) class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                             @foreach (DateTimeZone::listIdentifiers() as $timezone)
                                 <option value="{{ $timezone }}" @selected(old('timezone', $profile->timezone) === $timezone)>{{ $timezone }}</option>
                             @endforeach
@@ -203,7 +210,7 @@
 
                     <label class="space-y-1.5 text-sm sm:col-span-2">
                         <span class="font-semibold">{{ __('app.business_ui.address') }}</span>
-                        <textarea name="address" rows="3" maxlength="2000"
+                        <textarea name="address" rows="3" maxlength="2000" @disabled(! $canUpdateBusiness)
                                   class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">{{ old('address', $profile->address) }}</textarea>
                     </label>
                 </div>
@@ -219,7 +226,7 @@
                     <div class="grid gap-4 sm:grid-cols-2">
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.business_ui.minimum_notice') }}</span>
-                            <input type="number" name="minimum_notice_minutes" min="0" max="43200"
+                            <input type="number" name="minimum_notice_minutes" min="0" max="43200" required @disabled(! $canUpdateBusiness)
                                    value="{{ old('minimum_notice_minutes', data_get($profile->booking_settings, 'minimum_notice_minutes', 0)) }}"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                             <span class="block text-xs leading-5 text-slate-500">{{ __('app.business_ui.minimum_notice_help') }}</span>
@@ -227,7 +234,7 @@
 
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.business_ui.maximum_advance') }}</span>
-                            <input type="number" name="maximum_advance_days" min="1" max="730"
+                            <input type="number" name="maximum_advance_days" min="1" max="730" @disabled(! $canUpdateBusiness)
                                    value="{{ old('maximum_advance_days', data_get($profile->booking_settings, 'maximum_advance_days')) }}"
                                    placeholder="{{ __('app.business_ui.no_limit') }}"
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
@@ -240,12 +247,13 @@
                             <div class="rounded-xl br-surface-soft p-4 text-sm">
                                 <p class="font-semibold">{{ __('Customer email required') }}</p>
                                 <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('A valid customer email is required for secure online payment and payment receipts.') }}</p>
-                                <input type="hidden" name="customer_email_required" value="1">
+                                <input type="hidden" name="customer_email_required" value="1" @disabled(! $canUpdateBusiness)>
                             </div>
                         @else
                             <label class="flex items-start gap-3 rounded-xl br-surface-soft p-4 text-sm">
                                 <input type="checkbox" name="customer_email_required" value="1"
-                                       @checked(data_get($profile->booking_settings, 'customer_email_required', false))
+                                       @checked(old('customer_email_required', data_get($profile->booking_settings, 'customer_email_required', false)))
+                                       @disabled(! $canUpdateBusiness)
                                        class="mt-0.5 rounded border-slate-300">
                                 <span>
                                     <span class="block font-semibold">{{ __('app.business_ui.require_email') }}</span>
@@ -256,7 +264,7 @@
 
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.business_ui.customer_limit_policy') }}</span>
-                            <select name="customer_limit_policy" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                            <select name="customer_limit_policy" required @disabled(! $canUpdateBusiness) class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                                 <option value="allow_overage" @selected($customerLimitPolicy === 'allow_overage')>{{ __('app.business_ui.allow_overage') }}</option>
                                 <option value="block_new_customers" @selected($customerLimitPolicy === 'block_new_customers')>{{ __('app.business_ui.block_new_customers') }}</option>
                             </select>
@@ -278,7 +286,7 @@
                         <div class="mt-4 w-fit">
                             <x-locale-switcher />
                         </div>
-                        <select name="locale" class="mt-4 w-full max-w-xs rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <select name="locale" required @disabled(! $canUpdateBusiness) class="mt-4 w-full max-w-xs rounded-xl border border-slate-300 bg-white px-3.5 py-3 text-sm dark:border-slate-700 dark:bg-slate-950">
                             @foreach (config('bookresa.locales', ['en', 'ar']) as $locale)
                                 <option value="{{ $locale }}" @selected(old('locale', $profile->locale ?? app()->getLocale()) === $locale)>
                                     {{ $locale === 'ar' ? __('app.arabic') : __('app.english') }}
@@ -324,7 +332,7 @@
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ $label }}</span>
                             <input type="url" name="{{ $key }}" value="{{ old($key, data_get($profile->social_links, $key)) }}"
-                                   placeholder="https://" maxlength="500"
+                                   placeholder="https://" maxlength="500" @disabled(! $canUpdateBusiness)
                                    class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
                         </label>
                     @endforeach
