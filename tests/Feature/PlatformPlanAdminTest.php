@@ -15,6 +15,7 @@ function platformAdminUser(bool $admin = true): User
     if ($admin) {
         PlatformAdmin::query()->create(['user_id' => $user->id, 'is_active' => true]);
     }
+
     return $user;
 }
 
