@@ -54,6 +54,18 @@
                     <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200">{{ __('app.public_booking_ui.check_form') }}</div>
                 @endif
 
+                @if ($services->isEmpty())
+                    <section role="status" class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
+                        <p class="font-bold">{{ __('app.booking_ui.no_active_services') }}</p>
+                        <p class="mt-1 leading-6">{{ __('app.booking_ui.no_active_services_help') }}</p>
+                        @can('services.view')
+                            <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}" class="mt-3 inline-flex min-h-10 items-center justify-center rounded-xl border border-amber-300 px-3.5 py-2 text-sm font-bold hover:bg-amber-100 dark:border-amber-800 dark:hover:bg-amber-950">
+                                {{ __('app.booking_ui.manage_services') }}
+                            </a>
+                        @endcan
+                    </section>
+                @endif
+
                 <section class="br-panel p-5 sm:p-6">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
@@ -112,7 +124,12 @@
                             </div>
                             <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4" data-booking-slots></div>
                             <div class="mt-3 hidden rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-300" data-booking-state>{{ __('app.booking_ui.select_service_date') }}</div>
-                            <div class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" data-booking-error>{{ __('app.booking_ui.availability_error') }}</div>
+                            <div class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" data-booking-error>
+                                <p>{{ __('app.booking_ui.availability_error') }}</p>
+                                <button type="button" data-booking-retry class="mt-2 inline-flex min-h-9 items-center justify-center rounded-lg border border-rose-300 px-3 py-1.5 text-xs font-bold hover:bg-rose-100 dark:border-rose-800 dark:hover:bg-rose-950">
+                                    {{ __('app.booking_ui.retry_availability') }}
+                                </button>
+                            </div>
                         </div>
 
                         <label class="md:col-span-2">
@@ -253,6 +270,7 @@
             const time = form.querySelector('[data-booking-time]');
             const selectedTime = form.querySelector('[data-booking-selected-time]');
             const slotCount = form.querySelector('[data-booking-slot-count]');
+            const retryAvailability = form.querySelector('[data-booking-retry]');
             const submit = form.querySelector('[data-booking-submit]');
             const submitLabel = form.querySelector('[data-booking-submit-label]');
             const customerPicker = form.querySelector('[data-booking-customer]');
@@ -304,7 +322,18 @@
                     ? duration + ' ' + messages.minutes + ' · ' + price
                     : '—';
 
-                summaryDate.textContent = date.value || '—';
+                if (date.value) {
+                    const [year, month, day] = date.value.split('-').map(Number);
+                    const localDate = new Date(year, month - 1, day, 12, 0, 0);
+                    summaryDate.textContent = new Intl.DateTimeFormat(document.documentElement.lang || 'en', {
+                        weekday: 'short',
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                    }).format(localDate);
+                } else {
+                    summaryDate.textContent = '—';
+                }
                 summaryTime.textContent = time.value || '—';
 
                 const staffOption = staff.options[staff.selectedIndex];
@@ -335,12 +364,22 @@
                 updateSummary();
             };
 
-            const renderSlots = (available) => {
+            const renderSlots = (available, preferredTime = '') => {
                 slots.innerHTML = '';
 
+                const restoredTime = available.some((slot) => slot.time === preferredTime) ? preferredTime : '';
+                time.value = restoredTime;
+                selectedTime.textContent = restoredTime
+                    ? messages.selectedTime + ': ' + restoredTime
+                    : messages.chooseDateFirst;
+
                 if (!available.length) {
+                    time.value = '';
+                    selectedTime.textContent = messages.chooseDateFirst;
                     slotCount.textContent = '';
                     showState(messages.noTimes);
+                    refreshSubmit();
+                    updateSummary();
                     return;
                 }
 
@@ -374,11 +413,19 @@
                 });
             };
 
-            const loadAvailability = async () => {
+            const loadAvailability = async (preserveSelectedTime = false) => {
+                const preferredTime = preserveSelectedTime ? time.value : '';
+
+                if (requestController) {
+                    requestController.abort();
+                }
+                requestController = null;
+
                 time.value = '';
-                selectedTime.textContent = date.value ? messages.chooseDateFirst : messages.chooseDateFirst;
+                selectedTime.textContent = messages.chooseDateFirst;
                 slots.innerHTML = '';
                 slotCount.textContent = '';
+                loadingLabel.textContent = '';
                 error.classList.add('hidden');
                 refreshSubmit();
                 updateSummary();
@@ -393,8 +440,8 @@
                     return;
                 }
 
-                if (requestController) requestController.abort();
-                requestController = new AbortController();
+                const controller = new AbortController();
+                requestController = controller;
                 clearState();
                 loadingLabel.textContent = messages.loading;
 
@@ -404,20 +451,39 @@
                 try {
                     const response = await fetch(@json(route('booking.management.availability', ['tenant' => $tenant->slug])) + '?' + params.toString(), {
                         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                        signal: requestController.signal,
+                        signal: controller.signal,
                     });
 
                     const payload = await response.json();
-                    if (!response.ok) throw new Error(payload.message || messages.availabilityError);
 
-                    renderSlots(Array.isArray(payload.data) ? payload.data : []);
+                    if (requestController !== controller) {
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(payload.message || messages.availabilityError);
+                    }
+
+                    renderSlots(Array.isArray(payload.data) ? payload.data : [], preferredTime);
+                    refreshSubmit();
+                    updateSummary();
                 } catch (requestError) {
-                    if (requestError.name === 'AbortError') return;
+                    if (requestError.name === 'AbortError' || requestController !== controller) {
+                        return;
+                    }
+
                     slots.innerHTML = '';
+                    time.value = '';
+                    selectedTime.textContent = messages.chooseDateFirst;
                     error.classList.remove('hidden');
                     showState(messages.availabilityError);
+                    refreshSubmit();
+                    updateSummary();
                 } finally {
-                    loadingLabel.textContent = '';
+                    if (requestController === controller) {
+                        requestController = null;
+                        loadingLabel.textContent = '';
+                    }
                 }
             };
 
@@ -446,8 +512,9 @@
                 loadAvailability();
             });
 
-            date.addEventListener('change', loadAvailability);
-            staff.addEventListener('change', loadAvailability);
+            date.addEventListener('change', () => loadAvailability());
+            staff.addEventListener('change', () => loadAvailability());
+            retryAvailability?.addEventListener('click', () => loadAvailability());
 
             form.addEventListener('submit', () => {
                 submit.disabled = true;
@@ -459,7 +526,7 @@
             updateSummary();
             refreshSubmit();
 
-            if (service.value && date.value) loadAvailability();
+            if (service.value && date.value) loadAvailability(true);
             else showState(service.value ? messages.chooseDateFirst : messages.chooseServiceFirst);
         });
     </script>
