@@ -289,6 +289,7 @@
             const messages = {
                 chooseServiceFirst: @json(__('app.booking_ui.choose_service_first')),
                 chooseDateFirst: @json(__('app.booking_ui.choose_date_first')),
+                chooseTime: @json(__('app.booking_ui.choose_time')),
                 loading: @json(__('app.booking_ui.loading_availability')),
                 noTimes: @json(__('app.booking_ui.no_available_times')),
                 available: @json(__('app.booking_ui.available_times')),
@@ -371,11 +372,11 @@
                 time.value = restoredTime;
                 selectedTime.textContent = restoredTime
                     ? messages.selectedTime + ': ' + restoredTime
-                    : messages.chooseDateFirst;
+                    : messages.chooseTime;
 
                 if (!available.length) {
                     time.value = '';
-                    selectedTime.textContent = messages.chooseDateFirst;
+                    selectedTime.textContent = messages.chooseTime;
                     slotCount.textContent = '';
                     showState(messages.noTimes);
                     refreshSubmit();
@@ -440,6 +441,8 @@
                     return;
                 }
 
+                selectedTime.textContent = messages.chooseTime;
+
                 const controller = new AbortController();
                 requestController = controller;
                 clearState();
@@ -474,7 +477,7 @@
 
                     slots.innerHTML = '';
                     time.value = '';
-                    selectedTime.textContent = messages.chooseDateFirst;
+                    selectedTime.textContent = messages.chooseTime;
                     error.classList.remove('hidden');
                     showState(messages.availabilityError);
                     refreshSubmit();
