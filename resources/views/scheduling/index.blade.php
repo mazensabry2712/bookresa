@@ -19,8 +19,7 @@
             DayOfWeek::Sunday,
         ];
 
-        $configuredBusinessHours = $businessHours->filter(fn ($hour) => ! $hour->is_closed)->count();
-        $openBusinessHours = $businessHours->where(fn ($hour) => ! $hour->is_closed)->count();
+        $openBusinessHours = $businessHours->filter(fn ($hour) => ! $hour->is_closed)->count();
     @endphp
 
     <div class="space-y-6">
@@ -38,6 +37,13 @@
                 </a>
             @endcan
         </section>
+
+        @if (! (bool) data_get($tenant->settings ?? [], 'onboarding.completed', false))
+            <section class="rounded-2xl border border-indigo-200 bg-indigo-50/70 px-4 py-4 text-sm leading-6 text-indigo-950 dark:border-indigo-900/70 dark:bg-indigo-950/30 dark:text-indigo-100" role="note">
+                <p class="font-bold">{{ __('app.scheduling_ui.onboarding_hours_title') }}</p>
+                <p class="mt-1">{{ __('app.scheduling_ui.onboarding_hours_help') }}</p>
+            </section>
+        @endif
 
         <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('app.scheduling_ui.summary') }}">
             <article class="br-panel p-5">
@@ -92,7 +98,7 @@
                                 $close = $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
                             @endphp
 
-                            <div class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
+                            <div data-hours-row class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
                                 <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
 
                                 <div>
@@ -102,18 +108,18 @@
 
                                 <label class="text-xs font-semibold text-slate-500">
                                     <span class="mb-1.5 block">{{ __('app.scheduling_ui.opens') }}</span>
-                                    <input type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}"
+                                    <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}"
                                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
                                 </label>
 
                                 <label class="text-xs font-semibold text-slate-500">
                                     <span class="mb-1.5 block">{{ __('app.scheduling_ui.closes') }}</span>
-                                    <input type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}"
+                                    <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}"
                                            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
                                 </label>
 
                                 <label class="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-800">
-                                    <input type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($hour?->is_closed ?? true)>
+                                    <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($hour?->is_closed ?? true)>
                                     <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
                                 </label>
                             </div>
@@ -211,7 +217,7 @@
                 @can('settings.manage')
                     <form method="POST" action="{{ route('scheduling.holidays.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
-                        <input type="date" name="holiday_date" required value="{{ old('holiday_date', now()->toDateString()) }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <input type="date" name="holiday_date" required min="{{ $today }}" value="{{ old('holiday_date', $today) }}" aria-label="{{ __('app.scheduling_ui.holiday_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.save_holiday') }}</button>
                     </form>
@@ -251,16 +257,16 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.special-hours.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
+                    <form method="POST" action="{{ route('scheduling.special-hours.store', ['tenant' => $tenant->slug]) }}" data-special-hours-form class="mt-5 space-y-3">
                         @csrf
-                        <input type="date" name="work_date" required value="{{ old('work_date', now()->toDateString()) }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                        <input type="date" name="work_date" required min="{{ $today }}" value="{{ old('work_date', $today) }}" aria-label="{{ __('app.scheduling_ui.work_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="time" name="opens_at" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                            <input type="time" name="closes_at" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            <input data-special-time type="time" name="opens_at" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                            <input data-special-time type="time" name="closes_at" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         </div>
                         <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                         <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" name="is_closed" value="1" class="rounded border-slate-300">
+                            <input data-special-closed type="checkbox" name="is_closed" value="1" class="rounded border-slate-300">
                             <span>{{ __('app.scheduling_ui.closed_all_day') }}</span>
                         </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.save_special_hours') }}</button>
@@ -343,11 +349,11 @@
                                     $close = $hour?->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
                                 @endphp
 
-                                <div class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
+                                <div data-hours-row class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
                                     <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
                                     <p class="text-sm font-bold text-slate-950 dark:text-white">{{ __($day->name) }}</p>
-                                    <input type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                    <input type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $open }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $close }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <label class="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-800">
                                         <input type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($hour?->is_closed ?? true)>
                                         <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
@@ -389,8 +395,8 @@
                                 <form method="POST" action="{{ route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
                                     <div class="grid grid-cols-2 gap-3">
-                                        <input type="date" name="starts_on" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
-                                        <input type="date" name="ends_on" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        <input type="date" name="starts_on" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.starts_on') }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                        <input type="date" name="ends_on" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.ends_on') }}" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     </div>
                                     <input name="reason" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <button type="submit" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.scheduling_ui.add_day_off') }}</button>
@@ -430,7 +436,7 @@
                             @can('settings.manage')
                                 <form method="POST" action="{{ route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
-                                    <input type="date" name="available_date" required class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
+                                    <input type="date" name="available_date" required min="{{ $today }}" aria-label="{{ __('app.scheduling_ui.available_date') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <div class="grid grid-cols-2 gap-3">
                                         <input type="time" name="starts_at" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                         <input type="time" name="ends_at" required class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
@@ -481,4 +487,36 @@
             @endif
         </section>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('[data-hours-row]').forEach((row) => {
+                const closed = row.querySelector('[data-hours-closed]');
+                const times = [...row.querySelectorAll('[data-hours-time]')];
+                if (!closed) return;
+
+                const sync = () => times.forEach((input) => {
+                    input.disabled = closed.checked;
+                    input.required = !closed.checked;
+                });
+
+                closed.addEventListener('change', sync);
+                sync();
+            });
+
+            document.querySelectorAll('[data-special-hours-form]').forEach((form) => {
+                const closed = form.querySelector('[data-special-closed]');
+                const times = [...form.querySelectorAll('[data-special-time]')];
+                if (!closed) return;
+
+                const sync = () => times.forEach((input) => {
+                    input.disabled = closed.checked;
+                    input.required = !closed.checked;
+                });
+
+                closed.addEventListener('change', sync);
+                sync();
+            });
+        });
+    </script>
+
 @endsection
