@@ -1,17 +1,19 @@
 <IfModule mod_dir.c>
-    # Let mod_rewrite canonicalize /public before mod_dir appends a slash.
+    # Prevent Apache from appending a slash before canonicalizing /public.
     DirectorySlash Off
 </IfModule>
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteOptions AllowNoSlash
 
-    # Redirect only direct requests whose original URL contains /public.
-    # THE_REQUEST prevents internal rewrites such as /login -> public/login
-    # from being redirected back to the same URL.
+    # Redirect direct client requests for /public to the domain root.
+    # THE_REQUEST is unchanged by internal rewrites, avoiding /login loops.
     RewriteCond %{THE_REQUEST} \s/+public(?:[/?]|\s) [NC]
-    RewriteRule ^public(?:/(.*))?$ /$1 [R=301,L,NE]
+    RewriteRule ^public(?:/(.*))?$ /$1 [R=302,L,NE]
 
-    # Laravel's public directory is served at the domain root.
+    # Do not internally rewrite requests that have already entered /public.
+    # This prevents public/public/... loops after the root rewrite.
+    RewriteCond %{REQUEST_URI} !^/public(?:/|$) [NC]
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
