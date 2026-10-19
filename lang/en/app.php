@@ -674,7 +674,7 @@ return [
         'manage_services' => 'Manage services',
         'retry_availability' => 'Reload available times',
         'no_active_staff_assigned' => 'This service is assigned to staff members who are not active. Activate an assigned staff member or update the service assignments.',
-        'no_staff_available_at_time' => 'That time is no longer available with the selected staff member. Choose another time or view times with any available staff member.',
+        'no_staff_available_at_time' => 'That time is no longer available. Choose another time or view times with any available staff member.',
         'selected_time_unavailable' => 'That time is no longer available. Please choose another time.',
         'no_staff_times' => 'This staff member has no available times on this date. Choose another staff member or view times with anyone available.',
         'staff_inactive_help' => 'All staff assigned to this service are currently inactive.',
