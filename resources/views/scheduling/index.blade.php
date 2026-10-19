@@ -30,6 +30,7 @@
         $defaultTemplateHours = $firstSubmittedOpen ?? $firstSavedOpen;
         $templateOpen = old('bulk_hours.opens_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'opens_at'), 0, 5) : '09:00');
         $templateClose = old('bulk_hours.closes_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'closes_at'), 0, 5) : '17:00');
+        $selectedBulkStaffIds = collect(old('staff_ids', []))->map(fn ($id) => (string) $id)->all();
     @endphp
 
     <div class="space-y-6">
@@ -387,7 +388,7 @@
                 </div>
             </article>
             </div>
-        </details>section>
+        </details>
 
         <details id="staff-schedule" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
@@ -401,7 +402,114 @@
                 <svg class="h-5 w-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
             </summary>
             <div class="border-t border-slate-200 dark:border-slate-800">
-            <div class="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-5 dark:border-slate-800">
+                @can('settings.manage')
+                    <section class="border-b border-slate-200 p-4 sm:p-5 dark:border-slate-800" aria-labelledby="bulk-staff-hours-heading">
+                        <div class="max-w-3xl">
+                            <h4 id="bulk-staff-hours-heading" class="text-base font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.bulk_staff_hours_title') }}</h4>
+                            <p class="mt-1 text-sm leading-6 text-slate-500 dark:text-slate-400">{{ __('app.scheduling_ui.bulk_staff_hours_help') }}</p>
+                        </div>
+
+                        <form method="POST"
+                              action="{{ route('scheduling.staff-hours.bulk', ['tenant' => $tenant->slug]) }}"
+                              data-bulk-staff-hours-form
+                              data-count-label="{{ __('app.scheduling_ui.bulk_staff_selected_count', ['count' => '__COUNT__']) }}"
+                              data-select-staff-message="{{ __('app.scheduling_ui.choose_staff_for_bulk') }}"
+                              class="mt-5 space-y-5">
+                            @csrf
+
+                            <fieldset class="space-y-3">
+                                <legend class="mb-2 text-sm font-bold text-slate-800 dark:text-slate-100">{{ __('app.scheduling_ui.select_staff_for_bulk') }}</legend>
+                                <div class="flex flex-wrap gap-2">
+                                    <button type="button" data-select-active-staff class="inline-flex min-h-10 items-center justify-center rounded-lg bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
+                                        {{ __('app.scheduling_ui.select_all_active_staff') }}
+                                    </button>
+                                    <button type="button" data-clear-staff-selection class="inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+                                        {{ __('app.scheduling_ui.clear_staff_selection') }}
+                                    </button>
+                                    <p data-staff-selection-count class="flex min-h-10 items-center px-1 text-sm font-semibold text-slate-500" role="status" aria-live="polite"></p>
+                                </div>
+
+                                @if ($staffMembers->isNotEmpty())
+                                    <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                                        @foreach ($staffMembers as $staffMember)
+                                            <label class="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-3 py-2.5 transition hover:border-indigo-300 has-[:checked]:border-indigo-500 has-[:checked]:bg-indigo-50/60 dark:border-slate-800 dark:hover:border-indigo-700 dark:has-[:checked]:border-indigo-700 dark:has-[:checked]:bg-indigo-950/30">
+                                                <input type="checkbox"
+                                                       name="staff_ids[]"
+                                                       value="{{ $staffMember->id }}"
+                                                       data-bulk-staff-id
+                                                       data-staff-status="{{ $staffMember->status->value }}"
+                                                       @checked(in_array((string) $staffMember->id, $selectedBulkStaffIds, true))
+                                                       class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                                                <span class="min-w-0 flex-1">
+                                                    <span class="block truncate text-sm font-bold text-slate-900 dark:text-white">{{ $staffMember->display_name }}</span>
+                                                    <span class="mt-0.5 block text-xs text-slate-500">{{ $staffMember->status->value === 'active' ? __('app.scheduling_ui.active') : __('app.scheduling_ui.inactive') }}</span>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <p class="rounded-xl border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-500 dark:border-slate-700">{{ __('app.scheduling_ui.add_staff_first') }}</p>
+                                @endif
+
+                                @if ($errors->has('staff_ids') || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'staff_ids.')))
+                                    <p class="text-sm font-semibold text-rose-700 dark:text-rose-300" role="alert">{{ $errors->first('staff_ids') ?: __('app.scheduling_ui.choose_staff_for_bulk') }}</p>
+                                @endif
+                            </fieldset>
+
+                            <div>
+                                <div class="mb-3">
+                                    <h5 class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ __('app.scheduling_ui.business_working_hours') }}</h5>
+                                    <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('app.scheduling_ui.bulk_staff_hours_template_help') }}</p>
+                                </div>
+                                <div class="grid gap-3">
+                                    @foreach ($days as $day)
+                                        @php
+                                            $baseHour = $businessHours->get($day->value);
+                                            $bulkOpen = old('hours.'.$loop->index.'.opens_at', $baseHour && ! $baseHour->is_closed && $baseHour->opens_at ? substr((string) $baseHour->opens_at, 0, 5) : '');
+                                            $bulkClose = old('hours.'.$loop->index.'.closes_at', $baseHour && ! $baseHour->is_closed && $baseHour->closes_at ? substr((string) $baseHour->closes_at, 0, 5) : '');
+                                            $bulkClosed = session()->hasOldInput()
+                                                ? (bool) old('hours.'.$loop->index.'.is_closed', false)
+                                                : ($baseHour?->is_closed ?? true);
+                                        @endphp
+                                        <div data-hours-row class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:grid-cols-[8rem_1fr_1fr_auto] sm:items-center dark:border-slate-800">
+                                            <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
+                                            <p class="text-sm font-bold text-slate-950 dark:text-white">{{ __($day->name) }}</p>
+                                            <label class="block text-xs font-semibold text-slate-500">
+                                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.opens') }}</span>
+                                                <input data-hours-time type="time" name="hours[{{ $loop->index }}][opens_at]" value="{{ $bulkOpen }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                                            </label>
+                                            <label class="block text-xs font-semibold text-slate-500">
+                                                <span class="mb-1.5 block">{{ __('app.scheduling_ui.closes') }}</span>
+                                                <input data-hours-time type="time" name="hours[{{ $loop->index }}][closes_at]" value="{{ $bulkClose }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-white">
+                                            </label>
+                                            <label class="flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-3 text-sm dark:border-slate-800">
+                                                <input data-hours-closed type="checkbox" name="hours[{{ $loop->index }}][is_closed]" value="1" @checked($bulkClosed)>
+                                                <span class="font-semibold">{{ __('app.scheduling_ui.closed') }}</span>
+                                            </label>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            @error('schedule')
+                                <p class="text-sm font-semibold text-rose-700 dark:text-rose-300" role="alert">{{ $message }}</p>
+                            @enderror
+
+                            <div class="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+                                <p class="max-w-xl text-xs leading-5 text-slate-500">{{ __('app.scheduling_ui.bulk_staff_hours_template_help') }}</p>
+                                <button type="submit" class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-brand-indigo px-5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50">
+                                    {{ __('app.scheduling_ui.save_bulk_staff_hours') }}
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+                @endcan
+
+                <details class="m-4 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <summary class="cursor-pointer px-4 py-3 text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.individual_staff_hours_title') }}</summary>
+                    <div class="border-t border-slate-200 dark:border-slate-800">
+                        <div class="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-5">
+
 
                 @if ($staffMembers->isNotEmpty())
                     <form method="GET" action="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}" class="w-full sm:w-72">
@@ -434,7 +542,7 @@
 
                     @can('settings.manage')
                     <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
-                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.save_staff_hours') }}</summary>
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.individual_staff_hours_title') }}</summary>
 <form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-2">
                             @csrf
                             @method('PUT')
@@ -616,15 +724,56 @@
                     </div>
                 </div>
             @endif
+                        </div>
+                    </details>
             </div>
         </details>
-section>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const hoursRows = [...document.querySelectorAll('[data-hours-row]')];
             const businessHoursForm = document.querySelector('[data-business-hours-form]');
             const businessHoursRows = businessHoursForm ? [...businessHoursForm.querySelectorAll('[data-hours-row]')] : [];
+            const bulkStaffHoursForm = document.querySelector('[data-bulk-staff-hours-form]');
+            if (bulkStaffHoursForm) {
+                const staffCheckboxes = [...bulkStaffHoursForm.querySelectorAll('[data-bulk-staff-id]')];
+                const countDisplay = bulkStaffHoursForm.querySelector('[data-staff-selection-count]');
+                const countLabel = bulkStaffHoursForm.dataset.countLabel ?? '__COUNT__';
+                const refreshStaffSelection = () => {
+                    const selectedCount = staffCheckboxes.filter((checkbox) => checkbox.checked).length;
+                    if (countDisplay) countDisplay.textContent = countLabel.replace('__COUNT__', String(selectedCount));
+                };
+
+                bulkStaffHoursForm.querySelector('[data-select-active-staff]')?.addEventListener('click', () => {
+                    staffCheckboxes.forEach((checkbox) => {
+                        if (checkbox.dataset.staffStatus === 'active') checkbox.checked = true;
+                    });
+                    refreshStaffSelection();
+                });
+                bulkStaffHoursForm.querySelector('[data-clear-staff-selection]')?.addEventListener('click', () => {
+                    staffCheckboxes.forEach((checkbox) => { checkbox.checked = false; });
+                    refreshStaffSelection();
+                });
+                staffCheckboxes.forEach((checkbox) => checkbox.addEventListener('change', refreshStaffSelection));
+                refreshStaffSelection();
+
+                bulkStaffHoursForm.addEventListener('submit', (event) => {
+                    const selectedCount = staffCheckboxes.filter((checkbox) => checkbox.checked).length;
+                    if (selectedCount > 0) return;
+                    event.preventDefault();
+                    const fieldset = bulkStaffHoursForm.querySelector('fieldset');
+                    let error = fieldset?.querySelector('[data-client-staff-error]');
+                    if (!error && fieldset) {
+                        error = document.createElement('p');
+                        error.dataset.clientStaffError = 'true';
+                        error.className = 'text-sm font-semibold text-rose-700 dark:text-rose-300';
+                        error.setAttribute('role', 'alert');
+                        fieldset.appendChild(error);
+                    }
+                    if (error) error.textContent = bulkStaffHoursForm.dataset.selectStaffMessage ?? '';
+                    fieldset?.querySelector('input[type="checkbox"]')?.focus();
+                });
+            }
             document.querySelectorAll('nav a[href^="#"]').forEach((link) => {
                 link.addEventListener('click', () => {
                     const id = link.getAttribute('href')?.slice(1);

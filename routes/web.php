@@ -237,6 +237,10 @@ Route::middleware(['auth', 'verified', 'tenant'])
             ->middleware('permission:settings.manage')
             ->name('scheduling.special-hours.destroy');
 
+        Route::post('/staff-hours/bulk', [SchedulingManagementController::class, 'bulkUpdateStaffHours'])
+            ->middleware('permission:settings.manage')
+            ->name('scheduling.staff-hours.bulk');
+
         Route::put('/staff/{staff}/hours', [SchedulingManagementController::class, 'updateStaffHours'])
             ->middleware('permission:settings.manage')
             ->name('scheduling.staff-hours.update');

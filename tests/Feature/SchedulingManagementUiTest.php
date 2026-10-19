@@ -151,6 +151,66 @@ test('owner can view and manage business scheduling', function (): void {
         ->and(BusinessWorkingHour::query()->where('day_of_week', DayOfWeek::Monday->value)->first()->opens_at)->toBe('09:00');
 });
 
+test('owner can apply one weekly schedule to multiple staff without changing individual exceptions', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+    app(CurrentTenant::class)->set($tenant);
+
+    $firstStaff = app(AddStaffMember::class)->handle(
+        User::factory()->create(['email' => 'bulk-schedule-one@example.com']),
+        'staff',
+        ['display_name' => 'Dr. First'],
+    );
+    $secondStaff = app(AddStaffMember::class)->handle(
+        User::factory()->create(['email' => 'bulk-schedule-two@example.com']),
+        'staff',
+        ['display_name' => 'Dr. Second'],
+    );
+    $untouchedStaff = app(AddStaffMember::class)->handle(
+        User::factory()->create(['email' => 'bulk-schedule-three@example.com']),
+        'staff',
+        ['display_name' => 'Dr. Untouched'],
+    );
+
+    app(\App\Domain\Scheduling\Actions\AddStaffDayOff::class)->handle($firstStaff, [
+        'starts_on' => '2026-11-01',
+        'ends_on' => '2026-11-02',
+        'reason' => 'Personal leave',
+    ]);
+    app(\App\Domain\Scheduling\Actions\AddStaffAvailability::class)->handle($secondStaff, [
+        'available_date' => '2026-11-03',
+        'starts_at' => '10:00',
+        'ends_at' => '12:00',
+    ]);
+
+    $hours = collect(range(1, 7))->map(fn (int $day): array => $day <= 5
+        ? ['day_of_week' => $day, 'opens_at' => '10:00', 'closes_at' => '18:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->post(route('scheduling.staff-hours.bulk', ['tenant' => $tenant->slug]), [
+            'staff_ids' => [$firstStaff->id, $secondStaff->id],
+            'hours' => $hours,
+        ])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->assertSessionHas('status', __('app.scheduling_ui.bulk_staff_hours_updated', ['count' => 2]));
+
+    app(CurrentTenant::class)->set($tenant);
+
+    foreach ([$firstStaff, $secondStaff] as $staffMember) {
+        $savedHours = StaffWorkingHour::query()->where('staff_id', $staffMember->id)->orderBy('day_of_week')->get();
+        $openHours = $savedHours->where('is_closed', false);
+        expect($savedHours)->toHaveCount(7)
+            ->and($openHours->every(fn ($hour): bool => substr((string) $hour->opens_at, 0, 5) === '10:00'))->toBeTrue()
+            ->and($openHours->every(fn ($hour): bool => substr((string) $hour->closes_at, 0, 5) === '18:00'))->toBeTrue()
+            ->and($savedHours->where('is_closed', true)->pluck('day_of_week')->values()->all())->toBe([6, 7]);
+    }
+
+    expect(StaffWorkingHour::query()->where('staff_id', $untouchedStaff->id)->count())->toBe(0)
+        ->and(StaffDayOff::query()->where('staff_id', $firstStaff->id)->count())->toBe(1)
+        ->and(StaffAvailability::query()->where('staff_id', $secondStaff->id)->count())->toBe(1);
+});
+
 test('onboarding requires at least one open business day before continuing to staff setup', function (): void {
     [$owner, $tenant] = schedulingUiWorkspace();
     app(CurrentTenant::class)->set($tenant);

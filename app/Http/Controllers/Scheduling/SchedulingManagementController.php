@@ -31,9 +31,11 @@ use App\Http\Requests\Scheduling\StoreStaffAvailabilityRequest;
 use App\Http\Requests\Scheduling\StoreStaffDayOffRequest;
 use App\Http\Requests\Scheduling\UpdateBusinessWorkingHoursRequest;
 use App\Http\Requests\Scheduling\UpdateStaffWorkingHoursRequest;
+use App\Http\Requests\Scheduling\BulkUpdateStaffWorkingHoursRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use LogicException;
@@ -240,6 +242,44 @@ final class SchedulingManagementController
         } catch (InvalidArgumentException|LogicException $exception) {
             return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
         }
+    }
+
+    public function bulkUpdateStaffHours(
+        BulkUpdateStaffWorkingHoursRequest $request,
+        Tenant $tenant,
+        SetStaffWorkingHours $action,
+        CurrentTenant $currentTenant,
+    ): RedirectResponse {
+        $tenantId = $currentTenant->idOrFail();
+        abort_unless((int) $tenant->getKey() === $tenantId, 404);
+
+        $validated = $request->validated();
+        $staffIds = array_values(array_unique(array_map('intval', $validated['staff_ids'])));
+        $staffMembers = StaffProfile::query()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', $staffIds)
+            ->get();
+
+        if ($staffMembers->count() !== count($staffIds)) {
+            return back()
+                ->withErrors(['staff_ids' => __('app.scheduling_ui.choose_staff_for_bulk')])
+                ->withInput();
+        }
+
+        $hours = array_values($validated['hours']);
+
+        try {
+            DB::transaction(function () use ($staffMembers, $hours, $action): void {
+                foreach ($staffMembers as $staffMember) {
+                    $action->handle($staffMember, $hours);
+                }
+            });
+        } catch (InvalidArgumentException|LogicException $exception) {
+            return back()->withErrors(['schedule' => $exception->getMessage()])->withInput();
+        }
+
+        return to_route('scheduling.index', ['tenant' => $tenant->slug])
+            ->with('status', __('app.scheduling_ui.bulk_staff_hours_updated', ['count' => $staffMembers->count()]));
     }
 
     public function storeDayOff(
