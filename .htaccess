@@ -1,11 +1,11 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # The public directory is an internal document root, not part of public URLs.
-    # Redirect direct /public requests before the catch-all rewrite so Laravel
-    # generates canonical links from the domain root.
-    RewriteCond %{THE_REQUEST} \s/+public(?:[/?]|\s) [NC]
-    RewriteRule ^public(?:/(.*))?$ /$1 [R=301,L,NE]
-
+    # Emergency-safe root front-controller rewrite:
+    # Never rewrite a URL that already targets the physical public directory.
+    # This prevents repeated internal rewrites such as /login -> public/login
+    # -> public/public/login. Canonical /public redirects are intentionally
+    # disabled here until the Hostinger CDN cache is purged and verified.
+    RewriteCond %{REQUEST_URI} !^/public(?:/|$) [NC]
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
