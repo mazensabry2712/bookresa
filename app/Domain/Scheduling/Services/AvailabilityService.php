@@ -75,6 +75,9 @@ final class AvailabilityService
             return [];
         }
 
+        // Distinguish a genuinely unstaffed service from one whose assigned staff are all inactive.
+        $hasStaffAssignments = $service->staff()->exists();
+
         /** @var EloquentCollection<int, StaffProfile> $assignedStaff */
         $assignedStaff = $service->staff()
             ->where('status', StaffStatus::Active->value)
@@ -86,24 +89,29 @@ final class AvailabilityService
                 throw new LogicException('Staff must belong to the current tenant.');
             }
 
-            $assigned = $assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff));
+            if ($requestedStaff->status !== StaffStatus::Active) {
+                throw new LogicException('Selected staff member is inactive.');
+            }
 
-            if ($assignedStaff->isEmpty()) {
+            if (! $hasStaffAssignments) {
                 throw new LogicException('This service does not use staff assignments.');
             }
 
+            $assigned = $assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff));
+
             if (! $assigned) {
                 throw new LogicException('Selected staff member is not assigned to this service.');
-            }
-
-            if ($requestedStaff->status !== StaffStatus::Active) {
-                throw new LogicException('Selected staff member is inactive.');
             }
 
             return $this->staffSlots($service, $requestedStaff, $localDate, $businessWindows, $minBookableAt);
         }
 
         if ($assignedStaff->isEmpty()) {
+            // If staff were configured but all are inactive, never silently book without a provider.
+            if ($hasStaffAssignments) {
+                return [];
+            }
+
             return $this->generateSlots($service, $businessWindows, $localDate, null, null, $minBookableAt);
         }
 
