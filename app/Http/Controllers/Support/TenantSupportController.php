@@ -9,24 +9,83 @@ use App\Domain\Support\Models\SupportTicketMessage;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 final class TenantSupportController
 {
-    public function index(CurrentTenant $currentTenant): View
+    public function index(Request $request, CurrentTenant $currentTenant): View
     {
         $tenant = $currentTenant->get();
         abort_unless($tenant !== null, 404);
 
+        $statusInput = $request->query('status');
+        $status = is_string($statusInput)
+            ? SupportTicketStatus::tryFrom($statusInput)?->value ?? ''
+            : '';
+
+        $priorityInput = $request->query('priority');
+        $priority = is_string($priorityInput)
+            ? SupportTicketPriority::tryFrom($priorityInput)?->value ?? ''
+            : '';
+
+        $searchInput = $request->query('q');
+        $search = is_string($searchInput) ? mb_substr(trim($searchInput), 0, 120) : '';
+
+        $baseQuery = SupportTicket::query()->where('tenant_id', $tenant->getKey());
+
+        $ticketCounts = (clone $baseQuery)
+            ->reorder()
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status')
+            ->map(fn ($count): int => (int) $count);
+
+        $ticketsQuery = (clone $baseQuery)
+            ->withCount('messages')
+            ->when($status !== '', fn (Builder $query) => $query->where('status', $status))
+            ->when($priority !== '', fn (Builder $query) => $query->where('priority', $priority))
+            ->when($search !== '', function (Builder $query) use ($search): void {
+                $query->where(function (Builder $nested) use ($search): void {
+                    $nested
+                        ->where('subject', 'like', '%'.$search.'%')
+                        ->orWhere('message', 'like', '%'.$search.'%');
+
+                    if (ctype_digit($search)) {
+                        $nested->orWhere('id', (int) $search);
+                    }
+                });
+            });
+
+        $tickets = $ticketsQuery
+            ->latest('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        $timezone = (string) ($tenant->profile?->timezone ?: config('app.timezone', 'UTC'));
+
+        try {
+            CarbonImmutable::now($timezone);
+        } catch (\Throwable) {
+            $timezone = (string) (config('app.timezone') ?: 'UTC');
+        }
+
         return view('support.index', [
             'tenant' => $tenant,
-            'tickets' => SupportTicket::query()
-                ->where('tenant_id', $tenant->getKey())
-                ->withCount('messages')
-                ->latest('id')
-                ->paginate(20),
+            'tickets' => $tickets,
+            'statuses' => SupportTicketStatus::cases(),
+            'priorities' => SupportTicketPriority::cases(),
+            'ticketCounts' => $ticketCounts,
+            'totalTickets' => (int) $ticketCounts->sum(),
+            'status' => $status,
+            'priority' => $priority,
+            'search' => $search,
+            'hasFilters' => $status !== '' || $priority !== '' || $search !== '',
+            'timezone' => $timezone,
         ]);
     }
 
@@ -36,35 +95,39 @@ final class TenantSupportController
         abort_unless($tenant !== null, 404);
 
         $validated = $request->validate([
-            'subject' => ['required', 'string', 'max:180'],
-            'message' => ['required', 'string', 'max:10000'],
+            'subject' => ['required', 'string', 'min:5', 'max:180'],
+            'message' => ['required', 'string', 'min:10', 'max:10000'],
             'priority' => ['required', 'in:low,normal,high,urgent'],
         ]);
 
-        $ticket = SupportTicket::query()->create([
-            'tenant_id' => $tenant->getKey(),
-            'requester_user_id' => $request->user()->getKey(),
-            'subject' => $validated['subject'],
-            'message' => $validated['message'],
-            'status' => SupportTicketStatus::Open,
-            'priority' => SupportTicketPriority::from($validated['priority']),
-            'last_replied_at' => now(),
-        ]);
+        $ticket = DB::transaction(function () use ($tenant, $request, $validated): SupportTicket {
+            $ticket = SupportTicket::query()->create([
+                'tenant_id' => $tenant->getKey(),
+                'requester_user_id' => $request->user()->getKey(),
+                'subject' => trim($validated['subject']),
+                'message' => trim($validated['message']),
+                'status' => SupportTicketStatus::Open,
+                'priority' => SupportTicketPriority::from($validated['priority']),
+                'last_replied_at' => now(),
+            ]);
 
-        SupportTicketMessage::query()->create([
-            'support_ticket_id' => $ticket->getKey(),
-            'author_user_id' => $request->user()->getKey(),
-            'author_kind' => 'tenant',
-            'message' => $validated['message'],
-        ]);
+            SupportTicketMessage::query()->create([
+                'support_ticket_id' => $ticket->getKey(),
+                'author_user_id' => $request->user()->getKey(),
+                'author_kind' => 'tenant',
+                'message' => trim($validated['message']),
+            ]);
+
+            return $ticket;
+        });
 
         $audit->log('tenant.support_ticket_created', $ticket, [
             'tenant_id' => (int) $tenant->getKey(),
             'ticket_id' => (int) $ticket->getKey(),
         ]);
 
-        return to_route('support.show', ['tenant' => $tenant->slug, 'ticket' => $ticket])
-            ->with('status', __('Support ticket created successfully.'));
+        return to_route('support.show', ['tenant' => $tenant->slug, 'ticket' => $ticket->getKey()])
+            ->with('status', __('app.support_ui.ticket_created'));
     }
 
     public function show(CurrentTenant $currentTenant, int $ticketId): View
@@ -77,18 +140,25 @@ final class TenantSupportController
             ->with('messages.author')
             ->findOrFail($ticketId);
 
+        $timezone = (string) ($tenant->profile?->timezone ?: config('app.timezone', 'UTC'));
+
+        try {
+            CarbonImmutable::now($timezone);
+        } catch (\Throwable) {
+            $timezone = (string) (config('app.timezone') ?: 'UTC');
+        }
+
         return view('support.show', [
             'tenant' => $tenant,
             'ticket' => $ticket,
-            'priorities' => SupportTicketPriority::cases(),
-            'statuses' => SupportTicketStatus::cases(),
+            'timezone' => $timezone,
         ]);
     }
 
     public function reply(Request $request, CurrentTenant $currentTenant, Tenant $tenant, int $ticketId, AuditLogger $audit): RedirectResponse
     {
         $validated = $request->validate([
-            'message' => ['required', 'string', 'max:10000'],
+            'message' => ['required', 'string', 'min:2', 'max:10000'],
         ]);
 
         $tenant = $currentTenant->get();
@@ -99,27 +169,31 @@ final class TenantSupportController
             ->findOrFail($ticketId);
 
         if ($ticket->status === SupportTicketStatus::Closed) {
-            abort(422, __('Closed support tickets cannot receive new replies.'));
+            return back()->withErrors([
+                'message' => __('app.support_ui.closed_reply_help'),
+            ])->withInput();
         }
 
-        SupportTicketMessage::query()->create([
-            'support_ticket_id' => $ticket->getKey(),
-            'author_user_id' => $request->user()->getKey(),
-            'author_kind' => 'tenant',
-            'message' => $validated['message'],
-        ]);
+        DB::transaction(function () use ($ticket, $request, $validated): void {
+            SupportTicketMessage::query()->create([
+                'support_ticket_id' => $ticket->getKey(),
+                'author_user_id' => $request->user()->getKey(),
+                'author_kind' => 'tenant',
+                'message' => trim($validated['message']),
+            ]);
 
-        $ticket->forceFill([
-            'status' => SupportTicketStatus::Open,
-            'last_replied_at' => now(),
-            'resolved_at' => null,
-        ])->save();
+            $ticket->forceFill([
+                'status' => SupportTicketStatus::Open,
+                'last_replied_at' => now(),
+                'resolved_at' => null,
+            ])->save();
+        });
 
         $audit->log('tenant.support_reply_sent', $ticket, [
             'tenant_id' => (int) $tenant->getKey(),
             'ticket_id' => (int) $ticket->getKey(),
         ]);
 
-        return back()->with('status', __('Reply sent successfully.'));
+        return back()->with('status', __('app.support_ui.reply_sent'));
     }
 }
