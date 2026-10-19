@@ -383,5 +383,19 @@
     "Insufficient workspace balance.": "رصيد مساحة العمل غير كافٍ.",
     "Centralized payments are disabled.": "الدفع المركزي غير مفعّل.",
     "Platform commission total": "إجمالي عمولة المنصة",
-    "Paid out": "إجمالي ما تم صرفه"
+    "Paid out": "إجمالي ما تم صرفه",
+    "Workspace modules": "وحدات مساحة العمل",
+    "Platform workspace controls": "إدارة وحدات مساحات العمل على مستوى المنصة",
+    "Control which modules are enabled for this workspace.": "حدّد الوحدات المفعّلة لمساحة العمل هذه.",
+    "Back to businesses": "العودة إلى قائمة الأنشطة",
+    "No active subscription": "لا يوجد اشتراك نشط",
+    "Modules": "الوحدات",
+    "Core": "أساسي",
+    "Included in plan": "مضمنة في الخطة",
+    "Not included in plan": "غير مضمنة في الخطة",
+    "Core modules can be enabled or disabled per workspace. Optional modules require plan entitlement.": "يمكن تفعيل الوحدات الأساسية أو تعطيلها لكل مساحة عمل. أما الوحدات الاختيارية فتتطلب أن تكون مشمولة في خطة الاشتراك.",
+    "Save module settings": "حفظ إعدادات الوحدات",
+    "Selected modules are not included in the current subscription plan.": "الوحدات المحددة غير مشمولة في خطة الاشتراك الحالية.",
+    "Workspace modules updated successfully.": "تم تحديث وحدات مساحة العمل بنجاح.",
+    "User security and platform access control.": "أمان المستخدم والتحكم في صلاحيات الوصول إلى المنصة."
 }

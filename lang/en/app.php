@@ -14,6 +14,7 @@ return [
     'customers' => 'Customers',
     'services' => 'Services',
     'staff' => 'Staff',
+    'staff_label' => 'Staff member',
     'overview' => 'Overview',
     'operations' => 'Operations',
     'finance' => 'Finance',
