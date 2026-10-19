@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Arr;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
 
 uses(RefreshDatabase::class);
 
@@ -91,5 +91,5 @@ test('Arabic staff and workspace-module labels are translated', function (): voi
         ->and(__('app.staff_ui.reset'))->toBe('إعادة تعيين')
         ->and(__('Workspace modules'))->toBe('وحدات مساحة العمل')
         ->and(__('Control which modules are enabled for this workspace.'))->toBe('حدّد الوحدات المفعّلة لمساحة العمل هذه.')
-        ->and(__('User security and platform access control.'))->toBe('أمان المستخدم والتحكم في صلاحيات الوصول إلى المنصة');
+        ->and(__('User security and platform access control.'))->toBe('أمان المستخدم والتحكم في صلاحيات الوصول إلى المنصة.');
 });
