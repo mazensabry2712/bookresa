@@ -918,6 +918,7 @@ return [
         'status_open' => 'Open',
         'status_in_progress' => 'In progress',
         'status_resolved' => 'Resolved',
+        'status_resolved_closed' => 'Resolved / closed',
         'status_closed' => 'Closed',
         'all_statuses' => 'All statuses',
         'all_priorities' => 'All priorities',
