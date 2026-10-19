@@ -31,6 +31,7 @@
         $templateOpen = old('bulk_hours.opens_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'opens_at'), 0, 5) : '09:00');
         $templateClose = old('bulk_hours.closes_at', $defaultTemplateHours ? substr((string) data_get($defaultTemplateHours, 'closes_at'), 0, 5) : '17:00');
         $selectedBulkStaffIds = collect(old('staff_ids', []))->map(fn ($id) => (string) $id)->all();
+        $activeSchedulePanel = $openBusinessHours > 0 && $staffMembers->isNotEmpty() ? 'staff-schedule' : 'business-hours';
     @endphp
 
     <div class="space-y-6">
@@ -58,12 +59,12 @@
             <span class="hidden h-4 border-s border-slate-200 sm:block dark:border-slate-700" aria-hidden="true"></span>
             <span class="flex items-baseline gap-2"><span class="text-slate-500">{{ __('app.scheduling_ui.exceptions') }}</span><strong class="text-slate-900 dark:text-white">{{ $businessHolidays->count() + $specialWorkingHours->count() + $businessBreaks->count() }}</strong></span>
         </div>
-        <nav aria-label="{{ __('app.scheduling_ui.summary') }}" class="grid gap-2 sm:grid-cols-3">
-            <a href="#business-hours" class="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">01</span><span>{{ __('app.scheduling_ui.business_working_hours') }}</span></a>
-            <a href="#business-exceptions" class="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">02</span><span>{{ __('app.scheduling_ui.exceptions') }}</span></a>
-            <a href="#staff-schedule" class="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">03</span><span>{{ __('app.scheduling_ui.staff_schedule') }}</span></a>
+        <nav aria-label="{{ __('app.scheduling_ui.summary') }}" role="tablist" class="grid grid-cols-1 gap-1 rounded-2xl border border-slate-200 bg-slate-100/80 p-1 sm:grid-cols-3 dark:border-slate-800 dark:bg-slate-950/70">
+            <button id="scheduling-tab-business-hours" type="button" role="tab" aria-controls="business-hours" aria-selected="{{ $activeSchedulePanel === 'business-hours' ? 'true' : 'false' }}" data-schedule-tab="business-hours" data-active="{{ $activeSchedulePanel === 'business-hours' ? 'true' : 'false' }}" class="flex min-h-11 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-white/70 data-[active=true]:bg-white data-[active=true]:text-indigo-700 data-[active=true]:shadow-sm dark:text-slate-300 dark:hover:bg-slate-800/70 dark:data-[active=true]:bg-slate-800 dark:data-[active=true]:text-indigo-300">{{ __('app.scheduling_ui.business_working_hours') }}</button>
+            <button id="scheduling-tab-business-exceptions" type="button" role="tab" aria-controls="business-exceptions" aria-selected="{{ $activeSchedulePanel === 'business-exceptions' ? 'true' : 'false' }}" data-schedule-tab="business-exceptions" data-active="{{ $activeSchedulePanel === 'business-exceptions' ? 'true' : 'false' }}" class="flex min-h-11 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-white/70 data-[active=true]:bg-white data-[active=true]:text-indigo-700 data-[active=true]:shadow-sm dark:text-slate-300 dark:hover:bg-slate-800/70 dark:data-[active=true]:bg-slate-800 dark:data-[active=true]:text-indigo-300">{{ __('app.scheduling_ui.exceptions') }}</button>
+            <button id="scheduling-tab-staff-schedule" type="button" role="tab" aria-controls="staff-schedule" aria-selected="{{ $activeSchedulePanel === 'staff-schedule' ? 'true' : 'false' }}" data-schedule-tab="staff-schedule" data-active="{{ $activeSchedulePanel === 'staff-schedule' ? 'true' : 'false' }}" class="flex min-h-11 items-center justify-center rounded-xl px-3 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-white/70 data-[active=true]:bg-white data-[active=true]:text-indigo-700 data-[active=true]:shadow-sm dark:text-slate-300 dark:hover:bg-slate-800/70 dark:data-[active=true]:bg-slate-800 dark:data-[active=true]:text-indigo-300">{{ __('app.scheduling_ui.staff_schedule') }}</button>
         </nav>
-        <section id="business-hours" class="br-panel overflow-hidden scroll-mt-6">
+        <section id="business-hours" data-schedule-panel="business-hours" role="tabpanel" aria-labelledby="scheduling-tab-business-hours" class="br-panel overflow-hidden scroll-mt-6">
             <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.base_schedule') }}</p>
@@ -185,7 +186,7 @@
             @endcan
         </section>
 
-        <details id="business-exceptions" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <details id="business-exceptions" data-schedule-panel="business-exceptions" role="tabpanel" aria-labelledby="scheduling-tab-business-exceptions" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
                 <span class="flex min-w-0 items-start gap-3">
                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">02</span>
@@ -390,7 +391,7 @@
             </div>
         </details>
 
-        <details id="staff-schedule" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <details id="staff-schedule" data-schedule-panel="staff-schedule" role="tabpanel" aria-labelledby="scheduling-tab-staff-schedule" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
             <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
                 <span class="flex min-w-0 items-start gap-3">
                     <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">03</span>
@@ -774,13 +775,33 @@
                     fieldset?.querySelector('input[type="checkbox"]')?.focus();
                 });
             }
-            document.querySelectorAll('nav a[href^="#"]').forEach((link) => {
-                link.addEventListener('click', () => {
-                    const id = link.getAttribute('href')?.slice(1);
-                    const target = id ? document.getElementById(id) : null;
-                    if (target instanceof HTMLDetailsElement) target.open = true;
+            const scheduleTabs = [...document.querySelectorAll('[data-schedule-tab]')];
+            const schedulePanels = [...document.querySelectorAll('[data-schedule-panel]')];
+            const activateSchedulePanel = (panelId) => {
+                schedulePanels.forEach((panel) => {
+                    const active = panel.dataset.schedulePanel === panelId;
+                    panel.hidden = !active;
+
+                    if (panel instanceof HTMLDetailsElement) {
+                        panel.open = active;
+                        const summary = panel.querySelector(':scope > summary');
+                        if (summary) summary.hidden = active;
+                    }
                 });
-            });
+
+                scheduleTabs.forEach((tab) => {
+                    const active = tab.dataset.scheduleTab === panelId;
+                    tab.dataset.active = active ? 'true' : 'false';
+                    tab.setAttribute('aria-selected', active ? 'true' : 'false');
+                    tab.tabIndex = active ? 0 : -1;
+                });
+            };
+
+            scheduleTabs.forEach((tab) => tab.addEventListener('click', () => {
+                const panelId = tab.dataset.scheduleTab;
+                if (panelId) activateSchedulePanel(panelId);
+            }));
+            activateSchedulePanel(@js($activeSchedulePanel));
 
             const syncHoursRow = (row) => {
                 const closed = row.querySelector('[data-hours-closed]');
