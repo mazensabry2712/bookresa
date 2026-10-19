@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Staff;
 
+use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,8 @@ class StoreStaffMemberRequest extends FormRequest
 
     public function rules(): array
     {
+        $tenantId = app(CurrentTenant::class)->idOrFail();
+
         return [
             'email' => ['required', 'email', 'max:255', 'exists:users,email'],
             'display_name' => ['nullable', 'string', 'max:120'],
@@ -31,7 +34,7 @@ class StoreStaffMemberRequest extends FormRequest
             'job_title' => ['nullable', 'string', 'max:120'],
             'role' => ['required', Rule::in($this->staffRoles())],
             'services' => ['nullable', 'array'],
-            'services.*' => ['integer', 'min:1'],
+            'services.*' => ['integer', 'min:1', 'distinct', Rule::exists('services', 'id')->where('tenant_id', $tenantId)],
         ];
     }
 
