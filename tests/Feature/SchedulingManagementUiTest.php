@@ -155,6 +155,72 @@ test('owner can view and manage business scheduling', function (): void {
         ->and(BusinessWorkingHour::query()->where('day_of_week', DayOfWeek::Monday->value)->first()->opens_at)->toBe('09:00');
 });
 
+test('each staff member has a separate weekly schedule that can be edited independently', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+    app(CurrentTenant::class)->set($tenant);
+
+    $firstStaff = app(AddStaffMember::class)->handle(
+        User::factory()->create(['email' => 'individual-schedule-one@example.com']),
+        'staff',
+        ['display_name' => 'Dr. Individual One'],
+    );
+    $secondStaff = app(AddStaffMember::class)->handle(
+        User::factory()->create(['email' => 'individual-schedule-two@example.com']),
+        'staff',
+        ['display_name' => 'Dr. Individual Two'],
+    );
+
+    $firstHours = collect(range(1, 7))->map(fn (int $day): array => $day <= 5
+        ? ['day_of_week' => $day, 'opens_at' => '09:00', 'closes_at' => '17:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+    $secondHours = collect(range(1, 7))->map(fn (int $day): array => $day <= 5
+        ? ['day_of_week' => $day, 'opens_at' => '11:00', 'closes_at' => '19:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+
+    app(\App\Domain\Scheduling\Actions\SetStaffWorkingHours::class)->handle($firstStaff, $firstHours);
+    app(\App\Domain\Scheduling\Actions\SetStaffWorkingHours::class)->handle($secondStaff, $secondHours);
+
+    $page = $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('Dr. Individual One')
+        ->assertSee('Dr. Individual Two')
+        ->assertSee('data-doctor-schedule', false)
+        ->assertSee('name="staff_schedule_id" value="'.$firstStaff->id.'"', false)
+        ->assertSee('name="staff_schedule_id" value="'.$secondStaff->id.'"', false);
+
+    expect(substr_count($page->getContent(), 'data-doctor-schedule'))->toBe(2);
+
+    $updatedHours = collect(range(1, 7))->map(fn (int $day): array => $day <= 5
+        ? ['day_of_week' => $day, 'opens_at' => '08:00', 'closes_at' => '16:00']
+        : ['day_of_week' => $day, 'is_closed' => 1])->all();
+
+    $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->put(route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $firstStaff]), [
+            'schedule_form' => 'staff',
+            'staff_schedule_id' => $firstStaff->id,
+            'hours' => $updatedHours,
+        ])
+        ->assertRedirect(route('scheduling.index', ['tenant' => $tenant->slug, 'staff' => $firstStaff->getKey()]));
+
+    app(CurrentTenant::class)->set($tenant);
+    $firstMonday = StaffWorkingHour::query()
+        ->where('staff_id', $firstStaff->id)
+        ->where('day_of_week', DayOfWeek::Monday->value)
+        ->firstOrFail();
+    $secondMonday = StaffWorkingHour::query()
+        ->where('staff_id', $secondStaff->id)
+        ->where('day_of_week', DayOfWeek::Monday->value)
+        ->firstOrFail();
+
+    expect(substr((string) $firstMonday->opens_at, 0, 5))->toBe('08:00')
+        ->and(substr((string) $firstMonday->closes_at, 0, 5))->toBe('16:00')
+        ->and(substr((string) $secondMonday->opens_at, 0, 5))->toBe('11:00')
+        ->and(substr((string) $secondMonday->closes_at, 0, 5))->toBe('19:00');
+});
+
 test('owner can apply one weekly schedule to multiple staff without changing individual exceptions', function (): void {
     [$owner, $tenant] = schedulingUiWorkspace();
     app(CurrentTenant::class)->set($tenant);
