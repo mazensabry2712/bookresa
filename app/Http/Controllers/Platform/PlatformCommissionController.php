@@ -29,17 +29,15 @@ final class PlatformCommissionController
             ->whereIn('status', ['pending', 'paid'])
             ->selectRaw('tenant_id, currency, SUM(amount_minor) as reserved_minor')
             ->groupBy('tenant_id', 'currency')
-            ->get();
+            ->get()
+            ->keyBy(fn (object $payout): string => (int) $payout->tenant_id.'|'.$payout->currency);
 
         $balances = $earned->map(function (object $row) use ($reservedPayouts): array {
             $tenant = Tenant::withoutGlobalScopes()
                 ->with(['profile' => fn ($query) => $query->withoutGlobalScopes()])
                 ->find($row->tenant_id);
-            $reservedRow = $reservedPayouts->first(
-                fn (object $payout): bool => (int) $payout->tenant_id === (int) $row->tenant_id
-                    && $payout->currency === $row->currency,
-            );
-            $reserved = (int) ($reservedRow?->reserved_minor ?? 0);
+            $reservedRow = $reservedPayouts->get((int) $row->tenant_id.'|'.$row->currency);
+            $reserved = (int) ($reservedRow->reserved_minor ?? 0);
             $workspaceNet = (int) $row->workspace_net_minor;
             $tenantName = (string) $row->tenant_id;
             $tenantSlug = '';
