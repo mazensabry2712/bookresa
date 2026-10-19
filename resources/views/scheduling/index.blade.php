@@ -184,11 +184,19 @@
             @endcan
         </section>
 
-        <section id="business-exceptions" class="space-y-4 scroll-mt-6">
-            <div class="rounded-xl border-s-4 border-indigo-500 bg-slate-50 px-4 py-4 dark:bg-slate-900/70">
-                <h3 class="font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.exceptions') }}</h3>
-                <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.exceptions_help') }}</p>
-            </div>
+        <details id="business-exceptions" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
+                <span class="flex min-w-0 items-start gap-3">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">02</span>
+                    <span class="min-w-0">
+                        <span class="block font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.exceptions') }}</span>
+                        <span class="mt-1 block text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.exceptions_help') }}</span>
+                        <span class="mt-2 block text-xs font-semibold text-slate-400">{{ $businessBreaks->count() }} {{ __('app.scheduling_ui.breaks') }} · {{ $businessHolidays->count() }} {{ __('app.scheduling_ui.holidays') }} · {{ $specialWorkingHours->count() }} {{ __('app.scheduling_ui.special_hours') }}</span>
+                    </span>
+                </span>
+                <svg class="h-5 w-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="space-y-4 border-t border-slate-200 p-4 sm:p-5 dark:border-slate-800">
             <article class="br-panel p-4 sm:p-5">
                 <div class="flex items-start justify-between gap-3">
                     <div>
@@ -378,15 +386,22 @@
                     @endforelse
                 </div>
             </article>
-        </section>
+            </div>
+        </details>section>
 
-        <section id="staff-schedule" class="br-panel overflow-hidden scroll-mt-6">
-            <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
-                <div>
-                    <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.staff_schedule') }}</p>
-                    <h3 class="mt-2 font-semibold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.staff_schedule_title') }}</h3>
-                    <p class="mt-1 max-w-2xl text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.staff_schedule_help') }}</p>
-                </div>
+        <details id="staff-schedule" class="group scroll-mt-6 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+            <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 sm:px-5">
+                <span class="flex min-w-0 items-start gap-3">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">03</span>
+                    <span class="min-w-0">
+                        <span class="block font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.staff_schedule_title') }}</span>
+                        <span class="mt-1 block text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.staff_schedule_help') }}</span>
+                    </span>
+                </span>
+                <svg class="h-5 w-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="border-t border-slate-200 dark:border-slate-800">
+            <div class="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-end sm:px-5 dark:border-slate-800">
 
                 @if ($staffMembers->isNotEmpty())
                     <form method="GET" action="{{ route('scheduling.index', ['tenant' => $tenant->slug]) }}" class="w-full sm:w-72">
@@ -601,13 +616,22 @@
                     </div>
                 </div>
             @endif
-        </section>
+            </div>
+        </details>
+section>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const hoursRows = [...document.querySelectorAll('[data-hours-row]')];
             const businessHoursForm = document.querySelector('[data-business-hours-form]');
             const businessHoursRows = businessHoursForm ? [...businessHoursForm.querySelectorAll('[data-hours-row]')] : [];
+            document.querySelectorAll('nav a[href^="#"]').forEach((link) => {
+                link.addEventListener('click', () => {
+                    const id = link.getAttribute('href')?.slice(1);
+                    const target = id ? document.getElementById(id) : null;
+                    if (target instanceof HTMLDetailsElement) target.open = true;
+                });
+            });
 
             const syncHoursRow = (row) => {
                 const closed = row.querySelector('[data-hours-closed]');
