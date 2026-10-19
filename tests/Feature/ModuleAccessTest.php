@@ -3,6 +3,7 @@
 use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Models\Plan;
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Billing\Services\PlanCatalog;
 use App\Domain\Business\Actions\CreateBusiness;
@@ -326,7 +327,7 @@ test('owner can activate the free trial after onboarding and regain core module 
         ->post(route('billing.subscribe', ['tenant' => $tenant->slug, 'plan' => $plan]))
         ->assertRedirect(route('billing.subscription', ['tenant' => $tenant->slug]));
 
-    $subscription = \\App\\Domain\\Billing\\Models\\Subscription::withoutGlobalScopes()
+    $subscription = Subscription::withoutGlobalScopes()
         ->where('tenant_id', $tenant->id)
         ->firstOrFail();
 

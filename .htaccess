@@ -4,7 +4,7 @@
     # The public directory is an internal document root, not part of public URLs.
     # Redirect direct /public requests before the catch-all rewrite so Laravel
     # generates canonical links from the domain root.
-    RewriteCond %{THE_REQUEST} \\s/+public(?:/|\\s) [NC]
+    RewriteCond %{THE_REQUEST} \s/+public(?:/|\s) [NC]
     RewriteRule ^public(?:/(.*))?$ /$1 [R=301,L,NE]
 
     RewriteRule ^(.*)$ public/$1 [L]
