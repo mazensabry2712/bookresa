@@ -183,9 +183,25 @@ test('owner can connect a workspace booking payment merchant', function (): void
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
         ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'en']))
         ->assertOk()
-        ->assertSee(__('app.booking_payment_account', [], 'en'))
+        ->assertSee('Booking payment account')
+        ->assertSee('Connect your own payment merchant so customer booking payments are settled to your business, not to BookResa.')
+        ->assertSee('Merchant ID')
+        ->assertSee('Connection status')
         ->assertSee('MID-OWNER-123')
-        ->assertSee(__('app.pending_verification', [], 'en'));
+        ->assertSee('Pending verification')
+        ->assertDontSee('app.booking_payment_account')
+        ->assertDontSee('app.merchant_id');
+
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'ar']))
+        ->assertOk()
+        ->assertSee('حساب مدفوعات الحجوزات')
+        ->assertSee('اربط حساب الدفع الخاص بك حتى تذهب مدفوعات عملائك إلى نشاطك وليس إلى BookResa.')
+        ->assertSee('معرّف التاجر')
+        ->assertSee('حالة الاتصال')
+        ->assertSee('في انتظار التحقق')
+        ->assertDontSee('app.booking_payment_account')
+        ->assertDontSee('app.connection_status');
 
     $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
         ->put(route('business.profile.update', ['tenant' => $tenant->slug]), [
@@ -208,10 +224,11 @@ test('owner can connect a workspace booking payment merchant', function (): void
     expect($account->merchant_id)->toBeNull()
         ->and($account->status)->toBe(TenantPaymentAccountStatus::Disabled);
 
-    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id])
-        ->get(route('business.profile.edit', ['tenant' => $tenant->slug]))
+    $this->actingAs($user)->withSession(['tenant_id' => $tenant->id, 'locale' => 'en'])
+        ->get(route('business.profile.edit', ['tenant' => $tenant->slug, 'locale' => 'en']))
         ->assertOk()
-        ->assertSee(__('app.not_connected', [], 'en'))
+        ->assertSee('Not connected')
+        ->assertDontSee('app.not_connected')
         ->assertDontSee('MID-OWNER-123');
 });
 
