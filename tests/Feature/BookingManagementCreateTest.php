@@ -49,7 +49,8 @@ test('booking management create screen is available to users with booking creati
         ->assertSee(__('app.booking_ui.no_active_services'))
         ->assertSee(__('app.booking_ui.manage_services'))
         ->assertSee('data-booking-retry', false)
-        ->assertSee('data-booking-selected-time', false);
+        ->assertSee('data-booking-selected-time', false)
+        ->assertSee('chooseTime:', false);
 });
 
 test('booking management can create a pending booking using the workspace availability rules', function (): void {
