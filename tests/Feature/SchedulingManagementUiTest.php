@@ -192,7 +192,7 @@ test('recurring schedule requires valid times on open days and permits closed da
     [$owner, $tenant] = schedulingUiWorkspace();
 
     $invalidHours = collect(range(1, 7))->map(fn (int $day): array => $day === 1
-        ? ['day_of_week' => $day, 'opens_at' => '09:00']
+        ? ['day_of_week' => $day]
         : ['day_of_week' => $day, 'is_closed' => 1])->all();
 
     $this->actingAs($owner)
