@@ -53,6 +53,7 @@ test('platform admin can create and edit a plan with active modules', function (
     ])->assertRedirect();
 
     $plan = Plan::query()->latest('id')->firstOrFail();
+
     expect($plan->price_minor)->toBe(19900)
         ->and($plan->additional_customer_price_minor)->toBe(0)
         ->and($plan->currency)->toBe('EGP')

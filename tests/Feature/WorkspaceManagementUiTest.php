@@ -13,11 +13,11 @@ use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Actions\AddStaffMember;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
+use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Database\Seeders\BusinessTypeSeeder;
 use Database\Seeders\ModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Support\PlatformSettings;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
