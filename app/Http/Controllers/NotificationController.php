@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Module\Services\TenantModuleAccess;
+use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -53,11 +54,12 @@ final class NotificationController
     public function read(
         Request $request,
         CurrentTenant $currentTenant,
+        Tenant $tenant,
         string $notification,
     ): RedirectResponse {
-        $tenant = $currentTenant->get();
+        $activeTenant = $currentTenant->get();
 
-        abort_unless($tenant !== null, 404);
+        abort_unless($activeTenant !== null && $tenant->is($activeTenant), 404);
 
         /** @var User $user */
         $user = $request->user();
