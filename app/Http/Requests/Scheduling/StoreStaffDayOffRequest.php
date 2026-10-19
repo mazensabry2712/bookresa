@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests\Scheduling;
 
+use App\Http\Requests\Scheduling\Concerns\UsesTenantLocalToday;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStaffDayOffRequest extends FormRequest
 {
+    use UsesTenantLocalToday;
+
     public function authorize(): bool
     {
         return $this->user()?->can('settings.manage') ?? false;
@@ -21,7 +24,7 @@ class StoreStaffDayOffRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'starts_on' => ['required', 'date_format:Y-m-d'],
+            'starts_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$this->tenantLocalToday()],
             'ends_on' => ['required', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
             'reason' => ['nullable', 'string', 'max:255'],
         ];
