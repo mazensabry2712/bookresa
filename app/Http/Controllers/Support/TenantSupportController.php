@@ -133,17 +133,17 @@ final class TenantSupportController
             ->with('status', __('app.support_ui.ticket_created'));
     }
 
-    public function show(CurrentTenant $currentTenant, Tenant $routeTenant, int $ticketId): View
+    public function show(CurrentTenant $currentTenant, Tenant $tenant, int $ticketId): View
     {
-        $tenant = $currentTenant->get();
-        abort_unless($tenant !== null && $routeTenant->is($tenant), 404);
+        $activeTenant = $currentTenant->get();
+        abort_unless($activeTenant !== null && $tenant->is($activeTenant), 404);
 
         $ticket = SupportTicket::query()
-            ->where('tenant_id', $tenant->getKey())
+            ->where('tenant_id', $activeTenant->getKey())
             ->with('messages.author')
             ->findOrFail($ticketId);
 
-        $timezone = (string) ($tenant->profile?->timezone ?: config('app.timezone', 'UTC'));
+        $timezone = (string) ($activeTenant->profile?->timezone ?: config('app.timezone', 'UTC'));
 
         try {
             CarbonImmutable::now($timezone);
@@ -152,7 +152,7 @@ final class TenantSupportController
         }
 
         return view('support.show', [
-            'tenant' => $tenant,
+            'tenant' => $activeTenant,
             'ticket' => $ticket,
             'timezone' => $timezone,
         ]);
