@@ -33,55 +33,36 @@
     @endphp
 
     <div class="space-y-6">
-        <section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <section class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div class="min-w-0">
-                <p class="text-sm font-semibold text-brand-indigo">{{ __('app.scheduling_ui.workspace_operations') }}</p>
-                <h2 class="mt-1 text-2xl font-bold tracking-tight text-slate-950 dark:text-white">{{ __('app.scheduling_ui.scheduling') }}</h2>
-                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.page_help') }}</p>
+                <p class="max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">{{ __('app.scheduling_ui.page_help') }}</p>
+                <p class="mt-2 text-xs font-medium text-slate-400">{{ __('app.scheduling_ui.timezone') }}: <span class="font-bold text-slate-600 dark:text-slate-300">{{ $timezone }}</span></p>
             </div>
-
             @can('services.view')
-                <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}"
-                   class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
+                <a href="{{ route('services.index', ['tenant' => $tenant->slug]) }}" class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800">
                     {{ __('app.scheduling_ui.review_services') }}
                 </a>
             @endcan
         </section>
-
         @if (! (bool) data_get($tenant->settings ?? [], 'onboarding.completed', false))
-            <section class="rounded-2xl border border-indigo-200 bg-indigo-50/70 px-4 py-4 text-sm leading-6 text-indigo-950 dark:border-indigo-900/70 dark:bg-indigo-950/30 dark:text-indigo-100" role="note">
+            <section class="rounded-xl border border-indigo-200 bg-indigo-50/70 px-4 py-4 text-sm leading-6 text-indigo-950 dark:border-indigo-900/70 dark:bg-indigo-950/30 dark:text-indigo-100" role="note">
                 <p class="font-bold">{{ __('app.scheduling_ui.onboarding_hours_title') }}</p>
                 <p class="mt-1">{{ __('app.scheduling_ui.onboarding_hours_help') }}</p>
             </section>
         @endif
-
-        <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="{{ __('app.scheduling_ui.summary') }}">
-            <article class="br-panel p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.timezone') }}</p>
-                <p class="mt-2 truncate text-lg font-bold text-slate-950 dark:text-white">{{ $timezone }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ __('app.scheduling_ui.timezone_help') }}</p>
-            </article>
-
-            <article class="br-panel p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.business_hours') }}</p>
-                <p class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ $openBusinessHours }} / 7</p>
-                <p class="mt-1 text-xs text-slate-500">{{ __('app.scheduling_ui.open_days') }}</p>
-            </article>
-
-            <article class="br-panel p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.staff') }}</p>
-                <p class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ number_format($staffMembers->count()) }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ __('app.scheduling_ui.staff_configurable') }}</p>
-            </article>
-
-            <article class="br-panel p-5">
-                <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.exceptions') }}</p>
-                <p class="mt-2 text-lg font-bold text-slate-950 dark:text-white">{{ $businessHolidays->count() + $specialWorkingHours->count() + $businessBreaks->count() }}</p>
-                <p class="mt-1 text-xs text-slate-500">{{ __('app.scheduling_ui.exceptions_help') }}</p>
-            </article>
-        </section>
-
-        <section class="br-panel overflow-hidden">
+        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900">
+            <span class="flex items-baseline gap-2"><span class="text-slate-500">{{ __('app.scheduling_ui.business_hours') }}</span><strong class="text-slate-900 dark:text-white">{{ $openBusinessHours }} / 7</strong></span>
+            <span class="hidden h-4 border-s border-slate-200 sm:block dark:border-slate-700" aria-hidden="true"></span>
+            <span class="flex items-baseline gap-2"><span class="text-slate-500">{{ __('app.scheduling_ui.staff') }}</span><strong class="text-slate-900 dark:text-white">{{ number_format($staffMembers->count()) }}</strong></span>
+            <span class="hidden h-4 border-s border-slate-200 sm:block dark:border-slate-700" aria-hidden="true"></span>
+            <span class="flex items-baseline gap-2"><span class="text-slate-500">{{ __('app.scheduling_ui.exceptions') }}</span><strong class="text-slate-900 dark:text-white">{{ $businessHolidays->count() + $specialWorkingHours->count() + $businessBreaks->count() }}</strong></span>
+        </div>
+        <nav aria-label="{{ __('app.scheduling_ui.summary') }}" class="grid gap-2 sm:grid-cols-3">
+            <a href="#business-hours" class="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">01</span><span>{{ __('app.scheduling_ui.business_working_hours') }}</span></a>
+            <a href="#business-exceptions" class="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">02</span><span>{{ __('app.scheduling_ui.exceptions') }}</span></a>
+            <a href="#staff-schedule" class="flex min-h-12 items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50/60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-800 dark:hover:bg-indigo-950/30"><span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-300">03</span><span>{{ __('app.scheduling_ui.staff_schedule') }}</span></a>
+        </nav>
+        <section id="business-hours" class="br-panel overflow-hidden scroll-mt-6">
             <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.base_schedule') }}</p>
@@ -96,17 +77,19 @@
             </div>
 
             @can('settings.manage')
-                <form method="POST" action="{{ route('scheduling.business-hours.update', ['tenant' => $tenant->slug]) }}" class="p-5 sm:p-6">
+                <form method="POST" action="{{ route('scheduling.business-hours.update', ['tenant' => $tenant->slug]) }}" data-business-hours-form class="p-5 sm:p-6">
                     @csrf
                     @method('PUT')
 
+                    <details class="mb-5 rounded-xl border border-slate-200 px-4 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 marker:text-slate-400 dark:text-indigo-300">{{ __('app.scheduling_ui.bulk_hours_title') }}</summary>
                     <section
                         data-hours-bulk-tools
                         data-invalid-message="{{ __('app.scheduling_ui.bulk_hours_invalid') }}"
                         data-no-open-days-message="{{ __('app.scheduling_ui.bulk_hours_no_open_days') }}"
                         data-applied-all-message="{{ __('app.scheduling_ui.bulk_hours_applied_all') }}"
                         data-applied-open-message="{{ __('app.scheduling_ui.bulk_hours_applied_open') }}"
-                        class="mb-5 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 dark:border-indigo-900/70 dark:bg-indigo-950/20"
+                        class="mt-3"
                         aria-labelledby="bulk-hours-heading"
                     >
                         <h4 id="bulk-hours-heading" class="font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.bulk_hours_title') }}</h4>
@@ -137,8 +120,9 @@
 
                         <p data-bulk-hours-feedback class="mt-3 text-sm" role="status" aria-live="polite"></p>
                     </section>
+                    </details>
 
-                    <div class="space-y-2">
+                    <div class="space-y-3">
                         @foreach ($days as $day)
                             @php
                                 $hour = $businessHours->get($day->value);
@@ -149,7 +133,7 @@
                                     : ($hour?->is_closed ?? true);
                             @endphp
 
-                            <div data-hours-row class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
+                            <div data-hours-row class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
                                 <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
 
                                 <div>
@@ -201,8 +185,12 @@
             @endcan
         </section>
 
-        <section class="grid gap-4 lg:grid-cols-3">
-            <article class="br-panel p-5">
+        <section id="business-exceptions" class="space-y-4 scroll-mt-6">
+            <div class="rounded-xl border-s-4 border-indigo-500 bg-slate-50 px-4 py-4 dark:bg-slate-900/70">
+                <h3 class="font-bold text-slate-950 dark:text-white">{{ __('app.scheduling_ui.exceptions') }}</h3>
+                <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('app.scheduling_ui.exceptions_help') }}</p>
+            </div>
+            <article class="br-panel p-4 sm:p-5">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.recurring') }}</p>
@@ -213,7 +201,9 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.breaks.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
+                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.add_break') }}</summary>
+<form method="POST" action="{{ route('scheduling.breaks.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
                         <label class="block text-xs font-semibold text-slate-500">
                             <span class="mb-1.5 block">{{ __('app.scheduling_ui.day_of_week') }}</span>
@@ -239,6 +229,8 @@
                         </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.add_break') }}</button>
                     </form>
+                    </details>
+                
                 @endcan
 
                 <div class="mt-5 space-y-2">
@@ -278,7 +270,9 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.holidays.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
+                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.save_holiday') }}</summary>
+<form method="POST" action="{{ route('scheduling.holidays.store', ['tenant' => $tenant->slug]) }}" class="mt-5 space-y-3">
                         @csrf
                         <label class="block text-xs font-semibold text-slate-500">
                             <span class="mb-1.5 block">{{ __('app.scheduling_ui.holiday_date') }}</span>
@@ -290,6 +284,8 @@
                         </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.save_holiday') }}</button>
                     </form>
+                    </details>
+                
                 @endcan
 
                 <div class="mt-5 space-y-2">
@@ -326,7 +322,9 @@
                 </div>
 
                 @can('settings.manage')
-                    <form method="POST" action="{{ route('scheduling.special-hours.store', ['tenant' => $tenant->slug]) }}" data-special-hours-form class="mt-5 space-y-3">
+                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.save_special_hours') }}</summary>
+<form method="POST" action="{{ route('scheduling.special-hours.store', ['tenant' => $tenant->slug]) }}" data-special-hours-form class="mt-5 space-y-3">
                         @csrf
                         <label class="block text-xs font-semibold text-slate-500">
                             <span class="mb-1.5 block">{{ __('app.scheduling_ui.work_date') }}</span>
@@ -352,6 +350,8 @@
                         </label>
                         <button type="submit" class="w-full rounded-xl bg-brand-indigo px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">{{ __('app.scheduling_ui.save_special_hours') }}</button>
                     </form>
+                    </details>
+                
                 @endcan
 
                 <div class="mt-5 space-y-2">
@@ -381,7 +381,7 @@
             </article>
         </section>
 
-        <section class="br-panel overflow-hidden">
+        <section id="staff-schedule" class="br-panel overflow-hidden scroll-mt-6">
             <div class="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-end sm:justify-between dark:border-slate-800">
                 <div>
                     <p class="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{{ __('app.scheduling_ui.staff_schedule') }}</p>
@@ -419,7 +419,9 @@
                     </div>
 
                     @can('settings.manage')
-                        <form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-2">
+                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.save_staff_hours') }}</summary>
+<form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-2">
                             @csrf
                             @method('PUT')
 
@@ -433,7 +435,7 @@
                                         : ($hour?->is_closed ?? true);
                                 @endphp
 
-                                <div data-hours-row class="grid gap-3 rounded-2xl border border-slate-200 p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
+                                <div data-hours-row class="grid gap-3 rounded-xl border border-slate-200 p-3 sm:p-4 dark:border-slate-800 md:grid-cols-[8rem_1fr_1fr_auto] md:items-center">
                                     <input type="hidden" name="hours[{{ $loop->index }}][day_of_week]" value="{{ $day->value }}">
                                     <p class="text-sm font-bold text-slate-950 dark:text-white">{{ __($day->name) }}</p>
                                     <label class="block text-xs font-semibold text-slate-500">
@@ -457,6 +459,8 @@
                                 </button>
                             </div>
                         </form>
+                    </details>
+                
                     @else
                         <div class="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                             @foreach ($days as $day)
@@ -482,7 +486,9 @@
                             </div>
 
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
+                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.add_day_off') }}</summary>
+<form method="POST" action="{{ route('scheduling.staff-days-off.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
                                     <div class="grid grid-cols-2 gap-3">
                                         <label class="block text-xs font-semibold text-slate-500">
@@ -497,6 +503,8 @@
                                     <input name="reason" value="{{ old('reason') }}" placeholder="{{ __('app.scheduling_ui.reason_optional') }}" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-950">
                                     <button type="submit" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.scheduling_ui.add_day_off') }}</button>
                                 </form>
+                    </details>
+                
                             @endcan
 
                             <div class="mt-5 space-y-2">
@@ -530,7 +538,9 @@
                             </div>
 
                             @can('settings.manage')
-                                <form method="POST" action="{{ route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
+                    <details class="mt-4 rounded-xl border border-slate-200 px-3 py-3 dark:border-slate-800">
+                        <summary class="cursor-pointer text-sm font-bold text-indigo-700 dark:text-indigo-300">{{ __('app.scheduling_ui.add_availability') }}</summary>
+<form method="POST" action="{{ route('scheduling.staff-availability.store', ['tenant' => $tenant->slug, 'staff' => $selectedStaff]) }}" class="mt-5 space-y-3">
                                     @csrf
                                     <label class="block text-xs font-semibold text-slate-500">
                                         <span class="mb-1.5 block">{{ __('app.scheduling_ui.available_date') }}</span>
@@ -548,6 +558,8 @@
                                     </div>
                                     <button type="submit" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{{ __('app.scheduling_ui.add_availability') }}</button>
                                 </form>
+                    </details>
+                
                             @endcan
 
                             <div class="mt-5 space-y-2">
@@ -595,6 +607,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const hoursRows = [...document.querySelectorAll('[data-hours-row]')];
+            const businessHoursForm = document.querySelector('[data-business-hours-form]');
+            const businessHoursRows = businessHoursForm ? [...businessHoursForm.querySelectorAll('[data-hours-row]')] : [];
 
             const syncHoursRow = (row) => {
                 const closed = row.querySelector('[data-hours-closed]');
@@ -639,7 +653,7 @@
                     const times = readBulkTimes();
                     if (!times) return;
 
-                    const targetRows = hoursRows.filter((row) => includeClosedDays || !row.querySelector('[data-hours-closed]')?.checked);
+                    const targetRows = businessHoursRows.filter((row) => includeClosedDays || !row.querySelector('[data-hours-closed]')?.checked);
 
                     if (targetRows.length === 0) {
                         feedback.textContent = bulkTools.dataset.noOpenDaysMessage ?? '';
