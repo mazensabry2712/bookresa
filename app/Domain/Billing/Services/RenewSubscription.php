@@ -3,7 +3,6 @@
 namespace App\Domain\Billing\Services;
 
 use App\Domain\Billing\Enums\SubscriptionStatus;
-use App\Domain\Billing\Models\Plan;
 use App\Domain\Billing\Models\Subscription;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -18,8 +17,7 @@ final class RenewSubscription
         private readonly CurrentTenant $currentTenant,
         private readonly BillingCycle $billingCycle,
         private readonly PlanPricingSnapshot $pricingSnapshots,
-    ) {
-    }
+    ) {}
 
     public function handle(Subscription $subscription, ?CarbonImmutable $startAt = null): Subscription
     {
@@ -44,7 +42,7 @@ final class RenewSubscription
 
             $plan = $subscription->nextPlan ?? $subscription->plan;
 
-            if ($plan === null || ! $plan->is_active) {
+            if ($plan === null || $plan->is_active === false) {
                 throw new RuntimeException('The renewal plan is not available.');
             }
 

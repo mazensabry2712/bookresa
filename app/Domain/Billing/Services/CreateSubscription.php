@@ -18,14 +18,13 @@ final class CreateSubscription
         private readonly CurrentTenant $currentTenant,
         private readonly BillingCycle $billingCycle,
         private readonly PlanPricingSnapshot $pricingSnapshots,
-    ) {
-    }
+    ) {}
 
     public function handle(Plan $plan, ?CarbonImmutable $startAt = null): Subscription
     {
         $tenantId = $this->currentTenant->idOrFail();
 
-        if (! $plan->is_active) {
+        if ($plan->is_active === false) {
             throw new RuntimeException('The selected plan is not active.');
         }
 

@@ -4,13 +4,12 @@ use App\Domain\Billing\Enums\PlanBillingPeriod;
 use App\Domain\Billing\Enums\SubscriptionStatus;
 use App\Domain\Billing\Enums\UsagePeriodStatus;
 use App\Domain\Billing\Models\Plan;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Billing\Models\UsagePeriod;
 use App\Domain\Billing\Services\CalculateSubscriptionUsage;
 use App\Domain\Billing\Services\CreateSubscription;
 use App\Domain\Billing\Services\CreateUsagePeriod;
-use App\Domain\Billing\Services\PlanPricingSnapshot;
 use App\Domain\Billing\Services\UpsertPlan;
+use App\Domain\Business\Actions\UpdateBusinessProfile;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Customer\Models\Customer;
 use App\Domain\Module\Models\Module;
@@ -199,7 +198,7 @@ test('customer limit policy can allow overage or block new customer creation', f
         ]);
     }
 
-    app(\App\Domain\Business\Actions\UpdateBusinessProfile::class)->handle([
+    app(UpdateBusinessProfile::class)->handle([
         'name_en' => 'Policy Test',
         'name_ar' => 'اختبار',
         'description_en' => null,
