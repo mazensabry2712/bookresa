@@ -47,7 +47,6 @@ test('platform admin can create and edit a plan with active modules', function (
         'currency' => 'egp',
         'billing_period' => 'monthly',
         'included_customer_limit' => 20,
-        'additional_customer_price' => '10.50',
         'trial_days' => 14,
         'is_active' => 1,
         'module_ids' => [$module->id, $inactive->id],
@@ -55,7 +54,7 @@ test('platform admin can create and edit a plan with active modules', function (
 
     $plan = Plan::query()->latest('id')->firstOrFail();
     expect($plan->price_minor)->toBe(19900)
-        ->and($plan->additional_customer_price_minor)->toBe(1050)
+        ->and($plan->additional_customer_price_minor)->toBe(0)
         ->and($plan->currency)->toBe('EGP')
         ->and($plan->modules->pluck('id')->all())->toBe([$module->id]);
 

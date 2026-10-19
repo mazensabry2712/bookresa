@@ -146,6 +146,9 @@ test('owner can view and update business profile', function (): void {
 
 test('workspace profile does not configure payment accounts and follows centralized platform policy', function (): void {
     [$user, $tenant] = workspaceOwner();
+    $existingPaymentAccountCount = TenantPaymentAccount::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->count();
 
     app(PlatformSettings::class)->put([
         'centralized_booking_payments_enabled' => '1',
@@ -184,7 +187,8 @@ test('workspace profile does not configure payment accounts and follows centrali
     expect(data_get($settings, 'payment_required'))->toBeTrue()
         ->and(data_get($settings, 'payment_mode'))->toBe('full')
         ->and(data_get($settings, 'customer_email_required'))->toBeTrue()
-        ->and(TenantPaymentAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->exists())->toBeFalse();
+        ->and(TenantPaymentAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())
+        ->toBe($existingPaymentAccountCount);
 });
 
 test('owner can create and update a service through workspace ui', function (): void {

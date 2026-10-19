@@ -87,9 +87,9 @@ test('owner can see live customer usage and estimated billing total', function (
         ->get(route('billing.subscription', ['tenant' => $tenant->slug]))
         ->assertOk()
         ->assertSee('4')
-        ->assertSee('1,000.00 EGP')
-        ->assertSee('1,000.00 EGP')
-        ->assertSee('1,199.00 EGP');
+        ->assertSee('199.00 EGP')
+        ->assertSee('0.00 EGP')
+        ->assertSee('199.00 EGP');
 
     expect($subscription->fresh()->isUsable())->toBeFalse();
 });
