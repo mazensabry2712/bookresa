@@ -91,6 +91,39 @@ test('public availability is tenant scoped and returns slots', function (): void
     expect($response->json('data'))->not->toBeEmpty();
 });
 
+test('inactive services cannot be booked through public availability or direct submission', function (): void {
+    $tenant = publicTenant('inactive-public-clinic');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Inactive consultation', 'ar' => 'استشارة غير نشطة'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+        'is_active' => false,
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+    ]))
+        ->assertOk()
+        ->assertExactJson(['data' => []]);
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ])->assertSessionHasErrors('booking');
+
+    expect(Booking::withoutGlobalScopes()->count())->toBe(0);
+});
+
 test('public customer can book without an account', function (): void {
     $tenant = publicTenant('book-clinic');
 
