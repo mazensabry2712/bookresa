@@ -1129,6 +1129,8 @@ return [
         'payment' => 'Payment',
         'subscription' => 'Subscription',
         'usage' => 'Usage',
+        'broadcast' => 'Platform announcement',
+        'support' => 'Support',
         'other' => 'Notification',
         'no_notifications' => 'No notifications yet',
         'no_notifications_help' => 'Important events for this workspace will appear here.',
