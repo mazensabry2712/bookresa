@@ -204,7 +204,7 @@ test('monthly counters reset in the workspace timezone and remain tenant scoped'
         ->and($otherWorkspaceAllocation->booking_ordinal)->toBe(1)
         ->and($novemberAllocation->period_start->toDateString())->toBe('2026-11-01')
         ->and($novemberAllocation->booking_ordinal)->toBe(1)
-        ->and(BookingCommissionAllocation::query()->count())->toBe(3);
+        ->and(BookingCommissionAllocation::withoutGlobalScopes()->count())->toBe(3);
 });
 
 test('online payment commission reconciliation is capped per booking across retries and refunds', function (): void {
