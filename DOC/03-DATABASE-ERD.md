@@ -67,6 +67,17 @@ Immutable lifecycle/history entries.
 ### payments
 id, tenant_id nullable for platform context, payable_type, payable_id, gateway, gateway_reference, gateway_transaction_id, amount_minor, currency, status, payment_method, metadata, paid_at, timestamps.
 
+## Current commission and settlement tables
+
+### booking_commissions (current implementation)
+Current columns: id, tenant_id, payment_id (unique), customer_id nullable, customer_ordinal, included_customer_limit, eligible, rate_basis_points, gross_amount_minor, refunded_amount_minor, commission_amount_minor, workspace_net_minor, currency, status, metadata and timestamps. The row is payment-linked and reflects the legacy customer-profile ordinal policy; it is not a monthly booking-allocation record.
+
+### workspace_payouts (current manual ledger)
+Current columns: id, tenant_id, reference (unique), currency, amount_minor, status, payout_method nullable, payout_reference nullable, notes nullable, created_by nullable, paid_at nullable, metadata and timestamps. Reserving a payout does not initiate a transfer; a finance operator records the external transfer reference after separately executing it.
+
+### Planned commission schema (not yet present)
+The target monthly policy still needs a durable per-workspace/per-period booking allocation and booking-centric reconciliation across multiple payment attempts, plus an auditable cash-collection/commission-receivable flow. Those structures are requirements, not current tables. Review DOC/21 before proposing migrations; preserve legacy financial history.
+
 ## Billing
 ### plans
 name, price_minor, currency, billing_period, included_customer_limit, additional_customer_price_minor, active.
