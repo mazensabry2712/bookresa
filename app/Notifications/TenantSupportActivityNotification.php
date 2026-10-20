@@ -32,15 +32,16 @@ final class TenantSupportActivityNotification extends Notification implements Sh
     {
         $isNewTicket = $this->activity === 'created';
         $tenant = $this->ticket->tenant;
+        $priority = (string) $this->ticket->getRawOriginal('priority');
 
         return (new MailMessage)
             ->subject(($isNewTicket ? 'New support ticket #' : 'New workspace reply on ticket #')
                 .$this->ticket->getKey().' · BookResa')
             ->greeting('BookResa Support')
-            ->line('Workspace: '.($tenant?->slug ?? 'Unknown workspace'))
+            ->line('Workspace: '.($tenant->slug ?? 'Unknown workspace'))
             ->line('Ticket: #'.$this->ticket->getKey())
             ->line('Subject: '.$this->ticket->subject)
-            ->line('Priority: '.str($this->ticket->priority->value)->headline())
+            ->line('Priority: '.str($priority)->headline())
             ->line($isNewTicket ? 'A new support ticket was submitted.' : 'A workspace member replied to a support ticket.')
             ->line('Message:')
             ->line($this->message)

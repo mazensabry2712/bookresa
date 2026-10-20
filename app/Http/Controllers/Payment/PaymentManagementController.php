@@ -86,6 +86,7 @@ final class PaymentManagementController
         $currencyStats = (clone $paymentsQuery)
             ->reorder()
             ->setEagerLoads([])
+            ->toBase()
             ->select('currency')
             ->selectRaw('COUNT(*) as record_count')
             ->selectRaw(

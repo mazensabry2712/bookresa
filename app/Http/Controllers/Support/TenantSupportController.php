@@ -29,11 +29,11 @@ final class TenantSupportController
 
         $statusInput = $request->query('status');
         $statusEnum = is_string($statusInput) ? SupportTicketStatus::tryFrom($statusInput) : null;
-        $status = $statusEnum?->value ?? '';
+        $status = $statusEnum->value ?? '';
 
         $priorityInput = $request->query('priority');
         $priorityEnum = is_string($priorityInput) ? SupportTicketPriority::tryFrom($priorityInput) : null;
-        $priority = $priorityEnum?->value ?? '';
+        $priority = $priorityEnum->value ?? '';
 
         $searchInput = $request->query('q');
         $search = is_string($searchInput) ? mb_substr(trim($searchInput), 0, 120) : '';
