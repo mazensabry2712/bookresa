@@ -19,6 +19,10 @@ return [
 
     'default_theme' => env('BOOKRESA_DEFAULT_THEME', 'system'),
 
+    'booking' => [
+        'slot_interval_minutes' => (int) env('BOOKRESA_BOOKING_SLOT_INTERVAL', 15),
+    ],
+
     'rbac' => [
         'permissions' => [
             'business.view',
