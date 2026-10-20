@@ -8,8 +8,8 @@ use App\Domain\Payment\Models\Payment;
 use App\Domain\Payment\Services\PaymentService;
 use App\Domain\Payment\Services\SyncBookingPaymentStatus;
 use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
-use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -31,7 +31,7 @@ final class KashierReturnController
         $query = $request->all();
         $apiKey = (string) config('bookresa.payments.kashier.api_key');
 
-        if (!$verifier->verify($query, $apiKey)) {
+        if (! $verifier->verify($query, $apiKey)) {
             return response()->json(['message' => 'Invalid Kashier redirect signature.'], 401);
         }
 
@@ -132,10 +132,10 @@ final class KashierReturnController
             if ($payable instanceof Booking && filled($payable->booking_reference)) {
                 return redirect()
                     ->to(URL::signedRoute('public.booking.canonical.confirmation', [
-                    'tenant' => $tenant->slug,
-                    'booking' => $payable->booking_reference,
-                ]))
-                ->with('payment_notice', $notice);
+                        'tenant' => $tenant->slug,
+                        'booking' => $payable->booking_reference,
+                    ]))
+                    ->with('payment_notice', $notice);
             }
 
             return redirect()->route('home')->with('status', $notice);
