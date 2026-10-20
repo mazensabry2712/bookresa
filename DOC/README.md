@@ -40,6 +40,7 @@ One platform → many Businesses → one isolated Workspace/Tenant per Business 
 20. 19-KASHIER-SANDBOX-RUNBOOK.md — Kashier sandbox verification runbook.
 21. 19-TENANT-WORKSPACE-ROUTING.md — tenant and workspace routing rules.
 22. 20-SUPER-ADMIN-CONTROL.md — platform Super Admin and control-plane design.
+23. 21-BOOKING-COMMISSION-AUDIT-AND-IMPLEMENTATION-PLAN.md — audit findings, monthly booking commission requirements, cash/online funds flow, component inventory, tests, and production plan.
 
 ## Frontend direction
 
