@@ -293,7 +293,7 @@ test('online booking choice is rejected when platform online payments are disabl
         'name' => 'Ahmed',
         'phone' => '+20 100 123 4567',
         'email' => 'ahmed@example.com',
-    ])->assertSessionHasErrors('booking');
+    ])->assertSessionHasErrors('payment_method');
 
     expect(Booking::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
 });
