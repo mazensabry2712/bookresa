@@ -208,11 +208,26 @@ test('public booking availability follows each selected doctor weekly schedule',
         'date' => '2026-09-28',
     ]))->assertOk();
 
+    // The public booking page's automatic-staff view merges only the times
+    // that fall within at least one assigned doctor's own schedule.
+    $automaticResponse = $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+    ]))->assertOk();
+
     $morningTimes = collect($morningResponse->json('data'))->pluck('time')->all();
     $afternoonTimes = collect($afternoonResponse->json('data'))->pluck('time')->all();
+    $automaticSlots = collect($automaticResponse->json('data'));
+    $automaticTimes = $automaticSlots->pluck('time')->all();
 
     expect($morningTimes)->toBe(['09:00', '09:15', '09:30', '09:45', '10:00', '10:15', '10:30'])
-        ->and($afternoonTimes)->toBe(['14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30']);
+        ->and($afternoonTimes)->toBe(['14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30'])
+        ->and($automaticTimes)->toBe([
+            '09:00', '09:15', '09:30', '09:45', '10:00', '10:15', '10:30',
+            '14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30',
+        ])
+        ->and($automaticSlots->first()['available_staff_count'])->toBe(1)
+        ->and($automaticSlots->last()['available_staff_count'])->toBe(1);
 });
 
 test('public availability explains when all assigned staff are inactive', function (): void {
