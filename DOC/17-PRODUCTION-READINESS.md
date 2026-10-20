@@ -165,3 +165,15 @@ Required before production traffic:
 - monitoring and error logs visible
 
 Do not mark a production item complete only because configuration files exist; verify the deployed infrastructure itself.
+
+## Booking commission and settlement release gate
+
+The target policy of 1,000 qualifying bookings per workspace/calendar month followed by a default 10% commission is **not implemented at the audited baseline**. The existing customer-ordinal/5% logic and payment-keyed ledger are not substitutes for it. Before activating the new policy or collecting its commission, require all of the following:
+
+- monthly allocation, immutable policy snapshot and booking-level ledger deployed with reviewed migrations and preserved historical finance records;
+- automated policy-boundary, concurrency, tenant-isolation, retries, cash, refund and payout-reversal tests green;
+- actual Kashier sandbox checkout/return/webhook/refund evidence for online paths, plus a separately audited cash/receivable/remittance path;
+- provider and legal/commercial approval for receiving and settling funds across independent workspaces;
+- currency-safe finance reconciliation, external-transfer evidence, backup/restore and production smoke evidence.
+
+This is a separate commission/settlement gate. A successful payment checkout or a setting that enables online payments does not prove that this commission model or marketplace settlement is active or approved.
