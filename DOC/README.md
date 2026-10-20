@@ -38,6 +38,8 @@ One platform → many Businesses → one isolated Workspace/Tenant per Business 
 18. 17-PRODUCTION-READINESS.md — production verification and release gate.
 19. 18-FRONTEND-DESIGN-IMPLEMENTATION.md — frontend visual direction, UX rules, reference products, implementation order and quality bar.
 20. 19-KASHIER-SANDBOX-RUNBOOK.md — Kashier sandbox verification runbook.
+21. 19-TENANT-WORKSPACE-ROUTING.md — tenant and workspace routing rules.
+22. 20-SUPER-ADMIN-CONTROL.md — platform Super Admin and control-plane design.
 
 ## Frontend direction
 

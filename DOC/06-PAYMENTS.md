@@ -1,66 +1,72 @@
 # BookResa — Payment Architecture
 
 ## Goal
-BookResa owns a provider-neutral Payment Core. MVP provider: Kashier. Future providers must be addable without rewriting Booking, Subscription or Billing.
 
-## Domain layer
-- Payment model
-- PaymentService
-- PaymentGateway contract
-- payment request/result DTOs
+BookResa has a provider-neutral Payment Core. Kashier is the current MVP provider. Adding another gateway should not require rewriting Booking, Subscription, or Billing.
 
-## Infrastructure
-Example:
-Infrastructure/Payments/Kashier/
-- KashierGateway
-- KashierClient
-- KashierWebhookVerifier
-- KashierMapper
+## Domain and infrastructure
 
-Domain code never imports provider-specific classes.
+- Domain: `Payment`, `PaymentService`, `PaymentGateway`, `PaymentRequest`, and `PaymentGatewayResult`.
+- Kashier adapter: `app/Infrastructure/Payments/Kashier/`.
+- Payment contexts are polymorphic: a Business pays BookResa for a subscription; a Customer pays for a Business booking/service. They share gateway infrastructure but remain separate business concepts.
+- Payment records retain the payable context, reference, provider references, amount in minor units, currency, status, method, checkout URL, metadata, timestamps, and refund totals.
 
-## Contract capabilities
-- create payment/session
-- verify payment
-- refund when supported
-- map provider states to BookResa internal states
+Domain services depend on `PaymentGateway`, not Kashier-specific classes.
 
-## Payment contexts
-1. Business → BookResa subscription.
-2. Customer → Business booking/service.
+## Current booking-payment behavior — implementation status
 
-They share infrastructure but remain separate business concepts.
+The effective switch is the **platform setting** `centralized_booking_payments_enabled`, managed in Platform Settings. It is not an independent per-workspace merchant-gateway switch.
 
-## Payment record
-Provider-neutral references, payable context, amount_minor, currency, status, method, checkout_url, metadata and paid_at.
+- When the platform setting is off, new public bookings follow the pay-later path.
+- When the platform setting is on, new public bookings require the customer's email and are redirected to a hosted Kashier checkout using the **full service price**.
+- The current `StartBookingPayment` implementation explicitly charges the full price. Deposit percentages are not used to calculate the checkout amount.
+- Updating a business profile synchronizes its legacy `booking_settings.payment_required` and `payment_mode` from the global platform setting. The public booking controller also reads that global setting directly.
+- Consequently, **full online payment or pay later are the implemented platform-wide modes today**. Deposit appears in the product specification and translations, but is not an implemented booking checkout mode yet. Do not treat it as available until checkout amount calculation, settings, refund behavior, and tests are implemented together.
+- Centralized checkout uses the platform Kashier merchant account. Workspace-connected merchant collection is not the current public booking flow.
 
-## Kashier flow
-Create payment/session → secure provider checkout → webhook → verify signature → idempotency → persist result → update Booking/Subscription → queue notifications.
+If checkout-session creation fails before there is evidence that a provider session exists, the controller attempts to cancel the pending booking. Once a real checkout session exists, a customer abandoning checkout can leave the booking pending: payment expiry is stored, but the current scheduler does not include a job that releases abandoned pending booking slots. Pending bookings are included in availability blocking. This remains a release-readiness item.
 
-A browser redirect alone never marks a payment successful. BookResa validates the Kashier redirect signature, then performs server-side session verification; the webhook remains the authoritative asynchronous reconciliation path.
+## Subscription payment
 
-## Public booking checkout
+Paid business subscriptions use the same gateway-neutral payment core with a `Subscription` payable. Trial subscriptions do not require payment. A paid subscription is usable only according to the subscription lifecycle and its paid payment state.
 
-When a tenant enables `booking_settings.payment_required`, the public booking flow creates the booking first, creates a provider-neutral Payment, sends the customer to Kashier's hosted `sessionUrl`, and returns to BookResa through the signed merchant redirect. The payment record stores the checkout URL so a pending/failed payment can be retried without creating another payment for the same booking.
+Subscription and customer-booking payment records are separate; a successful customer booking payment must not activate a business subscription, or vice versa.
 
-The default onboarding setting is `payment_required=false`, preserving the existing unpaid booking flow until the business explicitly enables online payment.
+## Kashier checkout, return, and webhook
 
-## Webhook requirements
-Verify authenticity, tolerate retries, be idempotent, return quickly, and avoid expensive synchronous work.
+1. Create a local pending payment with an idempotency key.
+2. Create a Kashier hosted session and store its provider reference, checkout URL, and expiry.
+3. Redirect the browser to the hosted checkout.
+4. Validate the signed merchant-return parameters and perform server-side session verification. A browser redirect alone is not proof of payment.
+5. Verify webhook signatures with the Payment API Key, validate the payment reference, merchant, amount, and currency, then update the payment and related booking/subscription.
+6. Use idempotency and transaction locking so repeated provider notifications do not apply the same payment/refund twice.
+
+**Webhook acknowledgement contract:** return HTTP `200` for a newly processed delivery and HTTP `409` for an already-processed duplicate. Kashier treats other response codes, including `204`, as unacknowledged and may retry the event. The controller and feature tests now use this contract.
+
+Kashier's per-session `serverWebhook` can receive multiple operation events, not just `pay`. The sandbox release gate must verify amount units and provider operation/status semantics—especially authorization, capture, void, and reversal—before live collection is enabled.
+
+## Commission ledger and workspace payouts
+
+Booking commission is snapshotted when checkout starts and reconciled after paid/refunded outcomes. Commission and workspace net are stored separately from the raw payment record.
+
+The current platform payout screen is a **manual payout ledger**: creating a payout reserves the recorded available balance, and marking it paid records an external transfer reference. It does not initiate a bank or Kashier transfer itself. Do not describe this as automated merchant settlement.
+
+## Refunds
+
+The gateway contract supports refunds. The current platform-admin flow requests the remaining refundable amount, while webhook reconciliation also accounts for partial-refund events. Refund behavior, amount/currency validation, cumulative partial refunds, and duplicate notifications must remain tested against actual sandbox payloads.
 
 ## Security
-Never store raw PAN/CVV. Keep gateway secrets outside source control.
 
-## Adding a provider
-Implement PaymentGateway, add provider client/configuration/verification/tests, register it, and leave BookingService/SubscriptionService provider-neutral.
+- Never store raw card PAN/CVV.
+- Store Kashier credentials in deployment environment/secret storage only.
+- Verify redirect signatures and webhook HMAC signatures.
+- Verify provider state server-side; never mark a payment paid from a browser redirect alone.
+- Preserve tenant ownership checks, amount/currency/merchant validation, idempotency, audit entries, and refund limits.
 
+## Adding another provider
 
-## Current Kashier integration notes
+Implement the `PaymentGateway` contract, add provider configuration/client and signed-result verification, register the adapter, and add provider contract tests. Keep provider-specific code in Infrastructure.
 
-- Hosted payment sessions use Kashier's `/v3/payment/sessions` endpoint with the merchant secret key and Payment API key, returning a `sessionUrl` for hosted checkout.
-- Payment verification reads the session payment state server-side; browser redirects are not treated as payment confirmation.
-- The webhook endpoint verifies `x-kashier-signature` using the Payment API key and the sorted `signatureKeys` payload rules.
-- Webhook processing is idempotent on tenant + provider + transaction ID + transaction status and validates amount/currency before applying the result.
-- Kashier credentials are environment variables only and are never stored in source control.
-- Redirect signatures use Kashier's fixed parameter order and Payment API Key; missing signed redirect fields are represented as literal `null`.
-- Webhook signatures use the separate webhook algorithm documented by Kashier: sorted `signatureKeys`, URL-encoded values, and the Payment API Key.
+## Release gates — not proven by mocked tests
+
+The real Kashier sandbox end-to-end check remains incomplete until a real test checkout has been completed and the return, webhook, duplicate delivery, booking/subscription synchronization, and refund paths have been verified against the current Kashier test account. Confirm the actual webhook amount format using a known payment amount and validate all configured event types before enabling live collection.
