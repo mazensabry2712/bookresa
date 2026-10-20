@@ -397,5 +397,15 @@
     "Save module settings": "حفظ إعدادات الوحدات",
     "Selected modules are not included in the current subscription plan.": "الوحدات المحددة غير مشمولة في خطة الاشتراك الحالية.",
     "Workspace modules updated successfully.": "تم تحديث وحدات مساحة العمل بنجاح.",
-    "User security and platform access control.": "أمان المستخدم والتحكم في صلاحيات الوصول إلى المنصة."
+    "User security and platform access control.": "أمان المستخدم والتحكم في صلاحيات الوصول إلى المنصة.",
+    "Enable booking commissions": "تفعيل عمولة الحجوزات",
+    "This policy is independent of online payments. Confirmed cash and online bookings use the same monthly allowance.": "سياسة العمولة مستقلة عن الدفع الإلكتروني. الحجوزات المؤكدة نقدًا أو إلكترونيًا تخضع لنفس الحد الشهري.",
+    "Free qualifying bookings per workspace each month": "عدد الحجوزات المؤهلة المجانية لكل منشأة شهريًا",
+    "Default 1,000. The count is per booking and resets at the start of each business-local calendar month.": "الافتراضي ١٬٠٠٠ حجز. يُحسب كل حجز على حدة ويُعاد العداد مع بداية الشهر حسب توقيت المنشأة.",
+    "Default 10%. Applies to eligible confirmed bookings after the free monthly allowance.": "الافتراضي ١٠٪. تُطبق على الحجوزات المؤكدة المؤهلة بعد تجاوز الحد الشهري المجاني.",
+    "Online payments use the platform payment account when enabled. The commission switch below does not enable or disable customer checkout.": "تستخدم المدفوعات الإلكترونية حساب المنصة عند تفعيلها. مفتاح العمولة أدناه لا يفعّل الدفع الإلكتروني ولا يعطّله.",
+    "When enabled, customers may pay online in full through the platform Kashier account or choose cash at the center.": "عند التفعيل، يمكن للعميل الدفع الإلكتروني كاملًا من خلال حساب كاشير الخاص بالمنصة أو اختيار الدفع النقدي في المركز.",
+    "Booking number in month": "ترتيب الحجز خلال الشهر",
+    "Free booking allowance": "الحد الشهري للحجوزات المجانية",
+    "Online payment entries are reconciled to the confirmed booking’s monthly allocation. Cash commission receivables are not yet collected or reconciled by this ledger.": "تتم مطابقة مدفوعات الإنترنت مع تخصيص العمولة الشهري للحجز المؤكد. هذا السجل لا يجمع أو يطابق بعد مستحقات عمولة الحجوزات النقدية."
 }

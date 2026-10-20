@@ -4,6 +4,9 @@ namespace App\Domain\Booking\Actions;
 
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
+use App\Domain\Payment\Enums\PaymentStatus as GatewayPaymentStatus;
+use App\Domain\Payment\Services\AllocateMonthlyBookingCommission;
+use App\Domain\Payment\Services\SyncBookingCommission;
 use App\Notifications\BookingNotification;
 use App\Notifications\BusinessBookingNotification;
 use App\Domain\Tenant\Services\CurrentTenant;
@@ -23,6 +26,8 @@ final class UpdateBookingStatus
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly AuditLogger $audit,
+        private readonly AllocateMonthlyBookingCommission $commissionAllocator,
+        private readonly SyncBookingCommission $commissionSynchronizer,
     ) {
     }
 
@@ -56,6 +61,20 @@ final class UpdateBookingStatus
             }
 
             $booking->forceFill(['status' => $status])->save();
+
+            if ($status === BookingStatus::Confirmed) {
+                $this->commissionAllocator->handle($booking);
+
+                // A verified online payment can arrive before business confirmation.
+                // Reconcile it once the booking has an immutable monthly allocation.
+                $paidPayments = $booking->payments()
+                    ->whereIn('status', [GatewayPaymentStatus::Paid->value, GatewayPaymentStatus::Refunded->value])
+                    ->get();
+
+                foreach ($paidPayments as $paidPayment) {
+                    $this->commissionSynchronizer->handle($paidPayment);
+                }
+            }
 
             $booking->statusHistory()->create([
                 'from_status' => $from->value,

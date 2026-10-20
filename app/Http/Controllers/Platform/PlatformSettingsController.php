@@ -24,8 +24,9 @@ final class PlatformSettingsController
                 'default_timezone' => $values['default_timezone'] ?? config('app.timezone', 'UTC'),
                 'booking_slot_interval_minutes' => (int) ($values['booking_slot_interval_minutes'] ?? config('bookresa.booking.slot_interval_minutes', 15)),
                 'centralized_booking_payments_enabled' => filter_var($values['centralized_booking_payments_enabled'] ?? false, FILTER_VALIDATE_BOOL),
-                'commission_free_customer_limit' => (int) ($values['commission_free_customer_limit'] ?? 1000),
-                'booking_commission_rate_percent' => number_format(((int) ($values['booking_commission_rate_basis_points'] ?? 500)) / 100, 2, '.', ''),
+                'booking_commission_enabled' => filter_var($values['booking_commission_enabled'] ?? false, FILTER_VALIDATE_BOOL),
+                'commission_free_booking_limit' => (int) ($values['commission_free_booking_limit'] ?? 1000),
+                'booking_commission_rate_percent' => number_format(((int) ($values['monthly_booking_commission_rate_basis_points'] ?? 1000)) / 100, 2, '.', ''),
             ],
             'kashier' => [
                 'mode' => 'live',
@@ -53,8 +54,9 @@ final class PlatformSettingsController
             'default_locale' => ['required', 'in:'.implode(',', config('bookresa.locales', ['en', 'ar']))],
             'default_timezone' => ['required', 'timezone'],
             'booking_slot_interval_minutes' => ['required', 'integer', 'min:5', 'max:120'],
-            'commission_free_customer_limit' => ['required', 'integer', 'min:0', 'max:1000000'],
+            'commission_free_booking_limit' => ['required', 'integer', 'min:0', 'max:1000000'],
             'booking_commission_rate_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            'booking_commission_enabled' => ['nullable', 'boolean'],
             'centralized_booking_payments_enabled' => ['nullable', 'boolean'],
         ]);
 
@@ -83,6 +85,7 @@ final class PlatformSettingsController
         }
 
         $rateBasisPoints = (int) round(((float) $validated['booking_commission_rate_percent']) * 100);
+        $commissionEnabled = $request->boolean('booking_commission_enabled');
         $settings->put([
             'platform_name' => $validated['platform_name'],
             'support_email' => $validated['support_email'] ?? '',
@@ -90,15 +93,17 @@ final class PlatformSettingsController
             'default_timezone' => $validated['default_timezone'],
             'booking_slot_interval_minutes' => (string) $validated['booking_slot_interval_minutes'],
             'centralized_booking_payments_enabled' => $centralizedPaymentsEnabled ? '1' : '0',
-            'commission_free_customer_limit' => (string) (int) $validated['commission_free_customer_limit'],
-            'booking_commission_rate_basis_points' => (string) $rateBasisPoints,
+            'booking_commission_enabled' => $commissionEnabled ? '1' : '0',
+            'commission_free_booking_limit' => (string) (int) $validated['commission_free_booking_limit'],
+            'monthly_booking_commission_rate_basis_points' => (string) $rateBasisPoints,
         ]);
 
         $auditLogger->log('Platform settings updated', null, [
             'keys' => array_keys($validated),
             'centralized_booking_payments_enabled' => $centralizedPaymentsEnabled,
-            'commission_free_customer_limit' => (int) $validated['commission_free_customer_limit'],
-            'booking_commission_rate_basis_points' => $rateBasisPoints,
+            'booking_commission_enabled' => $commissionEnabled,
+            'commission_free_booking_limit' => (int) $validated['commission_free_booking_limit'],
+            'monthly_booking_commission_rate_basis_points' => $rateBasisPoints,
         ]);
 
         return back()->with('status', __('Platform settings updated successfully.'));

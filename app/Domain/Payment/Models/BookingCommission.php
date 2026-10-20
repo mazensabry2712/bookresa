@@ -16,6 +16,10 @@ class BookingCommission extends Model
     protected $fillable = [
         'tenant_id',
         'payment_id',
+        'booking_commission_allocation_id',
+        'booking_ordinal',
+        'free_booking_allowance',
+        'commission_policy_version',
         'customer_id',
         'customer_ordinal',
         'included_customer_limit',
@@ -33,6 +37,9 @@ class BookingCommission extends Model
     protected function casts(): array
     {
         return [
+            'booking_commission_allocation_id' => 'integer',
+            'booking_ordinal' => 'integer',
+            'free_booking_allowance' => 'integer',
             'customer_id' => 'integer',
             'customer_ordinal' => 'integer',
             'included_customer_limit' => 'integer',
@@ -62,5 +69,11 @@ class BookingCommission extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /** @return BelongsTo<BookingCommissionAllocation, $this> */
+    public function allocation(): BelongsTo
+    {
+        return $this->belongsTo(BookingCommissionAllocation::class, 'booking_commission_allocation_id');
     }
 }

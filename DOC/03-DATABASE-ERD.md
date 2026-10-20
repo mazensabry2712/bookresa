@@ -75,8 +75,14 @@ Current columns: id, tenant_id, payment_id (unique), customer_id nullable, custo
 ### workspace_payouts (current manual ledger)
 Current columns: id, tenant_id, reference (unique), currency, amount_minor, status, payout_method nullable, payout_reference nullable, notes nullable, created_by nullable, paid_at nullable, metadata and timestamps. Reserving a payout does not initiate a transfer; a finance operator records the external transfer reference after separately executing it.
 
-### Planned commission schema (not yet present)
-The target monthly policy still needs a durable per-workspace/per-period booking allocation and booking-centric reconciliation across multiple payment attempts, plus an auditable cash-collection/commission-receivable flow. Those structures are requirements, not current tables. Review DOC/21 before proposing migrations; preserve legacy financial history.
+### Monthly booking commission allocation (implemented on main; migration not yet deployed)
+- `booking_commission_period_counters`: one locked next-ordinal row per tenant and workspace-local calendar month.
+- `booking_commission_allocations`: one immutable row per confirmed booking, storing period/timezone, ordinal, free allowance, enabled flag, rate, booking amount/currency, commission snapshot and policy version.
+- `booking_commissions` retains historical payment-keyed rows and now links new online-payment rows to a booking allocation, including the monthly ordinal and free allowance. Paid/refunded payment attempts are reconciled in stable payment-ID order; combined commission is capped by the allocation snapshot.
+
+The first qualifying event is the first transition to `confirmed`. Each booking consumes at most one slot after rescheduling/re-confirming; cancellation or no-show does not silently decrement the counter. Commission is off by default and independent from online-payment availability. The monthly policy uses a separate 1,000-basis-point default key so the retired customer-profile rate cannot override it. Historical ledger rows are not backfilled or rewritten.
+
+Cash bookings receive an ordinal, but this payment ledger still represents verified online payment amounts only. Cash collection, commission receivable/remittance, monthly finance views, and external settlement remain open. The new schema/code is on `main` but has not been deployed to Hostinger. Review DOC/21 and the production release gate before deployment.
 
 ## Billing
 ### plans

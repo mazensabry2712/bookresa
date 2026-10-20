@@ -1,12 +1,12 @@
 # BookResa — Booking Commission Audit and Implementation Plan
 
 **Document:** DOC/21  
-**Status:** Audit and plan only; the target model is not implemented yet  
+**Status:** Monthly booking allocation and online payment reconciliation are implemented on `main`; migration not deployed. Cash commission receivables, finance views and provider/legal release gates remain open.  
 **Audit baseline:** main at commit bd7243f502af6f834361a401ba5e75b1e5236770  
 **Date:** 2026-10-20  
 **Scope:** Monthly booking allowance, commissions, online and cash collection, workspace settlement, Super Admin, reporting, tests, and production rollout.
 
-> Important: this document records repository findings and intended work. It does not claim the new monthly booking commission is implemented. At the audit baseline, eligibility is based on customer-profile ordinal, the default rate is 5%, and workspace payouts are manually recorded ledger entries. This documentation change must not enable production payments, change secrets, or run migrations.
+> Status note (2026-10-20): the audit-baseline behavior below describes what existed before the implementation tranche. Main now contains monthly booking allocation on first confirmation, an independent commission switch and 10% default, plus online payment/refund reconciliation capped to the booking-level commission snapshot. The migration is not deployed, cash commission receivables remain unimplemented, and this change does not enable live collection, change secrets or run migrations.
 
 ## 1. Executive summary
 
@@ -140,7 +140,7 @@ These defaults are recommendations for the specification to finalize. Where busi
 6. Reuse the same allocation on retry, duplicate event, or reschedule.
 7. Start a new allowance period in the next calendar month while retaining old history.
 
-A plain count followed by adding one is not concurrency-safe. Use transaction locking and database unique constraints/sequence rows to prevent duplicate ordinals at the 1,000/1,001 boundary.
+Implemented in main: `booking_commission_period_counters` serializes workspace/month ordinals; unique constraints guard booking allocations and ordinals; `booking_commission_allocations` stores immutable policy snapshots. Tests cover ordinals 1,000 and 1,001 without creating one thousand fixtures. The migration and new CI run are not production-deployment approval.
 
 ### 4.2 Online payment
 

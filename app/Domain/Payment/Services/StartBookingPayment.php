@@ -17,7 +17,6 @@ final class StartBookingPayment
         private readonly CurrentTenant $currentTenant,
         private readonly PaymentService $payments,
         private readonly PaymentGateway $gateway,
-        private readonly BookingCommissionPolicy $commissionPolicy,
         private readonly PlatformSettings $platformSettings,
     ) {}
 
@@ -55,7 +54,6 @@ final class StartBookingPayment
         }
 
         $provider = (string) config('bookresa.payments.default_provider', 'kashier');
-        $commissionSnapshot = $this->commissionPolicy->snapshot($booking);
 
         // Centralized checkout always charges the entire booking amount.
         $amountMinor = $servicePriceMinor;
@@ -65,7 +63,6 @@ final class StartBookingPayment
             'customer_email' => $email,
             'payment_mode' => 'full',
             'centralized_payment' => true,
-            'commission_snapshot' => $commissionSnapshot,
             'merchant_redirect' => route('payments.kashier.return'),
         ];
 

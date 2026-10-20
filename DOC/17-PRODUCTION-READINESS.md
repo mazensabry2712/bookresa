@@ -172,7 +172,7 @@ The current main branch defines and schedules `bookresa:expire-pending-booking-p
 
 ## Booking commission and settlement release gate
 
-The target policy of 1,000 qualifying bookings per workspace/calendar month followed by a default 10% commission is **not implemented at the audited baseline**. The existing customer-ordinal/5% logic and payment-keyed ledger are not substitutes for it. Before activating the new policy or collecting its commission, require all of the following:
+The target policy of 1,000 qualifying bookings per workspace/calendar month followed by a default 10% commission has now been added to `main` as code, but its migration has not been run on Hostinger and CI for this tranche remains a release gate. Allocation is first-confirmation-based, workspace-timezone-aware and unique per booking. Online payment rows reconcile to the allocation and cap commission across settled attempts/refunds. Cash bookings are counted, but the auditable cash-collection/commission-receivable/remittance workflow is still missing. Before deploying or activating the policy or collecting its commission, require all of the following:
 
 - monthly allocation, immutable policy snapshot and booking-level ledger deployed with reviewed migrations and preserved historical finance records;
 - automated policy-boundary, concurrency, tenant-isolation, retries, cash, refund and payout-reversal tests green;

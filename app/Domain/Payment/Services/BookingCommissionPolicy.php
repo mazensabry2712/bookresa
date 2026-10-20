@@ -2,70 +2,53 @@
 
 namespace App\Domain\Payment\Services;
 
-use App\Domain\Billing\Enums\SubscriptionStatus;
-use App\Domain\Billing\Models\Subscription;
 use App\Domain\Booking\Models\Booking;
-use App\Domain\Customer\Models\Customer;
+use App\Domain\Payment\Models\BookingCommissionAllocation;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Support\PlatformSettings;
 use LogicException;
 use RuntimeException;
 
+/**
+ * Compatibility adapter for code that needs a policy snapshot.
+ * Eligibility is allocated on booking confirmation, never inferred from customer profiles at checkout.
+ */
 final class BookingCommissionPolicy
 {
-    public function __construct(
-        private readonly CurrentTenant $currentTenant,
-        private readonly PlatformSettings $platformSettings,
-    ) {}
+    public function __construct(private readonly CurrentTenant $currentTenant)
+    {
+    }
 
-    /**
-     * Freeze the applicable customer ordinal and commission policy when checkout is created.
-     *
-     * @return array<string, int|bool|string>
-     */
+    /** @return array<string, int|bool|string> */
     public function snapshot(Booking $booking): array
     {
         $tenantId = $this->currentTenant->idOrFail();
 
         if ((int) $booking->tenant_id !== $tenantId) {
-            throw new LogicException('Booking must belong to the current tenant.');
+            throw new LogicException('Booking commission snapshot must use the current workspace.');
         }
 
-        $booking->loadMissing('customer');
-        $customer = $booking->customer;
-
-        if (! $customer instanceof Customer || (int) $customer->tenant_id !== $tenantId) {
-            throw new RuntimeException('A workspace customer is required to calculate booking commission.');
-        }
-
-        $customerOrdinal = Customer::query()
-            ->where('tenant_id', $tenantId)
-            ->where(function ($query) use ($customer): void {
-                $query->where('created_at', '<', $customer->created_at)
-                    ->orWhere(function ($query) use ($customer): void {
-                        $query->where('created_at', $customer->created_at)
-                            ->where('id', '<=', $customer->getKey());
-                    });
-            })
-            ->count();
-
-        $subscription = Subscription::query()
-            ->whereIn('status', [SubscriptionStatus::Trial->value, SubscriptionStatus::Active->value])
-            ->latest('start_at')
+        $allocation = BookingCommissionAllocation::query()
+            ->where('booking_id', $booking->getKey())
             ->first();
 
-        $includedLimit = $subscription?->isUsable()
-            ? (int) $subscription->included_customer_limit
-            : max(0, (int) $this->platformSettings->get('commission_free_customer_limit', 1000));
-        $rateBasisPoints = max(0, min(10000, (int) $this->platformSettings->get('booking_commission_rate_basis_points', 500)));
+        if ($allocation === null) {
+            throw new RuntimeException('Monthly booking commission is allocated when the booking is first confirmed.');
+        }
 
         return [
-            'version' => 'customer-ordinal-v1',
-            'customer_id' => (int) $customer->getKey(),
-            'customer_ordinal' => $customerOrdinal,
-            'included_customer_limit' => $includedLimit,
-            'eligible' => $customerOrdinal > $includedLimit,
-            'rate_basis_points' => $rateBasisPoints,
+            'version' => $allocation->policy_version,
+            'allocation_id' => (int) $allocation->getKey(),
+            'period_start' => $allocation->period_start->toDateString(),
+            'period_end' => $allocation->period_end->toDateString(),
+            'timezone' => $allocation->timezone,
+            'booking_ordinal' => (int) $allocation->booking_ordinal,
+            'free_booking_allowance' => (int) $allocation->free_booking_allowance,
+            'commission_enabled' => (bool) $allocation->commission_enabled,
+            'eligible' => (bool) $allocation->eligible,
+            'rate_basis_points' => (int) $allocation->rate_basis_points,
+            'booking_amount_minor_snapshot' => (int) $allocation->booking_amount_minor_snapshot,
+            'commission_amount_minor_snapshot' => (int) $allocation->commission_amount_minor_snapshot,
+            'currency' => $allocation->currency,
         ];
     }
 }

@@ -397,5 +397,15 @@
     "Insufficient workspace balance.": "Insufficient workspace balance.",
     "Centralized payments are disabled.": "Centralized payments are disabled.",
     "Platform commission total": "Platform commission total",
-    "Paid out": "Paid out"
+    "Paid out": "Paid out",
+    "Enable booking commissions": "Enable booking commissions",
+    "This policy is independent of online payments. Confirmed cash and online bookings use the same monthly allowance.": "This policy is independent of online payments. Confirmed cash and online bookings use the same monthly allowance.",
+    "Free qualifying bookings per workspace each month": "Free qualifying bookings per workspace each month",
+    "Default 1,000. The count is per booking and resets at the start of each business-local calendar month.": "Default 1,000. The count is per booking and resets at the start of each business-local calendar month.",
+    "Default 10%. Applies to eligible confirmed bookings after the free monthly allowance.": "Default 10%. Applies to eligible confirmed bookings after the free monthly allowance.",
+    "Online payments use the platform payment account when enabled. The commission switch below does not enable or disable customer checkout.": "Online payments use the platform payment account when enabled. The commission switch below does not enable or disable customer checkout.",
+    "When enabled, customers may pay online in full through the platform Kashier account or choose cash at the center.": "When enabled, customers may pay online in full through the platform Kashier account or choose cash at the center.",
+    "Booking number in month": "Booking number in month",
+    "Free booking allowance": "Free booking allowance",
+    "Online payment entries are reconciled to the confirmed booking’s monthly allocation. Cash commission receivables are not yet collected or reconciled by this ledger.": "Online payment entries are reconciled to the confirmed booking’s monthly allocation. Cash commission receivables are not yet collected or reconciled by this ledger."
 }

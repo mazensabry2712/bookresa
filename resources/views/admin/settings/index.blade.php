@@ -120,7 +120,7 @@
             <section class="space-y-4 rounded-xl border border-slate-200 p-5 dark:border-slate-800">
                 <div>
                     <h3 class="text-base font-bold">{{ __('Centralized booking payments & commission') }}</h3>
-                    <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('All workspace booking payments use the platform payment account. Workspace owners do not configure separate merchant IDs.') }}</p>
+                    <p class="mt-1 text-sm leading-6 text-slate-500">{{ __('Online payments use the platform payment account when enabled. The commission switch below does not enable or disable customer checkout.') }}</p>
                 </div>
 
                 <label class="flex items-start gap-3 rounded-xl br-surface-soft p-4 text-sm">
@@ -129,27 +129,42 @@
                            class="mt-0.5 rounded border-slate-300">
                     <span>
                         <span class="block font-semibold">{{ __('Enable centralized electronic booking payments') }}</span>
-                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('When enabled, customers may choose online full payment or cash at the center, using the platform Kashier account for online payments.') }}</span>
+                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('When enabled, customers may pay online in full through the platform Kashier account or choose cash at the center.') }}</span>
                     </span>
                 </label>
                 @error('centralized_booking_payments_enabled')
                     <p class="text-sm font-semibold text-rose-600">{{ $message }}</p>
                 @enderror
 
+                <label class="flex items-start gap-3 rounded-xl border border-slate-200 p-4 text-sm dark:border-slate-800">
+                    <input type="checkbox" name="booking_commission_enabled" value="1"
+                           @checked(old('booking_commission_enabled', $values['booking_commission_enabled']))
+                           class="mt-0.5 rounded border-slate-300">
+                    <span>
+                        <span class="block font-semibold">{{ __('Enable booking commissions') }}</span>
+                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('This policy is independent of online payments. Confirmed cash and online bookings use the same monthly allowance.') }}</span>
+                    </span>
+                </label>
+                @error('booking_commission_enabled')
+                    <p class="text-sm font-semibold text-rose-600">{{ $message }}</p>
+                @enderror
+
                 <div class="grid gap-5 md:grid-cols-2">
                     <label class="text-sm">
-                        <span class="mb-1 block font-medium">{{ __('Free customer profiles before commission') }}</span>
-                        <input type="number" name="commission_free_customer_limit" min="0" max="1000000" step="1"
-                               value="{{ old('commission_free_customer_limit', $values['commission_free_customer_limit']) }}" required
+                        <span class="mb-1 block font-medium">{{ __('Free qualifying bookings per workspace each month') }}</span>
+                        <input type="number" name="commission_free_booking_limit" min="0" max="1000000" step="1"
+                               value="{{ old('commission_free_booking_limit', $values['commission_free_booking_limit']) }}" required
                                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
-                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('A workspace plan can override this fallback with its included customer limit.') }}</span>
+                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('Default 1,000. The count is per booking and resets at the start of each business-local calendar month.') }}</span>
+                        @error('commission_free_booking_limit')<span class="mt-1 block text-xs font-semibold text-rose-600">{{ $message }}</span>@enderror
                     </label>
                     <label class="text-sm">
                         <span class="mb-1 block font-medium">{{ __('Booking commission rate (%)') }}</span>
                         <input type="number" name="booking_commission_rate_percent" min="0" max="100" step="0.01"
                                value="{{ old('booking_commission_rate_percent', $values['booking_commission_rate_percent']) }}" required
                                class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
-                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('Default 5%. Applies to paid bookings belonging to customer profiles after the included limit, not the first included customers.') }}</span>
+                        <span class="mt-1 block text-xs leading-5 text-slate-500">{{ __('Default 10%. Applies to eligible confirmed bookings after the free monthly allowance.') }}</span>
+                        @error('booking_commission_rate_percent')<span class="mt-1 block text-xs font-semibold text-rose-600">{{ $message }}</span>@enderror
                     </label>
                 </div>
                 <p class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">{{ __('Do not enable live collection until the platform payment account, marketplace funds flow, workspace verification and payout process have been approved by the payment provider and reviewed for legal compliance.') }}</p>

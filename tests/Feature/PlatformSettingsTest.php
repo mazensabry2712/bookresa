@@ -34,8 +34,9 @@ test('platform admin can view and update platform settings', function (): void {
             'default_timezone' => 'Africa/Cairo',
             'booking_slot_interval_minutes' => 30,
             'centralized_booking_payments_enabled' => '0',
-            'commission_free_customer_limit' => 1000,
-            'booking_commission_rate_percent' => 5,
+            'booking_commission_enabled' => '0',
+            'commission_free_booking_limit' => 1000,
+            'booking_commission_rate_percent' => 10,
         ])
         ->assertRedirect();
 
@@ -47,8 +48,9 @@ test('platform admin can view and update platform settings', function (): void {
             'default_timezone' => 'Africa/Cairo',
             'booking_slot_interval_minutes' => '30',
             'centralized_booking_payments_enabled' => '0',
-            'commission_free_customer_limit' => '1000',
-            'booking_commission_rate_basis_points' => '500',
+            'booking_commission_enabled' => '0',
+            'commission_free_booking_limit' => '1000',
+            'monthly_booking_commission_rate_basis_points' => '1000',
         ]);
 });
 
@@ -115,8 +117,9 @@ test('platform admin can enable centralized booking payments after live credenti
             'default_timezone' => 'Africa/Cairo',
             'booking_slot_interval_minutes' => 15,
             'centralized_booking_payments_enabled' => '1',
-            'commission_free_customer_limit' => 1000,
-            'booking_commission_rate_percent' => 5,
+            'booking_commission_enabled' => '0',
+            'commission_free_booking_limit' => 1000,
+            'booking_commission_rate_percent' => 10,
         ])
         ->assertRedirect();
 
@@ -139,7 +142,7 @@ test('platform settings validation rejects invalid values', function (): void {
             'default_timezone' => 'invalid/timezone',
             'booking_slot_interval_minutes' => 2,
             'centralized_booking_payments_enabled' => '0',
-            'commission_free_customer_limit' => -1,
+            'commission_free_booking_limit' => -1,
             'booking_commission_rate_percent' => 101,
         ])
         ->assertSessionHasErrors([
@@ -148,7 +151,7 @@ test('platform settings validation rejects invalid values', function (): void {
             'default_locale',
             'default_timezone',
             'booking_slot_interval_minutes',
-            'commission_free_customer_limit',
+            'commission_free_booking_limit',
             'booking_commission_rate_percent',
         ]);
 });
@@ -176,8 +179,9 @@ test('platform admin cannot enable centralized payments without platform credent
             'default_timezone' => 'Africa/Cairo',
             'booking_slot_interval_minutes' => 15,
             'centralized_booking_payments_enabled' => '1',
-            'commission_free_customer_limit' => 1000,
-            'booking_commission_rate_percent' => 5,
+            'booking_commission_enabled' => '0',
+            'commission_free_booking_limit' => 1000,
+            'booking_commission_rate_percent' => 10,
         ])
         ->assertSessionHasErrors('centralized_booking_payments_enabled');
 

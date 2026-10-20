@@ -139,15 +139,15 @@
 
         <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
             <h2 class="font-semibold">{{ __('Centralized commission ledger') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ __('Each successful booking payment is reconciled to one immutable customer-limit and commission snapshot.') }}</p>
+            <p class="mt-1 text-sm text-slate-500">{{ __('Online payment entries are reconciled to the confirmed booking’s monthly allocation. Cash commission receivables are not yet collected or reconciled by this ledger.') }}</p>
             <div class="mt-4 overflow-x-auto">
                 <table class="w-full min-w-[760px] text-start text-sm">
                     <thead class="border-b border-slate-200 text-xs text-slate-500 dark:border-slate-800">
                         <tr>
                             <th class="py-3 pe-3 font-semibold">{{ __('Workspace') }}</th>
                             <th class="py-3 pe-3 font-semibold">{{ __('Payment reference') }}</th>
-                            <th class="py-3 pe-3 font-semibold">{{ __('Customer number') }}</th>
-                            <th class="py-3 pe-3 font-semibold">{{ __('Included customer limit') }}</th>
+                            <th class="py-3 pe-3 font-semibold">{{ __('Booking number in month') }}</th>
+                            <th class="py-3 pe-3 font-semibold">{{ __('Free booking allowance') }}</th>
                             <th class="py-3 pe-3 font-semibold">{{ __('Gross paid') }}</th>
                             <th class="py-3 pe-3 font-semibold">{{ __('Refunded') }}</th>
                             <th class="py-3 pe-3 font-semibold">{{ __('Commission') }}</th>
@@ -160,8 +160,8 @@
                             <tr>
                                 <td class="py-3 pe-3">{{ data_get($commission->tenant?->profile?->name, app()->getLocale()) ?? $commission->tenant?->slug ?? $commission->tenant_id }}</td>
                                 <td class="py-3 pe-3 font-mono text-xs">{{ $commission->payment?->reference ?? '—' }}</td>
-                                <td class="py-3 pe-3">{{ number_format($commission->customer_ordinal) }}</td>
-                                <td class="py-3 pe-3">{{ number_format($commission->included_customer_limit) }}</td>
+                                <td class="py-3 pe-3">{{ number_format($commission->booking_ordinal ?? $commission->customer_ordinal) }}</td>
+                                <td class="py-3 pe-3">{{ number_format($commission->free_booking_allowance ?? $commission->included_customer_limit) }}</td>
                                 <td class="py-3 pe-3">{{ number_format($commission->gross_amount_minor / 100, 2) }} {{ $commission->currency }}</td>
                                 <td class="py-3 pe-3">{{ number_format($commission->refunded_amount_minor / 100, 2) }}</td>
                                 <td class="py-3 pe-3">{{ number_format($commission->commission_amount_minor / 100, 2) }}</td>

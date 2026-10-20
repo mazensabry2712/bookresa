@@ -76,12 +76,13 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] gateway tests
 - [x] existing payment-keyed commission reconciliation for the legacy customer-profile ordinal policy (not the target monthly policy)
 - [x] manual workspace payout reservation and external-reference recording (no automatic transfer)
-- [ ] monthly qualifying-booking allowance per workspace/calendar month (default 1,000) and 10% default rate
-- [ ] independent commission-enabled switch, separate from centralized online-payment availability
-- [ ] decouple booking commission from subscription included-customer limits and customer-profile counts
-- [ ] booking-centric ledger across retries/partial payments, refunds and reversals
+- [x] monthly qualifying-booking allocation per workspace/calendar month (default 1,000), timezone-aware ordinal and 10% default rate (code on main; migration not deployed)
+- [x] independent commission-enabled switch, separate from centralized online-payment availability (defaults off)
+- [x] eligibility no longer derives from subscription included-customer limits or customer-profile counts
+- [x] online-payment commission rows reconcile paid/refunded attempts in stable order and cap total commission at one booking allocation snapshot
 - [ ] auditable cash collection, commission receivable/remittance and settlement workflow
 - [ ] monthly Super Admin/workspace finance views and currency-safe commission reporting
+- [ ] auditable cash collection, commission receivable/remittance and settlement workflow (cash bookings are counted but not yet reconciled as commission receivables)
 - [ ] provider and legal/commercial approval for the chosen marketplace/collection path
 - [x] public booking payment choice (cash at center always; full online payment when enabled)
 - [x] selected payment method persisted on new public bookings and server-validated
@@ -182,7 +183,8 @@ This checklist measures the current backend/product implementation scope, not th
 ## Release gate
 
 The items below are release verification tasks. A previously green baseline does not stay green automatically after code changes.
-- [x] full test suite (409 passed / 1 skipped / 1926 assertions on 2026-10-20; [CI run](https://github.com/mazensabry2712/bookresa/actions/runs/39357759308))
+- [x] previous baseline suite (409 passed / 1 skipped / 1,926 assertions on 2026-10-20; [CI run](https://github.com/mazensabry2712/bookresa/actions/runs/39357759308))
+- [ ] new monthly commission tranche CI, static-analysis and production-build gate
 - [x] static analysis (PHPStan passed on commit `44b7f6bbc07ff0601dd6fce9914de9412f3c7451`)
 - [ ] Pint (full repository currently has 101 style issues across 301 files; changed-file CI checks pass)
 - [x] production build
