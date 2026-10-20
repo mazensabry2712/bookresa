@@ -81,6 +81,9 @@ test('Kashier gateway verifies a payment session', function (): void {
                 'method' => 'card',
                 'updatedAt' => '2026-09-21T01:00:00Z',
                 'merchantOrderId' => 'PAY-ABC1234567',
+                'merchantId' => 'MID-123',
+                'amount' => '250.00',
+                'currency' => 'EGP',
             ],
         ]),
     ]);
@@ -90,7 +93,37 @@ test('Kashier gateway verifies a payment session', function (): void {
     expect($result->status)->toBe(PaymentStatus::Paid)
         ->and($result->providerReference)->toBe('session-123')
         ->and($result->method)->toBe('card')
+        ->and($result->metadata)->toMatchArray([
+            'merchant_order_id' => 'PAY-ABC1234567',
+            'merchant_id' => 'MID-123',
+            'amount' => '250.00',
+            'currency' => 'EGP',
+        ])
         ->and($result->paidAt)->not->toBeNull();
+});
+
+test('Kashier authorization is not considered a captured payment', function (): void {
+    kashierConfig();
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions/session-authorized/payment' => Http::response([
+            'data' => [
+                'sessionId' => 'session-authorized',
+                'status' => 'AUTHORIZED',
+                'method' => 'card',
+                'updatedAt' => '2026-09-21T01:00:00Z',
+                'merchantOrderId' => 'PAY-AUTHORIZED',
+                'merchantId' => 'MID-123',
+                'amount' => '250.00',
+                'currency' => 'EGP',
+            ],
+        ]),
+    ]);
+
+    $result = app(KashierGateway::class)->verifyPayment('session-authorized');
+
+    expect($result->status)->toBe(PaymentStatus::Processing)
+        ->and($result->paidAt)->toBeNull();
 });
 
 test('Kashier gateway verify only requires the secret key', function (): void {

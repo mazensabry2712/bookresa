@@ -126,7 +126,8 @@ final class KashierGateway implements PaymentGateway
         }
 
         $status = match (strtoupper((string) ($data['status'] ?? 'PENDING'))) {
-            'PAID', 'AUTHORIZED' => PaymentStatus::Paid,
+            'PAID' => PaymentStatus::Paid,
+            'AUTHORIZED' => PaymentStatus::Processing,
             'FAILED', 'EXPIRED', 'ABANDONED', 'REJECTED', 'VOIDED', 'REVERSED' => PaymentStatus::Failed,
             'REFUNDED' => PaymentStatus::Refunded,
             default => PaymentStatus::Processing,
@@ -140,6 +141,8 @@ final class KashierGateway implements PaymentGateway
                 'kashier_status' => $data['status'] ?? null,
                 'merchant_order_id' => $data['merchantOrderId'] ?? null,
                 'merchant_id' => $data['merchantId'] ?? null,
+                'amount' => $data['amount'] ?? null,
+                'currency' => $data['currency'] ?? null,
                 'kashier_order_id' => $data['orderId'] ?? null,
                 'session_id' => $data['sessionId'] ?? $providerReference,
             ],

@@ -120,6 +120,8 @@ test('signed Kashier return verifies the payment server-side and redirects to co
                 'updatedAt' => '2026-09-21T01:00:00Z',
                 'merchantOrderId' => $payment->reference,
                 'merchantId' => 'MID-RETURN-CLINIC',
+                'amount' => '200.00',
+                'currency' => 'EGP',
                 'orderId' => 'order-return-001',
             ],
         ]),

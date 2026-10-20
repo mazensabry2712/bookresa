@@ -88,20 +88,36 @@ final class KashierReturnController
                         : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
 
                     $returnedMerchantId = trim((string) data_get($result->metadata, 'merchant_id'));
+                    $returnedOrderReference = trim((string) data_get($result->metadata, 'merchant_order_id'));
+                    $returnedCurrency = strtoupper(trim((string) data_get($result->metadata, 'currency')));
 
-                    if ($returnedMerchantId === '' || $expectedMerchantId === '' || $returnedMerchantId !== $expectedMerchantId) {
-                        throw new RuntimeException('Kashier payment merchant account does not match the payment.');
+                    try {
+                        $verifiedAmountMinor = $this->amountToMinor(data_get($result->metadata, 'amount'));
+                    } catch (RuntimeException) {
+                        $verifiedAmountMinor = null;
                     }
 
-                    $updated = $payments->applyResult($payment->fresh(), $result);
-                    $bookingPaymentSync->handle($updated, $result->status);
-                    $subscriptionPaymentSync->handle($updated, $result->status);
+                    $verificationMatches = $returnedMerchantId !== ''
+                        && $expectedMerchantId !== ''
+                        && $returnedMerchantId === $expectedMerchantId
+                        && $returnedOrderReference === $payment->reference
+                        && $verifiedAmountMinor === (int) $payment->amount_minor
+                        && $returnedCurrency === strtoupper((string) $payment->currency);
 
-                    $notice = match ($updated->status->value) {
-                        'paid' => 'Payment completed successfully.',
-                        'failed' => 'Payment was not completed.',
-                        default => 'Payment is being verified.',
-                    };
+                    if (! $verificationMatches) {
+                        report(new RuntimeException('Kashier verified session details do not match the local payment.'));
+                        $notice = 'Payment could not be verified. Please contact the business.';
+                    } else {
+                        $updated = $payments->applyResult($payment->fresh(), $result);
+                        $bookingPaymentSync->handle($updated, $updated->status);
+                        $subscriptionPaymentSync->handle($updated, $updated->status);
+
+                        $notice = match ($updated->status->value) {
+                            'paid' => 'Payment completed successfully.',
+                            'failed' => 'Payment was not completed.',
+                            default => 'Payment is being verified.',
+                        };
+                    }
                 }
             }
 
