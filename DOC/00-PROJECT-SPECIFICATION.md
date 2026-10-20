@@ -141,7 +141,9 @@ Two separate financial contexts:
 1. Platform Subscription Payment: Business Owner → BookResa.
 2. Business Customer Payment: Customer → Business.
 
-Payment architecture must support Full Payment, Deposit and Pay Later.
+Payment architecture must support Full Payment, Deposit and Pay Later as product requirements.
+
+**Current implementation status (verified against main on 2026-10-20):** public booking checkout currently implements a platform-wide choice between full online payment and pay later. Deposit is specified as a product mode but its amount calculation and checkout lifecycle are not implemented yet. Do not present Deposit as an available option until implementation and end-to-end tests are complete. The platform-wide switch is `centralized_booking_payments_enabled`; this is not an independent payment-mode or merchant-account setting per workspace.
 
 BookResa owns a provider-neutral Payment Core. MVP provider is Kashier. Future gateways such as Stripe, Paymob, Fawry or others must be addable without rewriting Booking, Subscription or Billing.
 
@@ -244,7 +246,7 @@ The current MVP release scope includes the operational platform already defined 
 Must Have:
 Authentication, Business Creation, Workspace, Business Profile, Services, Staff, Working Hours, Calendar, Availability, Bookings, Customers, Public Booking Page, Booking Notifications, Subscription, Customer Usage Tracking, Payments, Platform Admin Dashboard and basic Reports.
 
-Payments in the MVP use the provider-neutral PaymentGateway architecture with Kashier as the first provider. Booking payment modes include Full Payment, Deposit and Pay Later. Real Kashier sandbox end-to-end verification remains a release-gate activity until completed against the real test environment.
+Payments in the MVP use the provider-neutral PaymentGateway architecture with Kashier as the first provider. Full Payment, Deposit and Pay Later remain the product-level target modes; at the current implementation snapshot, Full Payment and Pay Later are implemented, while Deposit is not yet available. Real Kashier sandbox end-to-end verification remains a release gate until completed against the real test environment.
 
 Later / Post-MVP:
 Invoices, additional payment providers beyond the current MVP provider, WhatsApp, SMS, Multiple Branches, Inventory, Recurring Bookings, CRM, Mobile App, Advanced Analytics, advanced tax/invoicing capabilities and other premium modules.

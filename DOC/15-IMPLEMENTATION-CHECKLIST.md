@@ -13,7 +13,7 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] RTL/LTR foundation (direction-safe document roots + shared JS fallback)
 - [x] Light/Dark foundation (dark class + system preference + persisted theme API)
 - [x] Blade design tokens (central brand + semantic CSS variables)
-- [x] Verified test baseline (292 passed / 1 skipped / 1149 assertions in GitHub Actions CI on 2026-10-02)
+- [x] Verified current CI baseline (409 passed / 1 skipped / 1926 assertions on 2026-10-20; [GitHub Actions run 39357759308](https://github.com/mazensabry2712/bookresa/actions/runs/39357759308), commit `44b7f6bbc07ff0601dd6fce9914de9412f3c7451`)
 
 ## Identity/Tenancy
 - [x] Fortify
@@ -74,9 +74,13 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] signed webhook
 - [x] idempotency
 - [x] gateway tests
-- [x] public booking checkout
+- [x] public booking checkout (platform-wide full payment or pay later)
 - [x] signed merchant return + server-side verification
+- [x] operation-aware webhook state mapping and HTTP 200/409 acknowledgements
+- [x] server-side verification matches merchant, order reference, amount and currency before applying provider state
 - [ ] real Kashier sandbox end-to-end verification
+- [ ] existing-booking payment retry after failed/expired checkout
+- [ ] abandoned pending booking expiry/release lifecycle
 
 ## Billing
 - [x] plans
@@ -166,8 +170,8 @@ This checklist measures the current backend/product implementation scope, not th
 ## Release gate
 
 The items below are release verification tasks. A previously green baseline does not stay green automatically after code changes.
-- [x] full test suite (270 passed / 1 skipped / 1037 assertions on 2026-09-27)
-- [x] static analysis (PHPStan 0 errors in GitHub Actions CI; latest verified baseline remains clean)
+- [x] full test suite (409 passed / 1 skipped / 1926 assertions on 2026-10-20; [CI run](https://github.com/mazensabry2712/bookresa/actions/runs/39357759308))
+- [x] static analysis (PHPStan passed on commit `44b7f6bbc07ff0601dd6fce9914de9412f3c7451`)
 - [ ] Pint (full repository currently has 101 style issues across 301 files; changed-file CI checks pass)
 - [x] production build
 - [x] tenant isolation green (covered by automated suite)

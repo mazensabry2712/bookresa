@@ -2,23 +2,20 @@
 
 ## Current verified CI gate
 
-The latest previously verified GitHub Actions CI baseline on 2026-10-02:
-- full test suite: 292 passed, 1 skipped, 1149 assertions
-- PHPStan: passed
+Verified on 2026-10-20 against commit `44b7f6bbc07ff0601dd6fce9914de9412f3c7451` ([GitHub Actions run 39357759308](https://github.com/mazensabry2712/bookresa/actions/runs/39357759308)):
+- full test suite: **409 passed, 1 skipped, 1926 assertions**
+- PHPStan static analysis: passed
 - PHP syntax scan: passed
 - changed-file Pint: passed
 - Vite production build: passed
 
-That baseline was verified on commit `7a0d81b1` before the Super Admin 2.0 control-plane changes.
+This confirms the repository code and automated CI checks only. It does **not** prove the live Hostinger deployment is at this commit or that a real Kashier payment succeeded. Real payment sandbox E2E and infrastructure release gates remain separate.
 
-Super Admin 2.0 adds new platform RBAC, security, finance, support, broadcast, health, module and workspace-lifecycle tests. Those new changes require a fresh CI run before they are treated as a fully verified release.
+**Hostinger CLI compatibility finding (2026-10-20):** the default `php` command returned PHP `8.3.35`, while Composer reports that dependencies require PHP `>=8.4.1`. Before running Artisan, Composer or deployment commands, explicitly locate and use the Hostinger PHP 8.4+ CLI binary; do not run `php artisan` using the incompatible default CLI.
 
-A real production deployment is a separate gate and must still be verified against the live infrastructure.
-
-Pint: touched files pass; the full repository currently has 101 existing style issues across 301 files
-- SEO regression tests: previously verified
+Pint: changed files pass; the full repository previously reported 101 existing style issues across 301 files. Re-run the repository-wide formatter check before marking whole-repo Pint clean.
 - PHP 8.4 is the project target
-- Larastan is declared in Composer and locked on `main`, so CI can enforce PHPStan
+- Larastan is declared in Composer and locked on `main`, so CI enforces PHPStan
 
 The CI workflow in `.github/workflows/ci.yml` runs Composer validation/install, PHPStan, syntax, changed-file Pint, frontend build and the full test suite.
 

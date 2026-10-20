@@ -26,6 +26,8 @@ The effective switch is the **platform setting** `centralized_booking_payments_e
 
 If checkout-session creation fails before there is evidence that a provider session exists, the controller attempts to cancel the pending booking. Once a real checkout session exists, a customer abandoning checkout can leave the booking pending: payment expiry is stored, but the current scheduler does not include a job that releases abandoned pending booking slots. Pending bookings are included in availability blocking. This remains a release-readiness item.
 
+**Retry gap:** the current booking confirmation page can link to the saved checkout URL, but there is no dedicated customer-facing action that safely starts a fresh payment session for an existing booking after an expired or failed session. Until that flow exists, a customer may be unable to retry cleanly and the pending booking may keep blocking its slot.
+
 ## Subscription payment
 
 Paid business subscriptions use the same gateway-neutral payment core with a `Subscription` payable. Trial subscriptions do not require payment. A paid subscription is usable only according to the subscription lifecycle and its paid payment state.
@@ -37,8 +39,8 @@ Subscription and customer-booking payment records are separate; a successful cus
 1. Create a local pending payment with an idempotency key.
 2. Create a Kashier hosted session and store its provider reference, checkout URL, and expiry.
 3. Redirect the browser to the hosted checkout.
-4. Validate the signed merchant-return parameters and perform server-side session verification. A browser redirect alone is not proof of payment.
-5. Verify webhook signatures with the Payment API Key, validate the payment reference, merchant, amount, and currency, then update the payment and related booking/subscription.
+4. Validate the signed merchant-return parameters and perform server-side session verification. A browser redirect alone is not proof of payment. The server-verified session's merchant ID, merchant order reference, amount and currency must match the local payment before its state is applied. `AUTHORIZED` stays `Processing`; it is not treated as a captured/paid payment.
+5. Verify webhook signatures with the Payment API Key, validate the payment reference, merchant, amount, and currency, then update the payment and related booking/subscription. Map status by operation: a generic `SUCCESS` event is not enough to make an authorization, void or rejection a paid payment.
 6. Use idempotency and transaction locking so repeated provider notifications do not apply the same payment/refund twice.
 
 **Webhook acknowledgement contract:** return HTTP `200` for a newly processed delivery and HTTP `409` for an already-processed duplicate. Kashier treats other response codes, including `204`, as unacknowledged and may retry the event. The controller and feature tests now use this contract.
