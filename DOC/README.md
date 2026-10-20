@@ -15,7 +15,7 @@ BookResa is a multi-tenant SaaS platform for small and medium-sized service busi
 - Shared-database multi-tenancy
 
 ## Product model
-One platform → many Businesses → one isolated Workspace/Tenant per Business → configurable modules → public booking page → subscription + unique-customer usage billing.
+One platform → many Businesses → one isolated Workspace/Tenant per Business → configurable modules → public booking page → subscriptions + unique-customer usage metering. The extra-customer surcharge is currently disabled/replaced by the target booking-commission model; the monthly 1,000-booking/10% policy is documented in DOC/21 but is not implemented at the audit baseline.
 
 ## Documentation
 1. 00-PROJECT-SPECIFICATION.md — canonical complete specification.
