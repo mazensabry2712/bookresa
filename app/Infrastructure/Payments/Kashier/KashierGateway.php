@@ -6,6 +6,7 @@ use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Data\PaymentGatewayResult;
 use App\Domain\Payment\Data\PaymentRequest;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -13,9 +14,11 @@ use RuntimeException;
 
 final class KashierGateway implements PaymentGateway
 {
+    public function __construct(private readonly PlatformSettings $platformSettings) {}
+
     public function createPayment(PaymentRequest $request): PaymentGatewayResult
     {
-        $config = config('bookresa.payments.kashier');
+        $config = $this->platformSettings->kashierConfig();
         $this->assertConfigured($config, ['merchant_id', 'api_key', 'secret_key']);
 
         $merchantRedirect = $request->metadata['merchant_redirect'] ?? $config['merchant_redirect'];
@@ -99,7 +102,7 @@ final class KashierGateway implements PaymentGateway
 
     public function verifyPayment(string $providerReference): PaymentGatewayResult
     {
-        $config = config('bookresa.payments.kashier');
+        $config = $this->platformSettings->kashierConfig();
         $this->assertConfigured($config, ['secret_key']);
 
         $response = $this->client()
@@ -158,7 +161,7 @@ final class KashierGateway implements PaymentGateway
             throw new RuntimeException('Refund amount must be greater than zero.');
         }
 
-        $config = config('bookresa.payments.kashier');
+        $config = $this->platformSettings->kashierConfig();
         $this->assertConfigured($config, ['secret_key']);
 
         $lookup = $this->client()
@@ -222,7 +225,7 @@ final class KashierGateway implements PaymentGateway
 
     private function client(): PendingRequest
     {
-        $config = config('bookresa.payments.kashier');
+        $config = $this->platformSettings->kashierConfig();
 
         return Http::baseUrl(rtrim((string) $config['base_url'], '/'))
             ->acceptJson()

@@ -11,6 +11,7 @@ use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierGateway;
 use App\Infrastructure\Payments\Kashier\KashierRedirectVerifier;
+use App\Support\PlatformSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,9 +28,11 @@ final class KashierReturnController
         PaymentService $payments,
         SyncBookingPaymentStatus $bookingPaymentSync,
         SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
+        PlatformSettings $platformSettings,
     ): RedirectResponse|JsonResponse {
         $query = $request->all();
-        $apiKey = (string) config('bookresa.payments.kashier.api_key');
+        $kashierConfig = $platformSettings->kashierConfig();
+        $apiKey = (string) ($kashierConfig['api_key'] ?? '');
 
         if (! $verifier->verify($query, $apiKey)) {
             return response()->json(['message' => 'Invalid Kashier redirect signature.'], 401);
@@ -70,7 +73,7 @@ final class KashierReturnController
             return response()->json(['message' => 'Payment tenant was not found.'], 404);
         }
 
-        return $currentTenant->run($tenant, function () use ($payment, $gateway, $payments, $bookingPaymentSync, $subscriptionPaymentSync, $tenant): RedirectResponse {
+        return $currentTenant->run($tenant, function () use ($payment, $gateway, $payments, $bookingPaymentSync, $subscriptionPaymentSync, $tenant, $kashierConfig): RedirectResponse {
             $notice = 'Payment is being verified.';
 
             if ($payment->provider_reference !== null) {
@@ -84,7 +87,7 @@ final class KashierReturnController
                     $usesCentralPlatformMerchant = $payment->payable_type === Subscription::class
                         || filter_var(data_get($payment->metadata, 'centralized_payment', false), FILTER_VALIDATE_BOOL);
                     $expectedMerchantId = $usesCentralPlatformMerchant
-                        ? (string) config('bookresa.payments.kashier.merchant_id')
+                        ? (string) ($kashierConfig['merchant_id'] ?? '')
                         : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
 
                     $returnedMerchantId = trim((string) data_get($result->metadata, 'merchant_id'));

@@ -62,7 +62,7 @@ The gateway contract supports refunds. The current platform-admin flow requests 
 ## Security
 
 - Never store raw card PAN/CVV.
-- Store Kashier credentials in deployment environment/secret storage only.
+- Store the platform Kashier live Merchant ID and credentials through Super Admin Integrations. The Payment API Key and Secret Key are encrypted at rest with Laravel Crypt in `platform_settings`, never re-rendered into the admin page, and never written to the audit log. `APP_KEY` must remain protected and stable because it decrypts these stored values. Once this integration is saved, the database-backed Super Admin configuration is the production source of truth; environment values remain a fallback only before that record exists.
 - Verify redirect signatures and webhook HMAC signatures.
 - Verify provider state server-side; never mark a payment paid from a browser redirect alone.
 - Preserve tenant ownership checks, amount/currency/merchant validation, idempotency, audit entries, and refund limits.

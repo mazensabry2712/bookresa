@@ -6,6 +6,7 @@ use App\Support\AuditLogger;
 use App\Support\PlatformSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 final class PlatformSettingsController
@@ -13,6 +14,7 @@ final class PlatformSettingsController
     public function index(PlatformSettings $settings): View
     {
         $values = $settings->all();
+        $storedKashier = $settings->storedKashierConfig();
 
         return view('admin.settings.index', [
             'values' => [
@@ -24,6 +26,17 @@ final class PlatformSettingsController
                 'centralized_booking_payments_enabled' => filter_var($values['centralized_booking_payments_enabled'] ?? false, FILTER_VALIDATE_BOOL),
                 'commission_free_customer_limit' => (int) ($values['commission_free_customer_limit'] ?? 1000),
                 'booking_commission_rate_percent' => number_format(((int) ($values['booking_commission_rate_basis_points'] ?? 500)) / 100, 2, '.', ''),
+            ],
+            'kashier' => [
+                'mode' => 'live',
+                'base_url' => 'https://api.kashier.io',
+                'merchant_id' => $storedKashier['merchant_id'],
+                'api_key_configured' => $storedKashier['api_key_configured'],
+                'secret_key_configured' => $storedKashier['secret_key_configured'],
+                'server_webhook' => $storedKashier['server_webhook'] !== ''
+                    ? $storedKashier['server_webhook']
+                    : route('webhooks.kashier'),
+                'allowed_methods' => $storedKashier['allowed_methods'],
             ],
             'locales' => config('bookresa.locales', ['en', 'ar']),
         ]);
@@ -48,11 +61,12 @@ final class PlatformSettingsController
         $centralizedPaymentsEnabled = $request->boolean('centralized_booking_payments_enabled');
 
         if ($centralizedPaymentsEnabled) {
+            $kashier = $settings->storedKashierConfig();
             $requiredProviderSettings = [
-                'Kashier platform merchant ID' => config('bookresa.payments.kashier.merchant_id'),
-                'Kashier API key' => config('bookresa.payments.kashier.api_key'),
-                'Kashier secret key' => config('bookresa.payments.kashier.secret_key'),
-                'Kashier server webhook URL' => config('bookresa.payments.kashier.server_webhook'),
+                'Kashier live merchant ID' => $kashier['merchant_id'],
+                'Kashier live Payment API Key' => $kashier['api_key'],
+                'Kashier live Secret Key' => $kashier['secret_key'],
+                'Kashier live server webhook URL' => $kashier['server_webhook'],
             ];
             $missingProviderSettings = array_keys(array_filter(
                 $requiredProviderSettings,
@@ -62,9 +76,9 @@ final class PlatformSettingsController
             if ($missingProviderSettings !== []) {
                 return back()
                     ->withErrors([
-                        'centralized_booking_payments_enabled' => __('Centralized payments cannot be enabled until the platform Kashier credentials and server webhook are configured.'),
+                        'centralized_booking_payments_enabled' => __('Centralized payments cannot be enabled until the live Kashier credentials are saved in Super Admin Integrations.'),
                     ])
-                    ->withInput();
+                    ->withInput($request->except(['kashier_api_key', 'kashier_secret_key']));
             }
         }
 
@@ -88,5 +102,68 @@ final class PlatformSettingsController
         ]);
 
         return back()->with('status', __('Platform settings updated successfully.'));
+    }
+
+    public function updateKashier(
+        Request $request,
+        PlatformSettings $settings,
+        AuditLogger $auditLogger,
+    ): RedirectResponse {
+        // Manual validation ensures failed requests never flash submitted secret values.
+        $validator = Validator::make($request->all(), [
+            'kashier_merchant_id' => ['required', 'string', 'max:120'],
+            'kashier_api_key' => ['nullable', 'string', 'max:1000'],
+            'kashier_secret_key' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->except(['kashier_api_key', 'kashier_secret_key']));
+        }
+
+        $validated = $validator->validated();
+        $current = $settings->storedKashierConfig();
+        $apiKey = filled($validated['kashier_api_key'] ?? null)
+            ? trim((string) $validated['kashier_api_key'])
+            : $current['api_key'];
+        $secretKey = filled($validated['kashier_secret_key'] ?? null)
+            ? trim((string) $validated['kashier_secret_key'])
+            : $current['secret_key'];
+
+        $errors = [];
+
+        if (blank($apiKey)) {
+            $errors['kashier_api_key'] = __('Enter the live Kashier Payment API Key before saving this integration.');
+        }
+
+        if (blank($secretKey)) {
+            $errors['kashier_secret_key'] = __('Enter the live Kashier Secret Key before saving this integration.');
+        }
+
+        if ($errors !== []) {
+            return back()
+                ->withErrors($errors)
+                ->withInput($request->except(['kashier_api_key', 'kashier_secret_key']));
+        }
+
+        $settings->saveKashierCredentials([
+            'merchant_id' => trim($validated['kashier_merchant_id']),
+            'api_key' => filled($validated['kashier_api_key'] ?? null) ? (string) $validated['kashier_api_key'] : null,
+            'secret_key' => filled($validated['kashier_secret_key'] ?? null) ? (string) $validated['kashier_secret_key'] : null,
+            'server_webhook' => route('webhooks.kashier'),
+        ]);
+
+        $auditLogger->log('platform.integration.kashier_updated', null, [
+            'mode' => 'live',
+            'merchant_id' => trim($validated['kashier_merchant_id']),
+            'api_key_rotated' => filled($validated['kashier_api_key'] ?? null),
+            'secret_key_rotated' => filled($validated['kashier_secret_key'] ?? null),
+            'webhook_url' => route('webhooks.kashier'),
+        ]);
+
+        return redirect()
+            ->route('admin.settings.index')
+            ->with('status', __('Kashier live integration credentials saved securely.'));
     }
 }

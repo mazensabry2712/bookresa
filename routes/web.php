@@ -390,6 +390,7 @@ Route::middleware(['auth', 'verified', 'platform'])
         Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
         Route::get('/support/{ticketId}', [SupportTicketController::class, 'show'])->name('support.show');
         Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings/kashier', [PlatformSettingsController::class, 'updateKashier'])->name('settings.kashier.update');
         Route::get('/health', [PlatformHealthController::class, 'index'])->name('health.index');
         Route::get('/modules', [PlatformGlobalModuleController::class, 'index'])->name('modules.index');
         Route::put('/modules/{module}', [PlatformGlobalModuleController::class, 'update'])->name('modules.update');

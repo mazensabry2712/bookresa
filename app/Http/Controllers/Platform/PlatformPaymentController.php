@@ -11,6 +11,7 @@ use App\Domain\Payment\Services\SyncBookingPaymentStatus;
 use App\Domain\Payment\Services\SyncSubscriptionPaymentStatus;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Support\AuditLogger;
+use App\Support\PlatformSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -32,6 +33,7 @@ final class PlatformPaymentController
         PaymentGateway $gateway,
         CurrentTenant $currentTenant,
         AuditLogger $audit,
+        PlatformSettings $platformSettings,
     ): RedirectResponse {
         $payment = Payment::withoutGlobalScopes()->findOrFail($paymentId);
 
@@ -48,10 +50,11 @@ final class PlatformPaymentController
         }
 
         if ($payment->provider === 'kashier') {
+            $kashierConfig = $platformSettings->kashierConfig();
             $usesCentralPlatformMerchant = $payment->payable_type === (new Subscription)->getMorphClass()
                 || filter_var(data_get($payment->metadata, 'centralized_payment', false), FILTER_VALIDATE_BOOL);
             $expectedMerchantId = $usesCentralPlatformMerchant
-                ? (string) config('bookresa.payments.kashier.merchant_id')
+                ? (string) ($kashierConfig['merchant_id'] ?? '')
                 : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
             $returnedMerchantId = trim((string) data_get($result->metadata, 'merchant_id'));
             $returnedOrderReference = trim((string) data_get($result->metadata, 'merchant_order_id'));

@@ -8,6 +8,7 @@ use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Infrastructure\Payments\Kashier\KashierWebhookVerifier;
+use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use LogicException;
@@ -21,6 +22,7 @@ final class HandleKashierWebhook
         private readonly PaymentService $payments,
         private readonly SyncBookingPaymentStatus $bookingPaymentSync,
         private readonly SyncSubscriptionPaymentStatus $subscriptionPaymentSync,
+        private readonly PlatformSettings $platformSettings,
     ) {}
 
     /**
@@ -43,7 +45,7 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
-        $apiKey = (string) config('bookresa.payments.kashier.api_key');
+        $apiKey = (string) ($this->platformSettings->kashierConfig()['api_key'] ?? '');
 
         if (! $this->verifier->verify($data, $signature, $apiKey)) {
             throw new LogicException('Invalid Kashier webhook signature.');
