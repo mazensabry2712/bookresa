@@ -84,6 +84,37 @@
         :json-ld="$jsonLd"
     />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+        /* Keep selected booking times visibly selected even if generated utility CSS is stale. */
+        [data-booking-slots] button[data-booking-slot][aria-pressed="true"] {
+            background-color: #eef2ff !important;
+            border-color: #4f46e5 !important;
+            color: #3730a3 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.24) !important;
+            font-weight: 800 !important;
+        }
+
+        [data-booking-slots] button[data-booking-slot][aria-pressed="true"]::after {
+            content: "✓";
+            display: inline-block;
+            margin-inline-start: 0.5rem;
+            font-size: 1rem;
+            font-weight: 900;
+        }
+
+        [data-booking-slots] button[data-booking-slot]:focus-visible {
+            outline: 3px solid #818cf8;
+            outline-offset: 2px;
+        }
+
+        .dark [data-booking-slots] button[data-booking-slot][aria-pressed="true"] {
+            background-color: #312e81 !important;
+            border-color: #818cf8 !important;
+            color: #e0e7ff !important;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.28) !important;
+        }
+    </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-950 antialiased dark:bg-slate-950 dark:text-white">
     <main class="mx-auto min-h-screen w-full max-w-5xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
