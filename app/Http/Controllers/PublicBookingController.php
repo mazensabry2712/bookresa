@@ -350,7 +350,7 @@ class PublicBookingController
 
             $lastStatus = $locked->statusHistory()->latest('id')->first();
 
-            if (! in_array(
+            if (!in_array(
                 $lastStatus?->reason,
                 Booking::RETRYABLE_ONLINE_PAYMENT_CANCELLATION_REASONS,
                 true,
@@ -365,7 +365,7 @@ class PublicBookingController
             $locked->loadMissing(['service', 'staff']);
 
             if ($locked->service === null
-                || ! $locked->service->is_active
+                || !$locked->service->is_active
                 || ($locked->staff_id === null && $locked->service->staff()->exists())) {
                 throw new RuntimeException(__('app.payment_retry_slot_unavailable'));
             }
@@ -393,7 +393,7 @@ class PublicBookingController
                 ->lockForUpdate()
                 ->first();
 
-            if (! $availability->isAvailable($locked->service, CarbonImmutable::instance($locked->starts_at), $locked->staff)) {
+            if (!$availability->isAvailable($locked->service, CarbonImmutable::instance($locked->starts_at), $locked->staff)) {
                 throw new RuntimeException(__('app.payment_retry_slot_unavailable'));
             }
 
