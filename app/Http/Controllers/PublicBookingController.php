@@ -393,7 +393,7 @@ class PublicBookingController
                 ->lockForUpdate()
                 ->first();
 
-            if (! $availability->isAvailable($locked->service, $locked->starts_at, $locked->staff)) {
+            if (! $availability->isAvailable($locked->service, CarbonImmutable::instance($locked->starts_at), $locked->staff)) {
                 throw new RuntimeException(__('app.payment_retry_slot_unavailable'));
             }
 
