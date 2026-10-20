@@ -3,6 +3,7 @@
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
+use App\Domain\Scheduling\Actions\SetStaffWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Service\Actions\AssignServiceToStaff;
 use App\Domain\Service\Actions\CreateService;
@@ -155,6 +156,63 @@ test('public availability groups a time shared by multiple available staff membe
     expect($times)->not->toBeEmpty()
         ->and($times->unique()->count())->toBe($times->count())
         ->and($response->json('data.0.available_staff_count'))->toBe(2);
+});
+
+test('public booking availability follows each selected doctor weekly schedule', function (): void {
+    $tenant = publicTenant('public-doctor-schedules');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    $doctors = [];
+    foreach ([
+        ['email' => 'public-schedule-morning@example.com', 'name' => 'Morning Doctor', 'opens' => '09:00', 'closes' => '11:00'],
+        ['email' => 'public-schedule-afternoon@example.com', 'name' => 'Afternoon Doctor', 'opens' => '14:00', 'closes' => '16:00'],
+    ] as $definition) {
+        $user = User::factory()->create(['email' => $definition['email']]);
+        $staff = StaffProfile::query()->create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'display_name' => $definition['name'],
+            'status' => StaffStatus::Active,
+        ]);
+        app(AssignServiceToStaff::class)->handle($service, $staff);
+        app(SetStaffWorkingHours::class)->handle($staff, [
+            ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => $definition['opens'], 'closes_at' => $definition['closes']],
+            ['day_of_week' => DayOfWeek::Tuesday->value, 'is_closed' => true],
+            ['day_of_week' => DayOfWeek::Wednesday->value, 'is_closed' => true],
+            ['day_of_week' => DayOfWeek::Thursday->value, 'is_closed' => true],
+            ['day_of_week' => DayOfWeek::Friday->value, 'is_closed' => true],
+            ['day_of_week' => DayOfWeek::Saturday->value, 'is_closed' => true],
+            ['day_of_week' => DayOfWeek::Sunday->value, 'is_closed' => true],
+        ]);
+        $doctors[$definition['name']] = $staff;
+    }
+
+    app(CurrentTenant::class)->clear();
+
+    $morningResponse = $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
+        'service_id' => $service->id,
+        'staff_id' => $doctors['Morning Doctor']->id,
+        'date' => '2026-09-28',
+    ]))->assertOk();
+
+    $afternoonResponse = $this->get(route('public.booking.canonical.availability', $tenant->slug).'?'.http_build_query([
+        'service_id' => $service->id,
+        'staff_id' => $doctors['Afternoon Doctor']->id,
+        'date' => '2026-09-28',
+    ]))->assertOk();
+
+    $morningTimes = collect($morningResponse->json('data'))->pluck('time')->all();
+    $afternoonTimes = collect($afternoonResponse->json('data'))->pluck('time')->all();
+
+    expect($morningTimes)->toBe(['09:00', '09:15', '09:30', '09:45', '10:00', '10:15', '10:30'])
+        ->and($afternoonTimes)->toBe(['14:00', '14:15', '14:30', '14:45', '15:00', '15:15', '15:30']);
 });
 
 test('public availability explains when all assigned staff are inactive', function (): void {
