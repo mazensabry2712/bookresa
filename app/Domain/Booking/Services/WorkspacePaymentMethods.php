@@ -22,8 +22,8 @@ final class WorkspacePaymentMethods
             return $configured;
         }
 
-        // Preserve prior behavior for existing workspaces until a preference is saved.
-        return $this->platformOnlinePaymentsEnabled() ? 'both' : 'offline_only';
+        // Legacy workspaces had both controls visible; the global gate still decides whether online is usable.
+        return 'both';
     }
 
     /**

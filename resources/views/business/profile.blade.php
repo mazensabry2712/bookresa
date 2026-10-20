@@ -15,10 +15,10 @@
         $customerLimitPolicy = old('customer_limit_policy', data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'));
         $paymentMethodMode = old(
             'payment_method_mode',
-            data_get($profile->booking_settings, 'payment_method_mode', $centralizedPaymentsEnabled ? 'both' : 'offline_only'),
+            data_get($profile->booking_settings, 'payment_method_mode', 'both'),
         );
         if (! in_array($paymentMethodMode, ['offline_only', 'online_only', 'both'], true)) {
-            $paymentMethodMode = $centralizedPaymentsEnabled ? 'both' : 'offline_only';
+            $paymentMethodMode = 'both';
         }
         $workspaceAcceptsOnlinePayments = in_array($paymentMethodMode, ['online_only', 'both'], true);
         $canUpdateBusiness = auth()->user()?->can('business.update') ?? false;

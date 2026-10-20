@@ -38,11 +38,11 @@ final class UpdateBusinessProfile
             $paymentMethodMode = (string) (
                 $data['payment_method_mode']
                 ?? data_get($profile->booking_settings, 'payment_method_mode')
-                ?? ($centralizedPaymentsEnabled ? 'both' : 'offline_only')
+                ?? 'both'
             );
 
             if (!in_array($paymentMethodMode, ['offline_only', 'online_only', 'both'], true)) {
-                $paymentMethodMode = $centralizedPaymentsEnabled ? 'both' : 'offline_only';
+                $paymentMethodMode = 'both';
             }
 
             $paymentMode = $paymentMethodMode === 'online_only' ? 'full' : 'pay_later';
