@@ -38,6 +38,7 @@ final class CreateBooking
         ?StaffProfile $requestedStaff = null,
         ?string $notes = null,
         ?Customer $existingCustomer = null,
+        ?string $paymentMethod = null,
     ): Booking {
         $tenantId = $this->currentTenant->idOrFail();
 
@@ -99,6 +100,7 @@ final class CreateBooking
             $notes,
             $tenantId,
             $existingCustomer,
+            $paymentMethod,
         ): Booking {
             if ($assignedStaff->isEmpty()) {
                 $this->lockScope($tenantId, null, $localStart);
@@ -117,6 +119,7 @@ final class CreateBooking
                     $selectedStaff,
                     $notes,
                     $existingCustomer,
+                    $paymentMethod,
                 );
             }
 
@@ -138,6 +141,7 @@ final class CreateBooking
                         $staff,
                         $notes,
                         $existingCustomer,
+                        $paymentMethod,
                     );
                 }
             }
@@ -166,6 +170,7 @@ final class CreateBooking
         ?StaffProfile $staff,
         ?string $notes,
         ?Customer $existingCustomer = null,
+        ?string $paymentMethod = null,
     ): Booking {
         $customer = $existingCustomer ?? $this->customers->handle($customerName, $phone, $email);
         $duration = (int) $service->duration_minutes;
@@ -187,6 +192,7 @@ final class CreateBooking
             'block_ends_at' => $localEnd->addMinutes($buffer)->setTimezone('UTC'),
             'status' => BookingStatus::Pending,
             'payment_status' => PaymentStatus::Unpaid,
+            'payment_method' => $paymentMethod,
             'booking_reference' => $this->reference(),
             'notes' => $notes,
         ]);

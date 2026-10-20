@@ -58,7 +58,7 @@ Initial matching candidate is tenant_id + normalized_phone. Matching logic stays
 
 ## Bookings
 ### bookings
-id, tenant_id, customer_id, service_id, staff_id nullable, starts_at, ends_at, status, payment_status, booking_reference, notes, timestamps.
+id, tenant_id, customer_id, service_id, staff_id nullable, starts_at, ends_at, status, payment_status, payment_method (nullable for legacy/internal bookings; `cash` or `online` for public bookings), booking_reference, notes, timestamps.
 
 ### booking_status_history
 Immutable lifecycle/history entries.

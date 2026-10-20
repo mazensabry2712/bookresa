@@ -69,6 +69,9 @@
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.service') }}</p><p class="mt-1 font-bold">{{ data_get($booking->service->name, app()->getLocale()) ?? data_get($booking->service->name, 'en') }}</p></div>
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.date_time') }}</p><p class="mt-1 font-bold">{{ $booking->starts_at->setTimezone($tenant->profile?->timezone ?? 'UTC')->locale(app()->getLocale())->translatedFormat('d M Y, H:i') }}</p></div>
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.customer') }}</p><p class="mt-1 font-bold">{{ $booking->customer->name }}</p></div>
+                @if ($booking->payment_method)
+                    <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.payment_policy') }}</p><p class="mt-1 font-bold">{{ $booking->payment_method === 'online' ? __('app.public_booking_ui.pay_online_summary') : __('app.public_booking_ui.cash_at_center_summary') }}</p></div>
+                @endif
             </div>
 
             @if ($payment)

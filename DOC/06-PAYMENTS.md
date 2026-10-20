@@ -17,11 +17,11 @@ Domain services depend on `PaymentGateway`, not Kashier-specific classes.
 
 The effective switch is the **platform setting** `centralized_booking_payments_enabled`, managed in Platform Settings. It is not an independent per-workspace merchant-gateway switch.
 
-- When the platform setting is off, new public bookings follow the pay-later path.
-- When the platform setting is on, new public bookings require the customer's email and are redirected to a hosted Kashier checkout using the **full service price**.
-- The current `StartBookingPayment` implementation explicitly charges the full price. Deposit percentages are not used to calculate the checkout amount.
-- Updating a business profile synchronizes its legacy `booking_settings.payment_required` and `payment_mode` from the global platform setting. The public booking controller also reads that global setting directly.
-- Consequently, **full online payment or pay later are the implemented platform-wide modes today**. Deposit appears in the product specification and translations, but is not an implemented booking checkout mode yet. Do not treat it as available until checkout amount calculation, settings, refund behavior, and tests are implemented together.
+- The platform setting controls whether online checkout is available, not whether online payment is mandatory for every public booking.
+- With the setting off, the booking page only permits **cash at the center**; the online option is displayed as unavailable and the backend rejects a forged `payment_method=online` selection before creating a booking.
+- With the setting on, the customer chooses between **cash at the center** and **full online payment**. Cash creates the booking without starting a payment session; online requires customer email and redirects to hosted Kashier checkout for the full service price.
+- The selected method is stored in `bookings.payment_method` (`cash` or `online`). The column is nullable so legacy and internal bookings are not falsely assigned a method.
+- The current `StartBookingPayment` implementation explicitly charges the full price. Deposit percentages are not used to calculate the checkout amount, so **Deposit remains a product requirement but is not an available booking checkout mode**.
 - Centralized checkout uses the platform Kashier merchant account. Workspace-connected merchant collection is not the current public booking flow.
 
 If checkout-session creation fails before there is evidence that a provider session exists, the controller attempts to cancel the pending booking. Once a real checkout session exists, a customer abandoning checkout can leave the booking pending: payment expiry is stored, but the current scheduler does not include a job that releases abandoned pending booking slots. Pending bookings are included in availability blocking. This remains a release-readiness item.

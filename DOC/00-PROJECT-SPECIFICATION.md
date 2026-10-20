@@ -143,7 +143,7 @@ Two separate financial contexts:
 
 Payment architecture must support Full Payment, Deposit and Pay Later as product requirements.
 
-**Current implementation status (verified against main on 2026-10-20):** public booking checkout currently implements a platform-wide choice between full online payment and pay later. Deposit is specified as a product mode but its amount calculation and checkout lifecycle are not implemented yet. Do not present Deposit as an available option until implementation and end-to-end tests are complete. The platform-wide switch is `centralized_booking_payments_enabled`; this is not an independent payment-mode or merchant-account setting per workspace.
+**Current implementation status (verified against main on 2026-10-20):** the public booking page stores the customer's chosen payment method on the booking: cash at the center is always available, and full online payment through the platform's Kashier account is selectable only while `centralized_booking_payments_enabled` is enabled. Selecting cash bypasses checkout even when online payment is enabled. Deposit remains a product requirement but its amount calculation and checkout lifecycle are not implemented. The platform-wide setting controls online-payment availability; it is not an independent merchant-account setting per workspace.
 
 BookResa owns a provider-neutral Payment Core. MVP provider is Kashier. Future gateways such as Stripe, Paymob, Fawry or others must be addable without rewriting Booking, Subscription or Billing.
 

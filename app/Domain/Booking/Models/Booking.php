@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property CarbonInterface|null $block_ends_at
  * @property BookingStatus $status
  * @property PaymentStatus $payment_status
+ * @property string|null $payment_method
  * @property string $booking_reference
  * @property string|null $notes
  * @property CarbonInterface|null $reminder_sent_at
@@ -55,6 +56,7 @@ class Booking extends Model
         'block_ends_at',
         'status',
         'payment_status',
+        'payment_method',
         'booking_reference',
         'notes',
     ];

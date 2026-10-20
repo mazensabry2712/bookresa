@@ -35,11 +35,10 @@ class PublicBookingController
 
         return $currentTenant->run($tenant, function () use ($tenant, $platformSettings): View {
             $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
-            $centralizedPaymentsEnabled = filter_var(
+            $onlinePaymentsAvailable = filter_var(
                 $platformSettings->get('centralized_booking_payments_enabled', false),
                 FILTER_VALIDATE_BOOL,
             );
-            $paymentMode = $centralizedPaymentsEnabled ? 'full' : 'pay_later';
 
             return view('public.booking.show', [
                 'tenant' => $tenant->load('profile'),
@@ -49,10 +48,8 @@ class PublicBookingController
                     ->orderBy('id')
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
                 'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
-                'paymentMode' => $paymentMode,
-                'depositPercent' => 0,
-                'customerEmailRequired' => $centralizedPaymentsEnabled
-                    || (bool) data_get(data_get($tenant->profile, 'booking_settings', []), 'customer_email_required', false),
+                'onlinePaymentsAvailable' => $onlinePaymentsAvailable,
+                'customerEmailRequired' => (bool) data_get($bookingSettings, 'customer_email_required', false),
             ]);
         });
     }
@@ -139,13 +136,14 @@ class PublicBookingController
                     throw new RuntimeException(__('app.public_booking_ui.select_staff_required'));
                 }
 
-                $paymentRequired = filter_var(
+                $paymentMethod = (string) $request->input('payment_method', 'cash');
+                $onlinePaymentsEnabled = filter_var(
                     $platformSettings->get('centralized_booking_payments_enabled', false),
                     FILTER_VALIDATE_BOOL,
                 );
 
-                if ($paymentRequired && $request->filled('email') === false) {
-                    throw new RuntimeException('Customer email is required for online payment.');
+                if ($paymentMethod === 'online' && ! $onlinePaymentsEnabled) {
+                    throw new RuntimeException(__('app.public_booking_ui.online_payment_unavailable'));
                 }
 
                 $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));
@@ -163,9 +161,10 @@ class PublicBookingController
                     $startsAt,
                     $staff,
                     $request->filled('notes') ? $request->string('notes')->toString() : null,
+                    paymentMethod: $paymentMethod,
                 );
 
-                if ($paymentRequired) {
+                if ($paymentMethod === 'online') {
                     try {
                         $payment = $startBookingPayment->handle($booking);
                     } catch (Throwable $exception) {

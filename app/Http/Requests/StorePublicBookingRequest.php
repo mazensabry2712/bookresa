@@ -17,6 +17,12 @@ class StorePublicBookingRequest extends FormRequest
     public function rules(): array
     {
         $tenant = $this->route('tenant');
+        $paymentMethod = $this->input('payment_method', 'cash');
+        $customerEmailRequired = (bool) data_get(
+            $tenant->profile?->booking_settings,
+            'customer_email_required',
+            false,
+        ) || $paymentMethod === 'online';
 
         return [
             'service_id' => [
@@ -37,7 +43,8 @@ class StorePublicBookingRequest extends FormRequest
             'time' => ['required', 'date_format:H:i'],
             'name' => ['required', 'string', 'min:2', 'max:160'],
             'phone' => ['required', 'string', 'max:40'],
-            'email' => [data_get($tenant->profile?->booking_settings, 'customer_email_required', false) ? 'required' : 'nullable', 'email', 'max:255'],
+            'payment_method' => ['sometimes', 'required', 'string', Rule::in(['cash', 'online'])],
+            'email' => [$customerEmailRequired ? 'required' : 'nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
     }

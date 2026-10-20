@@ -73,7 +73,11 @@ test('public business page is available without authentication', function (): vo
         ->assertSee('data-booking-staff-wrap class="hidden"', false)
         ->assertSee('staffRequiredByService', false)
         ->assertDontSee('data-booking-any-staff', false)
-        ->assertSee('data-wizard-next', false);
+        ->assertSee('data-wizard-next', false)
+        ->assertSee('name="payment_method" value="cash"', false)
+        ->assertSee('name="payment_method" value="online"', false)
+        ->assertSee('data-summary-payment-method', false)
+        ->assertSee("paymentMethodInputs.forEach((input) => input.addEventListener('change', updatePaymentSelection))", false);
 });
 
 test('public booking wizard supports date input events and delegated time-slot selection', function (): void {
