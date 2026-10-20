@@ -28,6 +28,12 @@ Trial, active, expiry, suspension, cancellation, renewal, upgrade, downgrade and
 ## Payment tests
 Success/failure/pending, invalid signature, duplicate webhook idempotency, incorrect reference/amount handling and state updates only after verified success.
 
+## Commission and settlement tests
+
+The current `BookingCommissionTest` covers the legacy customer-profile ordinal, 5% fallback and payment-keyed commission row for paid/refunded online payments. Passing these tests does **not** establish that the target 1,000-booking monthly allowance or 10% rate is implemented.
+
+The target suite must cover per-workspace/month ordinals, the 1,000/1,001 boundary, a customer with repeat bookings, concurrency, rescheduling/cancellation/no-show policy, independent commission enablement, separation from subscription customer usage, multiple payment attempts/partial payments, cash reconciliation and receivables, refunds after payout, currency separation, finance authorization and cross-tenant denial. DOC/21 contains the full matrix; keep every target item unchecked until implementation and test evidence exist.
+
 ## RBAC tests
 Positive and negative cases for every role.
 
