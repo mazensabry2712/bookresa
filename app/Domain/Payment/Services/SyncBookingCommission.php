@@ -9,6 +9,7 @@ use App\Domain\Payment\Models\BookingCommissionAllocation;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
 use Illuminate\Support\Facades\DB;
+use Carbon\CarbonImmutable;
 use LogicException;
 
 final class SyncBookingCommission
@@ -101,8 +102,8 @@ final class SyncBookingCommission
                 $snapshot = [
                     'version' => $allocation->policy_version,
                     'allocation_id' => (int) $allocation->getKey(),
-                    'period_start' => $allocation->period_start->toDateString(),
-                    'period_end' => $allocation->period_end->toDateString(),
+                    'period_start' => CarbonImmutable::parse((string) $allocation->period_start)->toDateString(),
+                    'period_end' => CarbonImmutable::parse((string) $allocation->period_end)->toDateString(),
                     'timezone' => $allocation->timezone,
                     'booking_ordinal' => (int) $allocation->booking_ordinal,
                     'free_booking_allowance' => (int) $allocation->free_booking_allowance,

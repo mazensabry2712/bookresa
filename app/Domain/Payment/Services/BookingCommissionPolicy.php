@@ -5,6 +5,7 @@ namespace App\Domain\Payment\Services;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Models\BookingCommissionAllocation;
 use App\Domain\Tenant\Services\CurrentTenant;
+use Carbon\CarbonImmutable;
 use LogicException;
 use RuntimeException;
 
@@ -38,8 +39,8 @@ final class BookingCommissionPolicy
         return [
             'version' => $allocation->policy_version,
             'allocation_id' => (int) $allocation->getKey(),
-            'period_start' => $allocation->period_start->toDateString(),
-            'period_end' => $allocation->period_end->toDateString(),
+            'period_start' => CarbonImmutable::parse((string) $allocation->period_start)->toDateString(),
+            'period_end' => CarbonImmutable::parse((string) $allocation->period_end)->toDateString(),
             'timezone' => $allocation->timezone,
             'booking_ordinal' => (int) $allocation->booking_ordinal,
             'free_booking_allowance' => (int) $allocation->free_booking_allowance,

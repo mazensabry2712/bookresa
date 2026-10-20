@@ -106,10 +106,10 @@ final class AllocateMonthlyBookingCommission
             );
             $bookingAmountMinor = max(
                 0,
-                (int) ($lockedBooking->service_price_minor_snapshot ?? $lockedBooking->service?->price_minor ?? 0),
+                (int) ($lockedBooking->service_price_minor_snapshot ?? $lockedBooking->service->price_minor ?? 0),
             );
             $currency = strtoupper(trim((string) (
-                $lockedBooking->service_currency_snapshot ?: ($lockedBooking->service?->currency ?? '')
+                $lockedBooking->service_currency_snapshot ?: ($lockedBooking->service->currency ?? '')
             )));
 
             if (! preg_match('/^[A-Z]{3}$/', $currency)) {
