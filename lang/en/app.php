@@ -652,6 +652,7 @@ return [
         'staff_schedule' => 'Staff schedule',
         'staff_schedule_title' => 'Staff schedules and exceptions',
         'staff_schedule_help' => 'Every doctor has a separate weekly schedule below. Edit each doctor independently; applying one schedule to several doctors is optional.',
+        'staff_schedule_fallback_help' => 'This doctor currently follows the business hours shown here. Save this table after editing to set an individual schedule.',
         'weekly_schedule' => 'Weekly schedule',
         'staff_exceptions_title' => 'Time off and extra availability',
         'staff_exceptions_help' => 'These settings apply only to the selected doctor and do not change the recurring weekly schedule.',
