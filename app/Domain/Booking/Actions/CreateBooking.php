@@ -26,7 +26,8 @@ final class CreateBooking
         private readonly CurrentTenant $currentTenant,
         private readonly AvailabilityService $availability,
         private readonly FindOrCreateCustomer $customers,
-    ) {}
+    ) {
+    }
 
     public function handle(
         Service $service,

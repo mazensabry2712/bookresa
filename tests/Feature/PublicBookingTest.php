@@ -99,7 +99,7 @@ test('public booking wizard supports date input events and delegated time-slot s
         ->assertSee("dateInput.addEventListener('change', scheduleDateAvailability)", false)
         ->assertSee("staffSelect.value = '';", false)
         ->assertSee("button.addEventListener('click', () => selectSlot(button, slot.time))", false)
-        ->assertSee("timeInput.value = slotTime;", false)
+        ->assertSee('timeInput.value = slotTime;', false)
         ->assertSee("button.setAttribute('aria-pressed', 'true')", false);
 });
 
