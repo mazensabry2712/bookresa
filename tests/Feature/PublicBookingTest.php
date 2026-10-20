@@ -70,7 +70,9 @@ test('public business page is available without authentication', function (): vo
         ->assertSee('data-step-panel="2"', false)
         ->assertSee('data-step-panel="3"', false)
         ->assertSee('data-booking-service-card', false)
-        ->assertSee('data-booking-any-staff', false)
+        ->assertSee('data-booking-staff-wrap class="hidden"', false)
+        ->assertSee('staffRequiredByService', false)
+        ->assertDontSee('data-booking-any-staff', false)
         ->assertSee('data-wizard-next', false);
 });
 
@@ -91,6 +93,7 @@ test('public booking wizard supports date input events and delegated time-slot s
         ->assertOk()
         ->assertSee("dateInput.addEventListener('input', scheduleDateAvailability)", false)
         ->assertSee("dateInput.addEventListener('change', scheduleDateAvailability)", false)
+        ->assertSee("staffSelect.value = '';", false)
         ->assertSee("slotsContainer.addEventListener('click'", false)
         ->assertSee("target.closest('button[data-booking-slot]')", false);
 });
@@ -331,6 +334,40 @@ test('public customer can book without an account', function (): void {
     expect($booking->customer->name)->toBe('Ahmed')
         ->and($booking->service_id)->toBe($service->id)
         ->and(preg_match('/^BR-\\d{6}$/', $booking->booking_reference))->toBe(1);
+});
+
+
+test('public booking requires an explicit staff selection when a service has staff assigned', function (): void {
+    $tenant = publicTenant('public-requires-selected-staff');
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation', 'ar' => 'استشارة'],
+        'price_minor' => 20000,
+        'duration_minutes' => 30,
+        'buffer_minutes' => 0,
+    ]);
+
+    $user = User::factory()->create(['email' => 'selected-staff-required@example.com']);
+    $staff = StaffProfile::query()->create([
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'display_name' => 'Doctor One',
+        'status' => StaffStatus::Active,
+    ]);
+    app(AssignServiceToStaff::class)->handle($service, $staff);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ])->assertSessionHasErrors('booking');
+
+    expect(Booking::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
 });
 
 test('public booking confirmation requires a signed url', function (): void {
