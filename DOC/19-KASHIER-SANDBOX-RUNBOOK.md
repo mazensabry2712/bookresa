@@ -21,7 +21,7 @@ Set these values only in the local .env file or deployment secret store:
     KASHIER_MERCHANT_ID=YOUR_TEST_MID
     KASHIER_API_KEY=YOUR_TEST_API_KEY
     KASHIER_SECRET_KEY=YOUR_TEST_SECRET_KEY
-    KASHIER_MERCHANT_REDIRECT=https://YOUR-PUBLIC-BOOKRESA-HOST/payment/kashier/return
+    KASHIER_MERCHANT_REDIRECT=https://YOUR-PUBLIC-BOOKRESA-HOST/payments/kashier/return
     KASHIER_SERVER_WEBHOOK=https://YOUR-PUBLIC-BOOKRESA-HOST/webhooks/kashier
 
     KASHIER_E2E=true
@@ -54,8 +54,8 @@ Verify all of the following:
 
 1. The browser returns to KASHIER_MERCHANT_REDIRECT.
 2. The signed redirect is accepted by BookResa.
-3. BookResa performs server-side payment verification.
-4. Kashier sends the webhook to KASHIER_SERVER_WEBHOOK.
+3. BookResa performs server-side payment verification; the merchant, order reference, amount and currency must match the stored payment.
+4. Kashier sends the webhook to KASHIER_SERVER_WEBHOOK. Capture the raw test payload's `data.amount` value and reconcile it with the known test amount stored in minor units before completing the gate.
 5. The x-kashier-signature is accepted.
 6. The payment reaches the expected final state.
 7. For a booking payment, the booking payment status is synchronized.

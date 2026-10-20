@@ -45,7 +45,7 @@ Subscription and customer-booking payment records are separate; a successful cus
 
 **Webhook acknowledgement contract:** return HTTP `200` for a newly processed delivery and HTTP `409` for an already-processed duplicate. Kashier treats other response codes, including `204`, as unacknowledged and may retry the event. The controller and feature tests now use this contract.
 
-Kashier's per-session `serverWebhook` can receive multiple operation events, not just `pay`. The sandbox release gate must verify amount units and provider operation/status semantics—especially authorization, capture, void, and reversal—before live collection is enabled.
+Kashier's per-session `serverWebhook` can receive multiple operation events, not just `pay`. The handler currently interprets `data.amount` as a major-unit amount and converts it to minor units. Kashier's standard payload example shows `amount` as a JSON number (for example `11334`) but does not explicitly label its unit on the payload page; the separate Wix-specific documentation says standard Kashier `data.amount` is the plain order amount, unlike Wix refund notifications. Therefore the real sandbox release gate must confirm this exact field using a known charge and its webhook (and a partial refund if supported), and provider operation/status semantics—especially authorization, capture, void, and reversal—before live collection is enabled.
 
 ## Commission ledger and workspace payouts
 
