@@ -10,6 +10,34 @@
             ?? $tenant->slug;
         $payment = $booking->payments->sortByDesc('id')->first();
         $paymentStatus = $payment?->status?->value;
+        $latestStatusHistory = $booking->statusHistory->sortByDesc('id')->first();
+        $retryableCancelledBooking = $booking->status->value === 'cancelled'
+            && in_array(
+                $latestStatusHistory?->reason,
+                \App\Domain\Booking\Models\Booking::RETRYABLE_ONLINE_PAYMENT_CANCELLATION_REASONS,
+                true,
+            );
+        $bookingCanRetryPayment = $booking->payment_method === 'online'
+            && $payment !== null
+            && in_array($booking->status->value, ['pending', 'cancelled'], true)
+            && ($booking->status->value === 'pending' || $retryableCancelledBooking)
+            && (
+                in_array($paymentStatus, ['failed', 'cancelled'], true)
+                || (
+                    in_array($paymentStatus, ['pending', 'processing'], true)
+                    && $payment->expires_at !== null
+                    && $payment->expires_at->isPast()
+                )
+                || (
+                    filled(data_get($payment->metadata, 'provider_creation_failed_at'))
+                    && in_array($paymentStatus, ['pending', 'failed', 'cancelled'], true)
+                )
+            );
+        $hasActiveCheckout = $booking->status->value === 'pending'
+            && $payment !== null
+            && in_array($paymentStatus, ['pending', 'processing'], true)
+            && filled($payment->checkout_url)
+            && ($payment->expires_at === null || $payment->expires_at->isFuture());
         $paymentLabels = [
             'pending' => __('app.payment_pending'),
             'processing' => __('app.payment_processing'),
@@ -64,6 +92,18 @@
                 <p class="mt-3 text-sm leading-6 text-slate-500">{{ __('app.public_booking_ui.confirmation_message') }}</p>
             </div>
 
+            @if (session('payment_notice'))
+                <div class="mt-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-100" role="status">
+                    {{ session('payment_notice') }}
+                </div>
+            @endif
+
+            @error('payment_retry')
+                <div class="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-100" role="alert">
+                    {{ $message }}
+                </div>
+            @enderror
+
             <div class="mt-8 grid gap-3 sm:grid-cols-2">
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.business') }}</p><p class="mt-1 font-bold">{{ $businessName }}</p></div>
                 <div class="rounded-2xl br-surface-soft p-4"><p class="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{{ __('app.public_booking_ui.service') }}</p><p class="mt-1 font-bold">{{ data_get($booking->service->name, app()->getLocale()) ?? data_get($booking->service->name, 'en') }}</p></div>
@@ -84,10 +124,18 @@
                         <p class="font-extrabold">{{ number_format($payment->amount_minor / 100, 2) }} {{ $payment->currency }}</p>
                     </div>
 
-                    @if ($paymentStatus !== 'paid' && $payment->checkout_url)
+                    @if ($hasActiveCheckout)
                         <a href="{{ $payment->checkout_url }}" class="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-indigo px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
                             {{ __('app.complete_payment') }}
                         </a>
+                    @elseif ($bookingCanRetryPayment)
+                        <form method="POST" action="{{ \Illuminate\Support\Facades\URL::temporarySignedRoute('public.booking.canonical.retry-payment', now()->addDays(7), ['tenant' => $tenant->slug, 'booking' => $booking->booking_reference]) }}" class="mt-4">
+                            @csrf
+                            <button type="submit" class="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-brand-indigo px-5 py-2.5 text-sm font-bold text-white hover:bg-indigo-600">
+                                {{ __('app.retry_payment') }}
+                            </button>
+                            <p class="mt-2 text-xs leading-5 text-slate-500">{{ __('app.payment_retry_help') }}</p>
+                        </form>
                     @endif
                 </div>
             @endif

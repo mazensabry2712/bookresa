@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\ExpirePendingBookingPaymentsCommand;
 use App\Console\Commands\ExpireSubscriptionsCommand;
 use App\Console\Commands\GenerateUsagePeriodsCommand;
 use App\Console\Commands\SendBillingNotifications;
@@ -25,6 +26,7 @@ use Spatie\Permission\Middleware\PermissionMiddleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withCommands([
         ExpireSubscriptionsCommand::class,
+        ExpirePendingBookingPaymentsCommand::class,
         GenerateUsagePeriodsCommand::class,
         SetPlatformAdminCommand::class,
         SendBookingReminders::class,
@@ -39,6 +41,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ->hourlyAt(15)
             ->withoutOverlapping();
         $schedule->command('bookresa:send-booking-reminders')
+            ->hourly()
+            ->withoutOverlapping();
+
+        $schedule->command('bookresa:expire-pending-booking-payments')
             ->hourly()
             ->withoutOverlapping();
 

@@ -39,6 +39,17 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  */
 class Booking extends Model
 {
+    public const EXPIRED_ONLINE_PAYMENT_CANCELLATION_REASON = 'Online payment attempt failed or expired after provider verification; slot released.';
+
+    public const CHECKOUT_CREATION_FAILED_CANCELLATION_REASON = 'Online payment checkout could not be created.';
+
+    public const PAYMENT_RETRY_REOPENED_REASON = 'Customer retried online payment after slot availability was revalidated.';
+
+    public const RETRYABLE_ONLINE_PAYMENT_CANCELLATION_REASONS = [
+        self::EXPIRED_ONLINE_PAYMENT_CANCELLATION_REASON,
+        self::CHECKOUT_CREATION_FAILED_CANCELLATION_REASON,
+    ];
+
     use BelongsToTenant, HasFactory;
 
     protected $fillable = [

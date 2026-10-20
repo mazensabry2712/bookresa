@@ -4,6 +4,7 @@ use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Business\Models\BusinessProfile;
 use App\Domain\Payment\Enums\PaymentStatus;
+use App\Domain\Payment\Models\Payment;
 use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Services\AvailabilityService;
@@ -15,6 +16,7 @@ use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
@@ -366,4 +368,86 @@ test('failed online payment session creation cancels the pending booking and rel
     expect(collect($slots)->contains(
         fn (array $slot): bool => $slot['start']->format('H:i') === '10:00',
     ))->toBeTrue();
+});
+
+test('expired online booking checkout can start a new payment attempt from the signed confirmation page', function (): void {
+    $tenant = paidBookingTenant('payment-retry-page');
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+    ]);
+
+    config([
+        'bookresa.payments.kashier' => [
+            'mode' => 'test',
+            'base_url' => 'https://test-api.kashier.io',
+            'merchant_id' => 'MID-123',
+            'api_key' => 'api-key',
+            'secret_key' => 'secret-key',
+            'merchant_redirect' => null,
+            'server_webhook' => 'https://example.test/webhooks/kashier',
+            'max_failure_attempts' => 3,
+            'allowed_methods' => 'card,wallet',
+            'display' => 'en',
+            'expire_minutes' => 30,
+            'enable_3ds' => true,
+        ],
+    ]);
+
+    Http::fake([
+        'https://test-api.kashier.io/v3/payment/sessions' => Http::sequence()
+            ->push([
+                'status' => 'CREATED',
+                '_id' => 'session-retry-initial',
+                'sessionUrl' => 'https://payments.kashier.io/session/session-retry-initial?mode=test',
+            ])
+            ->push([
+                'status' => 'CREATED',
+                '_id' => 'session-retry-second',
+                'sessionUrl' => 'https://payments.kashier.io/session/session-retry-second?mode=test',
+            ]),
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'payment_method' => 'online',
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Retry Customer',
+        'phone' => '+20 100 123 4999',
+        'email' => 'retry@example.com',
+    ])->assertRedirect('https://payments.kashier.io/session/session-retry-initial?mode=test');
+
+    $booking = Booking::withoutGlobalScopes()
+        ->where('tenant_id', $tenant->id)
+        ->firstOrFail();
+    $initialPayment = Payment::withoutGlobalScopes()
+        ->where('payable_type', $booking->getMorphClass())
+        ->where('payable_id', $booking->id)
+        ->firstOrFail();
+    $initialPayment->forceFill(['expires_at' => CarbonImmutable::now('UTC')->subMinute()])->save();
+
+    $retryUrl = URL::temporarySignedRoute(
+        'public.booking.canonical.retry-payment',
+        now()->addHour(),
+        ['tenant' => $tenant->slug, 'booking' => $booking->booking_reference],
+    );
+
+    $this->post($retryUrl)
+        ->assertRedirect('https://payments.kashier.io/session/session-retry-second?mode=test');
+
+    $payments = Payment::withoutGlobalScopes()
+        ->where('payable_type', $booking->getMorphClass())
+        ->where('payable_id', $booking->id)
+        ->orderBy('id')
+        ->get();
+
+    expect($payments)->toHaveCount(2)
+        ->and($payments->last()->status)->toBe(PaymentStatus::Processing)
+        ->and($payments->last()->provider_reference)->toBe('session-retry-second')
+        ->and(Booking::withoutGlobalScopes()->findOrFail($booking->id)->status)->toBe(BookingStatus::Pending);
 });

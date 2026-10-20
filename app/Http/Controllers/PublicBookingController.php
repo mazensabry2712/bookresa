@@ -17,10 +17,12 @@ use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\PublicBookingAvailabilityRequest;
 use App\Http\Requests\StorePublicBookingRequest;
+use App\Support\AuditLogger;
 use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 use LogicException;
@@ -210,7 +212,7 @@ class PublicBookingController
         return $currentTenant->run($tenant, function () use ($booking, $tenant): View {
             $model = Booking::query()
                 ->where('booking_reference', $booking)
-                ->with(['customer', 'service', 'staff', 'payments'])
+                ->with(['customer', 'service', 'staff', 'payments', 'statusHistory'])
                 ->firstOrFail();
 
             return view('public.booking.confirmation', [
@@ -218,6 +220,201 @@ class PublicBookingController
                 'tenant' => $tenant,
             ]);
         });
+    }
+
+    public function retryPayment(
+        Tenant $tenant,
+        string $booking,
+        CurrentTenant $currentTenant,
+        StartBookingPayment $startBookingPayment,
+        UpdateBookingStatus $updateBookingStatus,
+        AvailabilityService $availability,
+        AuditLogger $auditLogger,
+    ): RedirectResponse {
+        $this->ensurePublicTenant($tenant);
+
+        $confirmationUrl = URL::temporarySignedRoute(
+            'public.booking.canonical.confirmation',
+            now()->addDays(7),
+            ['tenant' => $tenant->slug, 'booking' => $booking],
+        );
+
+        try {
+            return $currentTenant->run($tenant, function () use (
+                $booking,
+                $tenant,
+                $currentTenant,
+                $startBookingPayment,
+                $updateBookingStatus,
+                $availability,
+                $auditLogger,
+                $confirmationUrl,
+            ): RedirectResponse {
+                $model = Booking::query()
+                    ->where('booking_reference', $booking)
+                    ->with(['customer', 'service', 'staff', 'payments', 'statusHistory'])
+                    ->firstOrFail();
+
+                if ($model->payment_method !== 'online'
+                    || $model->starts_at->lessThanOrEqualTo(CarbonImmutable::now('UTC'))) {
+                    throw new RuntimeException(__('app.payment_retry_unavailable'));
+                }
+
+                if ($model->payments()->where('status', PaymentRecordStatus::Paid->value)->exists()) {
+                    return redirect()->to($confirmationUrl)
+                        ->with('payment_notice', __('app.payment_already_completed'));
+                }
+
+                if ($model->payments()->where('status', PaymentRecordStatus::Refunded->value)->exists()) {
+                    throw new RuntimeException(__('app.payment_retry_unavailable'));
+                }
+
+                if ($model->status === BookingStatus::Cancelled) {
+                    $model = $this->reopenCancelledBookingForPaymentRetry(
+                        $model,
+                        $tenant,
+                        $currentTenant,
+                        $availability,
+                        $auditLogger,
+                    );
+                } elseif ($model->status !== BookingStatus::Pending) {
+                    throw new RuntimeException(__('app.payment_retry_unavailable'));
+                }
+
+                $latestPayment = $model->payments()->latest('id')->first();
+
+                if (
+                    $latestPayment !== null
+                    && in_array($latestPayment->status, [
+                        PaymentRecordStatus::Pending,
+                        PaymentRecordStatus::Processing,
+                    ], true)
+                    && filled($latestPayment->checkout_url)
+                    && ($latestPayment->expires_at === null || $latestPayment->expires_at->isFuture())
+                ) {
+                    return redirect()->away($latestPayment->checkout_url);
+                }
+
+                try {
+                    $payment = $startBookingPayment->handle($model->fresh(['customer', 'service']));
+                } catch (Throwable $exception) {
+                    $this->cancelBookingWhenCheckoutWasNotCreated($model, $updateBookingStatus);
+
+                    if ($exception instanceof RuntimeException || $exception instanceof LogicException) {
+                        throw $exception;
+                    }
+
+                    report($exception);
+                    throw new RuntimeException('Payment checkout could not be started.', previous: $exception);
+                }
+
+                if (blank($payment->checkout_url)) {
+                    $this->cancelBookingWhenCheckoutWasNotCreated($model, $updateBookingStatus);
+                    throw new RuntimeException('Payment checkout could not be started.');
+                }
+
+                return redirect()->away($payment->checkout_url);
+            });
+        } catch (RuntimeException|LogicException $exception) {
+            return redirect()->to($confirmationUrl)
+                ->withErrors(['payment_retry' => $exception->getMessage()]);
+        }
+    }
+
+    private function reopenCancelledBookingForPaymentRetry(
+        Booking $booking,
+        Tenant $tenant,
+        CurrentTenant $currentTenant,
+        AvailabilityService $availability,
+        AuditLogger $auditLogger,
+    ): Booking {
+        return DB::transaction(function () use (
+            $booking,
+            $tenant,
+            $currentTenant,
+            $availability,
+            $auditLogger,
+        ): Booking {
+            $locked = Booking::query()
+                ->whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($locked->status === BookingStatus::Pending) {
+                return $locked->fresh(['customer', 'service', 'staff', 'payments', 'statusHistory']);
+            }
+
+            if ($locked->status !== BookingStatus::Cancelled) {
+                throw new RuntimeException(__('app.payment_retry_unavailable'));
+            }
+
+            $lastStatus = $locked->statusHistory()->latest('id')->first();
+
+            if (! in_array(
+                $lastStatus?->reason,
+                Booking::RETRYABLE_ONLINE_PAYMENT_CANCELLATION_REASONS,
+                true,
+            )) {
+                throw new RuntimeException(__('app.payment_retry_unavailable'));
+            }
+
+            if ($locked->starts_at->lessThanOrEqualTo(CarbonImmutable::now('UTC'))) {
+                throw new RuntimeException(__('app.payment_retry_unavailable'));
+            }
+
+            $locked->loadMissing(['service', 'staff']);
+
+            if ($locked->service === null
+                || ! $locked->service->is_active
+                || ($locked->staff_id === null && $locked->service->staff()->exists())) {
+                throw new RuntimeException(__('app.payment_retry_slot_unavailable'));
+            }
+
+            $timezone = (string) data_get(
+                $currentTenant->get()?->profile,
+                'timezone',
+                config('app.timezone', 'UTC'),
+            );
+            $localStart = $locked->starts_at->setTimezone($timezone);
+            $scope = $locked->staff_id === null
+                ? sprintf('%d:business:%s', $tenant->getKey(), $localStart->toDateString())
+                : sprintf('%d:staff:%d:%s', $tenant->getKey(), $locked->staff_id, $localStart->toDateString());
+
+            DB::table('booking_locks')->insertOrIgnore([
+                'tenant_id' => $tenant->getKey(),
+                'scope_key' => $scope,
+                'lock_date' => $localStart->toDateString(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('booking_locks')
+                ->where('scope_key', $scope)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $availability->isAvailable($locked->service, $locked->starts_at, $locked->staff)) {
+                throw new RuntimeException(__('app.payment_retry_slot_unavailable'));
+            }
+
+            $locked->forceFill(['status' => BookingStatus::Pending])->save();
+            $locked->statusHistory()->create([
+                'from_status' => BookingStatus::Cancelled->value,
+                'to_status' => BookingStatus::Pending->value,
+                'changed_by' => auth()->id(),
+                'reason' => Booking::PAYMENT_RETRY_REOPENED_REASON,
+            ]);
+
+            $fresh = $locked->fresh(['customer', 'service', 'staff', 'payments', 'statusHistory']);
+
+            $auditLogger->log('booking.payment_retry_reopened', $fresh, [
+                'tenant_id' => (int) $fresh->tenant_id,
+                'booking_id' => (int) $fresh->getKey(),
+                'booking_reference' => $fresh->booking_reference,
+            ]);
+
+            return $fresh;
+        }, 3);
     }
 
     private function cancelBookingWhenCheckoutWasNotCreated(
@@ -246,7 +443,7 @@ class PublicBookingController
         $updateBookingStatus->handle(
             $booking,
             BookingStatus::Cancelled,
-            'Online payment checkout could not be created.',
+            Booking::CHECKOUT_CREATION_FAILED_CANCELLATION_REASON,
         );
     }
 

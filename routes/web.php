@@ -434,6 +434,10 @@ Route::middleware('module:appointments')->prefix('{tenant:slug}/book')->group(fu
     Route::get('/confirmation/{booking}', [PublicBookingController::class, 'confirmation'])
         ->middleware('signed')
         ->name('public.booking.canonical.confirmation');
+
+    Route::post('/retry-payment/{booking}', [PublicBookingController::class, 'retryPayment'])
+        ->middleware(['signed', 'throttle:5,1'])
+        ->name('public.booking.canonical.retry-payment');
 });
 
 Route::middleware('module:appointments')->prefix('book/{tenant:slug}')->group(function (): void {
