@@ -531,8 +531,11 @@
                     indicator.querySelector('[data-step-number]')?.classList.toggle('text-white', current || complete);
                     indicator.querySelector('[data-step-number]')?.classList.toggle('dark:bg-white', current || complete);
                     indicator.querySelector('[data-step-number]')?.classList.toggle('dark:text-slate-900', current || complete);
-                    indicator.querySelector('[data-step-label]')?.classList.toggle('text-brand-indigo', current || complete);
-                    indicator.querySelector('[data-step-label]')?.classList.toggle('dark:text-indigo-300', current || complete);
+                    const stepLabel = indicator.querySelector('[data-step-label]');
+                    stepLabel?.classList.toggle('text-brand-indigo', current || complete);
+                    stepLabel?.classList.toggle('text-slate-500', !(current || complete));
+                    stepLabel?.classList.toggle('dark:text-indigo-300', current || complete);
+                    stepLabel?.classList.toggle('dark:text-slate-400', !(current || complete));
                 });
 
                 if (counter) counter.textContent = isArabic ? 'الخطوة ' + activeStep + ' من 3' : 'Step ' + activeStep + ' of 3';
