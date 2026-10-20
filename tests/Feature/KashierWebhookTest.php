@@ -95,10 +95,10 @@ function webhookPayload(string $reference, string $transactionId = 'TX-WEBHOOK-0
     return [
         'event' => 'pay',
         'data' => [
-            'merchantOrderId' => 'MERCHANT-001',
+            'merchantOrderId' => $reference,
             'kashierOrderId' => 'KASHIER-001',
             'merchantId' => 'MID-WEBHOOK',
-            'orderReference' => $reference,
+            'orderReference' => 'TEST-ORD-WEBHOOK-001',
             'transactionId' => $transactionId,
             'status' => $status,
             'method' => 'card',
