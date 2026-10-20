@@ -163,6 +163,8 @@ test('expired checkout only releases a pending booking after provider verificati
 
     $this->artisan('bookresa:expire-pending-booking-payments')->assertSuccessful();
 
+    app(CurrentTenant::class)->set($tenant);
+
     $freshBooking = Booking::withoutGlobalScopes()->findOrFail($booking->id);
     $freshPayment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
     $lastHistory = $freshBooking->statusHistory()->latest('id')->first();
@@ -183,6 +185,8 @@ test('expired checkout keeps the booking slot when provider verification confirm
     app(CurrentTenant::class)->clear();
 
     $this->artisan('bookresa:expire-pending-booking-payments')->assertSuccessful();
+
+    app(CurrentTenant::class)->set($tenant);
 
     $freshBooking = Booking::withoutGlobalScopes()->findOrFail($booking->id);
     $freshPayment = Payment::withoutGlobalScopes()->findOrFail($payment->id);
