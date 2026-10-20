@@ -409,7 +409,8 @@ test('tenant cannot reply to a closed support ticket', function (): void {
         ->post(route('support.reply', [$tenant, $ticket->getKey()]), [
             'message' => 'New reply',
         ])
-        ->assertStatus(422);
+        ->assertRedirect()
+        ->assertSessionHasErrors('message');
 
     expect(SupportTicketMessage::query()->where('support_ticket_id', $ticket->getKey())->count())->toBe(0);
 });
