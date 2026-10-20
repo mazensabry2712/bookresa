@@ -3,7 +3,7 @@
 ## Revenue and implementation status
 
 - **Current implemented billing path:** subscription payments and subscription base pricing.
-- **Unique-customer usage:** the app measures unique customer count and over-limit count. At the audited baseline, `CalculateSubscriptionUsage` sets `additionalCustomerPriceMinor = 0` and `usageChargeMinor = 0`, and the current plan-admin save path stores `additional_customer_price_minor = 0`. Therefore additional-customer usage fees are a product/specification target, not an active charge in the current runtime.
+- **Unique-customer usage:** the app measures unique customer count and over-limit count. At the audited baseline, `CalculateSubscriptionUsage` sets `additionalCustomerPriceMinor = 0` and `usageChargeMinor = 0`, and the current plan-admin save path stores `additional_customer_price_minor = 0`. The current Plan Admin UI explicitly says additional-customer surcharges are replaced by booking commissions. Older specification text describing a per-customer surcharge is stale relative to this current product direction; do not reactivate that surcharge unless explicitly re-approved.
 - **Booking commissions:** a separate target policy provides a default 1,000 qualifying bookings per workspace/calendar month and 10% on eligible bookings after that allowance. This target is not implemented at the audit baseline; current eligibility uses customer-profile ordinal and a 5% fallback. See DOC/21.
 - Optional premium modules and any future fee models require explicit product approval and verified accounting/collection paths.
 
@@ -80,7 +80,7 @@ Billing must be deterministic, auditable and idempotent against duplicate jobs/e
 
 ## Relationship to booking commissions
 
-Subscription usage is measured in unique customer profiles; the monthly commission allowance must be measured in qualifying bookings. These are separate dimensions and must not reuse each other's limits or counters. The legacy commission implementation currently violates that target separation by consulting the subscription's `included_customer_limit`; DOC/21 records the gap and required tests. Whether the additional-customer usage surcharge is later activated remains a separate decision.
+Subscription usage is measured in unique customer profiles; the monthly commission allowance must be measured in qualifying bookings. These are separate dimensions and must not reuse each other's limits or counters. The legacy commission implementation currently violates that target separation by consulting the subscription's `included_customer_limit`; DOC/21 records the gap and required tests. The current product direction treats the extra-customer surcharge as replaced by booking commissions, so the commission implementation must not silently introduce a second customer-based charge.
 
 ## Subscription payment
 
