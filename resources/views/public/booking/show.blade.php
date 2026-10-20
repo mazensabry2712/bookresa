@@ -593,11 +593,15 @@
             };
 
             const refreshSubmit = () => {
+                const hasAvailablePaymentMethod = paymentMethodInputs.some(
+                    (input) => input.checked && !input.disabled,
+                );
                 const ready = Boolean(
                     checkedService()
                     && dateInput.value
                     && timeInput.value
                     && (!serviceRequiresStaff() || staffSelect.value)
+                    && hasAvailablePaymentMethod
                 );
                 submitButton.disabled = !ready;
                 submitButton.setAttribute('aria-busy', loading && !loading.classList.contains('hidden') ? 'true' : 'false');
