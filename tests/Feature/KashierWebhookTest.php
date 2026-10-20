@@ -209,6 +209,38 @@ test('successful void webhook never marks an uncompleted payment as paid', funct
         ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Unpaid);
 });
 
+test('different Kashier operations remain distinct when transaction ID and status match', function (): void {
+    $tenant = webhookTenant('webhook-distinct-operations');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $pay = webhookPayload($payment->reference, 'TX-SHARED-OPERATION');
+    $paySignature = app(KashierWebhookVerifier::class)->sign($pay['data'], 'api-key');
+
+    $this->postJson(route('webhooks.kashier'), $pay, [
+        'x-kashier-signature' => $paySignature,
+    ])->assertOk();
+
+    $capture = webhookPayload($payment->reference, 'TX-SHARED-OPERATION');
+    $capture['event'] = 'capture';
+    $captureSignature = app(KashierWebhookVerifier::class)->sign($capture['data'], 'api-key');
+
+    $this->postJson(route('webhooks.kashier'), $capture, [
+        'x-kashier-signature' => $captureSignature,
+    ])->assertOk();
+
+    $this->postJson(route('webhooks.kashier'), $capture, [
+        'x-kashier-signature' => $captureSignature,
+    ])->assertStatus(409);
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect(PaymentWebhookEvent::query()->count())->toBe(2)
+        ->and(PaymentWebhookEvent::query()->orderBy('event')->pluck('event')->all())->toBe(['capture', 'pay'])
+        ->and($payment->fresh()->status)->toBe(PaymentStatus::Paid);
+});
+
 test('duplicate Kashier webhook is acknowledged without double processing', function (): void {
     $tenant = webhookTenant('webhook-duplicate');
     $booking = webhookBooking($tenant);

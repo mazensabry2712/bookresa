@@ -77,6 +77,7 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] public booking checkout (platform-wide full payment or pay later)
 - [x] signed merchant return + server-side verification
 - [x] operation-aware webhook state mapping and HTTP 200/409 acknowledgements
+- [x] webhook idempotency keyed by operation as well as transaction/status to avoid cross-operation collisions
 - [x] server-side verification matches merchant, order reference, amount and currency before applying provider state
 - [ ] real Kashier sandbox end-to-end verification
 - [ ] existing-booking payment retry after failed/expired checkout

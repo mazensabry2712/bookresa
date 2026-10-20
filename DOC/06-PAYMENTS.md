@@ -41,7 +41,7 @@ Subscription and customer-booking payment records are separate; a successful cus
 3. Redirect the browser to the hosted checkout.
 4. Validate the signed merchant-return parameters and perform server-side session verification. A browser redirect alone is not proof of payment. The server-verified session's merchant ID, merchant order reference, amount and currency must match the local payment before its state is applied. `AUTHORIZED` stays `Processing`; it is not treated as a captured/paid payment.
 5. Verify webhook signatures with the Payment API Key, validate the payment reference, merchant, amount, and currency, then update the payment and related booking/subscription. Map status by operation: a generic `SUCCESS` event is not enough to make an authorization, void or rejection a paid payment.
-6. Use idempotency and transaction locking so repeated provider notifications do not apply the same payment/refund twice.
+6. Use idempotency and transaction locking so repeated provider notifications do not apply the same payment/refund twice. The event operation is part of the idempotency key: distinct operations such as `pay` and `capture` must not suppress each other merely because transaction ID and status match.
 
 **Webhook acknowledgement contract:** return HTTP `200` for a newly processed delivery and HTTP `409` for an already-processed duplicate. Kashier treats other response codes, including `204`, as unacknowledged and may retry the event. The controller and feature tests now use this contract.
 
