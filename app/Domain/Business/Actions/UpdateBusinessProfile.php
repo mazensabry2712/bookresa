@@ -15,7 +15,8 @@ final class UpdateBusinessProfile
     public function __construct(
         private readonly CurrentTenant $currentTenant,
         private readonly PlatformSettings $platformSettings,
-    ) {}
+    ) {
+    }
 
     public function handle(array $data): BusinessProfile
     {
@@ -24,6 +25,7 @@ final class UpdateBusinessProfile
             $this->platformSettings->get('centralized_booking_payments_enabled', false),
             FILTER_VALIDATE_BOOL,
         );
+
         return DB::transaction(function () use ($data, $tenantId, $centralizedPaymentsEnabled): BusinessProfile {
             $profile = BusinessProfile::query()->first();
 
