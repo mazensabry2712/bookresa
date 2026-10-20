@@ -416,3 +416,11 @@ Hierarchy:
 5. DOC/18 records the frontend design and execution contract.
 
 When implementation changes an agreed behavior, update the existing relevant DOC first. Do not create duplicate documentation for the same subject.
+
+## 48. Monthly booking commission policy clarification (2026-10-20)
+
+The intended commission model is separate from subscription usage billing: each workspace has a default allowance of 1,000 qualifying bookings per calendar month, after which BookResa's default commission is 10% on eligible excess bookings. The allowance, rate and commission-enabled state are to be controlled by Super Admin. A repeated customer can create multiple bookings and therefore consume multiple monthly booking slots; unique-customer count remains a separate subscription metric.
+
+This is the target business requirement, **not the behavior implemented at the current audit baseline**. The current implementation determines commission eligibility from customer-profile ordinal, can use a subscription's included-customer limit, and defaults to 5%. The current payout ledger records manual transfers; it does not provide automatic marketplace split settlement. Cash bookings bypass online gateway checkout, so cash-based commission requires a separately auditable collection/receivable flow.
+
+The dedicated audit and implementation plan in DOC/21-BOOKING-COMMISSION-AUDIT-AND-IMPLEMENTATION-PLAN.md is the authoritative detailed change plan. It documents unresolved policy edge cases, the ledger/migration requirements, provider/legal approval, component inventory, tests, phases, and production release gates. Update this section and the relevant payment/usage/implementation/readiness documents when code changes the behavior; never mark the model implemented without test and deployment evidence.
