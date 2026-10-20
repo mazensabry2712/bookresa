@@ -38,7 +38,7 @@ final class KashierReturnController
             return response()->json(['message' => 'Invalid Kashier redirect signature.'], 401);
         }
 
-        $reference = trim((string) ($query['orderReference'] ?? ''));
+        $reference = trim((string) ($query['merchantOrderId'] ?? ''));
 
         if ($reference === '') {
             return response()->json(['message' => 'Kashier payment reference is missing.'], 422);
