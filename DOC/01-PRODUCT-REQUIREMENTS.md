@@ -13,7 +13,9 @@ Each Business:
 - publishes a public booking page;
 - manages customers, bookings and calendar activity;
 - pays a subscription;
-- may incur additional usage fees based on unique customers.
+- has a unique-customer usage meter separate from booking counts.
+
+The older extra-customer surcharge requirement is superseded by the current product direction shown in Plan Admin: additional-customer surcharges are replaced by booking commissions. The runtime currently applies no extra-customer surcharge. The target monthly booking commission remains unimplemented; see DOC/21.
 
 ## 2. Target customers
 - Small businesses
@@ -164,13 +166,14 @@ Subscription fields include Business, Plan, Start Date, End Date, Status, Price 
 Statuses:
 Trial, Active, Expired, Suspended, Cancelled.
 
-## 20. Customer-based usage fee
-Each plan includes a number of unique customers.
+## 20. Unique-customer usage meter (not the commission basis)
+
+Each plan stores an included limit for unique customer profiles.
 
 Example:
 Plan 299 EGP/month, 20 customers included, 27 current customers → 7 additional customers.
 
-Additional customer price is configurable by Platform Admin without source-code changes.
+This count remains useful for usage visibility and any customer-creation policy. The current Plan Admin UI states that extra-customer surcharges are replaced by booking commissions; the current controller saves `additional_customer_price_minor = 0`, and the runtime usage calculator returns zero surcharge. Do not treat the old per-customer charge as active or re-enable it as a side effect of commission work.
 
 ## 21. Customer count definition
 Customer = unique customer profile inside a Workspace/Tenant.
@@ -181,32 +184,30 @@ Bookings = 10
 
 Customer usage is not booking count.
 
-## 22. Usage billing
-The system exposes:
-- current customer count
-- included customer limit
-- additional customer count
-- additional fee
-- total subscription cost
+## 22. Usage metering status
 
-The owner sees these values clearly.
+The system exposes:
+- current unique-customer count
+- included customer limit
+- additional-customer count
+
+The current runtime sets the extra-customer fee and usage charge to zero, so those legacy fields must not be represented as a payable surcharge. The owner should see customer usage clearly, while the booking commission uses a separate monthly qualifying-booking counter once implemented.
 
 ## 23. Admin pricing controls
 Platform Admin can change:
 - plan price
 - included customer limit
-- additional customer price
 - billing period
 - plan features/modules
 
-No code change should be required for normal pricing updates.
+The legacy `additional_customer_price_minor` field remains in stored plan/subscription data but the current plan-admin path saves zero and does not expose it as an editable control. Any future reactivation would require an explicit product decision, not an implicit part of the booking-commission change.
 
 ## 24. Upgrade/downgrade
 Business can upgrade, downgrade, renew and cancel.
 
 Downgrade behavior must be explicit and configurable. Existing customers are never deleted because of a plan limit.
 
-Default recommended behavior: downgrade takes effect at the next billing boundary; over-limit customers either incur usage charges or customer creation is restricted according to policy.
+Default recommended behavior: downgrade takes effect at the next billing boundary. Over-limit customer profiles remain measurable, and customer creation may be allowed or restricted according to policy; the current implementation does not charge an additional-customer surcharge. Booking commission follows its independent monthly booking policy.
 
 ## 25. Notifications
 Customer:
@@ -225,7 +226,7 @@ Business:
 ## 26. Usage notifications
 Before limit: approaching warning.
 At limit: included limit reached.
-After limit: show additional customer count and applicable usage fee.
+After limit: show the additional-customer count and customer-creation policy. The extra-customer surcharge is currently disabled; booking-commission status is separate and is not implemented at the audit baseline.
 
 ## 27. Business dashboard
 Show:
@@ -235,7 +236,7 @@ Business name, today's bookings, upcoming bookings, today's revenue, customers, 
 Show:
 businesses, users, plans, subscriptions, payments, usage, bookings, reports, support and settings.
 
-Metrics include business counts/statuses, subscriptions, recurring revenue, customer usage, businesses above limits and usage revenue.
+Metrics include business counts/statuses, subscriptions, recurring revenue, customer usage and businesses above limits. Additional-customer surcharge revenue is currently zero; booking-commission reporting must be added only with the new monthly policy and reconciled finance ledger.
 
 ## 29. Security/isolation
 Strict tenant isolation, secure authentication, RBAC, server-side authorization, validation, rate limiting, secure sessions/tokens, audit logs, backups, error logging and secure payment integration.
@@ -266,14 +267,13 @@ Support future branches, locations, staff, services, customers, business types, 
 BookResa is a Business Management Workspace for small and medium service businesses, not only an online booking website.
 
 ## 35. Core business model
-Primary revenue:
-Subscription.
 
-Additional:
-Unique-customer usage fees.
+- **Current implemented billing path:** subscription payments.
+- **Unique-customer metering:** track included/over-limit customer profiles, but the extra-customer surcharge is currently disabled and the Plan Admin UI says it is replaced by booking commissions.
+- **Booking commission target:** 1,000 qualifying bookings per workspace/calendar month free, then a default 10% commission on eligible excess bookings. This is a target, not the current runtime behavior; see DOC/21.
+- **Future opportunities:** optional premium modules and any additional fee model explicitly re-approved by product decision.
 
-Future:
-Payment transaction fees and premium modules.
+Do not report the old customer surcharge or new booking commission as collected revenue at the audit baseline.
 
 ## 36. Pre-production agreement
 Before production code, agree on:
