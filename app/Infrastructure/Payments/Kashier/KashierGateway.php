@@ -14,7 +14,8 @@ use RuntimeException;
 
 final class KashierGateway implements PaymentGateway
 {
-    public function __construct(private readonly PlatformSettings $platformSettings) {}
+    public function __construct(private readonly PlatformSettings $platformSettings) {
+    }
 
     public function createPayment(PaymentRequest $request): PaymentGatewayResult
     {
@@ -83,7 +84,7 @@ final class KashierGateway implements PaymentGateway
 
         $data = $response->json();
 
-        if (! is_array($data) || ! isset($data['sessionUrl'], $data['_id'])) {
+        if (!is_array($data) || !isset($data['sessionUrl'], $data['_id'])) {
             throw new RuntimeException('Kashier returned an invalid payment session response.');
         }
 
@@ -120,7 +121,7 @@ final class KashierGateway implements PaymentGateway
         $body = $response->json();
         $data = $response->json('data');
 
-        if (! is_array($data)) {
+        if (!is_array($data)) {
             $data = is_array($body) ? $body : [];
         }
 
@@ -178,13 +179,13 @@ final class KashierGateway implements PaymentGateway
 
         $data = $lookup->json('data', []);
 
-        if (! is_array($data)) {
+        if (!is_array($data)) {
             throw new RuntimeException('Kashier returned an invalid payment lookup response.');
         }
 
         $orderId = $data['merchantOrderId'] ?? $data['orderId'] ?? null;
 
-        if (! $orderId) {
+        if (!$orderId) {
             throw new RuntimeException('Kashier order identifier is missing for refund.');
         }
 
@@ -248,7 +249,7 @@ final class KashierGateway implements PaymentGateway
 
     private function parseDate(mixed $value): ?CarbonImmutable
     {
-        if (! is_string($value) || trim($value) === '') {
+        if (!is_string($value) || trim($value) === '') {
             return null;
         }
 

@@ -34,7 +34,7 @@ final class KashierReturnController
         $kashierConfig = $platformSettings->kashierConfig();
         $apiKey = (string) ($kashierConfig['api_key'] ?? '');
 
-        if (! $verifier->verify($query, $apiKey)) {
+        if (!$verifier->verify($query, $apiKey)) {
             return response()->json(['message' => 'Invalid Kashier redirect signature.'], 401);
         }
 
@@ -107,7 +107,7 @@ final class KashierReturnController
                         && $verifiedAmountMinor === (int) $payment->amount_minor
                         && $returnedCurrency === strtoupper((string) $payment->currency);
 
-                    if (! $verificationMatches) {
+                    if (!$verificationMatches) {
                         report(new RuntimeException('Kashier verified session details do not match the local payment.'));
                         $notice = 'Payment could not be verified. Please contact the business.';
                     } else {
@@ -149,7 +149,7 @@ final class KashierReturnController
     {
         $value = trim((string) $amount);
 
-        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
+        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
             throw new RuntimeException('Kashier redirect amount is invalid.');
         }
 

@@ -3,7 +3,9 @@
 use App\Domain\Platform\Models\PlatformAdmin;
 use App\Domain\Platform\Models\PlatformSetting;
 use App\Models\User;
+use App\Support\PlatformSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
 
 uses(RefreshDatabase::class);
 
@@ -70,9 +72,9 @@ test('platform admin can save live Kashier credentials encrypted and secrets sta
 
     expect($apiKeyCiphertext)->not->toBe('live-payment-api-key-value')
         ->and($secretKeyCiphertext)->not->toBe('live-secret-key-value')
-        ->and(\Illuminate\Support\Facades\Crypt::decryptString((string) $apiKeyCiphertext))->toBe('live-payment-api-key-value')
-        ->and(\Illuminate\Support\Facades\Crypt::decryptString((string) $secretKeyCiphertext))->toBe('live-secret-key-value')
-        ->and(app(\App\Support\PlatformSettings::class)->kashierConfig())->toMatchArray([
+        ->and(Crypt::decryptString((string) $apiKeyCiphertext))->toBe('live-payment-api-key-value')
+        ->and(Crypt::decryptString((string) $secretKeyCiphertext))->toBe('live-secret-key-value')
+        ->and(app(PlatformSettings::class)->kashierConfig())->toMatchArray([
             'mode' => 'live',
             'base_url' => 'https://api.kashier.io',
             'merchant_id' => 'MID-LIVE-BOOKRESA',
@@ -98,7 +100,7 @@ test('platform admin can enable centralized booking payments after live credenti
         'is_active' => true,
     ]);
 
-    app(\App\Support\PlatformSettings::class)->saveKashierCredentials([
+    app(PlatformSettings::class)->saveKashierCredentials([
         'merchant_id' => 'MID-LIVE-BOOKRESA',
         'api_key' => 'live-payment-api-key-value',
         'secret_key' => 'live-secret-key-value',

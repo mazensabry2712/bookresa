@@ -68,7 +68,7 @@ final class PlatformPaymentController
                 && $verifiedAmountMinor === (int) $payment->amount_minor
                 && $returnedCurrency === strtoupper((string) $payment->currency);
 
-            if (! $verificationMatches) {
+            if (!$verificationMatches) {
                 return back()->withErrors([
                     'payment' => __('Provider verification details do not match this payment. No changes were made.'),
                 ]);
@@ -96,7 +96,7 @@ final class PlatformPaymentController
     {
         $value = trim((string) $amount);
 
-        if (! preg_match('/^\\d+(?:\\.\\d{1,2})?$/', $value)) {
+        if (!preg_match('/^\\d+(?:\\.\\d{1,2})?$/', $value)) {
             return null;
         }
 
