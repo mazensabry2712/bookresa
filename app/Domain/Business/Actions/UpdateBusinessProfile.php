@@ -24,9 +24,7 @@ final class UpdateBusinessProfile
             $this->platformSettings->get('centralized_booking_payments_enabled', false),
             FILTER_VALIDATE_BOOL,
         );
-        $paymentMode = $centralizedPaymentsEnabled ? 'full' : 'pay_later';
-
-        return DB::transaction(function () use ($data, $tenantId, $paymentMode, $centralizedPaymentsEnabled): BusinessProfile {
+        return DB::transaction(function () use ($data, $tenantId, $centralizedPaymentsEnabled): BusinessProfile {
             $profile = BusinessProfile::query()->first();
 
             if ($profile === null) {
@@ -36,6 +34,22 @@ final class UpdateBusinessProfile
             if ((int) $profile->tenant_id !== $tenantId) {
                 throw new LogicException('Business profile must belong to the current tenant.');
             }
+
+            $paymentMethodMode = (string) (
+                $data['payment_method_mode']
+                ?? data_get($profile->booking_settings, 'payment_method_mode')
+                ?? ($centralizedPaymentsEnabled ? 'both' : 'offline_only')
+            );
+
+            if (!in_array($paymentMethodMode, ['offline_only', 'online_only', 'both'], true)) {
+                $paymentMethodMode = $centralizedPaymentsEnabled ? 'both' : 'offline_only';
+            }
+
+            $paymentMode = $paymentMethodMode === 'online_only' ? 'full' : 'pay_later';
+            $paymentRequired = $paymentMethodMode === 'online_only';
+            $customerEmailRequired = (
+                $centralizedPaymentsEnabled && $paymentMethodMode !== 'offline_only'
+            ) || (bool) ($data['customer_email_required'] ?? false);
 
             $logoPath = $profile->logo_path;
             $coverPath = $profile->cover_path;
@@ -87,10 +101,11 @@ final class UpdateBusinessProfile
                 'timezone' => $data['timezone'],
                 'locale' => $data['locale'],
                 'booking_settings' => array_merge($profile->booking_settings ?? [], [
+                    'payment_method_mode' => $paymentMethodMode,
                     'payment_mode' => $paymentMode,
-                    'payment_required' => $centralizedPaymentsEnabled,
+                    'payment_required' => $paymentRequired,
                     'deposit_percent' => null,
-                    'customer_email_required' => $centralizedPaymentsEnabled || (bool) ($data['customer_email_required'] ?? false),
+                    'customer_email_required' => $customerEmailRequired,
                     'customer_limit_policy' => $data['customer_limit_policy'] ?? data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'),
                     'minimum_notice_minutes' => (int) ($data['minimum_notice_minutes'] ?? data_get($profile->booking_settings, 'minimum_notice_minutes', 0)),
                     'maximum_advance_days' => array_key_exists('maximum_advance_days', $data)

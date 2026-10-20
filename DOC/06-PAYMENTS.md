@@ -15,11 +15,14 @@ Domain services depend on `PaymentGateway`, not Kashier-specific classes.
 
 ## Current booking-payment behavior — implementation status
 
-The effective switch is the **platform setting** `centralized_booking_payments_enabled`, managed in Platform Settings. It is not an independent per-workspace merchant-gateway switch.
+The platform setting `centralized_booking_payments_enabled`, managed in Super Admin Platform Settings, is the global safety gate for online checkout. Each workspace also chooses its accepted booking-payment preference in its Business profile via `booking_settings.payment_method_mode`: `offline_only`, `online_only` or `both`. This workspace preference is independent of merchant credentials; it does not bypass the platform's online-payment gate.
 
-- The platform setting controls whether online checkout is available, not whether online payment is mandatory for every public booking.
-- With the setting off, the booking page only permits **cash at the center**; the online option is displayed as unavailable and the backend rejects a forged `payment_method=online` selection before creating a booking.
-- With the setting on, the customer chooses between **cash at the center** and **full online payment**. Cash creates the booking without starting a payment session; online requires customer email and redirects to hosted Kashier checkout for the full service price.
+- `offline_only` displays and accepts only cash at the business, even when platform online payments are enabled.
+- `online_only` displays and accepts only online checkout. If the platform gate is off, the page clearly reports that online-only booking is temporarily unavailable and blocks new bookings instead of silently offering cash.
+- `both` offers cash and online checkout when the platform gate is on. If the global gate is off, cash remains available while online checkout is disabled.
+- For legacy workspaces with no saved preference, the effective default preserves the former behavior: both methods when platform online payments are enabled, otherwise offline only. The preference is stored in the existing business-profile JSON; no schema migration is required.
+- The public form and backend request validation use the same effective allow-list. The booking controller checks the selected method again before creating a booking; hiding a radio option is not the security boundary.
+- Cash creates the booking without a payment session. Online requires customer email and redirects to hosted Kashier checkout for the full service price.
 - The default hosted-checkout methods are `card,wallet`, covering Visa/Mastercard-type cards and mobile wallets when enabled for the merchant. Kashier filters checkout to methods enabled on the specific live merchant account; configuring `allowedMethods` does not activate a method at the provider. Fawry is intentionally not requested by default; add it only after Kashier confirms it is enabled and available for this live merchant.
 - Kashier test mode forces hosted checkout to card and wallet. Before enabling production payments, confirm live mode/credentials, live webhook delivery and merchant method entitlements; then perform a minimal real card and wallet payment and refund/reconcile each.
 - The selected method is stored in `bookings.payment_method` (`cash` or `online`). The column is nullable so legacy and internal bookings are not falsely assigned a method.

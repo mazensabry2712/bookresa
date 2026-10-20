@@ -13,6 +13,14 @@
         );
 
         $customerLimitPolicy = old('customer_limit_policy', data_get($profile->booking_settings, 'customer_limit_policy', 'allow_overage'));
+        $paymentMethodMode = old(
+            'payment_method_mode',
+            data_get($profile->booking_settings, 'payment_method_mode', $centralizedPaymentsEnabled ? 'both' : 'offline_only'),
+        );
+        if (! in_array($paymentMethodMode, ['offline_only', 'online_only', 'both'], true)) {
+            $paymentMethodMode = $centralizedPaymentsEnabled ? 'both' : 'offline_only';
+        }
+        $workspaceAcceptsOnlinePayments = in_array($paymentMethodMode, ['online_only', 'both'], true);
         $canUpdateBusiness = auth()->user()?->can('business.update') ?? false;
         $bookingUrl = route('public.booking.canonical.show', ['tenant' => $tenant->slug]);
     @endphp
@@ -223,6 +231,20 @@
                 </div>
 
                 <div class="mt-5 space-y-6">
+                    <label class="block max-w-2xl space-y-1.5 text-sm">
+                        <span class="font-semibold">{{ __('app.business_ui.payment_method_mode') }}</span>
+                        <select name="payment_method_mode" required @disabled(! $canUpdateBusiness)
+                                class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-3 dark:border-slate-700 dark:bg-slate-950">
+                            <option value="offline_only" @selected($paymentMethodMode === 'offline_only')>{{ __('app.business_ui.payment_method_offline_only') }}</option>
+                            <option value="online_only" @selected($paymentMethodMode === 'online_only')>{{ __('app.business_ui.payment_method_online_only') }}</option>
+                            <option value="both" @selected($paymentMethodMode === 'both')>{{ __('app.business_ui.payment_method_both') }}</option>
+                        </select>
+                        <span class="block text-xs leading-5 text-slate-500">{{ __('app.business_ui.payment_method_mode_help') }}</span>
+                        @if (! $centralizedPaymentsEnabled && $workspaceAcceptsOnlinePayments)
+                            <span class="block text-xs leading-5 text-amber-700 dark:text-amber-300">{{ __('app.business_ui.online_payments_platform_disabled') }}</span>
+                        @endif
+                    </label>
+
                     <div class="grid gap-4 sm:grid-cols-2">
                         <label class="space-y-1.5 text-sm">
                             <span class="font-semibold">{{ __('app.business_ui.minimum_notice') }}</span>
@@ -243,7 +265,7 @@
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
-                        @if ($centralizedPaymentsEnabled)
+                        @if ($centralizedPaymentsEnabled && $workspaceAcceptsOnlinePayments)
                             <div class="rounded-xl br-surface-soft p-4 text-sm">
                                 <p class="font-semibold">{{ __('Customer email required') }}</p>
                                 <p class="mt-1 text-xs leading-5 text-slate-500">{{ __('A valid customer email is required for secure online payment and payment receipts.') }}</p>

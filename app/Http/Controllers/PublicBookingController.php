@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Booking\Actions\CreateBooking;
 use App\Domain\Booking\Actions\UpdateBookingStatus;
+use App\Domain\Booking\Services\WorkspacePaymentMethods;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Models\Booking;
 use App\Domain\Payment\Enums\PaymentStatus as PaymentRecordStatus;
@@ -18,7 +19,6 @@ use App\Domain\Tenant\Services\CurrentTenant;
 use App\Http\Requests\PublicBookingAvailabilityRequest;
 use App\Http\Requests\StorePublicBookingRequest;
 use App\Support\AuditLogger;
-use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -31,16 +31,14 @@ use Throwable;
 
 class PublicBookingController
 {
-    public function show(Tenant $tenant, CurrentTenant $currentTenant, PlatformSettings $platformSettings): View
+    public function show(Tenant $tenant, CurrentTenant $currentTenant, WorkspacePaymentMethods $workspacePaymentMethods): View
     {
         $this->ensurePublicTenant($tenant);
 
-        return $currentTenant->run($tenant, function () use ($tenant, $platformSettings): View {
+        return $currentTenant->run($tenant, function () use ($tenant, $workspacePaymentMethods): View {
             $bookingSettings = data_get($tenant->profile, 'booking_settings', []);
-            $onlinePaymentsAvailable = filter_var(
-                $platformSettings->get('centralized_booking_payments_enabled', false),
-                FILTER_VALIDATE_BOOL,
-            );
+            $paymentMethodMode = $workspacePaymentMethods->mode($tenant);
+            $availablePaymentMethods = $workspacePaymentMethods->availableMethods($tenant);
 
             return view('public.booking.show', [
                 'tenant' => $tenant->load('profile'),
@@ -50,7 +48,10 @@ class PublicBookingController
                     ->orderBy('id')
                     ->get(['id', 'name', 'price_minor', 'currency', 'duration_minutes']),
                 'today' => CarbonImmutable::now((string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC')))->toDateString(),
-                'onlinePaymentsAvailable' => $onlinePaymentsAvailable,
+                'paymentMethodMode' => $paymentMethodMode,
+                'availablePaymentMethods' => $availablePaymentMethods,
+                'cashPaymentsAvailable' => in_array('cash', $availablePaymentMethods, true),
+                'onlinePaymentsAvailable' => in_array('online', $availablePaymentMethods, true),
                 'customerEmailRequired' => (bool) data_get($bookingSettings, 'customer_email_required', false),
             ]);
         });
@@ -123,12 +124,12 @@ class PublicBookingController
         CreateBooking $createBooking,
         UpdateBookingStatus $updateBookingStatus,
         StartBookingPayment $startBookingPayment,
-        PlatformSettings $platformSettings,
+        WorkspacePaymentMethods $workspacePaymentMethods,
     ): RedirectResponse {
         $this->ensurePublicTenant($tenant);
 
         try {
-            return $currentTenant->run($tenant, function () use ($request, $createBooking, $updateBookingStatus, $startBookingPayment, $tenant, $platformSettings): RedirectResponse {
+            return $currentTenant->run($tenant, function () use ($request, $createBooking, $updateBookingStatus, $startBookingPayment, $tenant, $workspacePaymentMethods): RedirectResponse {
                 $service = Service::query()->findOrFail($request->integer('service_id'));
                 $staff = $request->filled('staff_id')
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
@@ -139,13 +140,13 @@ class PublicBookingController
                 }
 
                 $paymentMethod = (string) $request->input('payment_method', 'cash');
-                $onlinePaymentsEnabled = filter_var(
-                    $platformSettings->get('centralized_booking_payments_enabled', false),
-                    FILTER_VALIDATE_BOOL,
-                );
 
-                if ($paymentMethod === 'online' && !$onlinePaymentsEnabled) {
-                    throw new RuntimeException(__('app.public_booking_ui.online_payment_unavailable'));
+                if (! $workspacePaymentMethods->allows($tenant, $paymentMethod)) {
+                    $message = $paymentMethod === 'online'
+                        ? __('app.public_booking_ui.online_payment_unavailable')
+                        : __('app.public_booking_ui.payment_method_unavailable');
+
+                    throw new RuntimeException($message);
                 }
 
                 $timezone = (string) data_get($tenant->profile, 'timezone', config('app.timezone', 'UTC'));

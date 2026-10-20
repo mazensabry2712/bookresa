@@ -69,9 +69,12 @@
             && (str_starts_with($link['url'], 'https://') || str_starts_with($link['url'], 'http://')))
             ->values();
 
-        $selectedPaymentMethod = (string) old('payment_method', 'cash');
-        if (! $onlinePaymentsAvailable || ! in_array($selectedPaymentMethod, ['cash', 'online'], true)) {
-            $selectedPaymentMethod = 'cash';
+        $selectedPaymentMethod = (string) old(
+            'payment_method',
+            $paymentMethodMode === 'online_only' ? 'online' : 'cash',
+        );
+        if (! in_array($selectedPaymentMethod, $availablePaymentMethods, true)) {
+            $selectedPaymentMethod = $availablePaymentMethods[0] ?? ($paymentMethodMode === 'online_only' ? 'online' : 'cash');
         }
 
         $hasCustomerErrors = $errors->has('name') || $errors->has('phone') || $errors->has('email')
@@ -191,7 +194,8 @@
                     @if ($errors->any())
                         <div class="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-800 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" role="alert">
                             @error('booking')<p class="font-semibold">{{ $message }}</p>@enderror
-                            @if ($errors->has('service_id') || $errors->has('date') || $errors->has('time') || $errors->has('name') || $errors->has('phone') || $errors->has('email') || $errors->has('notes'))
+                            @error('payment_method')<p class="font-semibold">{{ $message }}</p>@enderror
+                            @if ($errors->has('service_id') || $errors->has('date') || $errors->has('time') || $errors->has('name') || $errors->has('phone') || $errors->has('email') || $errors->has('notes') || $errors->has('payment_method'))
                                 <p>{{ __('app.public_booking_ui.check_form') }}</p>
                             @endif
                         </div>
@@ -339,24 +343,40 @@
                             <legend class="px-1 text-sm font-extrabold">{{ __('app.public_booking_ui.payment_policy') }}</legend>
                             <p class="mb-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ __('app.public_booking_ui.choose_payment_method') }}</p>
                             <div class="grid gap-3 sm:grid-cols-2">
-                                <label class="group relative flex min-h-24 cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-indigo-300 hover:bg-indigo-50/40 has-[:checked]:border-brand-indigo has-[:checked]:bg-indigo-50/70 has-[:checked]:ring-2 has-[:checked]:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950/30 dark:hover:bg-slate-900 dark:has-[:checked]:border-indigo-700 dark:has-[:checked]:bg-indigo-950/30">
-                                    <input type="radio" name="payment_method" value="cash" data-payment-method data-payment-label="{{ __('app.public_booking_ui.cash_at_center_summary') }}" data-payment-help="{{ __('app.public_booking_ui.cash_at_center_help') }}" @checked($selectedPaymentMethod === 'cash') required class="peer sr-only">
-                                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-white peer-checked:border-brand-indigo peer-checked:bg-brand-indigo dark:border-slate-600 dark:bg-slate-900"><span class="h-2 w-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></span></span>
-                                    <span class="min-w-0 flex-1">
-                                        <span class="block font-bold text-slate-900 dark:text-white">{{ __('app.public_booking_ui.cash_at_center') }}</span>
-                                        <span class="mt-1 block text-sm leading-5 text-slate-500 dark:text-slate-400">{{ __('app.public_booking_ui.cash_at_center_help') }}</span>
-                                    </span>
-                                </label>
-                                <label class="group relative flex min-h-24 items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition has-[:checked]:border-brand-indigo has-[:checked]:bg-indigo-50/70 has-[:checked]:ring-2 has-[:checked]:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950/30 dark:has-[:checked]:border-indigo-700 dark:has-[:checked]:bg-indigo-950/30 {{ $onlinePaymentsAvailable ? 'cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/40' : 'cursor-not-allowed opacity-70' }}">
-                                    <input type="radio" name="payment_method" value="online" data-payment-method data-payment-label="{{ __('app.public_booking_ui.pay_online_summary') }}" data-payment-help="{{ $onlinePaymentsAvailable ? __('app.public_booking_ui.pay_online_help') : __('app.public_booking_ui.online_payment_unavailable') }}" @checked($selectedPaymentMethod === 'online') @disabled(! $onlinePaymentsAvailable) class="peer sr-only">
-                                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-white peer-checked:border-brand-indigo peer-checked:bg-brand-indigo dark:border-slate-600 dark:bg-slate-900"><span class="h-2 w-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></span></span>
-                                    <span class="min-w-0 flex-1">
-                                        <span class="block font-bold text-slate-900 dark:text-white">{{ __('app.public_booking_ui.pay_online') }}</span>
-                                        <span class="mt-1 block text-sm leading-5 text-slate-500 dark:text-slate-400">{{ $onlinePaymentsAvailable ? __('app.public_booking_ui.pay_online_help') : __('app.public_booking_ui.online_payment_unavailable') }}</span>
-                                    </span>
-                                </label>
+                                @if ($cashPaymentsAvailable)
+                                    <label class="group relative flex min-h-24 cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-indigo-300 hover:bg-indigo-50/40 has-[:checked]:border-brand-indigo has-[:checked]:bg-indigo-50/70 has-[:checked]:ring-2 has-[:checked]:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950/30 dark:hover:bg-slate-900 dark:has-[:checked]:border-indigo-700 dark:has-[:checked]:bg-indigo-950/30">
+                                        <input type="radio" name="payment_method" value="cash" data-payment-method data-payment-label="{{ __('app.public_booking_ui.cash_at_center_summary') }}" data-payment-help="{{ __('app.public_booking_ui.cash_at_center_help') }}" @checked($selectedPaymentMethod === 'cash') required class="peer sr-only">
+                                        <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-white peer-checked:border-brand-indigo peer-checked:bg-brand-indigo dark:border-slate-600 dark:bg-slate-900"><span class="h-2 w-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></span></span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block font-bold text-slate-900 dark:text-white">{{ __('app.public_booking_ui.cash_at_center') }}</span>
+                                            <span class="mt-1 block text-sm leading-5 text-slate-500 dark:text-slate-400">{{ __('app.public_booking_ui.cash_at_center_help') }}</span>
+                                        </span>
+                                    </label>
+                                @endif
+                                @if ($onlinePaymentsAvailable)
+                                    <label class="group relative flex min-h-24 cursor-pointer items-start gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-indigo-300 hover:bg-indigo-50/40 has-[:checked]:border-brand-indigo has-[:checked]:bg-indigo-50/70 has-[:checked]:ring-2 has-[:checked]:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950/30 dark:hover:bg-slate-900 dark:has-[:checked]:border-indigo-700 dark:has-[:checked]:bg-indigo-950/30">
+                                        <input type="radio" name="payment_method" value="online" data-payment-method data-payment-label="{{ __('app.public_booking_ui.pay_online_summary') }}" data-payment-help="{{ __('app.public_booking_ui.pay_online_help') }}" @checked($selectedPaymentMethod === 'online') required class="peer sr-only">
+                                        <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-white peer-checked:border-brand-indigo peer-checked:bg-brand-indigo dark:border-slate-600 dark:bg-slate-900"><span class="h-2 w-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"></span></span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block font-bold text-slate-900 dark:text-white">{{ __('app.public_booking_ui.pay_online') }}</span>
+                                            <span class="mt-1 block text-sm leading-5 text-slate-500 dark:text-slate-400">{{ __('app.public_booking_ui.pay_online_help') }}</span>
+                                        </span>
+                                    </label>
+                                @elseif ($paymentMethodMode !== 'offline_only')
+                                    <label class="group relative flex min-h-24 cursor-not-allowed items-start gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 opacity-70 dark:border-slate-700 dark:bg-slate-950/30">
+                                        <input type="radio" name="payment_method" value="online" data-payment-method data-payment-label="{{ __('app.public_booking_ui.pay_online_summary') }}" data-payment-help="{{ __('app.public_booking_ui.online_payment_unavailable') }}" @checked($selectedPaymentMethod === 'online') disabled class="peer sr-only">
+                                        <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-white text-white dark:border-slate-600 dark:bg-slate-900"></span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="block font-bold text-slate-900 dark:text-white">{{ __('app.public_booking_ui.pay_online') }}</span>
+                                            <span class="mt-1 block text-sm leading-5 text-slate-500 dark:text-slate-400">{{ __('app.public_booking_ui.online_payment_unavailable') }}</span>
+                                        </span>
+                                    </label>
+                                @endif
                             </div>
-                            <p data-payment-help class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm leading-5 text-slate-600 dark:bg-slate-950/60 dark:text-slate-300">{{ $selectedPaymentMethod === 'online' ? __('app.public_booking_ui.pay_online_help') : __('app.public_booking_ui.cash_at_center_help') }}</p>
+                            @if (count($availablePaymentMethods) === 0)
+                                <p class="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-5 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-100">{{ __('app.public_booking_ui.online_only_temporarily_unavailable') }}</p>
+                            @endif
+                            <p data-payment-help class="mt-3 rounded-xl bg-slate-50 px-3 py-2 text-sm leading-5 text-slate-600 dark:bg-slate-950/60 dark:text-slate-300">{{ $selectedPaymentMethod === 'online' ? ($onlinePaymentsAvailable ? __('app.public_booking_ui.pay_online_help') : __('app.public_booking_ui.online_payment_unavailable')) : __('app.public_booking_ui.cash_at_center_help') }}</p>
                         </fieldset>
                     </section>
 
@@ -368,7 +388,7 @@
                             <button type="button" data-wizard-next hidden class="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-navy px-6 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-slate-800 sm:w-auto dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                                 {{ $locale === 'ar' ? 'التالي' : 'Continue' }} <span aria-hidden="true">→</span>
                             </button>
-                            <button type="submit" data-booking-submit data-cash-label="{{ __('app.public_booking_ui.confirm_booking') }}" data-online-label="{{ __('app.public_booking_ui.continue_to_payment') }}" aria-busy="false" class="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-navy px-6 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
+                            <button type="submit" data-booking-submit data-cash-label="{{ __('app.public_booking_ui.confirm_booking') }}" data-online-label="{{ __('app.public_booking_ui.continue_to_payment') }}" aria-busy="false" @disabled(count($availablePaymentMethods) === 0) class="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-brand-navy px-6 py-3 text-sm font-extrabold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
                                 {{ $selectedPaymentMethod === 'online' ? __('app.public_booking_ui.continue_to_payment') : __('app.public_booking_ui.confirm_booking') }}
                             </button>
                         </div>

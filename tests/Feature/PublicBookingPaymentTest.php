@@ -64,8 +64,14 @@ function paidBookingTenant(string $slug): Tenant
     return $tenant;
 }
 
-test('public paid booking redirects to Kashier checkout and stores payment session', function (): void {
+test('public online-only booking redirects to Kashier checkout and stores payment session', function (): void {
     $tenant = paidBookingTenant('paid-clinic');
+    $profile = $tenant->profile;
+    $profile->update([
+        'booking_settings' => array_merge($profile->booking_settings ?? [], [
+            'payment_method_mode' => 'online_only',
+        ]),
+    ]);
 
     $service = app(CreateService::class)->handle([
         'name' => ['en' => 'Consultation'],
@@ -292,8 +298,14 @@ test('online booking choice is rejected when platform online payments are disabl
     expect(Booking::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
 });
 
-test('public booking page shows both payment choices when online payments are enabled', function (): void {
+test('public booking page shows both payment choices when the workspace accepts both and online payments are enabled', function (): void {
     $tenant = paidBookingTenant('payment-choice-page');
+    $profile = $tenant->profile;
+    $profile->update([
+        'booking_settings' => array_merge($profile->booking_settings ?? [], [
+            'payment_method_mode' => 'both',
+        ]),
+    ]);
     app(CurrentTenant::class)->clear();
 
     $this->get(route('public.booking.canonical.show', $tenant->slug))
@@ -303,6 +315,109 @@ test('public booking page shows both payment choices when online payments are en
         ->assertSee('Pay online')
         ->assertSee('Cash when you arrive at the center')
         ->assertSee('data-summary-payment-method', false);
+});
+
+test('offline-only workspace hides online checkout and rejects forged online bookings', function (): void {
+    $tenant = paidBookingTenant('offline-only-clinic');
+    $profile = $tenant->profile;
+    $profile->update([
+        'booking_settings' => array_merge($profile->booking_settings ?? [], [
+            'payment_method_mode' => 'offline_only',
+        ]),
+    ]);
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.canonical.show', $tenant->slug))
+        ->assertOk()
+        ->assertSee('name="payment_method" value="cash"', false)
+        ->assertDontSee('name="payment_method" value="online"', false)
+        ->assertDontSee('Pay online');
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'payment_method' => 'online',
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+        'email' => 'ahmed@example.com',
+    ])->assertSessionHasErrors('payment_method');
+
+    expect(Booking::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
+});
+
+test('online-only workspace hides offline payment and rejects cash bookings', function (): void {
+    $tenant = paidBookingTenant('online-only-clinic');
+    $profile = $tenant->profile;
+    $profile->update([
+        'booking_settings' => array_merge($profile->booking_settings ?? [], [
+            'payment_method_mode' => 'online_only',
+        ]),
+    ]);
+
+    $service = app(CreateService::class)->handle([
+        'name' => ['en' => 'Consultation'],
+        'price_minor' => 20000,
+        'currency' => 'EGP',
+        'duration_minutes' => 30,
+    ]);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.canonical.show', $tenant->slug))
+        ->assertOk()
+        ->assertSee('name="payment_method" value="online"', false)
+        ->assertDontSee('name="payment_method" value="cash"', false)
+        ->assertDontSee('Cash when you arrive at the center');
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'payment_method' => 'cash',
+        'service_id' => $service->id,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+    ])->assertSessionHasErrors('payment_method');
+
+    expect(Booking::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
+});
+
+test('online-only workspace blocks booking while platform online payments are disabled', function (): void {
+    $tenant = paidBookingTenant('online-only-disabled-clinic');
+    $profile = $tenant->profile;
+    $profile->update([
+        'booking_settings' => array_merge($profile->booking_settings ?? [], [
+            'payment_method_mode' => 'online_only',
+        ]),
+    ]);
+    app(PlatformSettings::class)->put(['centralized_booking_payments_enabled' => '0']);
+
+    app(CurrentTenant::class)->clear();
+
+    $this->get(route('public.booking.canonical.show', $tenant->slug))
+        ->assertOk()
+        ->assertSee(__('app.public_booking_ui.online_only_temporarily_unavailable'))
+        ->assertDontSee('name="payment_method" value="cash"', false)
+        ->assertSee('disabled', false);
+
+    $this->post(route('public.booking.canonical.store', $tenant->slug), [
+        'payment_method' => 'cash',
+        'service_id' => 999999,
+        'date' => '2026-09-28',
+        'time' => '10:00',
+        'name' => 'Ahmed',
+        'phone' => '+20 100 123 4567',
+    ])->assertSessionHasErrors('payment_method');
+
+    expect(Booking::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())->toBe(0);
 });
 
 test('failed online payment session creation cancels the pending booking and releases the slot', function (): void {

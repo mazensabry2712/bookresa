@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Domain\Booking\Services\WorkspacePaymentMethods;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,8 @@ class StorePublicBookingRequest extends FormRequest
     public function rules(): array
     {
         $tenant = $this->route('tenant');
-        $paymentMethod = $this->input('payment_method', 'cash');
+        $paymentMethod = (string) $this->input('payment_method', 'cash');
+        $allowedPaymentMethods = app(WorkspacePaymentMethods::class)->availableMethods($tenant);
         $customerEmailRequired = (bool) data_get(
             $tenant->profile?->booking_settings,
             'customer_email_required',
@@ -43,9 +45,16 @@ class StorePublicBookingRequest extends FormRequest
             'time' => ['required', 'date_format:H:i'],
             'name' => ['required', 'string', 'min:2', 'max:160'],
             'phone' => ['required', 'string', 'max:40'],
-            'payment_method' => ['sometimes', 'required', 'string', Rule::in(['cash', 'online'])],
+            'payment_method' => ['sometimes', 'required', 'string', Rule::in($allowedPaymentMethods)],
             'email' => [$customerEmailRequired ? 'required' : 'nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'payment_method.in' => __('app.public_booking_ui.payment_method_unavailable'),
         ];
     }
 }

@@ -131,6 +131,7 @@ test('owner can view and update business profile', function (): void {
             'timezone' => 'Africa/Cairo',
             'locale' => 'ar',
             'payment_mode' => 'pay_later',
+            'payment_method_mode' => 'offline_only',
             'customer_email_required' => true,
             'customer_limit_policy' => 'allow_overage',
             'minimum_notice_minutes' => 60,
@@ -146,6 +147,7 @@ test('owner can view and update business profile', function (): void {
         ->and($tenant->fresh('profile')->profile->phone)->toBe('01012345678')
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'minimum_notice_minutes'))->toBe(60)
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'maximum_advance_days'))->toBe(90)
+        ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'payment_method_mode'))->toBe('offline_only')
         ->and(data_get($tenant->fresh('profile')->profile->booking_settings, 'customer_email_required'))->toBeTrue()
         ->and(data_get($tenant->fresh('profile')->profile->social_links, 'website'))->toBe('https://example.com')
         ->and(data_get($tenant->fresh('profile')->profile->social_links, 'facebook'))->toBe('https://facebook.com/elnour')
@@ -207,7 +209,7 @@ test('workspace members without business update permission see a read-only profi
     expect($tenant->fresh('profile')->profile->name['en'])->toBe('Owner Clinic');
 });
 
-test('workspace profile does not configure payment accounts and follows centralized platform policy', function (): void {
+test('workspace profile saves accepted payment methods without configuring a merchant account', function (): void {
     [$user, $tenant] = workspaceOwner();
     $existingPaymentAccountCount = TenantPaymentAccount::withoutGlobalScopes()
         ->where('tenant_id', $tenant->id)
@@ -237,6 +239,7 @@ test('workspace profile does not configure payment accounts and follows centrali
             'description_ar' => 'الدفع المركزي مفعل',
             'timezone' => 'Africa/Cairo',
             'locale' => 'en',
+            'payment_method_mode' => 'both',
             'customer_limit_policy' => 'allow_overage',
             'minimum_notice_minutes' => 0,
             'maximum_advance_days' => 90,
@@ -247,8 +250,9 @@ test('workspace profile does not configure payment accounts and follows centrali
     app(CurrentTenant::class)->set($tenant);
     $settings = $tenant->fresh('profile')->profile->booking_settings;
 
-    expect(data_get($settings, 'payment_required'))->toBeTrue()
-        ->and(data_get($settings, 'payment_mode'))->toBe('full')
+    expect(data_get($settings, 'payment_method_mode'))->toBe('both')
+        ->and(data_get($settings, 'payment_required'))->toBeFalse()
+        ->and(data_get($settings, 'payment_mode'))->toBe('pay_later')
         ->and(data_get($settings, 'customer_email_required'))->toBeTrue()
         ->and(TenantPaymentAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count())
         ->toBe($existingPaymentAccountCount);
