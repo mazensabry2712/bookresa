@@ -98,10 +98,10 @@ test('signed Kashier return verifies the payment server-side and redirects to co
         'paymentStatus' => 'SUCCESS',
         'cardDataToken' => 'token',
         'maskedCard' => '512345******2346',
-        'merchantOrderId' => 'merchant-return-001',
+        'merchantOrderId' => $payment->reference,
         'orderId' => 'order-return-001',
         'cardBrand' => 'Mastercard',
-        'orderReference' => $payment->reference,
+        'orderReference' => 'TEST-ORD-RETURN-001',
         'merchantId' => 'MID-RETURN-CLINIC',
         'transactionId' => 'TX-RETURN-001',
         'amount' => '200',
@@ -192,7 +192,8 @@ test('malformed Kashier return amount is rejected with a validation response', f
 
     $query = [
         'paymentStatus' => 'SUCCESS',
-        'orderReference' => $payment->reference,
+        'merchantOrderId' => $payment->reference,
+        'orderReference' => 'TEST-ORD-INVALID-AMOUNT',
         'transactionId' => 'TX-RETURN-INVALID-AMOUNT',
         'amount' => 'not-a-number',
         'currency' => 'EGP',
@@ -229,7 +230,8 @@ test('invalid Kashier return signature is rejected before payment lookup changes
     app(CurrentTenant::class)->clear();
 
     $this->get(route('payments.kashier.return').'?'.http_build_query([
-        'orderReference' => 'PAY-UNKNOWN',
+        'merchantOrderId' => 'PAY-UNKNOWN',
+        'orderReference' => 'TEST-ORD-UNKNOWN',
         'paymentStatus' => 'SUCCESS',
         'amount' => '200',
         'currency' => 'EGP',
