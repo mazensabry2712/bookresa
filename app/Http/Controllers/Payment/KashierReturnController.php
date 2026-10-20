@@ -146,7 +146,7 @@ final class KashierReturnController
     {
         $value = trim((string) $amount);
 
-        if (!preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
+        if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $value)) {
             throw new RuntimeException('Kashier redirect amount is invalid.');
         }
 
