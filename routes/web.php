@@ -107,189 +107,189 @@ Route::middleware(['auth', 'verified'])->get('/dashboard/{legacyPath}', function
 Route::middleware(['auth', 'verified', 'tenant'])
     ->prefix('workspace/{tenant:slug}/dashboard')
     ->group(function (): void {
-    Route::get('/', [DashboardController::class, 'index'])
-        ->name('dashboard');
-    Route::get('/modules', [BusinessModuleController::class, 'index'])
-        ->middleware('permission:settings.manage')
-        ->name('business.modules.index');
-
-    Route::put('/modules', [BusinessModuleController::class, 'update'])
-        ->middleware('permission:settings.manage')
-        ->name('business.modules.update');
-
-    Route::get('/support', [TenantSupportController::class, 'index'])
-        ->middleware('permission:support.view')
-        ->name('support.index');
-
-    Route::post('/support', [TenantSupportController::class, 'store'])
-        ->middleware('permission:support.create')
-        ->name('support.store');
-
-    Route::get('/support/{ticket}', [TenantSupportController::class, 'show'])
-        ->middleware('permission:support.view')
-        ->name('support.show');
-
-    Route::post('/support/{ticket}/reply', [TenantSupportController::class, 'reply'])
-        ->middleware('permission:support.reply')
-        ->name('support.reply');
-
-    Route::get('/notifications', [NotificationController::class, 'index'])
-        ->middleware('permission:notifications.view')
-        ->name('notifications.index');
-
-    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])
-        ->middleware('permission:notifications.view')
-        ->name('notifications.read-all');
-
-    Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])
-        ->middleware('permission:notifications.view')
-        ->name('notifications.read');
-
-    Route::get('/reports', [ReportController::class, 'business'])
-        ->middleware('permission:reports.view')
-        ->name('reports.business');
-
-    Route::get('/business', [BusinessProfileController::class, 'edit'])
-        ->middleware('permission:business.view')
-        ->name('business.profile.edit');
-
-    Route::put('/business', [BusinessProfileController::class, 'update'])
-        ->middleware('permission:business.update')
-        ->name('business.profile.update');
-
-    Route::get('/services', [ServiceManagementController::class, 'index'])
-        ->middleware(['module:services', 'permission:services.view'])
-        ->name('services.index');
-
-    Route::post('/services', [ServiceManagementController::class, 'store'])
-        ->middleware(['module:services', 'permission:services.create'])
-        ->name('services.store');
-
-    Route::put('/services/{service}', [ServiceManagementController::class, 'update'])
-        ->middleware(['module:services', 'permission:services.update'])
-        ->name('services.update');
-
-    Route::delete('/services/{service}', [ServiceManagementController::class, 'destroy'])
-        ->middleware(['module:services', 'permission:services.delete'])
-        ->name('services.destroy');
-
-    Route::middleware(['module:customers'])->prefix('customers')->group(function (): void {
-        Route::get('/', [CustomerManagementController::class, 'index'])
-            ->middleware('permission:customers.view')
-            ->name('customers.index');
-        Route::post('/', [CustomerManagementController::class, 'store'])
-            ->middleware('permission:customers.create')
-            ->name('customers.store');
-        Route::get('/{customer}', [CustomerManagementController::class, 'show'])
-            ->middleware('permission:customers.view')
-            ->name('customers.show');
-        Route::put('/{customer}', [CustomerManagementController::class, 'update'])
-            ->middleware('permission:customers.update')
-            ->name('customers.update');
+        Route::get('/', [DashboardController::class, 'index'])
+            ->name('dashboard');
+        Route::get('/modules', [BusinessModuleController::class, 'index'])
+            ->middleware('permission:settings.manage')
+            ->name('business.modules.index');
+    
+        Route::put('/modules', [BusinessModuleController::class, 'update'])
+            ->middleware('permission:settings.manage')
+            ->name('business.modules.update');
+    
+        Route::get('/support', [TenantSupportController::class, 'index'])
+            ->middleware('permission:support.view')
+            ->name('support.index');
+    
+        Route::post('/support', [TenantSupportController::class, 'store'])
+            ->middleware('permission:support.create')
+            ->name('support.store');
+    
+        Route::get('/support/{ticket}', [TenantSupportController::class, 'show'])
+            ->middleware('permission:support.view')
+            ->name('support.show');
+    
+        Route::post('/support/{ticket}/reply', [TenantSupportController::class, 'reply'])
+            ->middleware('permission:support.reply')
+            ->name('support.reply');
+    
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->middleware('permission:notifications.view')
+            ->name('notifications.index');
+    
+        Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])
+            ->middleware('permission:notifications.view')
+            ->name('notifications.read-all');
+    
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])
+            ->middleware('permission:notifications.view')
+            ->name('notifications.read');
+    
+        Route::get('/reports', [ReportController::class, 'business'])
+            ->middleware('permission:reports.view')
+            ->name('reports.business');
+    
+        Route::get('/business', [BusinessProfileController::class, 'edit'])
+            ->middleware('permission:business.view')
+            ->name('business.profile.edit');
+    
+        Route::put('/business', [BusinessProfileController::class, 'update'])
+            ->middleware('permission:business.update')
+            ->name('business.profile.update');
+    
+        Route::get('/services', [ServiceManagementController::class, 'index'])
+            ->middleware(['module:services', 'permission:services.view'])
+            ->name('services.index');
+    
+        Route::post('/services', [ServiceManagementController::class, 'store'])
+            ->middleware(['module:services', 'permission:services.create'])
+            ->name('services.store');
+    
+        Route::put('/services/{service}', [ServiceManagementController::class, 'update'])
+            ->middleware(['module:services', 'permission:services.update'])
+            ->name('services.update');
+    
+        Route::delete('/services/{service}', [ServiceManagementController::class, 'destroy'])
+            ->middleware(['module:services', 'permission:services.delete'])
+            ->name('services.destroy');
+    
+        Route::middleware(['module:customers'])->prefix('customers')->group(function (): void {
+            Route::get('/', [CustomerManagementController::class, 'index'])
+                ->middleware('permission:customers.view')
+                ->name('customers.index');
+            Route::post('/', [CustomerManagementController::class, 'store'])
+                ->middleware('permission:customers.create')
+                ->name('customers.store');
+            Route::get('/{customer}', [CustomerManagementController::class, 'show'])
+                ->middleware('permission:customers.view')
+                ->name('customers.show');
+            Route::put('/{customer}', [CustomerManagementController::class, 'update'])
+                ->middleware('permission:customers.update')
+                ->name('customers.update');
+        });
+    
+        Route::get('/staff', [StaffManagementController::class, 'index'])
+            ->middleware(['module:staff', 'permission:staff.view'])
+            ->name('staff.index');
+    
+        Route::post('/staff', [StaffManagementController::class, 'store'])
+            ->middleware(['module:staff', 'permission:staff.manage'])
+            ->name('staff.store');
+    
+        Route::put('/staff/{staff}', [StaffManagementController::class, 'update'])
+            ->middleware(['module:staff', 'permission:staff.manage'])
+            ->name('staff.update');
+    
+        Route::patch('/staff/{staff}/status', [StaffManagementController::class, 'status'])
+            ->middleware(['module:staff', 'permission:staff.manage'])
+            ->name('staff.status');
+    
+        Route::middleware(['module:calendar'])->prefix('scheduling')->group(function (): void {
+            Route::get('/', [SchedulingManagementController::class, 'index'])
+                ->middleware('permission:calendar.view')
+                ->name('scheduling.index');
+    
+            Route::put('/business-hours', [SchedulingManagementController::class, 'updateBusinessHours'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.business-hours.update');
+    
+            Route::post('/breaks', [SchedulingManagementController::class, 'storeBreak'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.breaks.store');
+    
+            Route::delete('/breaks/{break}', [SchedulingManagementController::class, 'destroyBreak'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.breaks.destroy');
+    
+            Route::post('/holidays', [SchedulingManagementController::class, 'storeHoliday'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.holidays.store');
+    
+            Route::delete('/holidays/{holiday}', [SchedulingManagementController::class, 'destroyHoliday'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.holidays.destroy');
+    
+            Route::post('/special-hours', [SchedulingManagementController::class, 'storeSpecialWorkingHour'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.special-hours.store');
+    
+            Route::delete('/special-hours/{specialWorkingHour}', [SchedulingManagementController::class, 'destroySpecialWorkingHour'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.special-hours.destroy');
+    
+            Route::post('/staff-hours/bulk', [SchedulingManagementController::class, 'bulkUpdateStaffHours'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.staff-hours.bulk');
+    
+            Route::put('/staff/{staff}/hours', [SchedulingManagementController::class, 'updateStaffHours'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.staff-hours.update');
+    
+            Route::post('/staff/{staff}/days-off', [SchedulingManagementController::class, 'storeDayOff'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.staff-days-off.store');
+    
+            Route::delete('/staff/{staff}/days-off/{dayOff}', [SchedulingManagementController::class, 'destroyDayOff'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.staff-days-off.destroy');
+    
+            Route::post('/staff/{staff}/availability', [SchedulingManagementController::class, 'storeAvailability'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.staff-availability.store');
+    
+            Route::delete('/staff/{staff}/availability/{availability}', [SchedulingManagementController::class, 'destroyAvailability'])
+                ->middleware('permission:settings.manage')
+                ->name('scheduling.staff-availability.destroy');
+        });
     });
-
-    Route::get('/staff', [StaffManagementController::class, 'index'])
-        ->middleware(['module:staff', 'permission:staff.view'])
-        ->name('staff.index');
-
-    Route::post('/staff', [StaffManagementController::class, 'store'])
-        ->middleware(['module:staff', 'permission:staff.manage'])
-        ->name('staff.store');
-
-    Route::put('/staff/{staff}', [StaffManagementController::class, 'update'])
-        ->middleware(['module:staff', 'permission:staff.manage'])
-        ->name('staff.update');
-
-    Route::patch('/staff/{staff}/status', [StaffManagementController::class, 'status'])
-        ->middleware(['module:staff', 'permission:staff.manage'])
-        ->name('staff.status');
-
-    Route::middleware(['module:calendar'])->prefix('scheduling')->group(function (): void {
-        Route::get('/', [SchedulingManagementController::class, 'index'])
-            ->middleware('permission:calendar.view')
-            ->name('scheduling.index');
-
-        Route::put('/business-hours', [SchedulingManagementController::class, 'updateBusinessHours'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.business-hours.update');
-
-        Route::post('/breaks', [SchedulingManagementController::class, 'storeBreak'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.breaks.store');
-
-        Route::delete('/breaks/{break}', [SchedulingManagementController::class, 'destroyBreak'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.breaks.destroy');
-
-        Route::post('/holidays', [SchedulingManagementController::class, 'storeHoliday'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.holidays.store');
-
-        Route::delete('/holidays/{holiday}', [SchedulingManagementController::class, 'destroyHoliday'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.holidays.destroy');
-
-        Route::post('/special-hours', [SchedulingManagementController::class, 'storeSpecialWorkingHour'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.special-hours.store');
-
-        Route::delete('/special-hours/{specialWorkingHour}', [SchedulingManagementController::class, 'destroySpecialWorkingHour'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.special-hours.destroy');
-
-        Route::post('/staff-hours/bulk', [SchedulingManagementController::class, 'bulkUpdateStaffHours'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.staff-hours.bulk');
-
-        Route::put('/staff/{staff}/hours', [SchedulingManagementController::class, 'updateStaffHours'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.staff-hours.update');
-
-        Route::post('/staff/{staff}/days-off', [SchedulingManagementController::class, 'storeDayOff'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.staff-days-off.store');
-
-        Route::delete('/staff/{staff}/days-off/{dayOff}', [SchedulingManagementController::class, 'destroyDayOff'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.staff-days-off.destroy');
-
-        Route::post('/staff/{staff}/availability', [SchedulingManagementController::class, 'storeAvailability'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.staff-availability.store');
-
-        Route::delete('/staff/{staff}/availability/{availability}', [SchedulingManagementController::class, 'destroyAvailability'])
-            ->middleware('permission:settings.manage')
-            ->name('scheduling.staff-availability.destroy');
-    });
-});
 
 Route::middleware(['auth', 'verified', 'tenant', 'module:appointments', 'permission:bookings.view'])
     ->prefix('workspace/{tenant:slug}/dashboard/bookings')
     ->group(function (): void {
-    Route::get('/', [BookingManagementController::class, 'index'])
-        ->name('booking.management.index');
-
-    Route::get('/create', [BookingManagementController::class, 'create'])
-        ->middleware('permission:bookings.create')
-        ->name('booking.management.create');
-
-    Route::get('/availability', [BookingManagementController::class, 'availability'])
-        ->middleware('permission:bookings.create')
-        ->name('booking.management.availability');
-
-    Route::post('/', [BookingManagementController::class, 'store'])
-        ->middleware('permission:bookings.create')
-        ->name('booking.management.store');
-
-    Route::get('/{booking}', [BookingManagementController::class, 'show'])
-        ->name('booking.management.show');
-
-    Route::post('/{booking}/status', [BookingManagementController::class, 'status'])
-        ->name('booking.management.status');
-
-    Route::post('/{booking}/reschedule', [BookingManagementController::class, 'reschedule'])
-        ->name('booking.management.reschedule');
-});
+        Route::get('/', [BookingManagementController::class, 'index'])
+            ->name('booking.management.index');
+    
+        Route::get('/create', [BookingManagementController::class, 'create'])
+            ->middleware('permission:bookings.create')
+            ->name('booking.management.create');
+    
+        Route::get('/availability', [BookingManagementController::class, 'availability'])
+            ->middleware('permission:bookings.create')
+            ->name('booking.management.availability');
+    
+        Route::post('/', [BookingManagementController::class, 'store'])
+            ->middleware('permission:bookings.create')
+            ->name('booking.management.store');
+    
+        Route::get('/{booking}', [BookingManagementController::class, 'show'])
+            ->name('booking.management.show');
+    
+        Route::post('/{booking}/status', [BookingManagementController::class, 'status'])
+            ->name('booking.management.status');
+    
+        Route::post('/{booking}/reschedule', [BookingManagementController::class, 'reschedule'])
+            ->name('booking.management.reschedule');
+    });
 
 Route::middleware(['auth', 'verified', 'tenant', 'module:calendar', 'permission:calendar.view'])
     ->get('/workspace/{tenant:slug}/dashboard/calendar', [CalendarController::class, 'index'])
@@ -339,75 +339,75 @@ Route::middleware(['auth', 'verified', 'platform'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function (): void {
-    Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/audit', [PlatformAuditController::class, 'index'])->name('audit.index');
-    Route::get('/audit/export', PlatformAuditExportController::class)->name('audit.export');
-    Route::get('/security', [PlatformSecurityController::class, 'index'])->name('security.index');
-    Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
-    Route::get('/businesses/create', [PlatformBusinessController::class, 'create'])->name('businesses.create');
-    Route::post('/businesses', [PlatformBusinessController::class, 'store'])->name('businesses.store');
-    Route::get('/businesses/{tenant}/edit', [PlatformBusinessController::class, 'edit'])->name('businesses.edit');
-    Route::post('/businesses/{tenantId}/restore', [PlatformBusinessController::class, 'restore'])->name('businesses.restore');
-    Route::put('/businesses/{tenant}', [PlatformBusinessController::class, 'update'])->name('businesses.update');
-    Route::delete('/businesses/{tenant}', [PlatformBusinessController::class, 'destroy'])->name('businesses.destroy');
-    Route::get('/businesses/{tenant}', [PlatformBusinessController::class, 'show'])->name('businesses.show');
-    Route::post('/businesses/{tenant}/members', [PlatformBusinessController::class, 'addMember'])->name('businesses.members.store');
-    Route::patch('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'updateMember'])->name('businesses.members.update');
-    Route::delete('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'removeMember'])->name('businesses.members.destroy');
-    Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
-    Route::post('/businesses/{tenant}/impersonate/{user}', [PlatformImpersonationController::class, 'start'])
-        ->name('businesses.impersonate');
-    Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
-    Route::get('/customers', [PlatformCustomerController::class, 'index'])->name('customers.index');
-    Route::get('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'show'])->name('customers.show');
-    Route::put('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'update'])->name('customers.update');
-    Route::patch('/customers/{tenant}/{customer}/vip', [PlatformCustomerController::class, 'toggleVip'])->name('customers.vip-toggle');
-    Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
-    Route::get('/users/{user}', [PlatformUserOperationsController::class, 'show'])->name('users.show');
-    Route::put('/users/{user}', [PlatformUserOperationsController::class, 'updateProfile'])->name('users.update');
-    Route::post('/users/{user}/password', [PlatformUserOperationsController::class, 'resetPassword'])->name('users.reset-password');
-    Route::post('/users/{user}/verify-email', [PlatformUserOperationsController::class, 'forceVerify'])->name('users.verify-email');
-    Route::post('/users/{user}/disable-two-factor', [PlatformUserOperationsController::class, 'disableTwoFactor'])->name('users.disable-two-factor');
-    Route::post('/users/{user}/revoke-sessions', [PlatformUserOperationsController::class, 'revokeSessions'])->name('users.revoke-sessions');
-    Route::patch('/users/{user}/platform-admin-access', [PlatformUserOperationsController::class, 'updatePlatformAdminAccess'])->name('users.platform-admin-access');
-    Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
-        ->name('users.membership-toggle');
-    Route::patch('/users/{user}/platform-admin/toggle', [PlatformUserController::class, 'togglePlatformAdmin'])
-        ->name('users.platform-admin-toggle');
-    Route::get('/subscriptions', [PlatformFinanceController::class, 'subscriptions'])->name('subscriptions.index');
-    Route::patch('/subscriptions/{subscription}/toggle-status', [PlatformFinanceController::class, 'toggleSubscriptionStatus'])
-        ->name('subscriptions.toggle-status');
-    Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
-    Route::get('/commissions', [PlatformCommissionController::class, 'index'])->name('commissions.index');
-    Route::post('/commissions/payouts', [PlatformCommissionController::class, 'storePayout'])->name('commissions.payouts.store');
-    Route::patch('/commissions/payouts/{payout}/paid', [PlatformCommissionController::class, 'markPayoutPaid'])->name('commissions.payouts.paid');
-    Route::patch('/commissions/payouts/{payout}/cancel', [PlatformCommissionController::class, 'cancelPayout'])->name('commissions.payouts.cancel');
-    Route::get('/payments/{paymentId}', [PlatformPaymentController::class, 'show'])->name('payments.show');
-    Route::post('/payments/{paymentId}/verify', [PlatformPaymentController::class, 'verify'])->name('payments.verify');
-    Route::post('/payments/{paymentId}/refund', [PlatformPaymentController::class, 'refund'])->name('payments.refund');
-    Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
-    Route::get('/reports', [ReportController::class, 'platform'])->name('reports.index');
-    Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
-    Route::get('/support/{ticketId}', [SupportTicketController::class, 'show'])->name('support.show');
-    Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
-    Route::put('/settings/kashier', [PlatformSettingsController::class, 'updateKashier'])->name('settings.kashier.update');
-    Route::get('/health', [PlatformHealthController::class, 'index'])->name('health.index');
-    Route::get('/modules', [PlatformGlobalModuleController::class, 'index'])->name('modules.index');
-    Route::put('/modules/{module}', [PlatformGlobalModuleController::class, 'update'])->name('modules.update');
-    Route::get('/broadcasts', [PlatformBroadcastController::class, 'index'])->name('broadcasts.index');
-    Route::post('/broadcasts', [PlatformBroadcastController::class, 'store'])->name('broadcasts.store');
-    Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
-    Route::patch('/support/{ticket}', [SupportTicketController::class, 'update'])->name('support.update');
-    Route::post('/support/{ticketId}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
-    Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
-        ->name('businesses.toggle-status');
-    Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');
-    Route::get('/plans/create', [PlanAdminController::class, 'create'])->name('plans.create');
-    Route::post('/plans', [PlanAdminController::class, 'store'])->name('plans.store');
-    Route::get('/plans/{plan}/edit', [PlanAdminController::class, 'edit'])->name('plans.edit');
-    Route::put('/plans/{plan}', [PlanAdminController::class, 'update'])->name('plans.update');
-    Route::patch('/plans/{plan}/toggle', [PlanAdminController::class, 'toggle'])->name('plans.toggle');
-});
+        Route::get('/', [PlatformDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/audit', [PlatformAuditController::class, 'index'])->name('audit.index');
+        Route::get('/audit/export', PlatformAuditExportController::class)->name('audit.export');
+        Route::get('/security', [PlatformSecurityController::class, 'index'])->name('security.index');
+        Route::get('/businesses', [PlatformBusinessController::class, 'index'])->name('businesses.index');
+        Route::get('/businesses/create', [PlatformBusinessController::class, 'create'])->name('businesses.create');
+        Route::post('/businesses', [PlatformBusinessController::class, 'store'])->name('businesses.store');
+        Route::get('/businesses/{tenant}/edit', [PlatformBusinessController::class, 'edit'])->name('businesses.edit');
+        Route::post('/businesses/{tenantId}/restore', [PlatformBusinessController::class, 'restore'])->name('businesses.restore');
+        Route::put('/businesses/{tenant}', [PlatformBusinessController::class, 'update'])->name('businesses.update');
+        Route::delete('/businesses/{tenant}', [PlatformBusinessController::class, 'destroy'])->name('businesses.destroy');
+        Route::get('/businesses/{tenant}', [PlatformBusinessController::class, 'show'])->name('businesses.show');
+        Route::post('/businesses/{tenant}/members', [PlatformBusinessController::class, 'addMember'])->name('businesses.members.store');
+        Route::patch('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'updateMember'])->name('businesses.members.update');
+        Route::delete('/businesses/{tenant}/members/{membership}', [PlatformBusinessController::class, 'removeMember'])->name('businesses.members.destroy');
+        Route::get('/businesses/{tenant}/modules', [PlatformModuleController::class, 'index'])->name('businesses.modules.index');
+        Route::post('/businesses/{tenant}/impersonate/{user}', [PlatformImpersonationController::class, 'start'])
+            ->name('businesses.impersonate');
+        Route::put('/businesses/{tenant}/modules', [PlatformModuleController::class, 'update'])->name('businesses.modules.update');
+        Route::get('/customers', [PlatformCustomerController::class, 'index'])->name('customers.index');
+        Route::get('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'show'])->name('customers.show');
+        Route::put('/customers/{tenant}/{customer}', [PlatformCustomerController::class, 'update'])->name('customers.update');
+        Route::patch('/customers/{tenant}/{customer}/vip', [PlatformCustomerController::class, 'toggleVip'])->name('customers.vip-toggle');
+        Route::get('/users', [PlatformUserController::class, 'index'])->name('users.index');
+        Route::get('/users/{user}', [PlatformUserOperationsController::class, 'show'])->name('users.show');
+        Route::put('/users/{user}', [PlatformUserOperationsController::class, 'updateProfile'])->name('users.update');
+        Route::post('/users/{user}/password', [PlatformUserOperationsController::class, 'resetPassword'])->name('users.reset-password');
+        Route::post('/users/{user}/verify-email', [PlatformUserOperationsController::class, 'forceVerify'])->name('users.verify-email');
+        Route::post('/users/{user}/disable-two-factor', [PlatformUserOperationsController::class, 'disableTwoFactor'])->name('users.disable-two-factor');
+        Route::post('/users/{user}/revoke-sessions', [PlatformUserOperationsController::class, 'revokeSessions'])->name('users.revoke-sessions');
+        Route::patch('/users/{user}/platform-admin-access', [PlatformUserOperationsController::class, 'updatePlatformAdminAccess'])->name('users.platform-admin-access');
+        Route::patch('/users/memberships/{membership}/toggle', [PlatformUserController::class, 'toggleMembership'])
+            ->name('users.membership-toggle');
+        Route::patch('/users/{user}/platform-admin/toggle', [PlatformUserController::class, 'togglePlatformAdmin'])
+            ->name('users.platform-admin-toggle');
+        Route::get('/subscriptions', [PlatformFinanceController::class, 'subscriptions'])->name('subscriptions.index');
+        Route::patch('/subscriptions/{subscription}/toggle-status', [PlatformFinanceController::class, 'toggleSubscriptionStatus'])
+            ->name('subscriptions.toggle-status');
+        Route::get('/payments', [PlatformFinanceController::class, 'payments'])->name('payments.index');
+        Route::get('/commissions', [PlatformCommissionController::class, 'index'])->name('commissions.index');
+        Route::post('/commissions/payouts', [PlatformCommissionController::class, 'storePayout'])->name('commissions.payouts.store');
+        Route::patch('/commissions/payouts/{payout}/paid', [PlatformCommissionController::class, 'markPayoutPaid'])->name('commissions.payouts.paid');
+        Route::patch('/commissions/payouts/{payout}/cancel', [PlatformCommissionController::class, 'cancelPayout'])->name('commissions.payouts.cancel');
+        Route::get('/payments/{paymentId}', [PlatformPaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments/{paymentId}/verify', [PlatformPaymentController::class, 'verify'])->name('payments.verify');
+        Route::post('/payments/{paymentId}/refund', [PlatformPaymentController::class, 'refund'])->name('payments.refund');
+        Route::get('/usage', [PlatformFinanceController::class, 'usage'])->name('usage.index');
+        Route::get('/reports', [ReportController::class, 'platform'])->name('reports.index');
+        Route::get('/support', [SupportTicketController::class, 'index'])->name('support.index');
+        Route::get('/support/{ticketId}', [SupportTicketController::class, 'show'])->name('support.show');
+        Route::get('/settings', [PlatformSettingsController::class, 'index'])->name('settings.index');
+        Route::put('/settings/kashier', [PlatformSettingsController::class, 'updateKashier'])->name('settings.kashier.update');
+        Route::get('/health', [PlatformHealthController::class, 'index'])->name('health.index');
+        Route::get('/modules', [PlatformGlobalModuleController::class, 'index'])->name('modules.index');
+        Route::put('/modules/{module}', [PlatformGlobalModuleController::class, 'update'])->name('modules.update');
+        Route::get('/broadcasts', [PlatformBroadcastController::class, 'index'])->name('broadcasts.index');
+        Route::post('/broadcasts', [PlatformBroadcastController::class, 'store'])->name('broadcasts.store');
+        Route::put('/settings', [PlatformSettingsController::class, 'update'])->name('settings.update');
+        Route::patch('/support/{ticket}', [SupportTicketController::class, 'update'])->name('support.update');
+        Route::post('/support/{ticketId}/reply', [SupportTicketController::class, 'reply'])->name('support.reply');
+        Route::patch('/businesses/{tenant}/status', [PlatformBusinessController::class, 'toggleStatus'])
+            ->name('businesses.toggle-status');
+        Route::get('/plans', [PlanAdminController::class, 'index'])->name('plans.index');
+        Route::get('/plans/create', [PlanAdminController::class, 'create'])->name('plans.create');
+        Route::post('/plans', [PlanAdminController::class, 'store'])->name('plans.store');
+        Route::get('/plans/{plan}/edit', [PlanAdminController::class, 'edit'])->name('plans.edit');
+        Route::put('/plans/{plan}', [PlanAdminController::class, 'update'])->name('plans.update');
+        Route::patch('/plans/{plan}/toggle', [PlanAdminController::class, 'toggle'])->name('plans.toggle');
+    });
 
 Route::middleware(['auth', 'verified'])->post('/impersonation/stop', [PlatformImpersonationController::class, 'stop'])
     ->name('platform.impersonation.stop');
