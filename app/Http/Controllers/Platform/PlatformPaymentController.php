@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Domain\Billing\Models\Subscription;
 use App\Domain\Payment\Contracts\PaymentGateway;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Payment\Models\Payment;
@@ -46,19 +47,59 @@ final class PlatformPaymentController
             return back()->withErrors(['payment' => $e->getMessage()]);
         }
 
-        $currentTenant->run($tenant, function () use ($payment, $result): void {
+        if ($payment->provider === 'kashier') {
+            $usesCentralPlatformMerchant = $payment->payable_type === (new Subscription)->getMorphClass()
+                || filter_var(data_get($payment->metadata, 'centralized_payment', false), FILTER_VALIDATE_BOOL);
+            $expectedMerchantId = $usesCentralPlatformMerchant
+                ? (string) config('bookresa.payments.kashier.merchant_id')
+                : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
+            $returnedMerchantId = trim((string) data_get($result->metadata, 'merchant_id'));
+            $returnedOrderReference = trim((string) data_get($result->metadata, 'merchant_order_id'));
+            $returnedCurrency = strtoupper(trim((string) data_get($result->metadata, 'currency')));
+            $verifiedAmountMinor = $this->amountToMinor(data_get($result->metadata, 'amount'));
+
+            $verificationMatches = $returnedMerchantId !== ''
+                && $expectedMerchantId !== ''
+                && $returnedMerchantId === $expectedMerchantId
+                && $returnedOrderReference === $payment->reference
+                && $verifiedAmountMinor === (int) $payment->amount_minor
+                && $returnedCurrency === strtoupper((string) $payment->currency);
+
+            if (! $verificationMatches) {
+                return back()->withErrors([
+                    'payment' => __('Provider verification details do not match this payment. No changes were made.'),
+                ]);
+            }
+        }
+
+        $updated = $currentTenant->run($tenant, function () use ($payment, $result): Payment {
             $updated = app(PaymentService::class)->applyResult($payment, $result);
             app(SyncBookingPaymentStatus::class)->handle($updated, $updated->status);
             app(SyncSubscriptionPaymentStatus::class)->handle($updated, $updated->status);
+
+            return $updated;
         });
 
         $audit->log('platform.payment_verified', $payment, [
             'tenant_id' => (int) $tenant->getKey(),
             'payment_id' => (int) $payment->getKey(),
-            'result_status' => $result->status->value,
+            'result_status' => $updated->status->value,
         ]);
 
         return back()->with('status', __('Payment verified with provider.'));
+    }
+
+    private function amountToMinor(mixed $amount): ?int
+    {
+        $value = trim((string) $amount);
+
+        if (! preg_match('/^\\d+(?:\\.\\d{1,2})?$/', $value)) {
+            return null;
+        }
+
+        [$major, $minor] = array_pad(explode('.', $value, 2), 2, '');
+
+        return ((int) $major * 100) + (int) str_pad(substr($minor.'00', 0, 2), 2, '0');
     }
 
     public function refund(

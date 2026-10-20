@@ -320,6 +320,8 @@ test('signed Kashier return completes subscription payment and returns to billin
                 'updatedAt' => '2026-09-21T01:00:00Z',
                 'merchantOrderId' => $payment->reference,
                 'merchantId' => 'MID-PLATFORM-TEST',
+                'amount' => '199.00',
+                'currency' => 'EGP',
             ],
         ]),
     ]);
