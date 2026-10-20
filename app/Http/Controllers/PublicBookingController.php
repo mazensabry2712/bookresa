@@ -135,6 +135,10 @@ class PublicBookingController
                     ? StaffProfile::query()->findOrFail($request->integer('staff_id'))
                     : null;
 
+                if ($service->staff()->exists() && $staff === null) {
+                    throw new RuntimeException(__('app.public_booking_ui.select_staff_required'));
+                }
+
                 $paymentRequired = filter_var(
                     $platformSettings->get('centralized_booking_payments_enabled', false),
                     FILTER_VALIDATE_BOOL,
