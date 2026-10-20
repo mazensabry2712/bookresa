@@ -501,9 +501,9 @@
                                 </div>
                             </div>
 
-                            @error('schedule')
-                                <p class="text-sm font-semibold text-rose-700 dark:text-rose-300" role="alert">{{ $message }}</p>
-                            @enderror
+                            @if (old('schedule_form') === 'bulk' && $errors->has('schedule'))
+                                <p class="text-sm font-semibold text-rose-700 dark:text-rose-300" role="alert">{{ $errors->first('schedule') }}</p>
+                            @endif
 
                             <div class="flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
                                 <p class="max-w-xl text-xs leading-5 text-slate-500">{{ __('app.scheduling_ui.bulk_staff_hours_template_help') }}</p>
