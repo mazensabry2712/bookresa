@@ -109,6 +109,12 @@ Use the platform console as the control center:
 
 For normal business operation, workspace owners and staff continue using their own workspace permissions.
 
+## Commission policy and finance controls — current status
+
+The current Platform Settings UI exposes the legacy `commission_free_customer_limit` setting (labelled as free customer profiles before commission) and `booking_commission_rate_basis_points` with a 5% default. Current commission eligibility uses the customer-profile ordinal and may use the active subscription's `included_customer_limit`. There is no independent commission-enabled switch in the current policy UI. The `centralized_booking_payments_enabled` setting controls online booking checkout availability; it is not a commission enable switch.
+
+The intended target is a separate allowance of 1,000 qualifying bookings per workspace/calendar month, a default 10% rate on eligible bookings after the allowance, and a dedicated enable/disable control. That policy, its monthly finance views and its cash/receivable workflow are not implemented at the audited baseline. The existing payout ledger only reserves balances and records an external transfer reference; it does not move money. See DOC/21 for the full design and release gates.
+
 ## Verification
 
 The automated test suite covers:
