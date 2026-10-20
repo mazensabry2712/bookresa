@@ -188,6 +188,26 @@ test('closed staff working hours prevent assigned staff slots', function (): voi
     expect(app(AvailabilityService::class)->slots($service, mondayInCairo(), $staff))->toBe([]);
 });
 
+test('a missing weekday is closed after an individual weekly schedule is configured', function (): void {
+    $tenant = availabilityTenant('Availability Partial Staff Week');
+    $service = availabilityService($tenant);
+    $staff = availabilityStaff($tenant, $service);
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    // Simulate a partial legacy schedule: Tuesday is configured, but Monday has no row.
+    app(SetStaffWorkingHours::class)->handle($staff, [
+        ['day_of_week' => DayOfWeek::Tuesday->value, 'opens_at' => '10:00', 'closes_at' => '16:00'],
+    ]);
+
+    $availability = app(AvailabilityService::class);
+
+    expect($availability->slots($service, mondayInCairo(), $staff))->toBe([])
+        ->and($availability->slots($service, mondayInCairo()))->toBe([]);
+});
+
 test('explicit staff availability takes precedence over recurring staff hours', function (): void {
     $tenant = availabilityTenant('Availability Explicit');
     $service = availabilityService($tenant);
