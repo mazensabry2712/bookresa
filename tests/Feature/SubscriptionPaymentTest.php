@@ -380,11 +380,12 @@ test('signed Kashier webhook completes a subscription payment idempotently', fun
     ]);
 
     $data = [
-        'signatureKeys' => ['amount', 'currency', 'merchantId', 'orderReference', 'status', 'transactionId'],
+        'signatureKeys' => ['amount', 'currency', 'merchantId', 'merchantOrderId', 'orderReference', 'status', 'transactionId'],
         'amount' => '199',
         'currency' => 'EGP',
         'merchantId' => 'MID-PLATFORM-TEST',
-        'orderReference' => $payment->reference,
+        'merchantOrderId' => $payment->reference,
+        'orderReference' => 'TEST-ORD-SUB-WEBHOOK-001',
         'status' => 'SUCCESS',
         'transactionId' => 'TX-SUB-WEBHOOK-001',
         'creationDate' => '2026-09-21T01:00:00Z',
