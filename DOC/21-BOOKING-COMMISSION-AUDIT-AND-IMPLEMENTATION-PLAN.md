@@ -140,7 +140,7 @@ These defaults are recommendations for the specification to finalize. Where busi
 6. Reuse the same allocation on retry, duplicate event, or reschedule.
 7. Start a new allowance period in the next calendar month while retaining old history.
 
-Implemented in main: `booking_commission_period_counters` serializes workspace/month ordinals; unique constraints guard booking allocations and ordinals; `booking_commission_allocations` stores immutable policy snapshots. Tests cover ordinals 1,000 and 1,001 without creating one thousand fixtures. The migration and new CI run are not production-deployment approval.
+Implemented in main: `booking_commission_period_counters` serializes workspace/month ordinals; unique constraints guard booking allocations and ordinals; `booking_commission_allocations` stores immutable policy snapshots. Tests cover ordinals 1,000 and 1,001 without creating one thousand fixtures. The migration is not deployed; the code tranche passed CI (421 passed / 1 skipped / 2,022 assertions, [run](https://github.com/mazensabry2712/bookresa/actions/runs/39377850538)). A green CI run is not production-deployment approval.
 
 ### 4.2 Online payment
 

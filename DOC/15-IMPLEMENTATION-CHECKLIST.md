@@ -184,7 +184,7 @@ This checklist measures the current backend/product implementation scope, not th
 
 The items below are release verification tasks. A previously green baseline does not stay green automatically after code changes.
 - [x] previous baseline suite (409 passed / 1 skipped / 1,926 assertions on 2026-10-20; [CI run](https://github.com/mazensabry2712/bookresa/actions/runs/39357759308))
-- [ ] new monthly commission tranche CI, static-analysis and production-build gate
+- [x] monthly commission tranche CI, PHPStan, syntax scan, Pint, Vite production build and feature/unit tests (421 passed / 1 skipped / 2,022 assertions on 2026-10-20; [CI run](https://github.com/mazensabry2712/bookresa/actions/runs/39377850538))
 - [x] static analysis (PHPStan passed on commit `44b7f6bbc07ff0601dd6fce9914de9412f3c7451`)
 - [ ] Pint (full repository currently has 101 style issues across 301 files; changed-file CI checks pass)
 - [x] production build
