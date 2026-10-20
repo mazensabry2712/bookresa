@@ -40,9 +40,10 @@ final class HandleKashierWebhook
         $event = strtolower(trim((string) ($payload['event'] ?? '')));
         $transactionId = (string) ($data['transactionId'] ?? '');
         $orderReference = (string) ($data['orderReference'] ?? '');
+        $merchantOrderId = (string) ($data['merchantOrderId'] ?? '');
         $status = strtoupper((string) ($data['status'] ?? ''));
 
-        if ($event === '' || $transactionId === '' || $orderReference === '' || !in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
+        if ($event === '' || $transactionId === '' || $merchantOrderId === '' || $orderReference === '' || !in_array($status, ['SUCCESS', 'FAILURE', 'PENDING'], true)) {
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
@@ -55,11 +56,11 @@ final class HandleKashierWebhook
 
         $payment = Payment::withoutGlobalScopes()
             ->where('provider', 'kashier')
-            ->where('reference', $orderReference)
+            ->where('reference', $merchantOrderId)
             ->first();
 
         if ($payment === null) {
-            throw new RuntimeException('Payment for Kashier order reference was not found.');
+            throw new RuntimeException('Payment for Kashier merchant order ID was not found.');
         }
 
         $eventAmountMinor = $this->amountToMinor($data['amount'] ?? null);
