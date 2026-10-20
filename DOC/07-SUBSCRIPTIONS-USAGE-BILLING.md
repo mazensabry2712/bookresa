@@ -13,10 +13,11 @@ Do not combine unique-customer usage counts with booking counts, and do not pres
 - price
 - currency
 - billing period
-- included customer limit
-- additional customer unit price
+- included customer limit (for unique-customer metering and customer-creation policy)
 - active state
 - enabled modules
+
+The legacy `additional_customer_price_minor` column remains in stored plan/subscription data, but it is currently written as zero and is not an active pricing control.
 
 Platform pricing is managed in a platform-only admin area. Plan edits affect future subscriptions; existing subscriptions retain their pricing snapshots.
 
@@ -36,9 +37,9 @@ Statuses: Trial, Active, Expired, Suspended, Cancelled.
 ## Customer usage
 Count unique customer profiles inside the tenant, not bookings.
 
-additional_customers = max(current_unique_customers - included_limit, 0)
-usage_charge = additional_customers × additional_customer_price
-total = base_price + usage_charge
+`additional_customers = max(current_unique_customers - included_limit, 0)`
+
+This is a usage meter. At the current baseline, the extra-customer price and usage charge are zero; do not apply `additional_customers × additional_customer_price` as a payable charge. The separate monthly booking commission is based on qualifying booking count and is not implemented yet.
 
 ## Pricing snapshots
 Historical billing stores the exact inputs used for the charge. Future plan edits cannot change historical billing.
@@ -58,10 +59,10 @@ Current BookResa defaults:
 The strict `block_new_customers` policy is supported for tenants that want creation blocked at the limit.
 
 ## Owner visibility
-Display current customers, included limit, additional count, usage fee and total subscription cost. The owner billing dashboard also exposes usage history, scheduled plan changes and cancellation/re-activation state.
+Display current customers, included limit, additional count and subscription base-price details. The owner billing dashboard also exposes usage history, scheduled plan changes and cancellation/re-activation state. The extra-customer usage charge is currently zero and must not be presented as a payable surcharge.
 
 ## Admin controls
-Plan price, included limit, additional customer price, billing period and enabled modules.
+Plan price, included limit, billing period and enabled modules. The current Plan Admin does not expose an additional-customer price field and saves the legacy field as zero.
 
 ## Correctness
 Billing must be deterministic, auditable and idempotent against duplicate jobs/events.
