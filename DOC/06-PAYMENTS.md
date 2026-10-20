@@ -74,3 +74,12 @@ Implement the `PaymentGateway` contract, add provider configuration/client and s
 ## Release gates — not proven by mocked tests
 
 The real Kashier sandbox end-to-end check remains incomplete until a real test checkout has been completed and the return, webhook, duplicate delivery, booking/subscription synchronization, and refund paths have been verified against the current Kashier test account. Confirm the actual webhook amount format using a known payment amount and validate all configured event types before enabling live collection.
+
+
+## Monthly booking commission policy — audit note (2026-10-20)
+
+The requested target policy is a 1,000-booking free allowance per workspace per calendar month and a 10% default commission on eligible bookings beyond the allowance, controlled from Super Admin. This target is documented but is **not implemented at the current audit baseline**.
+
+The current code still bases eligibility on customer-profile ordinal, may inherit the active subscription's included-customer limit, and defaults to 5%. Cash bookings bypass online gateway checkout, while the current workspace payout view is a manual settlement ledger, not an automatic transfer integration. Do not enable live charges on the assumption that the target policy or marketplace split settlement exists.
+
+See [DOC/21-BOOKING-COMMISSION-AUDIT-AND-IMPLEMENTATION-PLAN.md](21-BOOKING-COMMISSION-AUDIT-AND-IMPLEMENTATION-PLAN.md) for the current audit, required code touchpoints, cash/online funds model, ledger design, provider approval, test matrix, migration safety, and implementation phases. Keep this document in sync when that implementation is delivered.
