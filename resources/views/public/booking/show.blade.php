@@ -524,13 +524,24 @@
                     const complete = number < activeStep;
                     indicator.setAttribute('aria-current', current ? 'step' : 'false');
                     indicator.classList.toggle('border-brand-indigo', current);
+                    indicator.classList.toggle('border-slate-200', !current);
                     indicator.classList.toggle('bg-indigo-50', current || complete);
+                    indicator.classList.toggle('bg-white', !(current || complete));
                     indicator.classList.toggle('dark:border-indigo-700', current);
+                    indicator.classList.toggle('dark:border-slate-800', !current);
                     indicator.classList.toggle('dark:bg-indigo-950/40', current || complete);
-                    indicator.querySelector('[data-step-number]')?.classList.toggle('bg-brand-navy', current || complete);
-                    indicator.querySelector('[data-step-number]')?.classList.toggle('text-white', current || complete);
-                    indicator.querySelector('[data-step-number]')?.classList.toggle('dark:bg-white', current || complete);
-                    indicator.querySelector('[data-step-number]')?.classList.toggle('dark:text-slate-900', current || complete);
+                    indicator.classList.toggle('dark:bg-slate-900/60', !(current || complete));
+
+                    const stepNumber = indicator.querySelector('[data-step-number]');
+                    stepNumber?.classList.toggle('bg-brand-navy', current || complete);
+                    stepNumber?.classList.toggle('bg-slate-100', !(current || complete));
+                    stepNumber?.classList.toggle('text-white', current || complete);
+                    stepNumber?.classList.toggle('text-slate-500', !(current || complete));
+                    stepNumber?.classList.toggle('dark:bg-white', current || complete);
+                    stepNumber?.classList.toggle('dark:bg-slate-800', !(current || complete));
+                    stepNumber?.classList.toggle('dark:text-slate-900', current || complete);
+                    stepNumber?.classList.toggle('dark:text-slate-300', !(current || complete));
+
                     const stepLabel = indicator.querySelector('[data-step-label]');
                     stepLabel?.classList.toggle('text-brand-indigo', current || complete);
                     stepLabel?.classList.toggle('text-slate-500', !(current || complete));
