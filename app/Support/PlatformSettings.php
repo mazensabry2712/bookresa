@@ -79,7 +79,7 @@ final class PlatformSettings
     /**
      * Blank secret inputs preserve existing encrypted values.
      *
-     * @param array{merchant_id: string, api_key?: string|null, secret_key?: string|null, server_webhook: string} $credentials
+     * @param  array{merchant_id: string, api_key?: string|null, secret_key?: string|null, server_webhook: string}  $credentials
      */
     public function saveKashierCredentials(array $credentials): void
     {

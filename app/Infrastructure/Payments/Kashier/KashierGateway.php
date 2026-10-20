@@ -14,7 +14,9 @@ use RuntimeException;
 
 final class KashierGateway implements PaymentGateway
 {
-    public function __construct(private readonly PlatformSettings $platformSettings) {
+    public function __construct(
+        private readonly PlatformSettings $platformSettings,
+    ) {
     }
 
     public function createPayment(PaymentRequest $request): PaymentGatewayResult
