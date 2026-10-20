@@ -442,6 +442,7 @@ Run complete CI, review migrations, back up database, rehearse migration and rol
 ## 12. Other documentation that must stay in sync
 
 - DOC/00-PROJECT-SPECIFICATION.md — product business model and payment context.
+- DOC/01-PRODUCT-REQUIREMENTS.md — customer usage meter, surcharge replacement direction and booking commission target.
 - DOC/03-DATABASE-ERD.md — counter, booking, commission, cash, receivable and payout relationships.
 - DOC/06-PAYMENTS.md — online/cash money flows, refunds and actual settlement behavior.
 - DOC/07-SUBSCRIPTIONS-USAGE-BILLING.md — separate unique-customer usage from booking commissions.
