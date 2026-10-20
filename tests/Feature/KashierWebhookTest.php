@@ -136,7 +136,7 @@ test('signed Kashier success webhook marks payment and booking as paid', functio
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -156,7 +156,7 @@ test('duplicate Kashier webhook is acknowledged without double processing', func
 
     $headers = ['x-kashier-signature' => $signature];
 
-    $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertNoContent();
+    $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertOk();
     $this->postJson(route('webhooks.kashier'), $payload, $headers)->assertStatus(409);
 
     app(CurrentTenant::class)->set($tenant);
@@ -215,7 +215,7 @@ test('failed Kashier refund does not regress a paid payment', function (): void 
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     expect($payment->fresh()->status)->toBe(PaymentStatus::Paid)
         ->and($payment->fresh()->metadata)->toMatchArray([
@@ -240,7 +240,7 @@ test('successful Kashier partial refunds reduce net paid amount and sync booking
 
     $this->postJson(route('webhooks.kashier'), $partial, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     app(CurrentTenant::class)->set($tenant);
 
@@ -256,7 +256,7 @@ test('successful Kashier partial refunds reduce net paid amount and sync booking
 
     $this->postJson(route('webhooks.kashier'), $full, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     expect($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
         ->and($payment->fresh()->refunded_amount_minor)->toBe(25000)
@@ -279,7 +279,7 @@ test('pending Kashier partial refund does not change the payment balance', funct
 
     $this->postJson(route('webhooks.kashier'), $payload, [
         'x-kashier-signature' => $signature,
-    ])->assertNoContent();
+    ])->assertOk();
 
     app(CurrentTenant::class)->set($tenant);
 
