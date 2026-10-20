@@ -526,6 +526,7 @@
                         <div class="mt-4 space-y-4">
                             @foreach ($staffMembers as $staffMember)
                                 @php
+                                    $hasIndividualSchedule = $staffMember->workingHours->isNotEmpty();
                                     $staffHours = $staffMember->workingHours->keyBy(fn ($hour): int => $hour->day_of_week->value);
                                     $isEditingStaffSchedule = old('schedule_form') === 'staff'
                                         && (string) old('staff_schedule_id') === (string) $staffMember->id;
@@ -546,6 +547,10 @@
                                             {{ $staffMember->status->value === 'active' ? __('app.scheduling_ui.active') : __('app.scheduling_ui.inactive') }}
                                         </span>
                                     </div>
+
+                                    @unless ($hasIndividualSchedule)
+                                        <p class="border-b border-slate-200 px-4 py-2.5 text-xs leading-5 text-slate-500 dark:border-slate-800 dark:text-slate-400">{{ __('app.scheduling_ui.staff_schedule_fallback_help') }}</p>
+                                    @endunless
 
                                     @can('settings.manage')
                                         <form method="POST" action="{{ route('scheduling.staff-hours.update', ['tenant' => $tenant->slug, 'staff' => $staffMember]) }}" class="p-3 sm:p-4">
@@ -569,6 +574,9 @@
                                                 @foreach ($days as $day)
                                                     @php
                                                         $hour = $staffHours->get($day->value);
+                                                        if (! $hasIndividualSchedule) {
+                                                            $hour = $businessHours->get($day->value);
+                                                        }
                                                         $savedOpen = $hour && ! $hour->is_closed && $hour->opens_at ? substr((string) $hour->opens_at, 0, 5) : '';
                                                         $savedClose = $hour && ! $hour->is_closed && $hour->closes_at ? substr((string) $hour->closes_at, 0, 5) : '';
                                                         $open = $isEditingStaffSchedule ? old('hours.'.$loop->index.'.opens_at', $savedOpen) : $savedOpen;
