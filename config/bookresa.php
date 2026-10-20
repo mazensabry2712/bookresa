@@ -44,7 +44,7 @@ return [
             'merchant_redirect' => env('KASHIER_MERCHANT_REDIRECT'),
             'server_webhook' => env('KASHIER_SERVER_WEBHOOK'),
             'max_failure_attempts' => (int) env('KASHIER_MAX_FAILURE_ATTEMPTS', 3),
-            'allowed_methods' => env('KASHIER_ALLOWED_METHODS', 'card,wallet'),
+            'allowed_methods' => env('KASHIER_ALLOWED_METHODS', 'card,wallet,fawry'),
             'display' => env('KASHIER_DISPLAY', 'en'),
             'expire_minutes' => (int) env('KASHIER_EXPIRE_MINUTES', 30),
             'enable_3ds' => (bool) env('KASHIER_ENABLE_3DS', true),

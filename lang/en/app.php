@@ -1074,7 +1074,7 @@ return [
         'choose_payment_method' => 'Choose how you would like to pay.',
         'pay_online' => 'Pay online',
         'cash_at_center' => 'Cash when you arrive at the center',
-        'pay_online_help' => 'You will be redirected to the payment gateway to pay the full service price.',
+        'pay_online_help' => 'You will be redirected to secure checkout to pay the full service price. Enabled methods may include Visa, Mastercard, mobile wallets and Fawry, subject to the live merchant configuration.',
         'cash_at_center_help' => 'Confirm your booking now and pay at the center when you arrive.',
         'online_payment_unavailable' => 'Online payment is not available right now. You can confirm the booking and pay at the center.',
         'pay_online_summary' => 'Pay online',

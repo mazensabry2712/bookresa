@@ -82,7 +82,7 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
             'merchant_redirect' => null,
             'server_webhook' => 'https://example.test/webhooks/kashier',
             'max_failure_attempts' => 3,
-            'allowed_methods' => 'card,wallet',
+            'allowed_methods' => 'card,wallet,fawry',
             'display' => 'en',
             'expire_minutes' => 30,
             'enable_3ds' => true,
@@ -130,6 +130,7 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
             && str_starts_with((string) $request['customer']['reference'], 'customer-')
             && $request['merchantId'] === 'MID-123'
             && $request['merchantRedirect'] === route('payments.kashier.return')
+            && $request['allowedMethods'] === 'card,wallet,fawry'
             && !array_key_exists('connectedAccount', $request->data());
     });
 });
