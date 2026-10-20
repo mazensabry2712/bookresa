@@ -15,9 +15,9 @@ use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
-use App\Support\PlatformSettings;
 use App\Http\Requests\PublicBookingAvailabilityRequest;
 use App\Http\Requests\StorePublicBookingRequest;
+use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -106,7 +106,7 @@ class PublicBookingController
 
             $response = ['data' => $availableSlots];
 
-            if ($availableSlots->isEmpty() && $hasStaffAssignments && ! $hasActiveStaffAssignments) {
+            if ($availableSlots->isEmpty() && $hasStaffAssignments && !$hasActiveStaffAssignments) {
                 $response['reason'] = 'no_active_staff';
             }
 
@@ -142,7 +142,7 @@ class PublicBookingController
                     FILTER_VALIDATE_BOOL,
                 );
 
-                if ($paymentMethod === 'online' && ! $onlinePaymentsEnabled) {
+                if ($paymentMethod === 'online' && !$onlinePaymentsEnabled) {
                     throw new RuntimeException(__('app.public_booking_ui.online_payment_unavailable'));
                 }
 

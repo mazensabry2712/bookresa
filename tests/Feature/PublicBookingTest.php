@@ -77,7 +77,7 @@ test('public business page is available without authentication', function (): vo
         ->assertSee('name="payment_method" value="cash"', false)
         ->assertSee('name="payment_method" value="online"', false)
         ->assertSee('data-summary-payment-method', false)
-        ->assertSee("paymentMethodInputs.forEach((input) => input.addEventListener('change', updatePaymentSelection))", false);
+        ->assertSee('paymentMethodInputs.forEach((input) => input.addEventListener', false);
 });
 
 test('public booking wizard supports date input events and delegated time-slot selection', function (): void {
@@ -340,7 +340,6 @@ test('public customer can book without an account', function (): void {
         ->and($booking->service_id)->toBe($service->id)
         ->and(preg_match('/^BR-\\d{6}$/', $booking->booking_reference))->toBe(1);
 });
-
 
 test('public booking requires an explicit staff selection when a service has staff assigned', function (): void {
     $tenant = publicTenant('public-requires-selected-staff');

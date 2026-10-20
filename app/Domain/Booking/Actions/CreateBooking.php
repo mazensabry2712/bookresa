@@ -5,18 +5,18 @@ namespace App\Domain\Booking\Actions;
 use App\Domain\Booking\Enums\BookingStatus;
 use App\Domain\Booking\Enums\PaymentStatus;
 use App\Domain\Booking\Models\Booking;
-use App\Notifications\BookingNotification;
-use App\Notifications\BusinessBookingNotification;
 use App\Domain\Customer\Actions\FindOrCreateCustomer;
 use App\Domain\Customer\Models\Customer;
-use App\Domain\Service\Models\Service;
 use App\Domain\Scheduling\Services\AvailabilityService;
+use App\Domain\Service\Models\Service;
 use App\Domain\Staff\Enums\StaffStatus;
 use App\Domain\Staff\Models\StaffProfile;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Notifications\BookingNotification;
+use App\Notifications\BusinessBookingNotification;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use LogicException;
 use RuntimeException;
 
@@ -26,8 +26,7 @@ final class CreateBooking
         private readonly CurrentTenant $currentTenant,
         private readonly AvailabilityService $availability,
         private readonly FindOrCreateCustomer $customers,
-    ) {
-    }
+    ) {}
 
     public function handle(
         Service $service,
@@ -74,11 +73,11 @@ final class CreateBooking
                 throw new RuntimeException(__('app.booking_ui.no_staff_available_at_time'));
             }
 
-            if (! $hasStaffAssignments) {
+            if (!$hasStaffAssignments) {
                 throw new LogicException('This service does not use staff assignments.');
             }
 
-            if (! $assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff))) {
+            if (!$assignedStaff->contains(fn (StaffProfile $staff): bool => $staff->is($requestedStaff))) {
                 throw new LogicException('Selected staff member is not assigned to this service.');
             }
         }
@@ -106,7 +105,7 @@ final class CreateBooking
                 $this->lockScope($tenantId, null, $localStart);
                 $selectedStaff = null;
 
-                if (! $this->availability->isAvailable($service, $localStart, null)) {
+                if (!$this->availability->isAvailable($service, $localStart, null)) {
                     throw new RuntimeException(__('app.booking_ui.selected_time_unavailable'));
                 }
 

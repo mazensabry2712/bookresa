@@ -11,10 +11,10 @@ use App\Domain\Service\Actions\CreateService;
 use App\Domain\Tenant\Enums\TenantStatus;
 use App\Domain\Tenant\Models\Tenant;
 use App\Domain\Tenant\Services\CurrentTenant;
+use App\Support\PlatformSettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use App\Support\PlatformSettings;
 
 uses(RefreshDatabase::class);
 
@@ -130,7 +130,7 @@ test('public paid booking redirects to Kashier checkout and stores payment sessi
             && str_starts_with((string) $request['customer']['reference'], 'customer-')
             && $request['merchantId'] === 'MID-123'
             && $request['merchantRedirect'] === route('payments.kashier.return')
-            && ! array_key_exists('connectedAccount', $request->data());
+            && !array_key_exists('connectedAccount', $request->data());
     });
 });
 
