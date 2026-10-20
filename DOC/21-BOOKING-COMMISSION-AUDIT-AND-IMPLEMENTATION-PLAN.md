@@ -65,7 +65,7 @@ Observed behavior:
 - The payment core separates booking payments from business subscription payments. They must remain separate financial contexts.
 - Kashier redirect and webhook processing have signature verification, server-side validation, amount/currency/merchant checks and idempotency controls. A browser redirect alone is not proof of payment.
 - Real sandbox end-to-end verification remains a separate release gate. Actual webhook amount units and event/status behavior, especially capture, authorization, void, reversal and partial refunds, must be confirmed against known test transactions.
-- Abandoned online checkout can leave a pending booking blocking availability; a dedicated expiry/release flow is a documented gap. A safe customer retry flow for expired/failed checkout also needs review.
+- **Audit-baseline history:** when this audit was first performed, abandoned online checkout could leave a pending booking blocking availability and there was no customer retry action. This gap has since been addressed in main by `bookresa:expire-pending-booking-payments` and the signed, throttled retry action on the booking confirmation page. Latest verified code commit for that tranche is `b6c3a19f0c8686933bb70e7bc8b6b05517def2f7`; its CI passed 418 tests / 1 skipped / 1,998 assertions, with PHPStan, syntax, Pint and production build all green. Not deployed; Hostinger scheduler/log checks and real Kashier sandbox E2E remain open.
 - Live payment credentials and real customer charges were not used during this audit.
 
 ### 2.4 Existing payouts are not automatic transfers
@@ -300,7 +300,7 @@ The model must represent receivables owed to BookResa separately from the amount
 | 13 | Super Admin UI | Old allowance label and commission table | Monthly counter, earned/collected/receivable/payable breakdown |
 | 14 | Workspace UI | Booking/payment/billing screens exist | Monthly allowance meter and finance statement |
 | 15 | Reports/dashboard | Booking revenue, subscription and usage metrics exist | Commission and settlement metrics without double counting |
-| 16 | Pending checkout | Abandoned booking may block availability | Safe expiry, release, cancellation and retry flow |
+| 16 | Pending checkout | At audit baseline, an abandoned booking could block availability | Code-level verified-provider expiry/release command and signed retry action now implemented on main; production scheduler verification and sandbox E2E remain open |
 | 17 | Permissions/audit | Tenant and platform controls exist | Secure cash, adjustments, receivables, exports and payout actions |
 | 18 | Tenant isolation | Tenant context and scopes exist | Cross-tenant denial tests for every new resource/action |
 | 19 | Database | Payment, commission and payout tables exist | Additive schema for monthly counter and required ledger links |
@@ -493,6 +493,8 @@ Not implemented at this baseline:
 - [ ] Cash collection, commission receivable and remittance flow.
 - [ ] Admin/workspace monthly statements and reporting changes.
 - [ ] New tests and required migrations.
+- [x] Code-level expired checkout release and signed customer retry path implemented and tested (CI green at `b6c3a19f0c8686933bb70e7bc8b6b05517def2f7`; not deployed).
+- [ ] Hostinger scheduler execution/log checks and full sandbox retry/expiry smoke test.
 - [ ] Real Kashier sandbox end-to-end verification.
 - [ ] Provider/business/legal approval for marketplace funds flow.
 - [ ] Production deployment of the new model.

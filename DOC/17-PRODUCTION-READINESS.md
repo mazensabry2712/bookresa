@@ -166,6 +166,10 @@ Required before production traffic:
 
 Do not mark a production item complete only because configuration files exist; verify the deployed infrastructure itself.
 
+### Booking payment retry/expiry operational check
+
+The current main branch defines and schedules `bookresa:expire-pending-booking-payments` hourly with overlap protection. The command verifies expired latest payment attempts with Kashier and only releases a pending slot after a terminal failure/cancellation is verified against the saved merchant, order reference, amount and currency. A signed, throttled retry action is available from the booking confirmation page for eligible failed/expired attempts. CI has passed 418 tests / 1 skipped / 1,998 assertions on main. This is code-level verification only. After deployment, verify Hostinger's Laravel scheduler is actually invoking the command, inspect command/application logs, and test a full sandbox checkout, expiry/failure, retry and successful payment before marking this operational item complete.
+
 ## Booking commission and settlement release gate
 
 The target policy of 1,000 qualifying bookings per workspace/calendar month followed by a default 10% commission is **not implemented at the audited baseline**. The existing customer-ordinal/5% logic and payment-keyed ledger are not substitutes for it. Before activating the new policy or collecting its commission, require all of the following:

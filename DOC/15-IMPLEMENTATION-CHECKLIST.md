@@ -90,8 +90,9 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] webhook idempotency keyed by operation as well as transaction/status to avoid cross-operation collisions
 - [x] server-side verification matches merchant, order reference, amount and currency before applying provider state
 - [ ] real Kashier sandbox end-to-end verification
-- [ ] existing-booking payment retry after failed/expired checkout
-- [ ] abandoned pending booking expiry/release lifecycle
+- [x] signed existing-booking payment retry after failed/expired checkout (CI feature test green; not yet production-deployed)
+- [x] code-level pending booking payment expiry/release command with provider verification and focused feature tests (CI green; Hostinger scheduler/log verification still open)
+- [ ] production scheduler execution and retry/expiry smoke test after deployment
 
 ## Billing
 - [x] plans
