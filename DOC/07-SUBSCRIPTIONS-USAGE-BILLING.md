@@ -50,7 +50,7 @@ Behavior must be explicit and testable. MVP may use a fixed-period policy; advan
 ## Downgrade
 Recommended default: effective at the next billing boundary. Existing customers are never deleted.
 
-Over-limit policy can allow usage charges or restrict creation of new customer profiles.
+Over-limit policy can allow additional customer profiles or restrict creation of new customer profiles; this does not activate a surcharge in the current runtime.
 
 Current BookResa defaults:
 - customer limit policy: `allow_overage`
