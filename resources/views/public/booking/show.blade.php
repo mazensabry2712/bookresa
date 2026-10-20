@@ -556,18 +556,6 @@
                 refreshSubmit();
             };
 
-            // Delegate clicks from the slots container so dynamically rebuilt buttons
-            // always remain selectable, including clicks on the time/count text inside.
-            slotsContainer.addEventListener('click', (event) => {
-                const target = event.target;
-                if (!(target instanceof Element)) return;
-
-                const button = target.closest('button[data-booking-slot]');
-                if (!button || !slotsContainer.contains(button)) return;
-
-                selectSlot(button, button.dataset.bookingSlot || '');
-            });
-
             const loadAvailability = async ({ preserveTime = false } = {}) => {
                 const selected = checkedService();
                 const desiredTime = preserveTime ? timeInput.value : '';
@@ -645,6 +633,7 @@
                         button.dataset.bookingSlot = slot.time;
                         button.textContent = slot.time;
                         button.setAttribute('aria-pressed', 'false');
+                        button.addEventListener('click', () => selectSlot(button, slot.time));
                         slotsContainer.appendChild(button);
 
                         if (desiredTime && slot.time === desiredTime) {
