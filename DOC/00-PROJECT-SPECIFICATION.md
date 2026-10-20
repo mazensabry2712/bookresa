@@ -162,14 +162,13 @@ Statuses: Trial, Active, Expired, Suspended, Cancelled.
 
 Historical subscription/billing records preserve the pricing inputs used at calculation time.
 
-## 20. Customer-Based Pricing / Usage-Based Fee
-Each Plan has an included number of unique customers.
+## 20. Unique-Customer Usage Meter (Separate from Booking Commission)
 
-Example: Plan 299 EGP/month, Included Customers 20, Current Customers 27, Additional Customers 7.
+Each plan stores an included number of unique customer profiles. Example: Plan 299 EGP/month, Included Customers 20, Current Customers 27, Additional Customers 7.
 
-Additional usage is billed using an Admin-configurable per-customer price.
+The included-customer limit is a customer-usage metric. It is **not** the monthly free-booking allowance and must not determine commission eligibility under the target booking-commission model.
 
-**Current implementation status (verified against main on 2026-10-20):** the application counts unique customer profiles and computes the over-limit count, but `CalculateSubscriptionUsage` currently returns `additionalCustomerPriceMinor = 0` and `usageChargeMinor = 0`; the current plan-admin save path also stores `additional_customer_price_minor = 0`. The formula and UI fields in this section describe the product requirement, not evidence that an additional-customer surcharge is currently calculated or collected. If this surcharge is enabled later, it must remain a separate policy from monthly booking commissions.
+**Current implementation/product-direction status (verified against main on 2026-10-20):** the application counts unique customer profiles and the over-limit count, but `CalculateSubscriptionUsage` returns `additionalCustomerPriceMinor = 0` and `usageChargeMinor = 0`; the current plan-admin save path stores `additional_customer_price_minor = 0`. The current Plan Admin UI explicitly says additional-customer surcharges are replaced by booking commissions. Treat the surcharge as disabled/superseded unless a future product decision explicitly re-approves it. Do not infer that a charge is collected just because its legacy database fields remain.
 
 ## 21. Customer Count Definition
 Customer = Unique customer profile inside the Workspace/Tenant.
@@ -180,17 +179,17 @@ Customer usage must never equal booking count and the same customer must not be 
 
 Initial identity strategy should normalize customer phone data to avoid obvious formatting duplicates.
 
-## 22. Usage Billing
-System exposes Current Customer Count, Included Customer Limit, Additional Customer Count, Additional Fee and Total Subscription Cost.
+## 22. Usage Metering and Billing Status
 
-Example: Professional, Base Price 500 EGP, Included 20, Current 35, Additional 15, Usage = 15 × X EGP, Final = Base + Usage.
+The workspace exposes current unique-customer count, included customer limit and additional-customer count. The legacy specification described an additional fee and estimated total, but the current runtime returns a zero usage charge and the Plan Admin save path fixes the extra-customer price at zero.
 
-Owner must see the calculation clearly.
+Do not display an additional-customer surcharge as payable/collected in the current implementation. The intended BookResa booking commission is calculated from qualifying bookings per workspace/calendar month, not from the number of unique customer profiles; see Section 48 and DOC/21.
 
 ## 23. Admin Pricing Control
-Platform Admin can change Plan Price, Included Customer Limit, Additional Customer Price, Billing Period and Features/Modules included in a Plan.
 
-Normal pricing changes must not require source-code changes.
+Platform Admin can change plan price, included-customer limit, billing period and features/modules included in a plan.
+
+The legacy `additional_customer_price_minor` field remains in stored plan/subscription snapshots, but the current Plan Admin controller writes it as zero and does not expose it as an editable pricing control. Do not re-enable this surcharge implicitly while implementing booking commissions.
 
 ## 24. Subscription Upgrade / Downgrade
 Business can Upgrade, Downgrade, Renew and Cancel.
@@ -199,7 +198,7 @@ Downgrade policy must be explicit and configurable.
 
 Example: 35 customers on a plan with 20 included does not delete customers.
 
-Recommended MVP default: downgrade takes effect at the next billing boundary. Over-limit Businesses either continue with usage fees or are restricted from creating new customer profiles according to configurable policy.
+Recommended MVP default: downgrade takes effect at the next billing boundary. An over-limit workspace may continue creating customer profiles or be restricted by the configured customer-creation policy; that choice does not create an extra-customer fee in the current implementation. Booking commissions follow the separate policy in Section 48.
 
 ## 25. Notifications
 Customer: Booking Confirmation, Cancellation, Reschedule, Appointment Reminder.
@@ -211,7 +210,7 @@ Use Laravel Notifications and queues where asynchronous delivery is appropriate.
 ## 26. Usage Notifications
 Before limit: approaching warning.
 At limit: included limit reached.
-After limit: show additional customers and applicable fee.
+After limit: show the additional-customer count and the active customer-creation policy. The current extra-customer surcharge is disabled; booking-commission status must be shown separately once the monthly booking policy is implemented.
 
 ## 27. Business Dashboard
 Show Business Name, Today's Bookings, Upcoming Bookings, Today's Revenue, Customers, Employees, Subscription Status and Customer Usage.
@@ -221,7 +220,7 @@ Example: Customers 17/20, Bookings Today 12, Revenue Today 2,400 EGP, Subscripti
 ## 28. Platform Admin Dashboard
 Sections: Businesses, Users, Plans, Subscriptions, Payments, Usage, Bookings, Reports, Support and Settings.
 
-Metrics: Total Businesses, Active Businesses, Trial Businesses, Expired Businesses, Total Subscriptions, Monthly Recurring Revenue, Customer Usage, Businesses Over Customer Limits and Additional Usage Revenue.
+Metrics: Total Businesses, Active Businesses, Trial Businesses, Expired Businesses, Total Subscriptions, Monthly Recurring Revenue, Customer Usage and Businesses Over Customer Limits. Additional-customer surcharge revenue is currently zero; booking-commission totals must be added and labelled by financial state only after the target policy and ledger are implemented.
 
 ## 29. Business Isolation
 Strict Tenant Isolation is mandatory.
@@ -290,12 +289,12 @@ Business Owner → Create Account → Create Business → Choose Business Type �
 
 ## 38. Core Business Model
 
-- **Current verified revenue path:** subscription payments. The application also has a centralized online booking-payment path when enabled, plus cash-at-business booking selection; neither should be confused with BookResa commission already collected.
-- **Subscription usage target:** unique-customer usage is measured separately from booking count. The additional-customer surcharge remains a product requirement, but the current runtime computes a zero usage charge (see Sections 20–22).
-- **Booking commission target:** the separate monthly booking-commission policy is defined in Section 48. It is not implemented at the audit baseline; the existing legacy rule uses customer-profile ordinal and a 5% fallback.
-- **Future opportunities:** optional premium modules and any approved transaction/commission revenue model.
+- **Current implemented revenue path:** subscription payments. The application also supports centralized online booking checkout when enabled and cash-at-business booking selection; neither means BookResa commission has already been collected.
+- **Unique-customer usage meter:** retain the customer count and included-customer limit as separate subscription/workspace metrics. The old specification's extra-customer surcharge is disabled in the current runtime, and the current Plan Admin UI says it is replaced by booking commissions.
+- **Booking commission target:** the monthly policy in Section 48 is the intended commission model. It is not implemented at the audit baseline; the legacy rule uses customer-profile ordinal, may inherit the subscription customer limit, and defaults to 5%.
+- **Future opportunities:** optional premium modules and any additional fee model explicitly approved in a future product decision.
 
-Do not report planned usage surcharges or the target monthly booking commission as revenue collected until the corresponding policy, accounting and collection path is implemented and reconciled.
+Do not report the old customer surcharge or target monthly booking commission as revenue collected until the applicable policy, accounting and collection path is implemented and reconciled.
 
 ## 39. Required Pre-Production Agreement
 Before production code, agree on:
@@ -321,7 +320,7 @@ The workspace is configurable and modular. Businesses activate tools such as ser
 
 Each business receives a public booking page that customers can use without necessarily creating an account. Customers choose service, staff, date and available time, provide contact details, optionally pay, and receive a Booking Reference.
 
-**Product requirement:** plans define a unique-customer limit, and any enabled additional-customer usage fee is configurable from the Platform Admin Dashboard. **Current implementation status:** usage counts/over-limit counts are calculated, but the current runtime sets the additional-customer rate and usage charge to zero, so this is not an active additional charge at the audit baseline. The separate monthly booking-commission target in Section 48 is also not yet implemented.
+Plans define an included unique-customer limit used for usage visibility and customer-creation policy. The legacy extra-customer surcharge is currently disabled: the runtime returns zero usage charge and the current Plan Admin UI says the surcharge is replaced by booking commissions. The separate monthly booking-commission target in Section 48 is not yet implemented; its allowance must be based on qualifying bookings, not the included customer limit.
 
 BookResa must be a true multi-tenant system with strict tenant isolation, RBAC, scalable booking/availability logic and modular architecture.
 
@@ -421,7 +420,7 @@ When implementation changes an agreed behavior, update the existing relevant DOC
 
 ## 48. Monthly booking commission policy clarification (2026-10-20)
 
-The intended commission model is separate from subscription usage billing: each workspace has a default allowance of 1,000 qualifying bookings per calendar month, after which BookResa's default commission is 10% on eligible excess bookings. The allowance, rate and commission-enabled state are to be controlled by Super Admin. A repeated customer can create multiple bookings and therefore consume multiple monthly booking slots; unique-customer count remains a separate subscription metric.
+The intended commission model uses its own booking counter: each workspace has a default allowance of 1,000 qualifying bookings per calendar month, after which BookResa's default commission is 10% on eligible excess bookings. The allowance, rate and commission-enabled state are to be controlled by Super Admin. A repeated customer can create multiple bookings and therefore consume multiple monthly booking slots; unique-customer count remains a separate subscription/usage metric. This does not reactivate the legacy additional-customer surcharge, which the current Plan Admin UI says is replaced by booking commissions.
 
 This is the target business requirement, **not the behavior implemented at the current audit baseline**. The current implementation determines commission eligibility from customer-profile ordinal, can use a subscription's included-customer limit, and defaults to 5%. The current payout ledger records manual transfers; it does not provide automatic marketplace split settlement. Cash bookings bypass online gateway checkout, so cash-based commission requires a separately auditable collection/receivable flow.
 
