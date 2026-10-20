@@ -112,7 +112,7 @@ final class AllocateMonthlyBookingCommission
                 $lockedBooking->service_currency_snapshot ?: ($lockedBooking->service->currency ?? '')
             )));
 
-            if (! preg_match('/^[A-Z]{3}$/', $currency)) {
+            if (!preg_match('/^[A-Z]{3}$/', $currency)) {
                 throw new RuntimeException('The booking currency snapshot is invalid for commission allocation.');
             }
 

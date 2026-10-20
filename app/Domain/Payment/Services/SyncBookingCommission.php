@@ -8,8 +8,8 @@ use App\Domain\Payment\Models\BookingCommission;
 use App\Domain\Payment\Models\BookingCommissionAllocation;
 use App\Domain\Payment\Models\Payment;
 use App\Domain\Tenant\Services\CurrentTenant;
-use Illuminate\Support\Facades\DB;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use LogicException;
 
 final class SyncBookingCommission
@@ -37,7 +37,7 @@ final class SyncBookingCommission
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if (! in_array($currentPayment->status, [PaymentStatus::Paid, PaymentStatus::Refunded], true)) {
+            if (!in_array($currentPayment->status, [PaymentStatus::Paid, PaymentStatus::Refunded], true)) {
                 return null;
             }
 
@@ -46,7 +46,7 @@ final class SyncBookingCommission
                 ->whereKey($currentPayment->payable_id)
                 ->first();
 
-            if (! $booking instanceof Booking) {
+            if (!$booking instanceof Booking) {
                 return null;
             }
 
