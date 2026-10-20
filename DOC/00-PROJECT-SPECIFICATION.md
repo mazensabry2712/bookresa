@@ -169,6 +169,8 @@ Example: Plan 299 EGP/month, Included Customers 20, Current Customers 27, Additi
 
 Additional usage is billed using an Admin-configurable per-customer price.
 
+**Current implementation status (verified against main on 2026-10-20):** the application counts unique customer profiles and computes the over-limit count, but `CalculateSubscriptionUsage` currently returns `additionalCustomerPriceMinor = 0` and `usageChargeMinor = 0`; the current plan-admin save path also stores `additional_customer_price_minor = 0`. The formula and UI fields in this section describe the product requirement, not evidence that an additional-customer surcharge is currently calculated or collected. If this surcharge is enabled later, it must remain a separate policy from monthly booking commissions.
+
 ## 21. Customer Count Definition
 Customer = Unique customer profile inside the Workspace/Tenant.
 
@@ -287,13 +289,13 @@ Businesses create a workspace in minutes, operate bookings, manage customers/ser
 Business Owner → Create Account → Create Business → Choose Business Type → Select Required Features → Configure Workspace → Add Services → Add Staff → Set Working Hours → Publish Booking Page → Customers Start Booking → Business Manages Bookings → Subscription + Usage Billing.
 
 ## 38. Core Business Model
-Primary revenue: Subscription.
 
-Additional revenue: Usage-Based Revenue from additional unique customers.
+- **Current verified revenue path:** subscription payments. The application also has a centralized online booking-payment path when enabled, plus cash-at-business booking selection; neither should be confused with BookResa commission already collected.
+- **Subscription usage target:** unique-customer usage is measured separately from booking count. The additional-customer surcharge remains a product requirement, but the current runtime computes a zero usage charge (see Sections 20–22).
+- **Booking commission target:** the separate monthly booking-commission policy is defined in Section 48. It is not implemented at the audit baseline; the existing legacy rule uses customer-profile ordinal and a 5% fallback.
+- **Future opportunities:** optional premium modules and any approved transaction/commission revenue model.
 
-Future revenue: Payment Transaction Fees and Optional Premium Modules.
-
-MVP revenue model: Subscription + Customer Usage Fee.
+Do not report planned usage surcharges or the target monthly booking commission as revenue collected until the corresponding policy, accounting and collection path is implemented and reconciled.
 
 ## 39. Required Pre-Production Agreement
 Before production code, agree on:
@@ -319,7 +321,7 @@ The workspace is configurable and modular. Businesses activate tools such as ser
 
 Each business receives a public booking page that customers can use without necessarily creating an account. Customers choose service, staff, date and available time, provide contact details, optionally pay, and receive a Booking Reference.
 
-Plans include a defined number of unique customers. When the Business exceeds that limit, additional usage fees are automatically calculated from the number of additional unique customer profiles. Pricing is configurable from the Platform Admin Dashboard without source-code changes.
+**Product requirement:** plans define a unique-customer limit, and any enabled additional-customer usage fee is configurable from the Platform Admin Dashboard. **Current implementation status:** usage counts/over-limit counts are calculated, but the current runtime sets the additional-customer rate and usage charge to zero, so this is not an active additional charge at the audit baseline. The separate monthly booking-commission target in Section 48 is also not yet implemented.
 
 BookResa must be a true multi-tenant system with strict tenant isolation, RBAC, scalable booking/availability logic and modular architecture.
 
