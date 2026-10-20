@@ -132,10 +132,11 @@ final class AvailabilityService
             ->get(['staff_id', 'starts_at', 'ends_at'])
             ->groupBy('staff_id');
 
+        // Load the full weekly schedule so an omitted weekday is treated as closed
+        // once a staff member has a recurring schedule configured.
         $workingHoursByStaff = StaffWorkingHour::query()
             ->whereIn('staff_id', $staffIds)
-            ->where('day_of_week', $localDate->dayOfWeekIso)
-            ->get(['staff_id', 'opens_at', 'closes_at', 'is_closed'])
+            ->get(['staff_id', 'day_of_week', 'opens_at', 'closes_at', 'is_closed'])
             ->groupBy('staff_id');
 
         $bookingsByStaff = Booking::query()
@@ -166,7 +167,9 @@ final class AvailabilityService
                     'end' => $window->ends_at,
                 ]);
             } elseif ($configuredHours->isNotEmpty()) {
-                $openHours = $configuredHours->where('is_closed', false);
+                $openHours = $configuredHours
+                    ->filter(fn (StaffWorkingHour $window): bool => $window->day_of_week->value === $localDate->dayOfWeekIso)
+                    ->where('is_closed', false);
 
                 if ($openHours->isEmpty()) {
                     continue;
@@ -251,11 +254,12 @@ final class AvailabilityService
             /** @var EloquentCollection<int, StaffWorkingHour> $configuredHours */
             $configuredHours = StaffWorkingHour::query()
                 ->where('staff_id', $staff->getKey())
-                ->where('day_of_week', $date->dayOfWeekIso)
-                ->get(['opens_at', 'closes_at', 'is_closed']);
+                ->get(['day_of_week', 'opens_at', 'closes_at', 'is_closed']);
 
             if ($configuredHours->isNotEmpty()) {
-                $openHours = $configuredHours->where('is_closed', false);
+                $openHours = $configuredHours
+                    ->filter(fn (StaffWorkingHour $window): bool => $window->day_of_week->value === $date->dayOfWeekIso)
+                    ->where('is_closed', false);
 
                 if ($openHours->isEmpty()) {
                     return [];
@@ -266,6 +270,8 @@ final class AvailabilityService
                     'end' => $window->closes_at,
                 ]);
             } else {
+                // Preserve the legacy business-hours fallback only for staff with
+                // no individual recurring schedule configured at all.
                 return $this->generateSlots($service, $businessWindows, $date, $staff, null, $minBookableAt);
             }
         } else {
