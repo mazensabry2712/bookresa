@@ -433,6 +433,7 @@ test('expired online booking checkout can start a new payment attempt from the s
     app(CurrentTenant::class)->set($tenant);
 
     $initialPayment->forceFill(['expires_at' => CarbonImmutable::now('UTC')->subMinute()])->save();
+    app(CurrentTenant::class)->clear();
 
     $retryUrl = URL::temporarySignedRoute(
         'public.booking.canonical.retry-payment',

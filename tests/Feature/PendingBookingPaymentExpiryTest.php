@@ -96,8 +96,7 @@ function expiryTestGateway(PaymentStatus $status): PaymentGateway
     return new class($status) implements PaymentGateway {
         public int $verifyCalls = 0;
 
-        public function __construct(private readonly PaymentStatus $status)
-        {
+        public function __construct(private readonly PaymentStatus $status) {
         }
 
         public function createPayment(PaymentRequest $request): PaymentGatewayResult
