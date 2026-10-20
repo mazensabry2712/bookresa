@@ -155,14 +155,31 @@ final class HandleKashierWebhook
             $cumulativeRefundMinor += $eventAmountMinor;
         }
 
+        $isPaymentOperation = in_array($event, ['pay', 'capture'], true);
+        $isInFlight = in_array($payment->status, [
+            PaymentStatus::Pending,
+            PaymentStatus::Processing,
+        ], true);
+        $isTerminal = in_array($payment->status, [
+            PaymentStatus::Cancelled,
+            PaymentStatus::Refunded,
+        ], true);
+
         $mappedStatus = match (true) {
             $event === 'refund' && $refundSucceeded => PaymentStatus::Refunded,
-            $event === 'partial_refund' && $refundSucceeded && $cumulativeRefundMinor >= (int) $payment->amount_minor => PaymentStatus::Refunded,
-            $event === 'partial_refund' && $refundSucceeded => PaymentStatus::Paid,
+            $event === 'partial_refund' && $refundSucceeded && $payment->status === PaymentStatus::Paid && $cumulativeRefundMinor >= (int) $payment->amount_minor => PaymentStatus::Refunded,
+            $event === 'partial_refund' && $refundSucceeded && $payment->status === PaymentStatus::Paid => PaymentStatus::Paid,
             $isRefundEvent => $payment->status,
-            $status === 'SUCCESS' => PaymentStatus::Paid,
-            $status === 'FAILURE' => PaymentStatus::Failed,
-            default => PaymentStatus::Processing,
+            $isTerminal => $payment->status,
+            $event === 'reversal' && $status === 'SUCCESS' && $payment->status === PaymentStatus::Paid => PaymentStatus::Refunded,
+            $event === 'reversal' && $status === 'SUCCESS' && $isInFlight => PaymentStatus::Failed,
+            $event === 'void' && $status === 'SUCCESS' && $isInFlight => PaymentStatus::Cancelled,
+            $event === 'reject' && $status === 'SUCCESS' && $isInFlight => PaymentStatus::Failed,
+            $event === 'authorize' && $status === 'SUCCESS' && $isInFlight => PaymentStatus::Processing,
+            $isPaymentOperation && $status === 'SUCCESS' => PaymentStatus::Paid,
+            in_array($event, ['pay', 'capture', 'authorize', 'reject'], true) && $status === 'FAILURE' && $isInFlight => PaymentStatus::Failed,
+            $status === 'PENDING' && $isInFlight => PaymentStatus::Processing,
+            default => $payment->status,
         };
 
         return new PaymentGatewayResult(
@@ -180,7 +197,7 @@ final class HandleKashierWebhook
                 'refunded_amount_minor' => $cumulativeRefundMinor,
                 'refund_event_amount_minor' => $isRefundEvent ? $eventAmountMinor : null,
             ],
-            paidAt: ! $isRefundEvent && $mappedStatus === PaymentStatus::Paid
+            paidAt: $isPaymentOperation && $status === 'SUCCESS' && $mappedStatus === PaymentStatus::Paid
                 ? $this->parseDate($data['creationDate'] ?? null) ?? CarbonImmutable::now('UTC')
                 : null,
         );

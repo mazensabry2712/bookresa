@@ -145,6 +145,70 @@ test('signed Kashier success webhook marks payment and booking as paid', functio
         ->and(PaymentWebhookEvent::query()->count())->toBe(1);
 });
 
+test('successful authorization webhook does not mark the payment as paid before capture', function (): void {
+    $tenant = webhookTenant('webhook-authorization');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+
+    $payload = webhookPayload($payment->reference);
+    $payload['event'] = 'authorize';
+    $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertOk();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Processing)
+        ->and($payment->fresh()->paid_at)->toBeNull()
+        ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Unpaid);
+});
+
+test('successful reversal webhook reconciles an already-paid payment as refunded', function (): void {
+    $tenant = webhookTenant('webhook-reversal');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+    $payment->forceFill(['status' => PaymentStatus::Paid])->save();
+    $booking->forceFill(['payment_status' => BookingPaymentStatus::Paid])->save();
+
+    $payload = webhookPayload($payment->reference, 'TX-WEBHOOK-REVERSAL');
+    $payload['event'] = 'reversal';
+    $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertOk();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Refunded)
+        ->and($payment->fresh()->refunded_amount_minor)->toBe(25000)
+        ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Refunded);
+});
+
+test('successful void webhook never marks an uncompleted payment as paid', function (): void {
+    $tenant = webhookTenant('webhook-void');
+    $booking = webhookBooking($tenant);
+    $payment = webhookPayment($tenant, $booking);
+
+    $payload = webhookPayload($payment->reference, 'TX-WEBHOOK-VOID');
+    $payload['event'] = 'void';
+    $signature = app(KashierWebhookVerifier::class)->sign($payload['data'], 'api-key');
+    config(['bookresa.payments.kashier.api_key' => 'api-key']);
+
+    $this->postJson(route('webhooks.kashier'), $payload, [
+        'x-kashier-signature' => $signature,
+    ])->assertOk();
+
+    app(CurrentTenant::class)->set($tenant);
+
+    expect($payment->fresh()->status)->toBe(PaymentStatus::Cancelled)
+        ->and($booking->fresh()->payment_status)->toBe(BookingPaymentStatus::Unpaid);
+});
+
 test('duplicate Kashier webhook is acknowledged without double processing', function (): void {
     $tenant = webhookTenant('webhook-duplicate');
     $booking = webhookBooking($tenant);
