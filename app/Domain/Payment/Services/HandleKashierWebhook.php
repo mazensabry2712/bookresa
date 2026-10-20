@@ -45,7 +45,8 @@ final class HandleKashierWebhook
             throw new RuntimeException('Kashier webhook payload is missing required fields.');
         }
 
-        $apiKey = (string) ($this->platformSettings->kashierConfig()['api_key'] ?? '');
+        $kashierConfig = $this->platformSettings->kashierConfig();
+        $apiKey = (string) ($kashierConfig['api_key'] ?? '');
 
         if (! $this->verifier->verify($data, $signature, $apiKey)) {
             throw new LogicException('Invalid Kashier webhook signature.');
@@ -78,7 +79,7 @@ final class HandleKashierWebhook
         $usesCentralPlatformMerchant = $payment->payable_type === Subscription::class
             || filter_var(data_get($payment->metadata, 'centralized_payment', false), FILTER_VALIDATE_BOOL);
         $expectedMerchantId = $usesCentralPlatformMerchant
-            ? (string) config('bookresa.payments.kashier.merchant_id')
+            ? (string) ($kashierConfig['merchant_id'] ?? '')
             : trim((string) data_get($payment->metadata, 'connected_account_merchant_id'));
 
         if ($merchantId === '' || $expectedMerchantId === '' || $merchantId !== $expectedMerchantId) {
