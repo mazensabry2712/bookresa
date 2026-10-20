@@ -94,8 +94,9 @@ test('public booking wizard supports date input events and delegated time-slot s
         ->assertSee("dateInput.addEventListener('input', scheduleDateAvailability)", false)
         ->assertSee("dateInput.addEventListener('change', scheduleDateAvailability)", false)
         ->assertSee("staffSelect.value = '';", false)
-        ->assertSee("slotsContainer.addEventListener('click'", false)
-        ->assertSee("target.closest('button[data-booking-slot]')", false);
+        ->assertSee("button.addEventListener('click', () => selectSlot(button, slot.time))", false)
+        ->assertSee("timeInput.value = slotTime;", false)
+        ->assertSee("button.setAttribute('aria-pressed', 'true')", false);
 });
 
 test('public availability is tenant scoped and returns slots', function (): void {
