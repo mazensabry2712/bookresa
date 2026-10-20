@@ -70,7 +70,7 @@ return [
     'payment_retry_help' => 'The previous checkout is no longer active. We will check that your appointment time is still available before starting another payment.',
     'payment_retry_unavailable' => 'This booking cannot be paid again. Please contact the business or create a new booking.',
     'payment_retry_slot_unavailable' => 'This appointment time is no longer available. Please choose another time.',
-    'payment_already_completed' => 'This booking already has a successful payment. No new payment was started.'
+    'payment_already_completed' => 'This booking already has a successful payment. No new payment was started.',
     'book_another_appointment' => 'Book another appointment',
     'minutes_short' => 'min',
     'book_an_appointment_online' => 'Book an appointment online.',

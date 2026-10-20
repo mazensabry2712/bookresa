@@ -69,7 +69,7 @@ return [
     'payment_retry_help' => 'جلسة الدفع السابقة لم تعد نشطة. سنتحقق من استمرار إتاحة الموعد قبل بدء محاولة دفع جديدة.',
     'payment_retry_unavailable' => 'لا يمكن إعادة الدفع لهذا الحجز. يُرجى التواصل مع النشاط التجاري أو إنشاء حجز جديد.',
     'payment_retry_slot_unavailable' => 'هذا الموعد لم يعد متاحًا. يُرجى اختيار موعد آخر.',
-    'payment_already_completed' => 'تم تسجيل دفعة ناجحة لهذا الحجز بالفعل. لم يتم بدء دفعة جديدة.'
+    'payment_already_completed' => 'تم تسجيل دفعة ناجحة لهذا الحجز بالفعل. لم يتم بدء دفعة جديدة.',
     'book_another_appointment' => 'احجز موعدًا آخر',
     'minutes_short' => 'د',
     'book_an_appointment_online' => 'احجز موعدًا عبر الإنترنت.',
