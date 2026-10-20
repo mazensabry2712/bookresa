@@ -87,6 +87,8 @@ Relevant files include app/Domain/Billing/Services/CalculateSubscriptionUsage.ph
 
 Subscription usage counts unique customer profiles. A customer with ten bookings remains one customer for subscription usage but may consume ten booking slots under the new commission allowance. Do not reuse or change included_customer_limit when implementing the monthly booking allowance.
 
+Additional current-state finding: `CalculateSubscriptionUsage` computes the extra-customer count but currently sets `additionalCustomerPriceMinor` and `usageChargeMinor` to zero; the current plan-admin save path also stores `additional_customer_price_minor = 0`. Thus over-limit profiles are counted/displayed, but the runtime does not currently apply an additional-customer usage surcharge. Whether that separate product fee should be activated is distinct from the new booking commission and must not be silently merged into it.
+
 ## 3. Target business rules
 
 ### 3.1 Agreed defaults
