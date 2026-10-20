@@ -7,6 +7,7 @@ use App\Domain\Business\Actions\CreateBusiness;
 use App\Domain\Business\Models\BusinessType;
 use App\Domain\Payment\Enums\PaymentStatus;
 use App\Domain\Service\Actions\CreateService;
+use App\Domain\Scheduling\Actions\SetBusinessWorkingHours;
 use App\Domain\Scheduling\Enums\DayOfWeek;
 use App\Domain\Scheduling\Models\BusinessBreak;
 use App\Domain\Scheduling\Models\BusinessHoliday;
@@ -219,6 +220,39 @@ test('each staff member has a separate weekly schedule that can be edited indepe
         ->and(substr((string) $firstMonday->closes_at, 0, 5))->toBe('16:00')
         ->and(substr((string) $secondMonday->opens_at, 0, 5))->toBe('11:00')
         ->and(substr((string) $secondMonday->closes_at, 0, 5))->toBe('19:00');
+});
+
+test('doctor schedule table shows effective business hours until a personal schedule is saved', function (): void {
+    [$owner, $tenant] = schedulingUiWorkspace();
+    app(CurrentTenant::class)->set($tenant);
+
+    app(SetBusinessWorkingHours::class)->handle([
+        ['day_of_week' => DayOfWeek::Monday->value, 'opens_at' => '09:00', 'closes_at' => '17:00'],
+    ]);
+
+    app(AddStaffMember::class)->handle(
+        User::factory()->create(['email' => 'business-hours-fallback@example.com']),
+        'staff',
+        ['display_name' => 'Dr. Schedule Template'],
+    );
+
+    $response = $this->actingAs($owner)
+        ->withSession(['tenant_id' => $tenant->id])
+        ->get(route('scheduling.index', ['tenant' => $tenant->slug]))
+        ->assertOk()
+        ->assertSee('Dr. Schedule Template')
+        ->assertSee('This doctor currently follows the business hours shown here.');
+
+    $html = $response->getContent();
+    $cardStart = strpos($html, 'data-doctor-schedule');
+    $cardEnd = $cardStart === false ? false : strpos($html, '</article>', $cardStart);
+    expect($cardStart)->not->toBeFalse()
+        ->and($cardEnd)->not->toBeFalse();
+
+    $card = substr($html, $cardStart, $cardEnd - $cardStart);
+
+    expect($card)->toContain('name="hours[0][opens_at]" value="09:00"')
+        ->and($card)->toContain('name="hours[0][closes_at]" value="17:00"');
 });
 
 test('owner can apply one weekly schedule to multiple staff without changing individual exceptions', function (): void {
