@@ -23,6 +23,12 @@ Protect login, registration, password reset, public booking creation, payment cr
 ## Payments
 Never store raw card data. Verify provider webhook signatures and enforce idempotency.
 
+## Commission and settlement controls
+
+The current platform commission/payout actions require the finance permission. The payout ledger only reserves a recorded balance and records an external transfer reference; the application does not itself execute a bank or marketplace transfer. Marking a payout paid is a record of an externally completed transfer, not a transfer API call.
+
+The planned monthly booking-commission model must enforce server-side tenant scoping, finance authorization, immutable/auditable policy snapshots, idempotent cash collection and refund adjustments, and audit logs for receivable, settlement and payout transitions. Never trust a client-supplied tenant ID or treat a cash booking as a verified online payment. See DOC/21 for the rollout gates; do not activate the new commission collection model before the ledger and funds flow are approved and tested.
+
 ## Files
 Validate MIME/content, size, extension and dimensions where relevant. Store safely and process heavy transformations asynchronously.
 
