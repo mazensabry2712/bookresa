@@ -74,6 +74,15 @@ This checklist measures the current backend/product implementation scope, not th
 - [x] signed webhook
 - [x] idempotency
 - [x] gateway tests
+- [x] existing payment-keyed commission reconciliation for the legacy customer-profile ordinal policy (not the target monthly policy)
+- [x] manual workspace payout reservation and external-reference recording (no automatic transfer)
+- [ ] monthly qualifying-booking allowance per workspace/calendar month (default 1,000) and 10% default rate
+- [ ] independent commission-enabled switch, separate from centralized online-payment availability
+- [ ] decouple booking commission from subscription included-customer limits and customer-profile counts
+- [ ] booking-centric ledger across retries/partial payments, refunds and reversals
+- [ ] auditable cash collection, commission receivable/remittance and settlement workflow
+- [ ] monthly Super Admin/workspace finance views and currency-safe commission reporting
+- [ ] provider and legal/commercial approval for the chosen marketplace/collection path
 - [x] public booking payment choice (cash at center always; full online payment when enabled)
 - [x] selected payment method persisted on new public bookings and server-validated
 - [x] signed merchant return + server-side verification
