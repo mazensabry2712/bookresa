@@ -48,10 +48,14 @@
                 ->map(fn ($staff) => ['id' => $staff->id, 'display_name' => $staff->display_name])
                 ->values()->all(),
         ])->all();
+        $staffRequiredByService = $services->mapWithKeys(fn ($service) => [
+            $service->id => $service->staff->isNotEmpty(),
+        ])->all();
 
         $bookingPayload = [
             'availabilityUrl' => route('public.booking.canonical.availability', $tenant->slug),
             'staffByService' => $staffByService,
+            'staffRequiredByService' => $staffRequiredByService,
         ];
 
         $socialLinks = collect([
@@ -204,7 +208,7 @@
                             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ __('app.public_booking_ui.availability_help') }}</p>
                         </div>
 
-                        <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="grid gap-4">
                             <label class="block">
                                 <span class="mb-2 block text-sm font-bold">{{ __('app.date') }}</span>
                                 <input id="booking-date" type="date" name="date" required min="{{ $today }}" value="{{ old('date') }}" data-booking-date class="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm outline-none transition focus:border-brand-indigo focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:focus:ring-indigo-950/60">
@@ -227,9 +231,6 @@
                             <div class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4" data-booking-slots role="group" aria-label="{{ __('app.available_times') }}">
                                 <p class="col-span-full py-5 text-center text-sm text-slate-500">{{ __('app.public_booking_ui.select_service_date') }}</p>
                             </div>
-                            <button type="button" data-booking-any-staff class="mt-3 hidden min-h-10 items-center justify-center rounded-lg border border-indigo-200 px-3 py-2 text-sm font-bold text-brand-indigo transition hover:bg-indigo-50 dark:border-indigo-900/60 dark:hover:bg-indigo-950/30">
-                                {{ __('app.public_booking_ui.show_all_staff_times') }}
-                            </button>
                             <div data-booking-loading class="mt-3 hidden rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300" role="status" aria-live="polite">{{ __('app.loading_availability') }}</div>
                             <div data-booking-error class="mt-3 hidden rounded-xl border border-rose-200 bg-rose-50 px-3 py-3 text-sm text-rose-700 dark:border-rose-900/70 dark:bg-rose-950/30 dark:text-rose-200" role="alert">{{ __('app.public_booking_ui.availability_error') }}</div>
                             <input type="hidden" name="time" value="{{ old('time') }}" data-booking-time>
@@ -352,7 +353,8 @@
                 emptyAvailability: @js($locale === 'ar' ? 'لا توجد أوقات متاحة في هذا اليوم. جرّب تاريخًا آخر.' : 'No times are available on this date. Try another date.'),
                 emptyStaffAvailability: @js(__('app.public_booking_ui.empty_staff_availability')),
                 noActiveStaff: @js(__('app.public_booking_ui.no_active_staff_available')),
-                staffAvailableCount: @js(__('app.public_booking_ui.staff_available_count')),
+                chooseStaff: @js(__('app.public_booking_ui.select_staff_date')),
+                chooseStaffOption: @js(__('app.public_booking_ui.select_staff')),
                 serviceDate: @js(__('app.public_booking_ui.select_service_date')),
                 loading: @js(__('app.public_booking_ui.loading_slots')),
                 availabilityError: @js(__('app.public_booking_ui.availability_error')),
@@ -368,7 +370,6 @@
             const dateInput = form.querySelector('[data-booking-date]');
             const staffWrap = form.querySelector('[data-booking-staff-wrap]');
             const staffSelect = form.querySelector('[data-booking-staff]');
-            const anyStaffButton = form.querySelector('[data-booking-any-staff]');
             const slotsContainer = form.querySelector('[data-booking-slots]');
             const loading = form.querySelector('[data-booking-loading]');
             const availabilityError = form.querySelector('[data-booking-error]');
@@ -388,7 +389,14 @@
             const initialStaffId = @js((string) old('staff_id', ''));
 
             const checkedService = () => serviceInputs.find((input) => input.checked) || null;
-            const refreshAnyStaffButton = () => anyStaffButton?.classList.toggle('hidden', !staffSelect.value);
+            const serviceRequiresStaff = () => {
+                const selected = checkedService();
+                return selected ? Boolean(payload.staffRequiredByService?.[selected.value]) : false;
+            };
+            const activeStaffForSelectedService = () => {
+                const selected = checkedService();
+                return selected ? (payload.staffByService?.[selected.value] || []) : [];
+            };
 
             const clearWizardError = () => {
                 wizardError.textContent = '';
@@ -487,29 +495,36 @@
             };
 
             const refreshSubmit = () => {
-                const ready = Boolean(checkedService() && dateInput.value && timeInput.value);
+                const ready = Boolean(
+                    checkedService()
+                    && dateInput.value
+                    && timeInput.value
+                    && (!serviceRequiresStaff() || staffSelect.value)
+                );
                 submitButton.disabled = !ready;
                 submitButton.setAttribute('aria-busy', loading && !loading.classList.contains('hidden') ? 'true' : 'false');
             };
 
             const refreshStaff = (preferredId = '') => {
                 const selected = checkedService();
-                const staffMembers = selected ? (payload.staffByService?.[selected.value] || []) : [];
+                const staffMembers = activeStaffForSelectedService();
                 const previousValue = preferredId || staffSelect.value || '';
+                const shouldShowStaff = Boolean(selected && dateInput.value && serviceRequiresStaff());
                 staffSelect.replaceChildren();
+                staffSelect.required = false;
 
-                if (!staffMembers.length) {
+                if (!shouldShowStaff || !staffMembers.length) {
                     staffWrap?.classList.add('hidden');
                     staffSelect.value = '';
-                    refreshAnyStaffButton();
+                    refreshSubmit();
                     return;
                 }
 
                 staffWrap?.classList.remove('hidden');
-                const automatic = document.createElement('option');
-                automatic.value = '';
-                automatic.textContent = @js(__('app.choose_automatically'));
-                staffSelect.appendChild(automatic);
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = messages.chooseStaffOption;
+                staffSelect.appendChild(placeholder);
 
                 staffMembers.forEach((member) => {
                     const option = document.createElement('option');
@@ -522,7 +537,8 @@
                     staffSelect.value = String(previousValue);
                 }
 
-                refreshAnyStaffButton();
+                staffSelect.required = true;
+                refreshSubmit();
             };
 
             const selectSlot = (button, slotTime) => {
@@ -571,6 +587,25 @@
                     return;
                 }
 
+                const activeStaff = activeStaffForSelectedService();
+                if (serviceRequiresStaff() && activeStaff.length === 0) {
+                    loading?.classList.add('hidden');
+                    setSlotsMessage(messages.noActiveStaff);
+                    timeInput.value = '';
+                    refreshSubmit();
+                    refreshSummary();
+                    return;
+                }
+
+                if (serviceRequiresStaff() && !staffSelect.value) {
+                    loading?.classList.add('hidden');
+                    setSlotsMessage(messages.chooseStaff);
+                    timeInput.value = '';
+                    refreshSubmit();
+                    refreshSummary();
+                    return;
+                }
+
                 abortController = new AbortController();
                 loading?.classList.remove('hidden');
                 if (loading) loading.textContent = messages.loading;
@@ -608,20 +643,7 @@
                         button.type = 'button';
                         button.className = 'min-h-12 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-bold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30 dark:focus:ring-indigo-950/60';
                         button.dataset.bookingSlot = slot.time;
-                        if (!staffSelect.value && Number(slot.available_staff_count) > 0) {
-                            button.classList.add('flex', 'flex-col', 'justify-center', 'gap-0.5');
-
-                            const timeLabel = document.createElement('span');
-                            timeLabel.textContent = slot.time;
-
-                            const providersLabel = document.createElement('span');
-                            providersLabel.className = 'text-[10px] font-semibold text-slate-500 dark:text-slate-400';
-                            providersLabel.textContent = messages.staffAvailableCount.replace(':count', String(slot.available_staff_count));
-
-                            button.append(timeLabel, providersLabel);
-                        } else {
-                            button.textContent = slot.time;
-                        }
+                        button.textContent = slot.time;
                         button.setAttribute('aria-pressed', 'false');
                         slotsContainer.appendChild(button);
 
@@ -656,6 +678,7 @@
 
             serviceInputs.forEach((input) => input.addEventListener('change', () => {
                 timeInput.value = '';
+                staffSelect.value = '';
                 refreshStaff();
                 refreshSummary();
                 clearWizardError();
@@ -678,6 +701,8 @@
 
                     requestedDate = nextDate;
                     timeInput.value = '';
+                    staffSelect.value = '';
+                    refreshStaff();
                     refreshSummary();
                     clearWizardError();
                     loadAvailability();
@@ -689,15 +714,6 @@
 
             staffSelect.addEventListener('change', () => {
                 timeInput.value = '';
-                refreshAnyStaffButton();
-                clearWizardError();
-                loadAvailability();
-            });
-
-            anyStaffButton?.addEventListener('click', () => {
-                staffSelect.value = '';
-                timeInput.value = '';
-                refreshAnyStaffButton();
                 clearWizardError();
                 loadAvailability();
             });
@@ -712,6 +728,15 @@
                     if (!dateInput.value) {
                         showWizardError(messages.chooseDate);
                         dateInput.reportValidity();
+                        return;
+                    }
+                    if (serviceRequiresStaff() && activeStaffForSelectedService().length === 0) {
+                        showWizardError(messages.noActiveStaff);
+                        return;
+                    }
+                    if (serviceRequiresStaff() && !staffSelect.value) {
+                        showWizardError(messages.chooseStaff);
+                        staffSelect.focus();
                         return;
                     }
                     if (!timeInput.value) {
@@ -730,10 +755,15 @@
                     showWizardError(messages.chooseService);
                     return;
                 }
-                if (!dateInput.value || !timeInput.value) {
+                if (!dateInput.value || !timeInput.value || (serviceRequiresStaff() && !staffSelect.value)) {
                     event.preventDefault();
                     setStep(2, true);
-                    showWizardError(!dateInput.value ? messages.chooseDate : messages.chooseTime);
+                    const message = !dateInput.value
+                        ? messages.chooseDate
+                        : (serviceRequiresStaff() && activeStaffForSelectedService().length === 0
+                            ? messages.noActiveStaff
+                            : (serviceRequiresStaff() && !staffSelect.value ? messages.chooseStaff : messages.chooseTime));
+                    showWizardError(message);
                     return;
                 }
                 submitButton.disabled = true;
